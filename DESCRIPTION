@@ -1,0 +1,20 @@
+Package: rlas
+Type: Package
+Title: Read and write las and laz binary file formats
+Version: 1.0.0
+Date: 2016-12-18
+Authors@R: c(
+    person("Jean-Romain", "Roussel", email = "jean-romain.roussel.1@ulaval.ca", role = c("aut", "cre", "cph")),
+    person("Martin", "Isenburg", email = "", role = "cph", comment = "Is the author of the LASlib and LASzip libraries"),
+    person("David", "Auty", email = "", role = c("ctb"), comment = "Reviewed the documentation"),
+    person("Pierrick", "Marie", email = "", role = ("ctb"), comment = "Helped to compile LASlib code in R"))
+Description: A simple wrapper for R to read and write las and laz binary file format used to strore LiDAR data using the Martin Isenburg's librairies.
+URL: https://github.com/Jean-Romain/rlas
+BugReports: https://github.com/Jean-Romain/rlas/issues
+License: GPL-3
+Depends:R (>= 3.1.0)
+Imports: data.table,Rcpp
+LazyData: true
+SystemRequirements: GNU make
+RoxygenNote: 5.0.1
+LinkingTo: Rcpp
