@@ -3,7 +3,7 @@
 
 PROGRAMMERS:
 
-jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/lidR
+jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
 
 COPYRIGHT:
 
