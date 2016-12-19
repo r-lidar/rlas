@@ -5,7 +5,7 @@
 \title{Write a las or laz file}
 \usage{
 writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
-  NumberOfReturns, ScanDirectionFlag, EdgeofFlightline, Classification,
+  NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification,
   ScanAngle, UserData, PointSourceID, R, G, B)
 }
 \arguments{
@@ -30,7 +30,7 @@ writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 
 \item{ScanDirectionFlag}{integer array scan direction flag data}
 
-\item{EdgeofFlightline}{integer array edge of flightline data}
+\item{EdgeOfFlightline}{integer array edge of flightline data}
 
 \item{Classification}{integer array classification data}
 
@@ -50,7 +50,9 @@ writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 void
 }
 \description{
-Write a las or laz file
+Write a las or laz file. All the fields are optionnal except X Y and Z coordinates. If
+the user does not provide a field such as Intensity for example but this field is requiered
+according to the version of files specified in the header, 0 will be written in this fields.
 }
 \seealso{
 Other rlas: \code{\link{readlasdata}},
