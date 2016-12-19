@@ -21,7 +21,7 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 
 \item{ScanDirectionFlag}{logical. do you want to load the ScanDirectionFlag field? default: FALSE}
 
-\item{EdgeOfFlightline}{logical. do you want to load the EdgeofFlightline field? default: FALSE}
+\item{EdgeOfFlightline}{logical. do you want to load the EdgeOfFlightline field? default: FALSE}
 
 \item{Classification}{logical. do you want to load the Classification field? default: TRUE}
 

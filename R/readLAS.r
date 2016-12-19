@@ -42,7 +42,7 @@
 #' @param ReturnNumber logical. do you want to load the ReturnNumber field? default: TRUE
 #' @param NumberOfReturns logical. do you want to load the NumberOfReturns field? default: TRUE
 #' @param ScanDirectionFlag logical. do you want to load the ScanDirectionFlag field? default: FALSE
-#' @param EdgeOfFlightline logical. do you want to load the EdgeofFlightline field? default: FALSE
+#' @param EdgeOfFlightline logical. do you want to load the EdgeOfFlightline field? default: FALSE
 #' @param Classification logical. do you want to load the Classification field? default: TRUE
 #' @param ScanAngle logical. do you want to load the ScanAngle field? default: TRUE
 #' @param UserData logical. do you want to load the UserData field? default: FALSE

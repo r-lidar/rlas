@@ -52,7 +52,7 @@ int get_format(U8);
 // @param ReturnNumber logical. do you want to load ReturnNumber field? default: TRUE
 // @param NumberOfReturns logical. do you want to load NumberOfReturns field? default: TRUE
 // @param ScanDirectionFlag logical. do you want to load ScanDirectionFlag field? default: FALSE
-// @param EdgeofFlightline logical. do you want to load EdgeofFlightline field? default: FALSE
+// @param EdgeOfFlightline logical. do you want to load EdgeofFlightline field? default: FALSE
 // @param Classification logical. do you want to load Classification field? default: TRUE
 // @param ScanAngle logical. do you want to load intensity field? default: TRUE
 // @param UserData logical. do you want to load UserData field? default: FALSE
@@ -66,7 +66,7 @@ List lasdatareader(CharacterVector file,
              bool ReturnNumber = true,
              bool NumberOfReturns = true,
              bool ScanDirectionFlag = false,
-             bool EdgeofFlightline = false,
+             bool EdgeOfFlightline = false,
              bool Classification = true,
              bool ScanAngle = true,
              bool UserData = false,
@@ -105,7 +105,7 @@ List lasdatareader(CharacterVector file,
     if(ReturnNumber)      RN  = IntegerVector(n);
     if(NumberOfReturns)   NoR = IntegerVector(n);
     if(ScanDirectionFlag) SDF = IntegerVector(n);
-    if(EdgeofFlightline)  EoF = IntegerVector(n);
+    if(EdgeOfFlightline)  EoF = IntegerVector(n);
     if(Classification)    C   = IntegerVector(n);
     if(ScanAngle)         SA  = IntegerVector(n);
     if(UserData)          UD  = IntegerVector(n);
@@ -130,7 +130,7 @@ List lasdatareader(CharacterVector file,
       if(ReturnNumber)      RN[i]  = lasreader->point.get_return_number();
       if(NumberOfReturns)   NoR[i] = lasreader->point.get_number_of_returns();
       if(ScanDirectionFlag) SDF[i] = lasreader->point.get_scan_direction_flag();
-      if(EdgeofFlightline)  EoF[i] = lasreader->point.get_edge_of_flight_line();
+      if(EdgeOfFlightline)  EoF[i] = lasreader->point.get_edge_of_flight_line();
       if(Classification)    C[i]   = lasreader->point.get_classification();
       if(ScanAngle)         SA[i]  = lasreader->point.get_scan_angle_rank();
       if(UserData)          UD[i]  = lasreader->point.get_user_data();
@@ -159,7 +159,7 @@ List lasdatareader(CharacterVector file,
     if(ReturnNumber)      lasdata.push_back(RN),  field.push_back("ReturnNumber");
     if(NumberOfReturns)   lasdata.push_back(NoR), field.push_back("NumberOfReturns");
     if(ScanDirectionFlag) lasdata.push_back(SDF), field.push_back("ScanDirectionFlag");
-    if(EdgeofFlightline)  lasdata.push_back(EoF), field.push_back("EdgeofFlightline");
+    if(EdgeOfFlightline)  lasdata.push_back(EoF), field.push_back("EdgeOfFlightline");
     if(Classification)    lasdata.push_back(C),   field.push_back("Classification");
     if(ScanAngle)         lasdata.push_back(SA),  field.push_back("ScanAngle");
     if(UserData)          lasdata.push_back(UD),  field.push_back("UserData");
