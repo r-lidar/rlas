@@ -100,7 +100,7 @@ void laswriter(CharacterVector file,
     header.y_offset =  (double)LASheader["Y offset"];
     header.z_offset =  (double)LASheader["Z offset"];
     header.point_data_record_length = (int)LASheader["Point Data Record Length"];
-    strcpy(header.generating_software, "lidR R package");
+    strcpy(header.generating_software, "rlas R package");
 
     std::string filestd = as<std::string>(file);
 
