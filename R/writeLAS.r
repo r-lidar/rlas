@@ -29,6 +29,9 @@
 
 #' Write a las or laz file
 #'
+#' Write a las or laz file. All the fields are optionnal except X Y and Z coordinates. If
+#' the user does not provide a field such as Intensity for example but this field is requiered
+#' according to the version of files specified in the header, 0 will be written in this fields.
 #' @param file character. filename of .las or .laz file
 #' @param header list of character. The data for the file header properly labelled
 #' (see \link[rlas:readlasheader]{readlasheader})
@@ -39,7 +42,7 @@
 #' @param ReturnNumber integer array return number data
 #' @param NumberOfReturns integer array number of returns data
 #' @param ScanDirectionFlag integer array scan direction flag data
-#' @param EdgeofFlightline integer array edge of flightline data
+#' @param EdgeOfFlightline integer array edge of flightline data
 #' @param Classification integer array classification data
 #' @param ScanAngle integer array scan angle data
 #' @param UserData integer array user data data
@@ -53,7 +56,7 @@
 #' @family rlas
 #' @return void
 writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
-                     NumberOfReturns, ScanDirectionFlag, EdgeofFlightline,
+                     NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline,
                      Classification, ScanAngle, UserData, PointSourceID,
                      R, G, B)
 {
@@ -67,7 +70,7 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
   I = RN = NoR = SDF = EoF = C = SA = UD = PSI = R = G = B = integer(0)
   time = numeric(0)
 
-  if(!missing(I))
+  if(!missing(Intensity))
     I = Intensity
   if(!missing(ReturnNumber))
     RN = ReturnNumber
@@ -75,8 +78,8 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
     NoR = NumberOfReturns
   if(!missing(ScanDirectionFlag))
     SDF = ScanDirectionFlag
-  if(missing(EdgeofFlightline))
-    EoF = EdgeofFlightline
+  if(!missing(EdgeOfFlightline))
+    EoF = EdgeOfFlightline
   if(!missing(Classification))
     C = Classification
   if(!missing(ScanAngle))
