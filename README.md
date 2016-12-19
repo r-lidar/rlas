@@ -2,10 +2,29 @@
 
 R package to read and write `las` and `laz` binary files used to store LiDAR data.
 
-`rlas` relies on a modified version of the open source parts of [LAStools](https://github.com/LAStools/LAStools) v160730 (LASlib and LASzip). LASlib and LASzip were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complain from `R CMD check`.
-It enables to read and write binary files commonly used to store LiDAR data into R.
+`rlas` relies on a modified version of the open source parts of [LAStools](https://github.com/LAStools/LAStools) v160730. `LASlib` and `LASzip` were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complain from `R CMD check`.
+It enables to read and write into R binary files commonly used to store LiDAR data.
 
-## Modifications made into LASlib and LASzip
+```r
+las.data   = readlasdata("<myfile.las>")
+las.header = readlasheader("<myfile.las>")
+```
+
+# Install `rlas` from github
+
+The package contains C++ code. To install the package from github make sure you have a working development environment.
+
+* **Windows**: Install [Rtools.exe](https://cran.r-project.org/bin/windows/Rtools/).  
+* **Mac**: Install `Xcode` from the Mac App Store.
+* **Linux**: Install the R development package, usually called `r-devel` or `r-base-dev`
+
+Install devtools: `install.packages("devtools")`, then:
+
+````r
+devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
+````
+
+## Modifications made into `LASlib` and `LASzip` 
 
 * `exit(1)` is not correct in a library. Such code was removed and replaced by an exception.
 * the use of `stderr` output is not permitted in `R`. Error messages now raise exceptions.
@@ -15,7 +34,16 @@ It enables to read and write binary files commonly used to store LiDAR data into
 * replace `__int64` type by `int64_t` and removed preprocessor statements specific to Windows. 
 * `rand` and `srand` are deprecated. Replaced by `runif` from `Rcpp`.
 
-## Copyrights for LASlib and LASzip
+## Copyrights
+
+### For `LASlib` and `LASzip`
 
 (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
+
 Provided under LGPL licence.
+
+### For `rlas` code enabling to wrap Martin Isenburg code into R
+
+(c) 2016 Jean-Romain Roussel
+
+Provided under GPL-3 licence.
