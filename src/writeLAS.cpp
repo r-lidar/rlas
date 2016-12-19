@@ -120,7 +120,6 @@ void laswriter(CharacterVector file,
       p.set_X((X[i]-header.x_offset)/header.x_scale_factor );
       p.set_Y((Y[i]-header.y_offset)/header.y_scale_factor );
       p.set_Z((Z[i]-header.z_offset)/header.z_scale_factor );
-      p.set_intensity((U16)I[i]);
 
       if(I.length() > 0){ p.set_intensity((U16)I[i]); }
       if(RN.length() > 0){ p.set_return_number((U8)RN[i]); }
@@ -147,7 +146,7 @@ void laswriter(CharacterVector file,
     I64 total_bytes = laswriter->close();
     delete laswriter;
 
-    Rcout << "Wrote " << total_bytes << " bytes" << std::endl;
+    Rcout << total_bytes << " bytes written" << std::endl;
   }
   catch (std::exception const& e)
   {
