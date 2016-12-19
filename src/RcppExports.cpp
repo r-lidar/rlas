@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // lasdatareader
-List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeofFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB);
-RcppExport SEXP rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeofFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP) {
+List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB);
+RcppExport SEXP rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,13 +16,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type ReturnNumber(ReturnNumberSEXP);
     Rcpp::traits::input_parameter< bool >::type NumberOfReturns(NumberOfReturnsSEXP);
     Rcpp::traits::input_parameter< bool >::type ScanDirectionFlag(ScanDirectionFlagSEXP);
-    Rcpp::traits::input_parameter< bool >::type EdgeofFlightline(EdgeofFlightlineSEXP);
+    Rcpp::traits::input_parameter< bool >::type EdgeOfFlightline(EdgeOfFlightlineSEXP);
     Rcpp::traits::input_parameter< bool >::type Classification(ClassificationSEXP);
     Rcpp::traits::input_parameter< bool >::type ScanAngle(ScanAngleSEXP);
     Rcpp::traits::input_parameter< bool >::type UserData(UserDataSEXP);
     Rcpp::traits::input_parameter< bool >::type PointSourceID(PointSourceIDSEXP);
     Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeofFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB));
     return rcpp_result_gen;
 END_RCPP
 }
