@@ -30,8 +30,10 @@
 #' Write a las or laz file
 #'
 #' Write a las or laz file. All the fields are optionnal except X Y and Z coordinates. If
-#' the user does not provide a field such as Intensity for example but this field is requiered
-#' according to the version of files specified in the header, 0 will be written in this fields.
+#' the user does not provide a field such as \code{Intensity} for example but this field is requiered
+#' according to the version of the file specified in the \code{header}, 0 will be written in this field.
+#' For more informations, see the ASPRS documentation for the
+#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #' @param file character. filename of .las or .laz file
 #' @param header list of character. The data for the file header properly labelled
 #' (see \link[rlas:readlasheader]{readlasheader})
