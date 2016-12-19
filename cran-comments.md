@@ -19,9 +19,13 @@ Possibly mis-spelled words in DESCRIPTION:
   LiDAR (3:17, 10:23)
   las (11:5)
   laz (11:9)
+  
+The Title field should be in title case, current version then in title case:
+'Read and Write las and laz Binary File Formats'
+'Read and Write Las and Laz Binary File Formats'
 
 `LiDAR`: is an acronym for 'light detection and ranging'. No confusion can happen with this well-known term.
-`las` and `laz`: are two formats of standardized binary files used to store LiDAR data.
+`las` and `laz`: are two formats of standardized binary files used to store LiDAR data. They must be written in lowercase.
 
 * checking installed package size ... NOTE
   installed size is  7.5Mb
@@ -50,6 +54,10 @@ Possibly mis-spelled words in DESCRIPTION:
   LiDAR (3:17, 10:23)
   las (11:5)
   laz (11:9)
+  
+The Title field should be in title case, current version then in title case:
+'Read and Write las and laz Binary File Formats'
+'Read and Write Las and Laz Binary File Formats'
 
 See GNU/Linux section
 
