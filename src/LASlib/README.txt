@@ -1,12 +1,12 @@
   CONTENT:
-  
+
     This folder contains the source code of LASlib developped by Martin Isenburg
-    and used in the lidR package.
-  
+    and used in the 'rlas' package.
+
   PROGRAMMERS:
-  
+
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-  
+
   COPYRIGHT:
 
     (c) 2003-2012, martin isenburg, rapidlasso - fast tools to catch reality
