@@ -15,7 +15,6 @@ Maintainer: 'Jean-Romain Roussel <jean-romain.roussel.1@ulaval.ca>'
 New submission
 
 Possibly mis-spelled words in DESCRIPTION:
-  Isenburg (11:129)
   LiDAR (11:101)
   las (3:23, 11:55)
   laz (3:31, 11:63)
@@ -24,7 +23,6 @@ The Title field should be in title case, current version then in title case:
 'Read and Write las and laz Binary File Formats'
 'Read and Write Las and Laz Binary File Formats'
 
-`Isenburg` is the name of the owner of LASlib library
 `LiDAR`: is an acronym for 'light detection and ranging'. No confusion can happen with this well-known term.
 `las` and `laz`: are two formats of standardized binary files used to store LiDAR data. They must be written in lowercase.
 
