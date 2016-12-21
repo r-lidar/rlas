@@ -385,9 +385,9 @@ BOOL LASreaderTXT::open(FILE* file, const char* file_name, const char* parse_str
     if (fgets(line, 512, file))
     {
 #ifdef _WIN32
-      sscanf(line, "%I64d", &npoints);
+      sscanf(line, "%ld", &npoints);
 #else
-      sscanf(line, "%lld", &npoints);
+      sscanf(line, "%ld", &npoints);
 #endif
       if (npoints > U32_MAX)
       {
