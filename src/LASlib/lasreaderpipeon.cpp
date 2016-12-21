@@ -2,17 +2,17 @@
 ===============================================================================
 
   FILE:  lasreaderpipeon.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
-  
+
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-  
+
   COPYRIGHT:
-  
+
     (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
@@ -21,11 +21,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- L96 stdout replaced by Rcpp::Rcout
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreaderpipeon.hpp"
@@ -38,6 +40,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <Rcpp.h>
 
 BOOL LASreaderPipeOn::open(LASreader* lasreader)
 {
@@ -93,7 +96,7 @@ BOOL LASreaderPipeOn::open(LASreader* lasreader)
     return FALSE;
   }
 
-  if (!laswriterlas->open(stdout, &header))
+  if (!laswriterlas->open(Rcpp::Rcout, &header))
   {
     delete laswriterlas;
     fprintf(stderr, "ERROR: opening laswriterlas to stdout\n");
@@ -175,7 +178,7 @@ BOOL LASreaderPipeOn::read_point_default()
 
 void LASreaderPipeOn::close(BOOL close_stream)
 {
-  if (lasreader) 
+  if (lasreader)
   {
     lasreader->close(close_stream);
   }
