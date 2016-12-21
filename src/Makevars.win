@@ -2,4 +2,6 @@ PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -I. -I./include/LASlib -I./include/LASzip
 
 SOURCES = $(wildcard LASlib/*.cpp LASzip/*.cpp ./*.cpp)
 
+CXX_STD = CXX11
+
 OBJECTS =  $(SOURCES:.cpp=.o)
