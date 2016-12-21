@@ -233,7 +233,7 @@ public:
 
     if (!LASzip().setup(&num_items, &items, point_type, point_size, LASZIP_COMPRESSOR_NONE))
     {
-      throw std::runtime_error(std::string("ERROR: unknown point type "));
+      fprintf(stderr,"ERROR: unknown point type %d with point size %d\n", (I32)point_type, (I32)point_size);
       return FALSE;
     }
 

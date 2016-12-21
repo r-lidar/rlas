@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasutility.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,17 +21,16 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lasutility.hpp"
 
 #include <stdio.h>
-#include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
 
@@ -425,7 +424,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)malloc(sizeof(U32)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
           exit(1);
         }
         for (i = 0; i < size_pos; i++) bins_pos[i] = 0;
@@ -436,7 +435,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)realloc(bins_pos, sizeof(U32)*new_size);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
           exit(1);
         }
         for (i = size_pos; i < new_size; i++) bins_pos[i] = 0;
@@ -457,7 +456,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)malloc(sizeof(U32)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
           exit(1);
         }
         for (i = 0; i < size_neg; i++) bins_neg[i] = 0;
@@ -468,7 +467,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)realloc(bins_neg, sizeof(U32)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
           exit(1);
         }
         for (i = size_neg; i < new_size; i++) bins_neg[i] = 0;
@@ -502,12 +501,12 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
           exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u pos values\012", size_pos);
           exit(1);
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
@@ -519,12 +518,12 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
           exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u pos values\012", new_size);
           exit(1);
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
@@ -547,12 +546,12 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
           exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u neg values\012", size_neg);
           exit(1);
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
@@ -564,12 +563,12 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
           exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u neg values\012", new_size);
           exit(1);
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
@@ -604,12 +603,12 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
           exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u pos values\012", size_pos);
           exit(1);
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
@@ -621,12 +620,12 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
           exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u pos values\012", new_size);
           exit(1);
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
@@ -649,12 +648,12 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
           exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating "));
+          fprintf(stderr, "ERROR: allocating %u neg values\012", size_neg);
           exit(1);
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
@@ -666,12 +665,12 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
           exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating "));
+          fprintf(stderr, "ERROR: reallocating %u neg values\012", new_size);
           exit(1);
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
@@ -748,17 +747,17 @@ void LASbin::report(FILE* file, const CHAR* name, const CHAR* name_avg) const
   }
   if (count)
   {
-/*#ifdef _WIN32
+#ifdef _WIN32
     if (name)
       fprintf(file, "  average %s %g for %I64d element(s)\012", name, total/count, count);
     else
       fprintf(file, "  average %g for %I64d element(s)\012", total/count, count);
-#else*/
+#else
     if (name)
-      fprintf(file, "  average %s %g for %ld element(s)\012", name, total/count, count);
+      fprintf(file, "  average %s %g for %lld element(s)\012", name, total/count, count);
     else
-      fprintf(file, "  average %g for %ld element(s)\012", total/count, count);
-//#endif
+      fprintf(file, "  average %g for %lld element(s)\012", total/count, count);
+#endif
   }
 }
 
@@ -877,21 +876,21 @@ BOOL LAShistogram::parse(int argc, char* argv[])
     {
       if ((i+2) >= argc)
       {
-        throw std::runtime_error(std::string("ERROR: '"));
+        fprintf(stderr,"ERROR: '%s' needs 2 arguments: name step\n", argv[i]);
         return FALSE;
       }
       if (!histo(argv[i+1], (F32)atof(argv[i+2]))) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
     }
     else if (strcmp(argv[i],"-histo_avg") == 0)
     {
       if ((i+3) >= argc)
       {
-        throw std::runtime_error(std::string("ERROR: '"));
+        fprintf(stderr,"ERROR: '%s' needs 3 arguments: name step name_avg\n", argv[i]);
         return FALSE;
       }
       if (!histo_avg(argv[i+1], (F32)atof(argv[i+2]), argv[i+3])) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
     }
   }
   return TRUE;
@@ -982,7 +981,7 @@ BOOL LAShistogram::histo(const CHAR* name, F32 step)
     wavepacket_location_bin = new LASbin(step);
   else
   {
-    throw std::runtime_error(std::string("ERROR: histogram of '"));
+    fprintf(stderr,"ERROR: histogram of '%s' not implemented\n", name);
     return FALSE;
   }
   is_active = TRUE;
@@ -999,7 +998,7 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F32 step, const CHAR* name_avg)
       classification_bin_scan_angle = new LASbin(step);
     else
     {
-      throw std::runtime_error(std::string("ERROR: histogram of '"));
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
@@ -1013,7 +1012,7 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F32 step, const CHAR* name_avg)
       scan_angle_bin_intensity = new LASbin(step);
     else
     {
-      throw std::runtime_error(std::string("ERROR: histogram of '"));
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
@@ -1023,13 +1022,13 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F32 step, const CHAR* name_avg)
       return_map_bin_intensity = new LASbin(1);
     else
     {
-      throw std::runtime_error(std::string("ERROR: histogram of '"));
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
   else
   {
-    throw std::runtime_error(std::string("ERROR: histogram of '"));
+    fprintf(stderr,"ERROR: histogram of '%s' not implemented\n", name);
     return FALSE;
   }
   is_active = TRUE;
@@ -1457,7 +1456,7 @@ BOOL LASoccupancyGrid::write_asc_grid(const CHAR* file_name) const
   fprintf(file, "nrows %d\012", max_y-min_y+1);
   fprintf(file, "xllcorner %f\012", grid_spacing*min_x);
   fprintf(file, "yllcorner %f\012", grid_spacing*min_y);
-  fprintf(file, "cellsize %f\012", grid_spacing);
+  fprintf(file, "cellsize %lf\012", grid_spacing);
   fprintf(file, "NODATA_value %d\012", 0);
   fprintf(file, "\012");
   I32 pos_x, pos_y;
@@ -1486,7 +1485,7 @@ LASoccupancyGrid::LASoccupancyGrid(F32 grid_spacing)
   this->grid_spacing = -grid_spacing;
   minus_ankers = 0;
   minus_minus_size = 0;
-  minus_minus = 0;
+  minus_minus = 0; 
   minus_minus_sizes = 0;
   minus_plus_size = 0;
   minus_plus = 0;
