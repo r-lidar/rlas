@@ -27,9 +27,9 @@
 
 
 
-#' Read data from a las or laz file
+#' Read data from a .las or .laz file
 #'
-#' Read data from las or laz files in format 1 to 4 according to LAS specification and returns
+#' Read data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #' The optional logical parameters enable the user to save memory by choosing to load only the
@@ -37,15 +37,15 @@
 #' Data is loaded into the computer's memory (RAM) suboptimally because R does not accommodate
 #' many different data types.
 #'
-#' @param file characters path to the las or laz file
+#' @param file characters path to the .las or .laz file
 #' @param Intensity logical. do you want to load the Intensity field? default: TRUE
 #' @param ReturnNumber logical. do you want to load the ReturnNumber field? default: TRUE
 #' @param NumberOfReturns logical. do you want to load the NumberOfReturns field? default: TRUE
-#' @param ScanDirectionFlag logical. do you want to load the ScanDirectionFlag field? default: FALSE
-#' @param EdgeOfFlightline logical. do you want to load the EdgeOfFlightline field? default: FALSE
+#' @param ScanDirectionFlag logical. do you want to load the ScanDirectionFlag field? default: TRUE
+#' @param EdgeOfFlightline logical. do you want to load the EdgeOfFlightline field? default: TRUE
 #' @param Classification logical. do you want to load the Classification field? default: TRUE
 #' @param ScanAngle logical. do you want to load the ScanAngle field? default: TRUE
-#' @param UserData logical. do you want to load the UserData field? default: FALSE
+#' @param UserData logical. do you want to load the UserData field? default: TRUE
 #' @param PointSourceID logical. do you want to load the PointSourceID field? default: FALSE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
 #' @importFrom Rcpp sourceCpp
@@ -61,12 +61,12 @@ readlasdata = function(file,
                        Intensity = TRUE,
                        ReturnNumber = TRUE,
                        NumberOfReturns = TRUE,
-                       ScanDirectionFlag = FALSE,
+                       ScanDirectionFlag = TRUE,
                        EdgeOfFlightline = FALSE,
                        Classification = TRUE,
                        ScanAngle = TRUE,
-                       UserData = FALSE,
-                       PointSourceID = FALSE,
+                       UserData = TRUE,
+                       PointSourceID = TRUE,
                        RGB = TRUE)
 {
   valid = file.exists(file)
@@ -83,13 +83,13 @@ readlasdata = function(file,
   return(data)
 }
 
-#' Read header from a las or laz file
+#' Read header from a .las or .laz file
 #'
-#' Read header from las or laz files in format 1 to 4 according to LAS specification and returns
+#' Read header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #'
-#' @param file characters path to the las or laz file
+#' @param file characters path to the .las or .laz file
 #' @family rlas
 #' @return A \code{list}
 #' @importFrom Rcpp sourceCpp
