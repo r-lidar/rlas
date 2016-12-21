@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader_shp.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,17 +21,20 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_shp.hpp"
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -105,7 +108,7 @@ BOOL LASreaderSHP::open(const char* file_name)
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: fine name pointer is zero\n");
+    throw std::runtime_error(std::string("ERROR: fine name pointer is zero"));
     return FALSE;
   }
 
@@ -114,7 +117,7 @@ BOOL LASreaderSHP::open(const char* file_name)
   file = fopen_compressed(file_name, "rb", &piped);
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
+    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
     return FALSE;
   }
 
@@ -155,10 +158,10 @@ BOOL LASreaderSHP::open(const char* file_name)
 
   int int_input;
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // file code (BIG)
-  from_big_endian(&int_input); 
+  from_big_endian(&int_input);
   if (int_input != 9994)
   {
-    fprintf(stderr, "ERROR: wrong shapefile code %d != 9994\n", int_input);
+    throw std::runtime_error(std::string("ERROR: wrong shapefile code %d != 9994")); //int_input
     return FALSE;
   }
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // unused (BIG)
@@ -167,21 +170,21 @@ BOOL LASreaderSHP::open(const char* file_name)
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // unused (BIG)
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // unused (BIG)
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // file length (BIG)
-  from_big_endian(&int_input); 
+  from_big_endian(&int_input);
   int file_length = int_input;
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // version (LITTLE)
-  from_little_endian(&int_input); 
+  from_little_endian(&int_input);
   if (int_input != 1000)
   {
-    fprintf(stderr, "ERROR: wrong shapefile version %d != 1000\n", int_input);
+    throw std::runtime_error(std::string("ERROR: wrong shapefile version %d != 1000")); //int_input
     return FALSE;
   }
   if (fread(&int_input, sizeof(int), 1, file) != 1) return false; // shape type (LITTLE)
-  from_little_endian(&int_input); 
+  from_little_endian(&int_input);
   shape_type = int_input;
   if (shape_type != 1 && shape_type != 11 && shape_type != 21 && shape_type != 8 && shape_type != 18 && shape_type != 28)
   {
-    fprintf(stderr, "ERROR: wrong shape type %d != 1,11,21,8,18,28\n", shape_type);
+    throw std::runtime_error(std::string("ERROR: wrong shape type %d != 1,11,21,8,18,28")); //shape_type
     return FALSE;
   }
   double double_input;
@@ -189,24 +192,24 @@ BOOL LASreaderSHP::open(const char* file_name)
   from_little_endian(&double_input);
   header.min_x = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // ymin (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   header.min_y = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // xmax (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   header.max_x = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // ymax (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   header.max_y = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // zmin (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   header.min_z = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // zmax (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   header.max_z = double_input;
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // mmin (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
   if (fread(&double_input, sizeof(double), 1, file) != 1) return false; // mmax (LITTLE)
-  from_little_endian(&double_input); 
+  from_little_endian(&double_input);
 
   // maybe calculate npoints
 
@@ -244,7 +247,7 @@ BOOL LASreaderSHP::open(const char* file_name)
   // populate the quantized bounding box
 
   populate_bounding_box();
-  
+
   p_count = 0;
 
   return TRUE;
@@ -298,7 +301,7 @@ BOOL LASreaderSHP::read_point_default()
     from_little_endian(&int_input);
     if (int_input != shape_type)
     {
-      fprintf(stderr, "WARNING: wrong shape type %d != %d in record\n", int_input, shape_type);
+      throw std::runtime_error(std::string("WARNING: wrong shape type %d != %d in record")); //int_input, shape_type
     }
     double double_input;
     if (shape_type == 8 || shape_type == 18 || shape_type == 28) // Multipoint
@@ -416,14 +419,14 @@ BOOL LASreaderSHP::reopen(const char* file_name)
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: fine name pointer is zero\n");
+    throw std::runtime_error(std::string("ERROR: fine name pointer is zero"));
     return FALSE;
   }
 
   file = fopen_compressed(file_name, "rb", &piped);
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot reopen file '%s'\n", file_name);
+    throw std::runtime_error(std::string("ERROR: cannot reopen file '%s'")); //file_name
     return FALSE;
   }
 
@@ -566,8 +569,8 @@ void LASreaderSHP::populate_bounding_box()
 
   if ((header.min_x > 0) != (dequant_min_x > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for min_x from %g to %g.\n", header.min_x, dequant_min_x);
-    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for min_x from %g to %g.")); //header.min_x, dequant_min_x
+    throw std::runtime_error(std::string("         set scale factor for x coarser than %g with '-rescale'")); //header.x_scale_factor
   }
   else
   {
@@ -575,8 +578,8 @@ void LASreaderSHP::populate_bounding_box()
   }
   if ((header.max_x > 0) != (dequant_max_x > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for max_x from %g to %g.\n", header.max_x, dequant_max_x);
-    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for max_x from %g to %g.")); //header.max_x, dequant_max_x
+    throw std::runtime_error(std::string("         set scale factor for x coarser than %g with '-rescale'")); //header.x_scale_factor
   }
   else
   {
@@ -584,8 +587,8 @@ void LASreaderSHP::populate_bounding_box()
   }
   if ((header.min_y > 0) != (dequant_min_y > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for min_y from %g to %g.\n", header.min_y, dequant_min_y);
-    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for min_y from %g to %g.")); //header.min_y, dequant_min_y
+    throw std::runtime_error(std::string("         set scale factor for y coarser than %g with '-rescale'")); //header.y_scale_factor
   }
   else
   {
@@ -593,8 +596,8 @@ void LASreaderSHP::populate_bounding_box()
   }
   if ((header.max_y > 0) != (dequant_max_y > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for max_y from %g to %g.\n", header.max_y, dequant_max_y);
-    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for max_y from %g to %g.")); //header.max_y, dequant_max_y
+    throw std::runtime_error(std::string("         set scale factor for y coarser than %g with '-rescale'")); //header.y_scale_factor
   }
   else
   {
@@ -602,8 +605,8 @@ void LASreaderSHP::populate_bounding_box()
   }
   if ((header.min_z > 0) != (dequant_min_z > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for min_z from %g to %g.\n", header.min_z, dequant_min_z);
-    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for min_z from %g to %g.")); //header.min_z, dequant_min_z
+    throw std::runtime_error(std::string("         set scale factor for z coarser than %g with '-rescale'")); //header.z_scale_factor
   }
   else
   {
@@ -611,8 +614,8 @@ void LASreaderSHP::populate_bounding_box()
   }
   if ((header.max_z > 0) != (dequant_max_z > 0))
   {
-    fprintf(stderr, "WARNING: quantization sign flip for max_z from %g to %g.\n", header.max_z, dequant_max_z);
-    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    throw std::runtime_error(std::string("WARNING: quantization sign flip for max_z from %g to %g.")); //header.max_z, dequant_max_z
+    throw std::runtime_error(std::string("         set scale factor for z coarser than %g with '-rescale'")); //header.z_scale_factor
   }
   else
   {
