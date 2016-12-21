@@ -7,8 +7,7 @@
 readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
   NumberOfReturns = TRUE, ScanDirectionFlag = FALSE,
   EdgeOfFlightline = FALSE, Classification = TRUE, ScanAngle = TRUE,
-  UserData = FALSE, PointSourceID = FALSE, RGB = TRUE, XYZonly = FALSE,
-  all = FALSE)
+  UserData = FALSE, PointSourceID = FALSE, RGB = TRUE)
 }
 \arguments{
 \item{file}{characters path to the las or laz file}
@@ -32,10 +31,6 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 \item{PointSourceID}{logical. do you want to load the PointSourceID field? default: FALSE}
 
 \item{RGB}{logical. do you want to load R,G and B fields? default: TRUE}
-
-\item{XYZonly}{logical. Overwrite all other options. Load only X, Y, Z fields. default: FALSE}
-
-\item{all}{logical. Overwrite all other options. Load everything. default: FALSE}
 }
 \value{
 A \code{data.table}

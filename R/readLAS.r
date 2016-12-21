@@ -48,8 +48,6 @@
 #' @param UserData logical. do you want to load the UserData field? default: FALSE
 #' @param PointSourceID logical. do you want to load the PointSourceID field? default: FALSE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
-#' @param XYZonly logical. Overwrite all other options. Load only X, Y, Z fields. default: FALSE
-#' @param all logical. Overwrite all other options. Load everything. default: FALSE
 #' @importFrom Rcpp sourceCpp
 #' @family rlas
 #' @return A \code{data.table}
@@ -60,18 +58,16 @@
 #' }
 #' @useDynLib rlas
 readlasdata = function(file,
-                         Intensity = TRUE,
-                         ReturnNumber = TRUE,
-                         NumberOfReturns = TRUE,
-                         ScanDirectionFlag = FALSE,
-                         EdgeOfFlightline = FALSE,
-                         Classification = TRUE,
-                         ScanAngle = TRUE,
-                         UserData = FALSE,
-                         PointSourceID = FALSE,
-                         RGB = TRUE,
-                         XYZonly = FALSE,
-                         all = FALSE)
+                       Intensity = TRUE,
+                       ReturnNumber = TRUE,
+                       NumberOfReturns = TRUE,
+                       ScanDirectionFlag = FALSE,
+                       EdgeOfFlightline = FALSE,
+                       Classification = TRUE,
+                       ScanAngle = TRUE,
+                       UserData = FALSE,
+                       PointSourceID = FALSE,
+                       RGB = TRUE)
 {
   valid = file.exists(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
@@ -79,21 +75,6 @@ readlasdata = function(file,
 
   if(!valid)  stop("File not found", call. = F)
   if(!islas)  stop("File not supported", call. = F)
-
-  if(XYZonly)
-  {
-    Intensity <- ReturnNumber <- NumberOfReturns <- ScanDirectionFlag <- FALSE
-    EdgeOfFlightline <- Classification <- ScanAngle <- UserData <- FALSE
-    PointSourceID <- RGB <- pulseID <- flightlineID <- FALSE
-  }
-
-  if(all)
-  {
-    Intensity <- ReturnNumber <- NumberOfReturns <- ScanDirectionFlag <- TRUE
-    EdgeOfFlightline <- Classification <- ScanAngle <- UserData <- TRUE
-    PointSourceID <- RGB <- pulseID <- flightlineID <- TRUE
-  }
-
 
   data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns,ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB)
 
