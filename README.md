@@ -2,7 +2,7 @@
 
 R package to read and write `las` and `laz` binary files used to store LiDAR data.
 
-`rlas` relies on a modified version of the open source parts of [LAStools](https://github.com/LAStools/LAStools) v160730. `LASlib` and `LASzip` were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complain from `R CMD check`.
+`rlas` relies on a modified version of the open source parts of [LAStools](https://github.com/LAStools/LAStools). `LASlib` and `LASzip` were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complain from `R CMD check`.
 It enables to read and write into R binary files commonly used to store LiDAR data.
 
 ```r
@@ -24,23 +24,17 @@ Install devtools: `install.packages("devtools")`, then:
 devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
 ````
 
-## Modifications made into `LASlib` and `LASzip` 
-
-* `exit(1)` is not correct in a library. Such code was removed and replaced by an exception.
-* the use of `stderr` output is not permitted in `R`. Error messages now raise exceptions.
-* the use of `stdout` is not permitted in `R`. Replaced by `Rcpp::Rcout` or commented when compilation of such changes fail on Windows.
-* `%I64d` and `%lld` format specifiers did not not respect C++98 standard. Replaced by `%ld` and remove prepocessor statements specific to Windows.
-* `long long` type does not respect C++98 standard. Replaced by `int64_t`.
-* replace `__int64` type by `int64_t` and removed preprocessor statements specific to Windows. 
-* `rand` and `srand` are deprecated. Replaced by `runif` from `Rcpp`.
-
 ## Copyrights
+
+`rlas` contains both my code and code written by Martin Isenburg. I had to include such code
+for very technical reasons. Therefore I explictely describe here how copyrigth works.
 
 ### For `LASlib` and `LASzip`
 
 (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
 
-Provided under LGPL licence.
+Provided under LGPL licence and modified to be R compliant by Jean-Romain Roussel. Each modification
+is dated and registred into the file headers
 
 ### For `rlas` code enabling to wrap Martin Isenburg code into R
 
