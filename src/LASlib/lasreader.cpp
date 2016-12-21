@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Comment L38-43, L698-941, L1167-1269, L1827-1850
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader.hpp"
@@ -35,12 +37,12 @@
 #include "lastransform.hpp"
 
 #include "lasreader_las.hpp"
-#include "lasreader_bin.hpp"
+/*#include "lasreader_bin.hpp"
 #include "lasreader_shp.hpp"
 #include "lasreader_qfit.hpp"
 #include "lasreader_asc.hpp"
 #include "lasreader_bil.hpp"
-#include "lasreader_dtm.hpp"
+#include "lasreader_dtm.hpp"*/
 #include "lasreader_txt.hpp"
 #include "lasreadermerged.hpp"
 #include "lasreaderbuffered.hpp"
@@ -77,7 +79,7 @@ LASreader::LASreader()
   orig_max_x = 0;
   orig_max_y = 0;
 }
-  
+
 LASreader::~LASreader()
 {
   if (index) delete index;
@@ -695,7 +697,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
           return lasreaderlas;
         }
       }
-      else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN"))
+      /*else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN"))
       {
         LASreaderBIN* lasreaderbin;
         if (scale_factor == 0 && offset == 0)
@@ -938,7 +940,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         {
           return lasreaderdtm;
         }
-      }
+      }*/
       else
       {
         LASreaderTXT* lasreadertxt = new LASreaderTXT();
@@ -1164,7 +1166,7 @@ BOOL LASreadOpener::reopen(LASreader* lasreader, BOOL remain_buffered)
         }
         return TRUE;
       }
-      else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN"))
+      /*else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN"))
       {
         LASreaderBIN* lasreaderbin = (LASreaderBIN*)lasreader;
         if (!lasreaderbin->open(file_name))
@@ -1178,7 +1180,7 @@ BOOL LASreadOpener::reopen(LASreader* lasreader, BOOL remain_buffered)
           if (inside_rectangle) lasreaderbin->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
           else if (inside_tile) lasreaderbin->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
           else lasreaderbin->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
-        }
+        }Comment L34-37, L93-125, L132-197, L581-592, L894-905
         return TRUE;
       }
       else if (strstr(file_name, ".shp") || strstr(file_name, ".SHP"))
@@ -1265,7 +1267,7 @@ BOOL LASreadOpener::reopen(LASreader* lasreader, BOOL remain_buffered)
           else lasreaderdtm->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         }
         return TRUE;
-      }
+      }*/
       else
       {
         LASreaderTXT* lasreadertxt = (LASreaderTXT*)lasreader;
@@ -1390,7 +1392,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
           return FALSE;
         }
         set_inside_tile((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3]));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-inside_circle") == 0)
       {
@@ -1410,7 +1412,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
           return FALSE;
         }
         set_inside_rectangle(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
       }
       else
       {
@@ -1675,7 +1677,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
       {
         // find end of line
         int len = strlen(line) - 1;
-        // remove extra white spaces and line return at the end 
+        // remove extra white spaces and line return at the end
         while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
         {
           line[len] = '\0';
@@ -1824,7 +1826,7 @@ I32 LASreadOpener::get_file_format(U32 number) const
   {
     return LAS_TOOLS_FORMAT_LAZ;
   }
-  else if (strstr(file_names[number], ".bin") || strstr(file_names[number], ".BIN"))
+  /*else if (strstr(file_names[number], ".bin") || strstr(file_names[number], ".BIN"))
   {
     return LAS_TOOLS_FORMAT_BIN;
   }
@@ -1847,7 +1849,7 @@ I32 LASreadOpener::get_file_format(U32 number) const
   else if (strstr(file_names[number], ".dtm") || strstr(file_names[number], ".DTM"))
   {
     return LAS_TOOLS_FORMAT_DTM;
-  }
+  }*/
   else
   {
     return LAS_TOOLS_FORMAT_TXT;
@@ -1993,7 +1995,7 @@ BOOL LASreadOpener::add_list_of_files(const CHAR* list_of_files, BOOL unique)
   {
     // find end of line
     int len = strlen(line) - 1;
-    // remove extra white spaces and line return at the end 
+    // remove extra white spaces and line return at the end
     while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
     {
       line[len] = '\0';

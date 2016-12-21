@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  laswriter.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,19 +21,21 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Comment L34-37, L93-125, L457-468, L132-197, L581-592, L894-905
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "laswriter.hpp"
 
 #include "laswriter_las.hpp"
-#include "laswriter_bin.hpp"
+/*#include "laswriter_bin.hpp"
 #include "laswriter_qfit.hpp"
-#include "laswriter_wrl.hpp"
+#include "laswriter_wrl.hpp"*/
 #include "laswriter_txt.hpp"
 
 #include <stdlib.h>
@@ -90,7 +92,7 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
       if (scale_rgb != 1.0f) laswritertxt->set_scale_rgb(scale_rgb);
       return laswritertxt;
     }
-    else if (format == LAS_TOOLS_FORMAT_BIN)
+    /*else if (format == LAS_TOOLS_FORMAT_BIN)
     {
       LASwriterBIN* laswriterbin = new LASwriterBIN();
       if (!laswriterbin->open(file_name, header, "ts8"))
@@ -122,14 +124,14 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
         return 0;
       }
       return laswriterwrl;
-    }
+    }*/
     else
     {
       fprintf(stderr,"ERROR: unknown format %d\n", format);
       return 0;
     }
   }
-  else if (use_stdout)
+  /*else if (use_stdout)
   {
     if (format <= LAS_TOOLS_FORMAT_LAZ)
     {
@@ -194,7 +196,7 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
       fprintf(stderr,"ERROR: unknown format %d\n", format);
       return 0;
     }
-  }
+  }*/
   else
   {
     fprintf(stderr,"ERROR: no laswriter output specified\n");
@@ -452,7 +454,7 @@ void LASwriteOpener::set_file_name(const CHAR* file_name)
       {
         this->format = LAS_TOOLS_FORMAT_LAS;
       }
-      else if (strstr(format, ".bin") || strstr(format, ".BIN")) // terrasolid
+      /*else if (strstr(format, ".bin") || strstr(format, ".BIN")) // terrasolid
       {
         this->format = LAS_TOOLS_FORMAT_BIN;
       }
@@ -463,7 +465,7 @@ void LASwriteOpener::set_file_name(const CHAR* file_name)
       else if (strstr(format, ".wrl") || strstr(format, ".WRL")) // VRML
       {
         this->format = LAS_TOOLS_FORMAT_VRML;
-      }
+      }*/
       else // assume ascii output
       {
         this->format = LAS_TOOLS_FORMAT_TXT;
@@ -507,7 +509,7 @@ BOOL LASwriteOpener::set_format(I32 format)
   {
     return FALSE;
   }
-  
+
   specified = TRUE;
   this->format = format;
 
@@ -578,7 +580,7 @@ BOOL LASwriteOpener::set_format(const CHAR* format)
     {
       return set_format(LAS_TOOLS_FORMAT_LAS);
     }
-    else if (strstr(format, "bin") || strstr(format, "BIN")) // terrasolid
+    /*else if (strstr(format, "bin") || strstr(format, "BIN")) // terrasolid
     {
       return set_format(LAS_TOOLS_FORMAT_BIN);
     }
@@ -589,7 +591,7 @@ BOOL LASwriteOpener::set_format(const CHAR* format)
     else if (strstr(format, "wrl") || strstr(format, "WRL")) // VRML
     {
       return set_format(LAS_TOOLS_FORMAT_VRML);
-    }
+    }*/
     else // assume ascii output
     {
       return set_format(LAS_TOOLS_FORMAT_TXT);
@@ -891,7 +893,7 @@ I32 LASwriteOpener::get_format() const
     {
       return LAS_TOOLS_FORMAT_LAS;
     }
-    else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN")) // terrasolid
+    /*else if (strstr(file_name, ".bin") || strstr(file_name, ".BIN")) // terrasolid
     {
       return LAS_TOOLS_FORMAT_BIN;
     }
@@ -902,7 +904,7 @@ I32 LASwriteOpener::get_format() const
     else if (strstr(file_name, ".wrl") || strstr(file_name, ".WRL")) // VRML
     {
       return LAS_TOOLS_FORMAT_VRML;
-    }
+    }*/
     else // assume ascii output
     {
       return LAS_TOOLS_FORMAT_TXT;
@@ -971,7 +973,7 @@ void LASwriteOpener::add_appendix(const CHAR* appendix)
     I32 len = strlen(file_name);
     CHAR* new_file_name = (CHAR*)malloc(len + strlen(appendix) + 5);
     while ((len > 0) && (file_name[len] != '.') && (file_name[len] != '\\') && (file_name[len] != '/') && (file_name[len] != ':')) len--;
-    
+
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
       sprintf(new_file_name, "%s%s", file_name, appendix);
@@ -995,7 +997,7 @@ void LASwriteOpener::cut_characters(U32 cut)
     I32 len = strlen(file_name);
     CHAR* new_file_name = (CHAR*)malloc(len - cut + 5);
     while ((len > 0) && (file_name[len] != '.') && (file_name[len] != '\\') && (file_name[len] != '/') && (file_name[len] != ':')) len--;
-    
+
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
       len = strlen(file_name);
