@@ -8,11 +8,11 @@ Authors@R: c(
     person("Martin", "Isenburg", email = "", role = "cph", comment = "Is the author of the LASlib and LASzip libraries"),
     person("David", "Auty", email = "", role = c("ctb"), comment = "Reviewed the documentation"),
     person("Pierrick", "Marie", email = "", role = ("ctb"), comment = "Helped to compile LASlib code in R"))
-Description: A simple wrapper for R to read and write las and laz binary file formats used to store LiDAR data using the Martin Isenburg libraries.
+Description: A simple wrapper for R to read and write las and laz binary file formats used to store LiDAR data.
 URL: https://github.com/Jean-Romain/rlas
 BugReports: https://github.com/Jean-Romain/rlas/issues
 License: GPL-3
-Depends:R (>= 3.1.0)
+Depends:R (>= 3.0.0)
 Imports: data.table,Rcpp
 LazyData: true
 SystemRequirements: GNU make
