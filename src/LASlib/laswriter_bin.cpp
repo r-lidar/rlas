@@ -89,7 +89,7 @@ BOOL LASwriterBIN::open(const char* file_name, const LASheader* header, const ch
 {
   if (file_name == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file name pointer is zero"));
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -97,13 +97,13 @@ BOOL LASwriterBIN::open(const char* file_name, const LASheader* header, const ch
 
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: cannot open file '"));
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    throw std::runtime_error(std::string("WARNING: setvbuf() failed with buffer size "));
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %u\n", io_buffer_size);
   }
 
   ByteStreamOut* out;
@@ -119,7 +119,7 @@ BOOL LASwriterBIN::open(FILE* file, const LASheader* header, const char* version
 {
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file pointer is zero"));
+    fprintf(stderr,"ERROR: file pointer is zero\n");
     return FALSE;
   }
 
@@ -128,7 +128,7 @@ BOOL LASwriterBIN::open(FILE* file, const LASheader* header, const char* version
   {
     if(_setmode( _fileno( stdout ), _O_BINARY ) == -1 )
     {
-      throw std::runtime_error(std::string("ERROR: cannot set stdout to binary (untranslated) mode"));
+      fprintf(stderr, "ERROR: cannot set stdout to binary (untranslated) mode\n");
     }
   }
 #endif
@@ -146,14 +146,14 @@ BOOL LASwriterBIN::open(ByteStreamOut* stream, const LASheader* header, const ch
 {
   if (stream == 0)
   {
-    throw std::runtime_error(std::string("ERROR: ByteStreamOut pointer is zero"));
+    fprintf(stderr,"ERROR: ByteStreamOut pointer is zero\n");
     return FALSE;
   }
   this->stream = stream;
 
   if (header == 0)
   {
-    throw std::runtime_error(std::string("ERROR: LASheader pointer is zero"));
+    fprintf(stderr,"ERROR: LASheader pointer is zero\n");
     return FALSE;
   }
 
@@ -258,9 +258,9 @@ I64 LASwriterBIN::close(BOOL update_header)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        throw std::runtime_error(std::string("ERROR: stream not seekable. cannot update header from "));
+        fprintf(stderr, "ERROR: stream not seekable. cannot update header from %I64d to %I64d points.\n", npoints, p_count);
 #else
-        throw std::runtime_error(std::string("ERROR: stream not seekable. cannot update header from "));
+        fprintf(stderr, "ERROR: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
 #endif
       }
       else

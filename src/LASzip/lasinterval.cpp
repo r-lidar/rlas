@@ -34,7 +34,6 @@
 #include "bytestreamout.hpp"
 
 #include <stdio.h>
-#include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -232,7 +231,7 @@ void LASinterval::merge_intervals(U32 maximum_intervals, const BOOL verbose)
   // maybe nothing to do
   if (map.size() <= maximum_intervals)
   {
-    if (verbose) throw std::runtime_error(std::string("next largest interval gap is "));
+    if (verbose) fprintf(stderr,"next largest interval gap is %u\n", diff);
     return;
   }
 
@@ -278,7 +277,7 @@ void LASinterval::merge_intervals(U32 maximum_intervals, const BOOL verbose)
     }
     map_element++;
   }
-  throw std::runtime_error(std::string("largest interval gap increased to "));
+  fprintf(stderr,"largest interval gap increased to %u\n", diff);
 
   // update totals
 
@@ -555,25 +554,25 @@ BOOL LASinterval::read(ByteStreamIn* stream)
   char signature[4];
   try { stream->getBytes((U8*)signature, 4); } catch (...)
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): reading signature"));
+    fprintf(stderr,"ERROR (LASinterval): reading signature\n");
     return FALSE;
   }
   if (strncmp(signature, "LASV", 4) != 0)
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): wrong signature "));
+    fprintf(stderr,"ERROR (LASinterval): wrong signature %4s instead of 'LASV'\n", signature);
     return FALSE;
   }
   U32 version;
   try { stream->get32bitsLE((U8*)&version); } catch (...)
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): reading version"));
+    fprintf(stderr,"ERROR (LASinterval): reading version\n");
     return FALSE;
   }
   // read number of cells
   U32 number_cells;
   try { stream->get32bitsLE((U8*)&number_cells); } catch (...)
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): reading number of cells"));
+    fprintf(stderr,"ERROR (LASinterval): reading number of cells\n");
     return FALSE;
   }
   // loop over all cells
@@ -583,7 +582,7 @@ BOOL LASinterval::read(ByteStreamIn* stream)
     I32 cell_index;
     try { stream->get32bitsLE((U8*)&cell_index); } catch (...)
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): reading cell index"));
+      fprintf(stderr,"ERROR (LASinterval): reading cell index\n");
       return FALSE;
     }
     // create cell and insert into hash
@@ -594,14 +593,14 @@ BOOL LASinterval::read(ByteStreamIn* stream)
     U32 number_intervals;
     try { stream->get32bitsLE((U8*)&number_intervals); } catch (...)
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): reading number of intervals in cell"));
+      fprintf(stderr,"ERROR (LASinterval): reading number of intervals in cell\n");
       return FALSE;
     }
     // read number of points in cell
     U32 number_points;
     try { stream->get32bitsLE((U8*)&number_points); } catch (...)
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): reading number of points in cell"));
+      fprintf(stderr,"ERROR (LASinterval): reading number of points in cell\n");
       return FALSE;
     }
     start_cell->full = number_points;
@@ -611,13 +610,13 @@ BOOL LASinterval::read(ByteStreamIn* stream)
       // read start of interval
       try { stream->get32bitsLE((U8*)&(cell->start)); } catch (...)
       {
-        throw std::runtime_error(std::string("ERROR (LASinterval): reading start "));
+        fprintf(stderr,"ERROR (LASinterval): reading start %d of interval\n", cell->start);
         return FALSE;
       }
       // read end of interval
       try { stream->get32bitsLE((U8*)&(cell->end)); } catch (...)
       {
-        throw std::runtime_error(std::string("ERROR (LASinterval): reading end "));
+        fprintf(stderr,"ERROR (LASinterval): reading end %d of interval\n", cell->end);
         return FALSE;
       }
       start_cell->total += (cell->end - cell->start + 1);
@@ -638,20 +637,20 @@ BOOL LASinterval::write(ByteStreamOut* stream) const
 {
   if (!stream->putBytes((U8*)"LASV", 4))
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): writing signature"));
+    fprintf(stderr,"ERROR (LASinterval): writing signature\n");
     return FALSE;
   }
   U32 version = 0;
   if (!stream->put32bitsLE((U8*)&version))
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): writing version"));
+    fprintf(stderr,"ERROR (LASinterval): writing version\n");
     return FALSE;
   }
   // write number of cells
   U32 number_cells = ((my_cell_hash*)cells)->size();
   if (!stream->put32bitsLE((U8*)&number_cells))
   {
-    throw std::runtime_error(std::string("ERROR (LASinterval): writing number of cells "));
+    fprintf(stderr,"ERROR (LASinterval): writing number of cells %d\n", number_cells);
     return FALSE;
   }
   // loop over all cells
@@ -671,19 +670,19 @@ BOOL LASinterval::write(ByteStreamOut* stream) const
     I32 cell_index = (*hash_element).first;
     if (!stream->put32bitsLE((U8*)&cell_index))
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): writing cell index "));
+      fprintf(stderr,"ERROR (LASinterval): writing cell index %d\n", cell_index);
       return FALSE;
     }
     // write number of intervals in cell
     if (!stream->put32bitsLE((U8*)&number_intervals))
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): writing number of intervals "));
+      fprintf(stderr,"ERROR (LASinterval): writing number of intervals %d in cell\n", number_intervals);
       return FALSE;
     }
     // write number of points in cell
     if (!stream->put32bitsLE((U8*)&number_points))
     {
-      throw std::runtime_error(std::string("ERROR (LASinterval): writing number of points "));
+      fprintf(stderr,"ERROR (LASinterval): writing number of points %d in cell\n", number_points);
       return FALSE;
     }
     // write intervals
@@ -693,13 +692,13 @@ BOOL LASinterval::write(ByteStreamOut* stream) const
       // write start of interval
       if (!stream->put32bitsLE((U8*)&(cell->start)))
       {
-        throw std::runtime_error(std::string("ERROR (LASinterval): writing start "));
+        fprintf(stderr,"ERROR (LASinterval): writing start %d of interval\n", cell->start);
         return FALSE;
       }
       // write end of interval
       if (!stream->put32bitsLE((U8*)&(cell->end)))
       {
-        throw std::runtime_error(std::string("ERROR (LASinterval): writing end "));
+        fprintf(stderr,"ERROR (LASinterval): writing end %d of interval\n", cell->end);
         return FALSE;
       }
       cell = cell->next;
