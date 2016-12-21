@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  laspoint.hpp
-  
+
   CONTENTS:
-  
+
     This class describes an LAS point and offers helper functions to access,
     convert, and set the default (and any additional) point attributes.
 
@@ -22,11 +22,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
+
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
-  
+
 ===============================================================================
 */
 #ifndef LAS_POINT_HPP
@@ -34,6 +36,7 @@
 
 #include "lasquantizer.hpp"
 #include "lasattributer.hpp"
+#include <stdexcept>
 
 class LASwavepacket
 {
@@ -233,7 +236,7 @@ public:
 
     if (!LASzip().setup(&num_items, &items, point_type, point_size, LASZIP_COMPRESSOR_NONE))
     {
-      fprintf(stderr,"ERROR: unknown point type %d with point size %d\n", (I32)point_type, (I32)point_size);
+      throw std::runtime_error(std::string("ERROR: unknown point type %d with point size %d")); //(I32)point_type, (I32)point_size
       return FALSE;
     }
 
@@ -471,7 +474,7 @@ public:
     have_nir = FALSE;
     extra_bytes_number = 0;
     total_point_size = 0;
-    
+
     num_items = 0;
     if (items) delete [] items;
     items = 0;
@@ -612,7 +615,7 @@ public:
     return FALSE;
   };
 
-  inline BOOL set_attribute(I32 index, const U8* data) 
+  inline BOOL set_attribute(I32 index, const U8* data)
   {
     if (has_attribute(index))
     {

@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  laszip.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "laszip.hpp"
@@ -35,6 +37,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdexcept>
 
 LASzip::LASzip()
 {
@@ -61,12 +64,12 @@ LASzip::~LASzip()
 }
 
 // the data of the LASzip VLR
-//     U16  compressor         2 bytes 
-//     U16  coder              2 bytes 
-//     U8   version_major      1 byte 
+//     U16  compressor         2 bytes
+//     U16  coder              2 bytes
+//     U8   version_major      1 byte
 //     U8   version_minor      1 byte
 //     U16  version_revision   2 bytes
-//     U32  options            4 bytes 
+//     U32  options            4 bytes
 //     U32  chunk_size         4 bytes
 //     I64  num_points         8 bytes
 //     I64  num_bytes          8 bytes
@@ -81,7 +84,7 @@ bool LASzip::unpack(const U8* bytes, const I32 num)
 {
   // check input
   if (num < 34) return return_error("too few bytes to unpack");
-  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack"); 
+  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack");
   if (((num - 34) / 6) == 0) return return_error("zero items to unpack");
   num_items = (num - 34) / 6;
 
@@ -352,7 +355,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
   BOOL have_wavepacket = FALSE;
   I32 extra_bytes_number = 0;
 
-  // turns on LAS 1.4 compatibility mode 
+  // turns on LAS 1.4 compatibility mode
 
   if (options & 1) compatible = TRUE;
 
@@ -427,7 +430,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
 //    char error[64];
 //    sprintf(error, "point size %d too small for point type %d by %d bytes", point_size, point_type, -extra_bytes_number);
 //    return return_error(error);
-    fprintf(stderr, "WARNING: point size %d too small by %d bytes for point type %d. assuming point_size of %d\n", point_size, -extra_bytes_number, point_type, point_size-extra_bytes_number);
+    throw std::runtime_error(std::string("WARNING: point size %d too small by %d bytes for point type %d. assuming point_size of %d")); //point_size, -extra_bytes_number, point_type, point_size-extra_bytes_number
     extra_bytes_number = 0;
   }
 
@@ -443,7 +446,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
     // if we have NIR ...
     if (have_nir)
     {
-      // we need another 2 extra bytes 
+      // we need another 2 extra bytes
       extra_bytes_number += 2;
       // we do not use the NIR item
       have_nir = FALSE;
@@ -651,7 +654,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 57);
               return true;
             }
-            else 
+            else
             {
               if (items[3].is_type(LASitem::BYTE))
               {
@@ -757,7 +760,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 67);
               return true;
             }
-            else 
+            else
             {
               if (items[3].is_type(LASitem::BYTE))
               {

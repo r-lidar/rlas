@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  lasreader_qfit.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
-  
+
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
 
   COPYRIGHT:
@@ -21,11 +21,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_qfit.hpp"
@@ -35,6 +37,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -44,7 +47,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: fine name pointer is zero\n");
+    throw std::runtime_error(std::string("ERROR: fine name pointer is zero"));
     return FALSE;
   }
 
@@ -53,7 +56,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
+    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
     return FALSE;
   }
 
@@ -83,7 +86,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
   geo_keys[1].key_id = 2048; // GeographicTypeGeoKey
   geo_keys[1].tiff_tag_location = 0;
   geo_keys[1].count = 1;
-  geo_keys[1].value_offset = 4326; // GCS_WGS_84 
+  geo_keys[1].value_offset = 4326; // GCS_WGS_84
 
   // vertical units
   geo_keys[2].key_id = 4099; // VerticalUnitsGeoKey
@@ -125,7 +128,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   if (stream == 0)
   {
-    fprintf(stderr,"ERROR: ByteStreamIn* pointer is zero\n");
+    throw std::runtime_error(std::string("ERROR: ByteStreamIn* pointer is zero"));
     return FALSE;
   }
 
@@ -135,7 +138,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { stream->get32bitsLE((U8*)&version); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading QFIT header\n");
+    throw std::runtime_error(std::string("ERROR: reading QFIT header"));
     return FALSE;
   }
 
@@ -156,7 +159,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     }
     else
     {
-      fprintf(stderr,"ERROR: corrupt QFIT header.\n");
+      throw std::runtime_error(std::string("ERROR: corrupt QFIT header."));
       return FALSE;
     }
   }
@@ -165,7 +168,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { stream->getBytes((U8*)buffer, version); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading %d bytes until point start offset from QFIT header\n", version);
+    throw std::runtime_error(std::string("ERROR: reading %d bytes until point start offset from QFIT header")); //version
     return FALSE;
   }
 
@@ -173,7 +176,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { if (little_endian) stream->get32bitsLE((U8*)&offset); else stream->get32bitsBE((U8*)&offset); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading point start offset from QFIT header\n");
+    throw std::runtime_error(std::string("ERROR: reading point start offset from QFIT header"));
     return FALSE;
   }
 
@@ -204,7 +207,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
   header.y_offset = 0;
   header.z_offset = 0;
 
-  try { 
+  try {
     LASattribute scan_azimuth(LAS_ATTRIBUTE_I32, "scan azimuth", "Scan Azimuth (degrees X 1,000)");
     scan_azimuth.set_scale(0.001);
     scan_azimuth.set_min(0);
@@ -212,12 +215,12 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(scan_azimuth);
   }
   catch(...) {
-    fprintf(stderr,"ERROR: initializing attribute scan_azimuth\n");
+    throw std::runtime_error(std::string("ERROR: initializing attribute scan_azimuth"));
     return FALSE;
   }
 
 
-  try { 
+  try {
     LASattribute pitch(LAS_ATTRIBUTE_I32, "pitch", "Pitch (degrees X 1,000)");
     pitch.set_scale(0.001);
     pitch.set_min(-90000);
@@ -225,12 +228,12 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(pitch);
   }
   catch(...) {
-    fprintf(stderr,"ERROR: initializing attribute pitch\n");
+    throw std::runtime_error(std::string("ERROR: initializing attribute pitch"));
     return FALSE;
   }
 
 
-  try { 
+  try {
     LASattribute roll(LAS_ATTRIBUTE_I32, "roll", "Roll (degrees X 1,000)");
     roll.set_scale(0.001);
     roll.set_min(-90000);
@@ -238,18 +241,18 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(roll);
   }
   catch(...) {
-    fprintf(stderr,"ERROR: initializing attribute roll\n");
+    throw std::runtime_error(std::string("ERROR: initializing attribute roll"));
     return FALSE;
   }
 
   if (version == 48)
   {
-    try { 
+    try {
       LASattribute pulse_width(LAS_ATTRIBUTE_U8, "pulse width", "Pulse Width (digitizer samples)");
       header.add_attribute(pulse_width);
     }
     catch(...) {
-      fprintf(stderr,"ERROR: initializing attribute pulse width\n");
+      throw std::runtime_error(std::string("ERROR: initializing attribute pulse width"));
       return FALSE;
     }
   }
@@ -314,7 +317,7 @@ BOOL LASreaderQFIT::read_point_default()
   {
     try { stream->getBytes((U8*)buffer, version); } catch(...)
     {
-      fprintf(stderr,"ERROR: reading QFIT point after %u of %u\n", (U32)p_count, (U32)npoints);
+      throw std::runtime_error(std::string("ERROR: reading QFIT point after %u of %u")); //(U32)p_count, (U32)npoints
       return FALSE;
     }
 
@@ -368,7 +371,7 @@ BOOL LASreaderQFIT::read_point_default()
       if (point.coordinates[2] < header.min_z) header.min_z = point.coordinates[2];
       else if (point.coordinates[2] > header.max_z) header.max_z = point.coordinates[2];
     }
-    
+
     p_count++;
     return TRUE;
   }
@@ -402,7 +405,7 @@ BOOL LASreaderQFIT::reopen(const char* file_name)
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: fine name pointer is zero\n");
+    throw std::runtime_error(std::string("ERROR: fine name pointer is zero"));
     return FALSE;
   }
 
@@ -411,7 +414,7 @@ BOOL LASreaderQFIT::reopen(const char* file_name)
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
+    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
     return FALSE;
   }
 

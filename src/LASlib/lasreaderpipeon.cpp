@@ -24,6 +24,7 @@
 
   CHANGE HISTORY:
 
+    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
     20 December 2016 -- by Jean-Romain Roussel -- L96 stdout replaced by Rcpp::Rcout
 
     see corresponding header file
@@ -46,7 +47,7 @@ BOOL LASreaderPipeOn::open(LASreader* lasreader)
 {
   if (lasreader == 0)
   {
-    fprintf(stderr, "ERROR: no lasreader\n");
+    throw std::runtime_error(std::string("ERROR: no lasreader"));
     return FALSE;
   }
 
@@ -92,14 +93,14 @@ BOOL LASreaderPipeOn::open(LASreader* lasreader)
 
   if (laswriterlas == 0)
   {
-    fprintf(stderr, "ERROR: allocating laswriterlas\n");
+    throw std::runtime_error(std::string("ERROR: allocating laswriterlas"));
     return FALSE;
   }
 
   if (!laswriterlas->open(Rcpp::Rcout, &header))
   {
     delete laswriterlas;
-    fprintf(stderr, "ERROR: opening laswriterlas to stdout\n");
+    throw std::runtime_error(std::string("ERROR: opening laswriterlas to stdout"));
     return FALSE;
   }
 
