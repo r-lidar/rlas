@@ -53,9 +53,8 @@
 #' @return A \code{data.table}
 #' @export
 #' @examples
-#' \dontrun{
-#' lasdata = readlasdata("<path to a .las file>")
-#' }
+#' lazfile <- system.file("extdata", "example.laz", package="rlas")
+#' lasdata = readlasdata(lazfile)
 #' @useDynLib rlas
 readlasdata = function(file,
                        Intensity = TRUE,
@@ -95,9 +94,8 @@ readlasdata = function(file,
 #' @importFrom Rcpp sourceCpp
 #' @export
 #' @examples
-#' \dontrun{
-#' lasheader = readlasheader("<path to a .las file>")
-#' }
+#' lazfile <- system.file("extdata", "example.laz", package="rlas")
+#' lasdata = readlasheader(lazfile)
 readlasheader = function(file)
 {
   valid = file.exists(file)

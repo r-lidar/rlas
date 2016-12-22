@@ -45,9 +45,8 @@ Data is loaded into the computer's memory (RAM) suboptimally because R does not 
 many different data types.
 }
 \examples{
-\dontrun{
-lasdata = readlasdata("<path to a .las file>")
-}
+lazfile <- system.file("extdata", "example.laz", package="rlas")
+lasdata = readlasdata(lazfile)
 }
 \seealso{
 Other rlas: \code{\link{readlasheader}},
