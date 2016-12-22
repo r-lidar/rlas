@@ -2,7 +2,7 @@
 % Please edit documentation in R/writeLAS.r
 \name{writelas}
 \alias{writelas}
-\title{Write a las or laz file}
+\title{Write a .las or .laz file}
 \usage{
 writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
   NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification,
@@ -50,8 +50,8 @@ writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 void
 }
 \description{
-Write a las or laz file. All the fields are optionnal except X Y and Z coordinates. If
-the user does not provide a field such as \code{Intensity} for example but this field is requiered
+Write a .las or .laz file. All the fields are optional except X, Y and Z coordinates. If
+the user does not provide a field such as \code{Intensity}, for example, but this field is required
 according to the version of the file specified in the \code{header}, 0 will be written in this field.
 For more informations, see the ASPRS documentation for the
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
