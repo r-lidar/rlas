@@ -2,15 +2,15 @@
 % Please edit documentation in R/readLAS.r
 \name{readlasdata}
 \alias{readlasdata}
-\title{Read data from a las or laz file}
+\title{Read data from a .las or .laz file}
 \usage{
 readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
-  NumberOfReturns = TRUE, ScanDirectionFlag = FALSE,
+  NumberOfReturns = TRUE, ScanDirectionFlag = TRUE,
   EdgeOfFlightline = FALSE, Classification = TRUE, ScanAngle = TRUE,
-  UserData = FALSE, PointSourceID = FALSE, RGB = TRUE)
+  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE)
 }
 \arguments{
-\item{file}{characters path to the las or laz file}
+\item{file}{characters path to the .las or .laz file}
 
 \item{Intensity}{logical. do you want to load the Intensity field? default: TRUE}
 
@@ -18,15 +18,15 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 
 \item{NumberOfReturns}{logical. do you want to load the NumberOfReturns field? default: TRUE}
 
-\item{ScanDirectionFlag}{logical. do you want to load the ScanDirectionFlag field? default: FALSE}
+\item{ScanDirectionFlag}{logical. do you want to load the ScanDirectionFlag field? default: TRUE}
 
-\item{EdgeOfFlightline}{logical. do you want to load the EdgeOfFlightline field? default: FALSE}
+\item{EdgeOfFlightline}{logical. do you want to load the EdgeOfFlightline field? default: TRUE}
 
 \item{Classification}{logical. do you want to load the Classification field? default: TRUE}
 
 \item{ScanAngle}{logical. do you want to load the ScanAngle field? default: TRUE}
 
-\item{UserData}{logical. do you want to load the UserData field? default: FALSE}
+\item{UserData}{logical. do you want to load the UserData field? default: TRUE}
 
 \item{PointSourceID}{logical. do you want to load the PointSourceID field? default: FALSE}
 
@@ -36,7 +36,7 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 A \code{data.table}
 }
 \description{
-Read data from las or laz files in format 1 to 4 according to LAS specification and returns
+Read data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 The optional logical parameters enable the user to save memory by choosing to load only the
