@@ -46,7 +46,7 @@ many different data types.
 }
 \examples{
 lazfile <- system.file("extdata", "example.laz", package="rlas")
-lasdata = readlasdata(lazfile)
+lasdata <- readlasdata(lazfile)
 }
 \seealso{
 Other rlas: \code{\link{readlasheader}},
