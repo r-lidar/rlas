@@ -16,11 +16,8 @@ New submission
 
 Possibly mis-spelled words in DESCRIPTION:
   LiDAR (11:101)
-  las (3:23, 11:55)
-  laz (3:31, 11:63)
 
 `LiDAR`: is an acronym for 'light detection and ranging'. No confusion can happen with this well-known term.
-`las` and `laz`: are two formats of standardized binary files used to store LiDAR data.
 
 * checking installed package size ... NOTE
   installed size is  6.7Mb
