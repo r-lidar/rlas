@@ -24,6 +24,7 @@
 
   CHANGE HISTORY:
 
+    23 December 2016 -- by Jean-Romain Roussel -- L43-44 define a macro to convert number to string in C++98
     20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
     20 December 2016 -- by Jean-Romain Roussel -- Comment every exit(1) and remplace by an exception.
 
@@ -37,6 +38,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <sstream>
+
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
 
 LASinventory::LASinventory()
 {
@@ -428,7 +433,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)malloc(sizeof(U32)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_pos) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_pos)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u pos bins")); //size_pos
           //exit(1);
         }
@@ -440,7 +445,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)realloc(bins_pos, sizeof(U32)*new_size);
         if (bins_pos == 0)
         {
-           throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos bins"));
+           throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u pos bins")); //new_size
           //exit(1);
         }
@@ -462,7 +467,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)malloc(sizeof(U32)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_neg) + std::string(" neg bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_neg)) + std::string(" neg bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u neg bins")); //size_neg
           //exit(1);
         }
@@ -474,7 +479,7 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)realloc(bins_neg, sizeof(U32)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u neg bins")); //new_size
           //exit(1);
         }
@@ -509,13 +514,13 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_pos) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_pos)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u pos bins")); //size_pos
           //exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_pos) + std::string(" pos values"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_pos)) + std::string(" pos values"));
           //throw std::runtime_error(std::string("ERROR: allocating %u pos values")); //size_pos
           //exit(1);
         }
@@ -528,13 +533,13 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u pos bins")); //new_size
           //exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos values"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos values"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u pos values")); //new_size
           //exit(1);
         }
@@ -558,13 +563,13 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_neg) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_neg)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u neg bins")); //size_neg
           //exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_neg) + std::string(" pos values"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_neg)) + std::string(" pos values"));
           //throw std::runtime_error(std::string("ERROR: allocating %u neg values")); //size_neg
           //exit(1);
         }
@@ -577,13 +582,13 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" neg bins"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" neg bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u neg bins")); //new_size
           //exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" neg values"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" neg values"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u neg values")); //new_size
           //exit(1);
         }
@@ -619,13 +624,13 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_pos) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_pos)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u pos bins")); //size_pos
           //exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_pos) + std::string(" pos values"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_pos)) + std::string(" pos values"));
           //throw std::runtime_error(std::string("ERROR: allocating %u pos values")); //size_pos
           //exit(1);
         }
@@ -638,13 +643,13 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos bins"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u pos bins")); //new_size
           //exit(1);
         }
         if (values_pos == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" pos values"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" pos values"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u pos values")); //new_size
           //exit(1);
         }
@@ -668,13 +673,13 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_neg) + std::string(" neg bins"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_neg)) + std::string(" neg bins"));
           //throw std::runtime_error(std::string("ERROR: allocating %u neg bins")); //size_neg
           //exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: allocating ") + std::to_string(size_neg) + std::string(" neg values"));
+          throw std::runtime_error(std::string("ERROR: allocating ") + std::string(SSTR(size_neg)) + std::string(" neg values"));
           //throw std::runtime_error(std::string("ERROR: allocating %u neg values")); //size_neg
           //exit(1);
         }
@@ -687,13 +692,13 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" neg bins"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" neg bins"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u neg bins")); //new_size
           //exit(1);
         }
         if (values_neg == 0)
         {
-          throw std::runtime_error(std::string("ERROR: reallocating ") + std::to_string(new_size) + std::string(" neg values"));
+          throw std::runtime_error(std::string("ERROR: reallocating ") + std::string(SSTR(new_size)) + std::string(" neg values"));
           //throw std::runtime_error(std::string("ERROR: reallocating %u neg values")); //new_size
           //exit(1);
         }
