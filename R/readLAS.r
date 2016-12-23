@@ -54,7 +54,7 @@
 #' @export
 #' @examples
 #' lazfile <- system.file("extdata", "example.laz", package="rlas")
-#' lasdata = readlasdata(lazfile)
+#' lasdata <- readlasdata(lazfile)
 #' @useDynLib rlas
 readlasdata = function(file,
                        Intensity = TRUE,
@@ -94,8 +94,8 @@ readlasdata = function(file,
 #' @importFrom Rcpp sourceCpp
 #' @export
 #' @examples
-#' lazfile <- system.file("extdata", "example.laz", package="rlas")
-#' lasdata = readlasheader(lazfile)
+#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
+#' lasheader <- readlasheader(lazfile)
 readlasheader = function(file)
 {
   valid = file.exists(file)

@@ -18,8 +18,8 @@ a \code{list} labeled according to LAS specifications. See the ASPRS documentati
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 }
 \examples{
-lazfile <- system.file("extdata", "example.laz", package="rlas")
-lasdata = readlasheader(lazfile)
+lazfile   <- system.file("extdata", "example.laz", package="rlas")
+lasheader <- readlasheader(lazfile)
 }
 \seealso{
 Other rlas: \code{\link{readlasdata}},
