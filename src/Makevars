@@ -2,6 +2,4 @@ PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -I. -I./include/LASlib -I./include/LASzip
 
 SOURCES = LASlib/lasreader_txt.cpp LASlib/fopen_compressed.cpp LASlib/laswriter_las.cpp LASlib/lasreaderbuffered.cpp LASlib/lasreadermerged.cpp LASlib/laswriter_wrl.cpp LASlib/lasreader_shp.cpp LASlib/lasreader_asc.cpp LASlib/lasreaderpipeon.cpp LASlib/lasreader_bil.cpp LASlib/lastransform.cpp LASlib/laswaveform13writer.cpp LASlib/laswaveform13reader.cpp LASlib/laswritercompatible.cpp LASlib/lasutility.cpp LASlib/lasreader_dtm.cpp LASlib/lasfilter.cpp LASlib/laswriter_qfit.cpp LASlib/lasreader_qfit.cpp LASlib/laswriter.cpp LASlib/lasreader.cpp LASlib/lasreader_las.cpp LASlib/lasreader_bin.cpp LASlib/laswriter_bin.cpp LASlib/laswriter_txt.cpp LASzip/laszip.cpp LASzip/lasreaditemcompressed_v1.cpp LASzip/lasindex.cpp LASzip/arithmeticmodel.cpp LASzip/laswriteitemcompressed_v2.cpp LASzip/lasreaditemcompressed_v2.cpp LASzip/arithmeticdecoder.cpp LASzip/arithmeticencoder.cpp LASzip/lasquadtree.cpp LASzip/laswritepoint.cpp LASzip/lasreadpoint.cpp LASzip/integercompressor.cpp LASzip/lasinterval.cpp LASzip/laswriteitemcompressed_v1.cpp ./readLAS.cpp ./writeLAS.cpp ./RcppExports.cpp
 
-CXX_STD = CXX11
-
 OBJECTS =  $(SOURCES:.cpp=.o)
