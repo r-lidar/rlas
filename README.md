@@ -1,4 +1,4 @@
-![Version](http://img.shields.io/Version/1.0.2.png)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
+![CRAN](https://img.shields.io/badge/devel-1.0.2-brightgreen.svg)  ![CRAN](https://img.shields.io/badge/CRAN-1.0.2-brightgreen.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg) 
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
