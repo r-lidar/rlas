@@ -1,3 +1,11 @@
+rlas v1.0.2 (Release date: 2016-12-23)
+==============
+
+Third submission
+
+* Change: Manually list sources in makevars
+* Change: Remove SystemRequirements field in DESCRIPTION
+
 rlas v1.0.1 (Release date: 2016-12-22)
 ==============
 

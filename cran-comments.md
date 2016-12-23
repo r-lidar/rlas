@@ -7,7 +7,7 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs.
 
-There were 3 NOTEs (only 2 on Windows platforms):
+There were 2 NOTEs (only 1 on Windows platforms):
 
 * checking CRAN incoming feasibility ... NOTE
 Maintainer: 'Jean-Romain Roussel <jean-romain.roussel.1@ulaval.ca>'
@@ -28,13 +28,6 @@ The source code of the `LASlib` library is included and compiled into the packag
 `LASlib` is not packaged for Linux nor MacOS and contains deprecated code.
 I modified the code to be compatible both with R and ISO C++11.
 See section `LASlib and `LASzip` at the end of this file for more informations
-
-
-* checking for GNU extensions in Makefiles ... NOTE
-GNU make is a SystemRequirements.
-
-GNU make serves only to use the wildcard both in makevar and makevar.win
-Nobody has reported an issue relative to GNU make on Windows.
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package
