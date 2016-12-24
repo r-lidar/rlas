@@ -37,7 +37,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
+#if defined(__clang__)
+  #include <string>
+#else
+  #include <string.h>
+#endif
+
 #include <stdexcept>
 
 #include <vector>

@@ -37,6 +37,7 @@
 #include "lasquantizer.hpp"
 #include "lasattributer.hpp"
 #include <stdexcept>
+#include <string>
 
 class LASwavepacket
 {

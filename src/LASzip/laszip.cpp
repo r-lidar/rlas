@@ -30,11 +30,17 @@
 
 ===============================================================================
 */
+
 #include "laszip.hpp"
 #include "mydefs.hpp"
 #include <assert.h>
 
-#include <string.h>
+#if defined(__clang__)
+  #include <string>
+#else
+  #include <string.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdexcept>
