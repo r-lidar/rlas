@@ -1,8 +1,12 @@
 ## Test environments
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.2
-* Ubuntu 14.04 (on travis-ci)
-* Windows 7 (on VM), R 3.3.2
-* win-builder (release and devel)
+* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, g++
+* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, clang++
+* Fedora 25, R 3.3.2, g++
+* Fedora 25, R 3.3.2, clang++
+* Ubuntu 14.04 (on travis-ci), g++
+* Windows 7 (on VM), R 3.3.2, g++
+* Windows 7 (on VM), R 3.3.2, g++
+* win-builder (release and devel), g++
 
 ## R CMD check results
 There were no ERRORs or WARNINGs.
@@ -10,19 +14,12 @@ There were no ERRORs or WARNINGs.
 There were 2 NOTEs (only 1 on Windows platforms):
 
 * checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Jean-Romain Roussel <jean-romain.roussel.1@ulaval.ca>'
-
-New submission
-
 Possibly mis-spelled words in DESCRIPTION:
   LiDAR (11:101)
 
 `LiDAR`: is an acronym for 'light detection and ranging'. No confusion can happen with this well-known term.
 
 * checking installed package size ... NOTE
-  installed size is  6.7Mb
-  sub-directories of 1Mb or more:
-    libs   6.6Mb
 
 The source code of the `LASlib` library is included and compiled into the package.
 `LASlib` is not packaged for Linux nor MacOS and contains deprecated code.
