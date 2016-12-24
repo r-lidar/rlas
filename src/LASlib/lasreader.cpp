@@ -24,6 +24,7 @@
 
   CHANGE HISTORY:
 
+    23 December 2016 -- by Jean-Romain Roussel -- L430,434 %lf -> %f (ISO C++98)
     20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
     20 December 2016 -- by Jean-Romain Roussel -- Comment L38-43, L698-941, L1167-1269, L1827-1850
 
@@ -427,11 +428,11 @@ I32 LASreadOpener::unparse(CHAR* string) const
   }
   else if (inside_circle)
   {
-    n = sprintf(string, "-inside_circle %lf %lf %lf ", inside_circle[0], inside_circle[1], inside_circle[2]);
+    n = sprintf(string, "-inside_circle %f %f %f ", inside_circle[0], inside_circle[1], inside_circle[2]);
   }
   else if (inside_rectangle)
   {
-    n = sprintf(string, "-inside_rectangle %lf %lf %lf %lf ", inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
+    n = sprintf(string, "-inside_rectangle %f %f %f %f ", inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
   }
   if (apply_file_source_ID)
   {
