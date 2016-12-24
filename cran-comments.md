@@ -11,13 +11,7 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs.
 
-There were 2 NOTEs (only 1 on Windows platforms):
-
-* checking CRAN incoming feasibility ... NOTE
-Possibly mis-spelled words in DESCRIPTION:
-  LiDAR (11:101)
-
-`LiDAR`: is an acronym for 'light detection and ranging'. No confusion can happen with this well-known term.
+There were 1 NOTEs (0 on Windows platforms):
 
 * checking installed package size ... NOTE
 
