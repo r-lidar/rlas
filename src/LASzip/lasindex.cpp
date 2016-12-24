@@ -24,6 +24,7 @@
 
   CHANGE HISTORY:
 
+    24 December 2016 -- by Jean-Romain Roussel -- L53 changed && by || to enable compiling with clang++ on Linux
     20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
 
     see corresponding header file
@@ -49,7 +50,7 @@
 
 #ifdef UNORDERED
   // Check if on OS X and using cland (unordered map isn't part of tr1 namespace)
-  #if defined(__APPLE__) && defined(__clang__)
+  #if defined(__APPLE__) || defined(__clang__)
     #include <unordered_map>
     using namespace std;
   #else
