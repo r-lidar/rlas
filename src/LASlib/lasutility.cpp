@@ -23,8 +23,8 @@
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
   CHANGE HISTORY:
-
-    23 December 2016 -- by Jean-Romain Roussel -- L43-44 define a macro to convert number to string in C++98
+    23 December 2016 -- by Jean-Romain Roussel -- L1488 %lf -> %f (ISO C++98)
+    23 December 2016 -- by Jean-Romain Roussel -- L43-44 define a macro to convert number to string (ISO C++98)
     20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
     20 December 2016 -- by Jean-Romain Roussel -- Comment every exit(1) and remplace by an exception.
 
@@ -1485,7 +1485,7 @@ BOOL LASoccupancyGrid::write_asc_grid(const CHAR* file_name) const
   fprintf(file, "nrows %d\012", max_y-min_y+1);
   fprintf(file, "xllcorner %f\012", grid_spacing*min_x);
   fprintf(file, "yllcorner %f\012", grid_spacing*min_y);
-  fprintf(file, "cellsize %lf\012", grid_spacing);
+  fprintf(file, "cellsize %f\012", grid_spacing);
   fprintf(file, "NODATA_value %d\012", 0);
   fprintf(file, "\012");
   I32 pos_x, pos_y;
