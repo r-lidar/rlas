@@ -1,13 +1,13 @@
 rlas v1.0.3 (Release date: 2016-12-23)
 ==============
 
-CRAN does not build binary packages. Compilation seems to failed on Windows and MacOS.
-Impossible get information about such issues. Impossible to reproduce on Linux.
-First trial and error submission corrections
+CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 
 * Change: remove CXX_STD flag in Makevars. g++ compile whith -std=c++98
 * Change: remove std::to_string, replaced by a macro ISO C++98
 * Change: replace formats specifiers which were ISO C++11 but not ISO C++98
+* Change: title in DESCRIPTION
+* Change: description in DESCRIPTION
 
 rlas v1.0.2 (Release date: 2016-12-23)
 ==============
