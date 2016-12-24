@@ -1,6 +1,6 @@
 ## Test environments
 * Linux Mint 18 (Ubuntu 16.04), R 3.3.2, g++
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, clang++
+* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, clang++ -stdlib=libc++
 * Fedora 25, R 3.3.2, g++
 * Fedora 25, R 3.3.2, clang++
 * Ubuntu 14.04 (on travis-ci), g++

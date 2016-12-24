@@ -8,10 +8,7 @@ Authors@R: c(
     person("Martin", "Isenburg", email = "", role = "cph", comment = "Is the author of the LASlib and LASzip libraries"),
     person("David", "Auty", email = "", role = c("ctb"), comment = "Reviewed the documentation"),
     person("Pierrick", "Marie", email = "", role = ("ctb"), comment = "Helped to compile LASlib code in R"))
-Description: Read and write 'las' and 'laz' binary file formats. The LAS file format is a public file format 
-for the interchange of 3-dimensional point cloud data between data users. The LAS specifications are 
-approved by the American Society for Photogrammetry and Remote Sensing. The LAZ file format is an open and lossless
-compression scheme for binary LAS format versions 1.0 to 1.3.
+Description: Read and write 'las' and 'laz' binary file formats. The LAS file format is a public file format for the interchange of 3-dimensional point cloud data between data users. The LAS specifications are approved by the American Society for Photogrammetry and Remote Sensing. The LAZ file format is an open and lossless compression scheme for binary LAS format versions 1.0 to 1.3.
 URL: https://github.com/Jean-Romain/rlas
 BugReports: https://github.com/Jean-Romain/rlas/issues
 License: GPL-3

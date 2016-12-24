@@ -3,9 +3,10 @@ rlas v1.0.3 (Release date: 2016-12-23)
 
 CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 
-* Change: remove CXX_STD flag in Makevars. g++ compile whith -std=c++98
-* Change: remove std::to_string, replaced by a macro ISO C++98
-* Change: replace formats specifiers which were ISO C++11 but not ISO C++98
+* Change: removed CXX_STD flag in Makevars. g++ compile whith -std=c++98
+* Change: removed std::to_string, replaced by a macro ISO C++98
+* Change: replaced formats specifiers which were ISO C++11 but not ISO C++98
+* Change: added prepocessor statements to get proper path to libraries when clang++ is used with flag -stdlib=libc++
 * Change: title in DESCRIPTION
 * Change: description in DESCRIPTION
 
