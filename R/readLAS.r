@@ -46,7 +46,7 @@
 #' @param Classification logical. do you want to load the Classification field? default: TRUE
 #' @param ScanAngle logical. do you want to load the ScanAngle field? default: TRUE
 #' @param UserData logical. do you want to load the UserData field? default: TRUE
-#' @param PointSourceID logical. do you want to load the PointSourceID field? default: FALSE
+#' @param PointSourceID logical. do you want to load the PointSourceID field? default: TRUE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
 #' @importFrom Rcpp sourceCpp
 #' @family rlas
@@ -61,7 +61,7 @@ readlasdata = function(file,
                        ReturnNumber = TRUE,
                        NumberOfReturns = TRUE,
                        ScanDirectionFlag = TRUE,
-                       EdgeOfFlightline = FALSE,
+                       EdgeOfFlightline = TRUE,
                        Classification = TRUE,
                        ScanAngle = TRUE,
                        UserData = TRUE,
