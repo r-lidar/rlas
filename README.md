@@ -10,34 +10,34 @@ las.data   = readlasdata("<myfile.las>")
 las.header = readlasheader("<myfile.las>")
 ```
 
-## Install `rlas` from github
+## Install `rlas`
 
-This package contains C++ code. To install the package from github make sure you have a working development environment.
+* The latest released version from CRAN with
+
+```r
+install.packages("rlas")
+```
+
+* The latest development version from github with
+
+```r
+devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
+```
+
+To install the package from github make sure you have a working development environment.
 
 * **Windows**: Install [Rtools.exe](https://cran.r-project.org/bin/windows/Rtools/).  
 * **Mac**: Install `Xcode` from the Mac App Store.
 * **Linux**: Install the R development package, usually called `r-devel` or `r-base-dev`
-
-Install devtools: `install.packages("devtools")`, then:
-
-````r
-devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
-````
 
 ## Copyright Information
 
 `rlas` contains code written  by both Jean-Romain Roussel and Martin Isenburg. The latter is included
 for technical reasons. Details below.
 
-### For `LASlib` and `LASzip`:
-
-(c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
-
-Provided under LGPL license and modified to be R-compliant by Jean-Romain Roussel. Each modification
-is dated and registered into the file headers.
-
-### For `rlas` code enabling Martin Isenburg's code to be wrapped into R:
-
-(c) 2016 Jean-Romain Roussel
-
-Provided under GPL-3 license.
+* For `LASlib` and `LASzip`:
+ - (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
+ - Provided under LGPL license and modified to be R-compliant by Jean-Romain Roussel. Each modification is dated and registered into the file headers.
+* For `rlas` code enabling Martin Isenburg's code to be wrapped into R:
+ - (c) 2016 Jean-Romain Roussel
+ - Provided under GPL-3 license.
