@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/devel-1.0.3-brightgreen.svg)  ![CRAN](https://img.shields.io/badge/CRAN-1.0.2-brightgreen.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg) 
+![Version](https://img.shields.io/badge/devel-1.0.4-brightgreen.svg)  ![CRAN](https://img.shields.io/badge/CRAN-1.0.3-brightgreen.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg) 
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
@@ -10,19 +10,25 @@ las.data   = readlasdata("<myfile.las>")
 las.header = readlasheader("<myfile.las>")
 ```
 
-## Install `rlas` from github
+## Install `rlas`
 
-This package contains C++ code. To install the package from github make sure you have a working development environment.
+* The latest released version from CRAN with
+
+```r
+install.packages("rlas")
+```
+
+* The latest development version from github with
+
+```r
+devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
+```
+
+To install the package from github make sure you have a working development environment.
 
 * **Windows**: Install [Rtools.exe](https://cran.r-project.org/bin/windows/Rtools/).  
 * **Mac**: Install `Xcode` from the Mac App Store.
 * **Linux**: Install the R development package, usually called `r-devel` or `r-base-dev`
-
-Install devtools: `install.packages("devtools")`, then:
-
-````r
-devtools::install_github("Jean-Romain/rlas", dependencies=TRUE)
-````
 
 ## Copyright Information
 
