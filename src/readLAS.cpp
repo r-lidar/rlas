@@ -62,13 +62,10 @@ int get_format(U8);
 //
 // @return list
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector file,
-                   bool Intensity = true,         bool ReturnNumber = true,
-                   bool NumberOfReturns = true,   bool ScanDirectionFlag = false,
-                   bool EdgeOfFlightline = false, bool Classification = true,
-                   bool ScanAngle = true,         bool UserData = false,
-                   bool PointSourceID = false,    bool RGB = true,
-                   NumericVector clip = NumericVector())
+List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns,
+                   bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle,
+                   bool UserData, bool PointSourceID, bool RGB,
+                   CharacterVector filter)
 {
   try
   {
@@ -76,12 +73,15 @@ List lasdatareader(CharacterVector file,
     NumericVector X,Y,Z,T;
     IntegerVector I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
 
-    // Cast CharacterVector into string
-    std::string filestd = as<std::string>(file);
+    // Cast CharacterVector into proper types
+    std::string filestd   = as<std::string>(file);
+    std::string filterstd = as<std::string>(filter);
+    const char* filechar = filestd.c_str();
+    char* filterchar = const_cast<char*>(filterstd.c_str());
 
     // Initialize las objects
     LASreadOpener lasreadopener;
-    lasreadopener.set_file_name(filestd.c_str());
+    lasreadopener.set_file_name(filechar);
     LASreader* lasreader = lasreadopener.open();
     LASfilter lasfilter;
 
@@ -94,18 +94,13 @@ List lasdatareader(CharacterVector file,
     int npoints   = lasreader->header.number_of_point_records;
     bool hasrgb   = format == 2 || format == 3;
     bool hasgpst  = format == 1 || format == 3;
-    bool stream   = clip.length() > 0;
+    bool stream   = filter.length() > 0;
 
     // If the user want stream the data (clip data during the reading)
     // First pass to read the whole file. Aims to know how much memory we must allocate
     if(stream)
     {
-      if(clip.length() == 3)
-        lasfilter.addClipCircle(clip(0), clip(1), clip(2));
-      else if(clip.length() == 4)
-        lasfilter.addClipBox(clip(0), clip(1), lasreader->get_min_z(), clip(2), clip(3), lasreader->get_max_z());
-      else
-        throw std::runtime_error("Stream las data internal error.");
+      lasfilter.parse_string(filterchar);
 
       npoints = 0;
       while (lasreader->read_point())
@@ -358,4 +353,18 @@ int get_format(U8 point_type)
     }
 
     return(format);
+}
+
+// [[Rcpp::export]]
+void lasfilterusage()
+{
+  try
+  {
+    LASfilter filter;
+    filter.usage();
+  }
+  catch (std::exception const& e)
+  {
+    Rcerr << "Error: " << e.what() << std::endl;
+  }
 }

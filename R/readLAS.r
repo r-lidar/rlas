@@ -33,9 +33,18 @@
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #' The optional logical parameters enable the user to save memory by choosing to load only the
-#' fields they need. Indeed, the \code{readlasdata} function does not 'stream' the data.
-#' Data is loaded into the computer's memory (RAM) suboptimally because R does not accommodate
-#' many different data types.
+#' fields they need. Indeed, data is loaded into the computer's memory (RAM) suboptimally because
+#' R does not accommodate many different data types. Moreover the function provides a streaming filter
+#' to load only the points of interest into the memory never allocating any usless memory.
+#'
+#' Because \code{rlas} rely on the well know \code{LASlib} library written by Martin Isenburg
+#' to read the binary files, the package inherit also of filter commands avaible in
+#' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to
+#' display the documentation of \code{LASlib} and the avaible filters.\cr\cr
+#' The filter works in two passes. First it streams the file without loading anything and count
+#' the number of points of interest. Then it allocates the necessary amount of memory and read the file
+#' a second time and stores the point of interests into the computer's memory (RAM).
 #'
 #' @param file characters path to the .las or .laz file
 #' @param Intensity logical. do you want to load the Intensity field? default: TRUE
@@ -48,15 +57,18 @@
 #' @param UserData logical. do you want to load the UserData field? default: TRUE
 #' @param PointSourceID logical. do you want to load the PointSourceID field? default: TRUE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
-#' @param clip_rect numeric vector. Bounding box of a rectangle. Internal spatial clipping without any extra memory allocation.
-#' @param clip_circ numeric vector. Center and radius of a disc. Internal spatial clipping without any extra memory allocation.
+#' @param filter character. filter data while reading the file (streaming filter) without
+#' allocating any useless memory. (see Details).
 #' @importFrom Rcpp sourceCpp
 #' @family rlas
 #' @return A \code{data.table}
 #' @export
 #' @examples
 #' lazfile <- system.file("extdata", "example.laz", package="rlas")
+#'
 #' lasdata <- readlasdata(lazfile)
+#' lasdata <- readlasdata(lazfile, filter = "-keep_first")
+#' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 #' @useDynLib rlas
 readlasdata = function(file,
                        Intensity = TRUE,
@@ -69,8 +81,7 @@ readlasdata = function(file,
                        UserData = TRUE,
                        PointSourceID = TRUE,
                        RGB = TRUE,
-                       clip_rect = NULL,
-                       clip_circ = NULL)
+                       filter = "")
 {
   valid = file.exists(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
@@ -82,21 +93,10 @@ readlasdata = function(file,
   if(!islas)
     stop("File not supported", call. = F)
 
-  if(!is.null(clip_rect) & length(clip_rect) != 4)
-    stop("Incorrect argument 'clip_rect'", call. = F)
+  if(!is.character(filter))
+    stop("Incorrect argument 'filter'", call. = F)
 
-  if(!is.null(clip_circ) & length(clip_circ) != 3)
-    stop("Incorrect argument 'clip_circ'", call. = F)
-
-  clip = numeric(0)
-
-  if(!is.null(clip_rect))
-    clip = clip_rect
-
-  if(!is.null(clip_circ))
-    clip = clip_circ
-
-  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, clip)
+  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, filter)
 
   data.table::setDT(data)
 
