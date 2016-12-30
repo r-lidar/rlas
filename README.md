@@ -34,7 +34,7 @@ To install the package from github make sure you have a working development envi
 
 ### v1.1.0
 
-* Change: `readlasdata()` gains two parameters enabling to clip data while reading the file. This is a streaming clip. The file is read in two passes. First it computes the number of points to load to allocate only the required amount of memory for these point. Then it read the points.
+* Change: `readlasdata()` gains a parameters `filter` enabling to use memory optimized streaming filters. The file is read in two passes. First it computes the number of points to load to allocate only the required amount of memory for these point. Then it read the points into the computer's memory.
 * Change: all the default option for `readlasdata()` are now `TRUE`
 
 ## Copyright Information
