@@ -1279,99 +1279,99 @@ void LASfilter::clean()
 
 void LASfilter::usage() const
 {
-  throw std::runtime_error(std::string("Filter points based on their coordinates."));
-  throw std::runtime_error(std::string("  -keep_tile 631000 4834000 1000 (ll_x ll_y size)"));
-  throw std::runtime_error(std::string("  -keep_circle 630250.00 4834750.00 100 (x y radius)"));
-  throw std::runtime_error(std::string("  -keep_xy 630000 4834000 631000 4836000 (min_x min_y max_x max_y)"));
-  throw std::runtime_error(std::string("  -drop_xy 630000 4834000 631000 4836000 (min_x min_y max_x max_y)"));
-  throw std::runtime_error(std::string("  -keep_x 631500.50 631501.00 (min_x max_x)"));
-  throw std::runtime_error(std::string("  -drop_x 631500.50 631501.00 (min_x max_x)"));
-  throw std::runtime_error(std::string("  -drop_x_below 630000.50 (min_x)"));
-  throw std::runtime_error(std::string("  -drop_x_above 630500.50 (max_x)"));
-  throw std::runtime_error(std::string("  -keep_y 4834500.25 4834550.25 (min_y max_y)"));
-  throw std::runtime_error(std::string("  -drop_y 4834500.25 4834550.25 (min_y max_y)"));
-  throw std::runtime_error(std::string("  -drop_y_below 4834500.25 (min_y)"));
-  throw std::runtime_error(std::string("  -drop_y_above 4836000.75 (max_y)"));
-  throw std::runtime_error(std::string("  -keep_z 11.125 130.725 (min_z max_z)"));
-  throw std::runtime_error(std::string("  -drop_z 11.125 130.725 (min_z max_z)"));
-  throw std::runtime_error(std::string("  -drop_z_below 11.125 (min_z)"));
-  throw std::runtime_error(std::string("  -drop_z_above 130.725 (max_z)"));
-  throw std::runtime_error(std::string("  -keep_xyz 620000 4830000 100 621000 4831000 200 (min_x min_y min_z max_x max_y max_z)"));
-  throw std::runtime_error(std::string("  -drop_xyz 620000 4830000 100 621000 4831000 200 (min_x min_y min_z max_x max_y max_z)"));
-  throw std::runtime_error(std::string("Filter points based on their return number."));
-  throw std::runtime_error(std::string("  -keep_first -first_only -drop_first"));
-  throw std::runtime_error(std::string("  -keep_last -last_only -drop_last"));
-  throw std::runtime_error(std::string("  -keep_first_of_many -keep_last_of_many"));
-  throw std::runtime_error(std::string("  -drop_first_of_many -drop_last_of_many"));
-  throw std::runtime_error(std::string("  -keep_middle -drop_middle"));
-  throw std::runtime_error(std::string("  -keep_return 1 2 3"));
-  throw std::runtime_error(std::string("  -drop_return 3 4"));
-  throw std::runtime_error(std::string("  -keep_single -drop_single"));
-  throw std::runtime_error(std::string("  -keep_double -drop_double"));
-  throw std::runtime_error(std::string("  -keep_triple -drop_triple"));
-  throw std::runtime_error(std::string("  -keep_quadruple -drop_quadruple"));
-  throw std::runtime_error(std::string("  -keep_quintuple -drop_quintuple"));
-  throw std::runtime_error(std::string("Filter points based on the scanline flags."));
-  throw std::runtime_error(std::string("  -drop_scan_direction 0"));
-  throw std::runtime_error(std::string("  -keep_scan_direction_change"));
-  throw std::runtime_error(std::string("  -keep_edge_of_flight_line"));
-  throw std::runtime_error(std::string("Filter points based on their intensity."));
-  throw std::runtime_error(std::string("  -keep_intensity 20 380"));
-  throw std::runtime_error(std::string("  -drop_intensity_below 20"));
-  throw std::runtime_error(std::string("  -drop_intensity_above 380"));
-  throw std::runtime_error(std::string("  -drop_intensity_between 4000 5000"));
-  throw std::runtime_error(std::string("Filter points based on classifications or flags."));
-  throw std::runtime_error(std::string("  -keep_class 1 3 7"));
-  throw std::runtime_error(std::string("  -drop_class 4 2"));
-  throw std::runtime_error(std::string("  -keep_extended_class 43"));
-  throw std::runtime_error(std::string("  -drop_extended_class 129 135"));
-  throw std::runtime_error(std::string("  -drop_synthetic -keep_synthetic"));
-  throw std::runtime_error(std::string("  -drop_keypoint -keep_keypoint"));
-  throw std::runtime_error(std::string("  -drop_withheld -keep_withheld"));
-  throw std::runtime_error(std::string("  -drop_overlap -keep_overlap"));
-  throw std::runtime_error(std::string("Filter points based on their user data."));
-  throw std::runtime_error(std::string("  -keep_user_data 1"));
-  throw std::runtime_error(std::string("  -drop_user_data 255"));
-  throw std::runtime_error(std::string("  -keep_user_data_below 50"));
-  throw std::runtime_error(std::string("  -keep_user_data_above 150"));
-  throw std::runtime_error(std::string("  -keep_user_data_between 10 20"));
-  throw std::runtime_error(std::string("  -drop_user_data_below 1"));
-  throw std::runtime_error(std::string("  -drop_user_data_above 100"));
-  throw std::runtime_error(std::string("  -drop_user_data_between 10 40"));
-  throw std::runtime_error(std::string("Filter points based on their point source ID."));
-  throw std::runtime_error(std::string("  -keep_point_source 3"));
-  throw std::runtime_error(std::string("  -keep_point_source_between 2 6"));
-  throw std::runtime_error(std::string("  -drop_point_source 27"));
-  throw std::runtime_error(std::string("  -drop_point_source_below 6"));
-  throw std::runtime_error(std::string("  -drop_point_source_above 15"));
-  throw std::runtime_error(std::string("  -drop_point_source_between 17 21"));
-  throw std::runtime_error(std::string("Filter points based on their scan angle."));
-  throw std::runtime_error(std::string("  -keep_scan_angle -15 15"));
-  throw std::runtime_error(std::string("  -drop_abs_scan_angle_above 15"));
-  throw std::runtime_error(std::string("  -drop_abs_scan_angle_below 1"));
-  throw std::runtime_error(std::string("  -drop_scan_angle_below -15"));
-  throw std::runtime_error(std::string("  -drop_scan_angle_above 15"));
-  throw std::runtime_error(std::string("  -drop_scan_angle_between -25 -23"));
-  throw std::runtime_error(std::string("Filter points based on their gps time."));
-  throw std::runtime_error(std::string("  -keep_gps_time 11.125 130.725"));
-  throw std::runtime_error(std::string("  -drop_gps_time_below 11.125"));
-  throw std::runtime_error(std::string("  -drop_gps_time_above 130.725"));
-  throw std::runtime_error(std::string("  -drop_gps_time_between 22.0 48.0"));
-  throw std::runtime_error(std::string("Filter points based on their RGB/NIR channel."));
-  throw std::runtime_error(std::string("  -keep_RGB_red 1 1"));
-  throw std::runtime_error(std::string("  -keep_RGB_green 30 100"));
-  throw std::runtime_error(std::string("  -keep_RGB_blue 0 0"));
-  throw std::runtime_error(std::string("  -keep_RGB_nir 64 127"));
-  throw std::runtime_error(std::string("Filter points based on their wavepacket."));
-  throw std::runtime_error(std::string("  -keep_wavepacket 0"));
-  throw std::runtime_error(std::string("  -drop_wavepacket 3"));
-  throw std::runtime_error(std::string("Filter points with simple thinning."));
-  throw std::runtime_error(std::string("  -keep_every_nth 2"));
-  throw std::runtime_error(std::string("  -keep_random_fraction 0.1"));
-  throw std::runtime_error(std::string("  -thin_with_grid 1.0"));
-  throw std::runtime_error(std::string("  -thin_with_time 0.001"));
-  throw std::runtime_error(std::string("Boolean combination of filters."));
-  throw std::runtime_error(std::string("  -filter_and"));
+  Rcpp::Rcout << "Filter points based on their coordinates." << std::endl;
+  Rcpp::Rcout << "  -keep_tile 631000 4834000 1000 (ll_x ll_y size)" << std::endl;
+  Rcpp::Rcout << "  -keep_circle 630250.00 4834750.00 100 (x y radius)" << std::endl;
+  Rcpp::Rcout << "  -keep_xy 630000 4834000 631000 4836000 (min_x min_y max_x max_y)" << std::endl;
+  Rcpp::Rcout << "  -drop_xy 630000 4834000 631000 4836000 (min_x min_y max_x max_y)" << std::endl;
+  Rcpp::Rcout << "  -keep_x 631500.50 631501.00 (min_x max_x)" << std::endl;
+  Rcpp::Rcout << "  -drop_x 631500.50 631501.00 (min_x max_x)" << std::endl;
+  Rcpp::Rcout << "  -drop_x_below 630000.50 (min_x)" << std::endl;
+  Rcpp::Rcout << "  -drop_x_above 630500.50 (max_x)" << std::endl;
+  Rcpp::Rcout << "  -keep_y 4834500.25 4834550.25 (min_y max_y)" << std::endl;
+  Rcpp::Rcout << "  -drop_y 4834500.25 4834550.25 (min_y max_y)" << std::endl;
+  Rcpp::Rcout << "  -drop_y_below 4834500.25 (min_y)" << std::endl;
+  Rcpp::Rcout << "  -drop_y_above 4836000.75 (max_y)" << std::endl;
+  Rcpp::Rcout << "  -keep_z 11.125 130.725 (min_z max_z)" << std::endl;
+  Rcpp::Rcout << "  -drop_z 11.125 130.725 (min_z max_z)" << std::endl;
+  Rcpp::Rcout << "  -drop_z_below 11.125 (min_z)" << std::endl;
+  Rcpp::Rcout << "  -drop_z_above 130.725 (max_z)" << std::endl;
+  Rcpp::Rcout << "  -keep_xyz 620000 4830000 100 621000 4831000 200 (min_x min_y min_z max_x max_y max_z)" << std::endl;
+  Rcpp::Rcout << "  -drop_xyz 620000 4830000 100 621000 4831000 200 (min_x min_y min_z max_x max_y max_z)" << std::endl;
+  Rcpp::Rcout << "Filter points based on their return number." << std::endl;
+  Rcpp::Rcout << "  -keep_first -first_only -drop_first" << std::endl;
+  Rcpp::Rcout << "  -keep_last -last_only -drop_last" << std::endl;
+  Rcpp::Rcout << "  -keep_first_of_many -keep_last_of_many" << std::endl;
+  Rcpp::Rcout << "  -drop_first_of_many -drop_last_of_many" << std::endl;
+  Rcpp::Rcout << "  -keep_middle -drop_middle" << std::endl;
+  Rcpp::Rcout << "  -keep_return 1 2 3" << std::endl;
+  Rcpp::Rcout << "  -drop_return 3 4" << std::endl;
+  Rcpp::Rcout << "  -keep_single -drop_single" << std::endl;
+  Rcpp::Rcout << "  -keep_double -drop_double" << std::endl;
+  Rcpp::Rcout << "  -keep_triple -drop_triple" << std::endl;
+  Rcpp::Rcout << "  -keep_quadruple -drop_quadruple" << std::endl;
+  Rcpp::Rcout << "  -keep_quintuple -drop_quintuple" << std::endl;
+  Rcpp::Rcout << "Filter points based on the scanline flags." << std::endl;
+  Rcpp::Rcout << "  -drop_scan_direction 0" << std::endl;
+  Rcpp::Rcout << "  -keep_scan_direction_change" << std::endl;
+  Rcpp::Rcout << "  -keep_edge_of_flight_line" << std::endl;
+  Rcpp::Rcout << "Filter points based on their intensity." << std::endl;
+  Rcpp::Rcout << "  -keep_intensity 20 380" << std::endl;
+  Rcpp::Rcout << "  -drop_intensity_below 20" << std::endl;
+  Rcpp::Rcout << "  -drop_intensity_above 380" << std::endl;
+  Rcpp::Rcout << "  -drop_intensity_between 4000 5000" << std::endl;
+  Rcpp::Rcout << "Filter points based on classifications or flags." << std::endl;
+  Rcpp::Rcout << "  -keep_class 1 3 7" << std::endl;
+  Rcpp::Rcout << "  -drop_class 4 2" << std::endl;
+  Rcpp::Rcout << "  -keep_extended_class 43" << std::endl;
+  Rcpp::Rcout << "  -drop_extended_class 129 135" << std::endl;
+  Rcpp::Rcout << "  -drop_synthetic -keep_synthetic" << std::endl;
+  Rcpp::Rcout << "  -drop_keypoint -keep_keypoint" << std::endl;
+  Rcpp::Rcout << "  -drop_withheld -keep_withheld" << std::endl;
+  Rcpp::Rcout << "  -drop_overlap -keep_overlap" << std::endl;
+  Rcpp::Rcout << "Filter points based on their user data." << std::endl;
+  Rcpp::Rcout << "  -keep_user_data 1" << std::endl;
+  Rcpp::Rcout << "  -drop_user_data 255" << std::endl;
+  Rcpp::Rcout << "  -keep_user_data_below 50" << std::endl;
+  Rcpp::Rcout << "  -keep_user_data_above 150" << std::endl;
+  Rcpp::Rcout << "  -keep_user_data_between 10 20" << std::endl;
+  Rcpp::Rcout << "  -drop_user_data_below 1" << std::endl;
+  Rcpp::Rcout << "  -drop_user_data_above 100" << std::endl;
+  Rcpp::Rcout << "  -drop_user_data_between 10 40" << std::endl;
+  Rcpp::Rcout << "Filter points based on their point source ID." << std::endl;
+  Rcpp::Rcout << "  -keep_point_source 3" << std::endl;
+  Rcpp::Rcout << "  -keep_point_source_between 2 6" << std::endl;
+  Rcpp::Rcout << "  -drop_point_source 27" << std::endl;
+  Rcpp::Rcout << "  -drop_point_source_below 6" << std::endl;
+  Rcpp::Rcout << "  -drop_point_source_above 15" << std::endl;
+  Rcpp::Rcout << "  -drop_point_source_between 17 21" << std::endl;
+  Rcpp::Rcout << "Filter points based on their scan angle." << std::endl;
+  Rcpp::Rcout << "  -keep_scan_angle -15 15" << std::endl;
+  Rcpp::Rcout << "  -drop_abs_scan_angle_above 15" << std::endl;
+  Rcpp::Rcout << "  -drop_abs_scan_angle_below 1" << std::endl;
+  Rcpp::Rcout << "  -drop_scan_angle_below -15" << std::endl;
+  Rcpp::Rcout << "  -drop_scan_angle_above 15" << std::endl;
+  Rcpp::Rcout << "  -drop_scan_angle_between -25 -23" << std::endl;
+  Rcpp::Rcout << "Filter points based on their gps time." << std::endl;
+  Rcpp::Rcout << "  -keep_gps_time 11.125 130.725" << std::endl;
+  Rcpp::Rcout << "  -drop_gps_time_below 11.125" << std::endl;
+  Rcpp::Rcout << "  -drop_gps_time_above 130.725" << std::endl;
+  Rcpp::Rcout << "  -drop_gps_time_between 22.0 48.0" << std::endl;
+  Rcpp::Rcout << "Filter points based on their RGB/NIR channel." << std::endl;
+  Rcpp::Rcout << "  -keep_RGB_red 1 1" << std::endl;
+  Rcpp::Rcout << "  -keep_RGB_green 30 100" << std::endl;
+  Rcpp::Rcout << "  -keep_RGB_blue 0 0" << std::endl;
+  Rcpp::Rcout << "  -keep_RGB_nir 64 127" << std::endl;
+  Rcpp::Rcout << "Filter points based on their wavepacket." << std::endl;
+  Rcpp::Rcout << "  -keep_wavepacket 0" << std::endl;
+  Rcpp::Rcout << "  -drop_wavepacket 3" << std::endl;
+  Rcpp::Rcout << "Filter points with simple thinning." << std::endl;
+  Rcpp::Rcout << "  -keep_every_nth 2" << std::endl;
+  Rcpp::Rcout << "  -keep_random_fraction 0.1" << std::endl;
+  Rcpp::Rcout << "  -thin_with_grid 1.0" << std::endl;
+  Rcpp::Rcout << "  -thin_with_time 0.001" << std::endl;
+  Rcpp::Rcout << "Boolean combination of filters." << std::endl;
+  Rcpp::Rcout << "  -filter_and" << std::endl;
 }
 
 BOOL LASfilter::parse(int argc, char* argv[])
@@ -1402,7 +1402,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
     {
       if (strcmp(argv[i], "-clip_z_below") == 0)
       {
-        throw std::runtime_error(std::string("WARNING: '%s' will not be supported in the future. check documentation with '-h'.")); //argv[i]
+        throw std::runtime_error(std::string("WARNING: ") + std::string(argv[i]) + std::string(" will not be supported in the future. check documentation with '-h'.")); //argv[i]
         throw std::runtime_error(std::string("  rename '-clip_z_below' to '-drop_z_below'."));
         throw std::runtime_error(std::string("  rename '-clip_z_above' to '-drop_z_above'."));
         throw std::runtime_error(std::string("  rename '-clip_z_between' to '-drop_z'."));
@@ -1410,7 +1410,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         throw std::runtime_error(std::string("  rename '-clip_tile' to '-keep_tile'."));
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_z")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_z")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionDropzBelow(atof(argv[i+1])));
@@ -1418,7 +1418,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       }
       else if (strcmp(argv[i], "-clip_z_above") == 0)
       {
-        throw std::runtime_error(std::string("WARNING: '%s' will not be supported in the future. check documentation with '-h'.")); //argv[i]
+        throw std::runtime_error(std::string("WARNING: ") + std::string(argv[i]) + std::string(" will not be supported in the future. check documentation with '-h'.")); //argv[i]
         throw std::runtime_error(std::string("  rename '-clip_z_below' to '-drop_z_below'."));
         throw std::runtime_error(std::string("  rename '-clip_z_above' to '-drop_z_above'."));
         throw std::runtime_error(std::string("  rename '-clip_z_between' to '-drop_z'."));
@@ -1426,7 +1426,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         throw std::runtime_error(std::string("  rename '-clip_tile' to '-keep_tile'."));
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_z")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_z")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionDropzAbove(atof(argv[i+1])));
@@ -1434,7 +1434,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       }
       else if ((strcmp(argv[i], "-clip_to_bounding_box") != 0) && (strcmp(argv[i],"-clip_to_bb") != 0))
       {
-        throw std::runtime_error(std::string("ERROR: '%s' is no longer recognized. check documentation with '-h'.")); //argv[i]
+        throw std::runtime_error(std::string(argv[i]) + std::string(" is no longer recognized. check documentation with '-h'.")); //argv[i]
         throw std::runtime_error(std::string("  rename '-clip' to '-keep_xy'."));
         throw std::runtime_error(std::string("  rename '-clip_box' to '-keep_xyz'."));
         throw std::runtime_error(std::string("  rename '-clip_tile' to '-keep_tile'."));
@@ -1484,7 +1484,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 at least argument: classification")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 at least argument: classification")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -1493,12 +1493,12 @@ BOOL LASfilter::parse(int argc, char* argv[])
           {
             if (atoi(argv[i]) > 31)
             {
-              throw std::runtime_error(std::string("ERROR: cannot keep classification %d because it is larger than 31")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot keep classification %d because it is larger than 31")); //atoi(argv[i])
               return FALSE;
             }
             else if (atoi(argv[i]) < 0)
             {
-              throw std::runtime_error(std::string("ERROR: cannot keep classification %d because it is smaller than 0")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot keep classification %d because it is smaller than 0")); //atoi(argv[i])
               return FALSE;
             }
             keep_classification_mask |= (1 << atoi(argv[i]));
@@ -1514,7 +1514,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 at least argument: classification")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 at least argument: classification")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -1523,12 +1523,12 @@ BOOL LASfilter::parse(int argc, char* argv[])
           {
             if (atoi(argv[i]) > 255)
             {
-              throw std::runtime_error(std::string("ERROR: cannot keep extended classification %d because it is larger than 255")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot keep extended classification %d because it is larger than 255")); //atoi(argv[i])
               return FALSE;
             }
             else if (atoi(argv[i]) < 0)
             {
-              throw std::runtime_error(std::string("ERROR: cannot keep extended classification %d because it is smaller than 0")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot keep extended classification %d because it is smaller than 0")); //atoi(argv[i])
               return FALSE;
             }
             keep_extended_classification_mask[atoi(argv[i])/32] |= (1 << (atoi(argv[i]) - (32*(atoi(argv[i])/32))));
@@ -1544,7 +1544,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+4) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 4 arguments: min_x min_y max_x max_y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
@@ -1554,7 +1554,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+6) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 6 arguments: min_x min_y min_z max_x max_y max_z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
@@ -1564,7 +1564,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_x max_x")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_x max_x")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepx(atof(argv[i+1]), atof(argv[i+2])));
@@ -1575,7 +1575,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_y max_y")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_y max_y")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepy(atof(argv[i+1]), atof(argv[i+2])));
@@ -1585,7 +1585,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_z max_z")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_z max_z")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepz(atof(argv[i+1]), atof(argv[i+2])));
@@ -1597,7 +1597,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+4) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 4 arguments: min_X min_Y max_X max_Y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepXY(atoi(argv[i+1]), atoi(argv[i+2]), atoi(argv[i+3]), atoi(argv[i+4])));
@@ -1607,7 +1607,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_X max_X")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_X max_X")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepX(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1618,7 +1618,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_Y max_Y")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_Y max_Y")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepY(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1628,7 +1628,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_Z max_Z")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_Z max_Z")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepZ(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1638,7 +1638,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: llx lly size")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 3 arguments: llx lly size")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepTile((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3])));
@@ -1648,7 +1648,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: center_x center_y radius")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 3 arguments: center_x center_y radius")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepCircle(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3])));
@@ -1658,7 +1658,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: return_number")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: return_number")); //argv[i]
           return FALSE;
         }
         *argv[i]='\0';
@@ -1675,7 +1675,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: return_mask")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: return_mask")); //argv[i]
           return FALSE;
         }
         keep_return_mask = atoi(argv[i+1]);
@@ -1712,7 +1712,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepIntensity(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1722,7 +1722,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepIntensityAbove(atoi(argv[i+1])));
@@ -1732,7 +1732,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepIntensityBelow(atoi(argv[i+1])));
@@ -1745,7 +1745,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 0));
@@ -1755,7 +1755,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 1));
@@ -1765,7 +1765,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 2));
@@ -1775,7 +1775,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 3));
@@ -1786,7 +1786,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepScanAngle(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1816,7 +1816,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: index")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: index")); //argv[i]
           return FALSE;
         }
         *argv[i]='\0';
@@ -1830,7 +1830,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepUserData(atoi(argv[i+1])));
@@ -1840,7 +1840,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepUserDataBelow(atoi(argv[i+1])));
@@ -1850,7 +1850,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepUserDataAbove(atoi(argv[i+1])));
@@ -1860,7 +1860,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_value max_value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_value max_value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepUserDataBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1873,7 +1873,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: ID")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepPointSource(atoi(argv[i+1])));
@@ -1883,7 +1883,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_ID max_ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_ID max_ID")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepPointSourceBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -1896,7 +1896,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionKeepGpsTime(atof(argv[i+1]), atof(argv[i+2])));
@@ -1907,7 +1907,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: nth")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: nth")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepEveryNth((I32)atoi(argv[i+1])));
@@ -1917,7 +1917,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: fraction")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: fraction")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionKeepRandomFraction((F32)atof(argv[i+1])));
@@ -1973,7 +1973,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: classification")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: classification")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -1982,12 +1982,12 @@ BOOL LASfilter::parse(int argc, char* argv[])
           {
             if (atoi(argv[i]) > 31)
             {
-              throw std::runtime_error(std::string("ERROR: cannot drop classification %d because it is larger than 31")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot drop classification %d because it is larger than 31")); //atoi(argv[i])
               return FALSE;
             }
             else if (atoi(argv[i]) < 0)
             {
-              throw std::runtime_error(std::string("ERROR: cannot drop classification %d because it is smaller than 0")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot drop classification %d because it is smaller than 0")); //atoi(argv[i])
               return FALSE;
             }
             drop_classification_mask |= (1 << atoi(argv[i]));
@@ -2000,7 +2000,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: mask")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: mask")); //argv[i]
             return FALSE;
           }
           drop_classification_mask = atoi(argv[i+1]);
@@ -2013,7 +2013,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: classification")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: classification")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -2022,12 +2022,12 @@ BOOL LASfilter::parse(int argc, char* argv[])
           {
             if (atoi(argv[i]) > 255)
             {
-              throw std::runtime_error(std::string("ERROR: cannot drop extended classification %d because it is larger than 255")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot drop extended classification %d because it is larger than 255")); //atoi(argv[i])
               return FALSE;
             }
             else if (atoi(argv[i]) < 0)
             {
-              throw std::runtime_error(std::string("ERROR: cannot drop extended classification %d because it is smaller than 0")); //atoi(argv[i])
+              throw std::runtime_error(std::string("cannot drop extended classification %d because it is smaller than 0")); //atoi(argv[i])
               return FALSE;
             }
             drop_extended_classification_mask[atoi(argv[i])/32] |= (1 << (atoi(argv[i]) - (32*(atoi(argv[i])/32))));
@@ -2040,7 +2040,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+8) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 8 arguments: mask7 mask6 mask5 mask4 mask3 mask2 mask1 mask0")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 8 arguments: mask7 mask6 mask5 mask4 mask3 mask2 mask1 mask0")); //argv[i]
             return FALSE;
           }
           drop_extended_classification_mask[7] = atoi(argv[i+1]);
@@ -2060,7 +2060,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+4) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 4 arguments: min_x min_y max_x max_y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
@@ -2070,7 +2070,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+6) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 6 arguments: min_x min_y min_z max_x max_y max_z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
@@ -2080,7 +2080,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_x max_x")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_x max_x")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropx(atof(argv[i+1]), atof(argv[i+2])));
@@ -2090,7 +2090,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_x")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_x")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropxBelow(atof(argv[i+1])));
@@ -2100,7 +2100,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_x")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_x")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropxAbove(atof(argv[i+1])));
@@ -2113,7 +2113,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_y max_y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_y max_y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropy(atof(argv[i+1]), atof(argv[i+2])));
@@ -2123,7 +2123,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropyBelow(atof(argv[i+1])));
@@ -2133,7 +2133,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropyAbove(atof(argv[i+1])));
@@ -2146,7 +2146,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_z max_z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_z max_z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropz(atof(argv[i+1]), atof(argv[i+2])));
@@ -2156,7 +2156,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropzBelow(atof(argv[i+1])));
@@ -2166,7 +2166,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropzAbove(atof(argv[i+1])));
@@ -2179,7 +2179,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_X max_X")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_X max_X")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropX(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2189,7 +2189,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_X")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_X")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropXBelow(atoi(argv[i+1])));
@@ -2199,7 +2199,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_X")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_X")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropXAbove(atoi(argv[i+1])));
@@ -2212,7 +2212,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_Y max_Y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_Y max_Y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropY(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2222,7 +2222,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_Y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_Y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropYBelow(atoi(argv[i+1])));
@@ -2232,7 +2232,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_Y")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_Y")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropYAbove(atoi(argv[i+1])));
@@ -2245,7 +2245,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_Z max_Z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_Z max_Z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropZ(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2255,7 +2255,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_Z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_Z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropZBelow(atoi(argv[i+1])));
@@ -2265,7 +2265,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_Z")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_Z")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropZAbove(atoi(argv[i+1])));
@@ -2276,7 +2276,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: return_number")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: return_number")); //argv[i]
           return FALSE;
         }
         *argv[i]='\0';
@@ -2325,7 +2325,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropIntensityAbove(atoi(argv[i+1])));
@@ -2335,7 +2335,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropIntensityBelow(atoi(argv[i+1])));
@@ -2345,7 +2345,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropIntensityBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2358,7 +2358,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max")); //argv[i]
             return FALSE;
           }
           I32 angle = atoi(argv[i+1]);
@@ -2369,7 +2369,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min")); //argv[i]
             return FALSE;
           }
           I32 angle = atoi(argv[i+1]);
@@ -2383,7 +2383,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropScanAngleAbove(atoi(argv[i+1])));
@@ -2393,7 +2393,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropScanAngleBelow(atoi(argv[i+1])));
@@ -2403,7 +2403,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropScanAngleBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2434,7 +2434,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: index")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: index")); //argv[i]
           return FALSE;
         }
         *argv[i]='\0';
@@ -2448,7 +2448,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: ID")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -2465,7 +2465,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropUserDataBelow(atoi(argv[i+1])));
@@ -2475,7 +2475,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropUserDataAbove(atoi(argv[i+1])));
@@ -2485,7 +2485,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_value max_value")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_value max_value")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropUserDataBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2498,7 +2498,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs at least 1 argument: ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs at least 1 argument: ID")); //argv[i]
             return FALSE;
           }
           *argv[i]='\0';
@@ -2515,7 +2515,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_ID")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropPointSourceBelow(atoi(argv[i+1])));
@@ -2525,7 +2525,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_ID")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropPointSourceAbove(atoi(argv[i+1])));
@@ -2535,7 +2535,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min_ID max_ID")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min_ID max_ID")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropPointSourceBetween(atoi(argv[i+1]), atoi(argv[i+2])));
@@ -2548,7 +2548,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: max_gps_time")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: max_gps_time")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropGpsTimeAbove(atof(argv[i+1])));
@@ -2558,7 +2558,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: min_gps_time")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: min_gps_time")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropGpsTimeBelow(atof(argv[i+1])));
@@ -2568,7 +2568,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: min max")); //argv[i]
+            throw std::runtime_error(std::string(argv[i]) + std::string(" needs 2 arguments: min max")); //argv[i]
             return FALSE;
           }
           add_criterion(new LAScriterionDropGpsTimeBetween(atof(argv[i+1]), atof(argv[i+2])));
@@ -2592,7 +2592,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: grid_spacing")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: grid_spacing")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionThinWithGrid((F32)atof(argv[i+1])));
@@ -2602,7 +2602,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: time_spacing")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs 1 argument: time_spacing")); //argv[i]
           return FALSE;
         }
         add_criterion(new LAScriterionThinWithTime((F32)atof(argv[i+1])));
@@ -2615,7 +2615,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if (num_criteria < 2)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs to be preceeded by at least two filters")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs to be preceeded by at least two filters")); //argv[i]
           return FALSE;
         }
         LAScriterion* filter_criterion = new LAScriterionAnd(criteria[num_criteria-2], criteria[num_criteria-1]);
@@ -2630,7 +2630,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
       {
         if (num_criteria < 2)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs to be preceeded by at least two filters")); //argv[i]
+          throw std::runtime_error(std::string(argv[i]) + std::string(" needs to be preceeded by at least two filters")); //argv[i]
           return FALSE;
         }
         LAScriterion* filter_criterion = new LAScriterionOr(criteria[num_criteria-2], criteria[num_criteria-1]);
@@ -2642,13 +2642,17 @@ BOOL LASfilter::parse(int argc, char* argv[])
         *argv[i]='\0';
       }
     }
+    else
+      throw std::runtime_error(std::string(argv[i]) + std::string(" does not exist.")); //argv[i]
+
   }
+
 
   if (drop_return_mask)
   {
     if (keep_return_mask)
     {
-      throw std::runtime_error(std::string("ERROR: cannot use '-drop_return' and '-keep_return' simultaneously"));
+      throw std::runtime_error(std::string("cannot use '-drop_return' and '-keep_return' simultaneously"));
       return FALSE;
     }
     else
@@ -2665,7 +2669,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
   {
     if (drop_classification_mask)
     {
-      throw std::runtime_error(std::string("ERROR: cannot use '-drop_class' and '-keep_class' simultaneously"));
+      throw std::runtime_error(std::string("cannot use '-drop_class' and '-keep_class' simultaneously"));
       return FALSE;
     }
     else
@@ -2682,7 +2686,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
   {
     if (drop_extended_classification_mask[0] || drop_extended_classification_mask[1] || drop_extended_classification_mask[2] || drop_extended_classification_mask[3] || drop_extended_classification_mask[4] || drop_extended_classification_mask[5] || drop_extended_classification_mask[6] || drop_extended_classification_mask[7])
     {
-      throw std::runtime_error(std::string("ERROR: cannot use '-drop_extended_class' and '-keep_extended_class' simultaneously"));
+      throw std::runtime_error(std::string("cannot use '-drop_extended_class' and '-keep_extended_class' simultaneously"));
       return FALSE;
     }
     else
@@ -2705,7 +2709,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
   return TRUE;
 }
 
-BOOL LASfilter::parse(CHAR* string)
+BOOL LASfilter::parse_string(CHAR* string)
 {
   int p = 0;
   int argc = 1;
