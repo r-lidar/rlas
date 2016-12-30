@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "lasreader.hpp"
 #include "laswriter.hpp"
+#include "lasfilter.hpp"
 
 using namespace Rcpp;
 
@@ -62,65 +63,89 @@ int get_format(U8);
 // @return list
 // [[Rcpp::export]]
 List lasdatareader(CharacterVector file,
-             bool Intensity = true,
-             bool ReturnNumber = true,
-             bool NumberOfReturns = true,
-             bool ScanDirectionFlag = false,
-             bool EdgeOfFlightline = false,
-             bool Classification = true,
-             bool ScanAngle = true,
-             bool UserData = false,
-             bool PointSourceID = false,
-             bool RGB = true)
+                   bool Intensity = true,         bool ReturnNumber = true,
+                   bool NumberOfReturns = true,   bool ScanDirectionFlag = false,
+                   bool EdgeOfFlightline = false, bool Classification = true,
+                   bool ScanAngle = true,         bool UserData = false,
+                   bool PointSourceID = false,    bool RGB = true,
+                   NumericVector clip = NumericVector())
 {
   try
   {
+    // Initialize 0 length data
     NumericVector X,Y,Z,T;
     IntegerVector I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
 
+    // Cast CharacterVector into string
     std::string filestd = as<std::string>(file);
 
+    // Initialize las objects
     LASreadOpener lasreadopener;
     lasreadopener.set_file_name(filestd.c_str());
-
     LASreader* lasreader = lasreadopener.open();
+    LASfilter lasfilter;
 
     if(0 == lasreader || NULL == lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
 
+    // Read the header and test some properties of the file
     U8 point_type = lasreader->header.point_data_format;
     int format    = get_format(point_type);
-    int n         = lasreader->header.number_of_point_records;
+    int npoints   = lasreader->header.number_of_point_records;
     bool hasrgb   = format == 2 || format == 3;
     bool hasgpst  = format == 1 || format == 3;
+    bool stream   = clip.length() > 0;
 
+    // If the user want stream the data (clip data during the reading)
+    // First pass to read the whole file. Aims to know how much memory we must allocate
+    if(stream)
+    {
+      if(clip.length() == 3)
+        lasfilter.addClipCircle(clip(0), clip(1), clip(2));
+      else if(clip.length() == 4)
+        lasfilter.addClipBox(clip(0), clip(1), lasreader->get_min_z(), clip(2), clip(3), lasreader->get_max_z());
+      else
+        throw std::runtime_error("Stream las data internal error.");
 
-    // Intialize memory only if necessary
-    X = NumericVector(n);
-    Y = NumericVector(n);
-    Z = NumericVector(n);
+      npoints = 0;
+      while (lasreader->read_point())
+      {
+        if(!lasfilter.filter(&lasreader->point))
+          npoints++;
+      }
 
-    if(hasgpst)           T   = NumericVector(n);
-    if(Intensity)         I   = IntegerVector(n);
-    if(ReturnNumber)      RN  = IntegerVector(n);
-    if(NumberOfReturns)   NoR = IntegerVector(n);
-    if(ScanDirectionFlag) SDF = IntegerVector(n);
-    if(EdgeOfFlightline)  EoF = IntegerVector(n);
-    if(Classification)    C   = IntegerVector(n);
-    if(ScanAngle)         SA  = IntegerVector(n);
-    if(UserData)          UD  = IntegerVector(n);
-    if(PointSourceID)     PSI = IntegerVector(n);
+      lasreader->seek(0);
+    }
+
+    // Allocate the required amount of data only if necessary
+    X = NumericVector(npoints);
+    Y = NumericVector(npoints);
+    Z = NumericVector(npoints);
+
+    if(hasgpst)           T   = NumericVector(npoints);
+    if(Intensity)         I   = IntegerVector(npoints);
+    if(ReturnNumber)      RN  = IntegerVector(npoints);
+    if(NumberOfReturns)   NoR = IntegerVector(npoints);
+    if(ScanDirectionFlag) SDF = IntegerVector(npoints);
+    if(EdgeOfFlightline)  EoF = IntegerVector(npoints);
+    if(Classification)    C   = IntegerVector(npoints);
+    if(ScanAngle)         SA  = IntegerVector(npoints);
+    if(UserData)          UD  = IntegerVector(npoints);
+    if(PointSourceID)     PSI = IntegerVector(npoints);
     if(RGB && hasrgb)
     {
-      R   = IntegerVector(n);
-      G   = IntegerVector(n);
-      B   = IntegerVector(n);
+      R   = IntegerVector(npoints);
+      G   = IntegerVector(npoints);
+      B   = IntegerVector(npoints);
     }
 
     // Set data
     unsigned long int i = 0;
     while (lasreader->read_point())
     {
+      if(stream && lasfilter.filter(&lasreader->point))
+        continue;
+
       X[i]   = lasreader->point.get_x();
       Y[i]   = lasreader->point.get_y();
       Z[i]   = lasreader->point.get_z();

@@ -48,6 +48,8 @@
 #' @param UserData logical. do you want to load the UserData field? default: TRUE
 #' @param PointSourceID logical. do you want to load the PointSourceID field? default: TRUE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
+#' @param clip_rect numeric vector. Bounding box of a rectangle. Internal spatial clipping without any extra memory allocation.
+#' @param clip_circ numeric vector. Center and radius of a disc. Internal spatial clipping without any extra memory allocation.
 #' @importFrom Rcpp sourceCpp
 #' @family rlas
 #' @return A \code{data.table}
@@ -66,16 +68,35 @@ readlasdata = function(file,
                        ScanAngle = TRUE,
                        UserData = TRUE,
                        PointSourceID = TRUE,
-                       RGB = TRUE)
+                       RGB = TRUE,
+                       clip_rect = NULL,
+                       clip_circ = NULL)
 {
   valid = file.exists(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
 
-  if(!valid)  stop("File not found", call. = F)
-  if(!islas)  stop("File not supported", call. = F)
+  if(!valid)
+    stop("File not found", call. = F)
 
-  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns,ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB)
+  if(!islas)
+    stop("File not supported", call. = F)
+
+  if(!is.null(clip_rect) & length(clip_rect) != 4)
+    stop("Incorrect argument 'clip_rect'", call. = F)
+
+  if(!is.null(clip_circ) & length(clip_circ) != 3)
+    stop("Incorrect argument 'clip_circ'", call. = F)
+
+  clip = numeric(0)
+
+  if(!is.null(clip_rect))
+    clip = clip_rect
+
+  if(!is.null(clip_circ))
+    clip = clip_circ
+
+  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, clip)
 
   data.table::setDT(data)
 

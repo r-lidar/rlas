@@ -6,8 +6,9 @@
 \usage{
 readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
   NumberOfReturns = TRUE, ScanDirectionFlag = TRUE,
-  EdgeOfFlightline = FALSE, Classification = TRUE, ScanAngle = TRUE,
-  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE)
+  EdgeOfFlightline = TRUE, Classification = TRUE, ScanAngle = TRUE,
+  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE, clip_rect = NULL,
+  clip_circ = NULL)
 }
 \arguments{
 \item{file}{characters path to the .las or .laz file}
@@ -28,9 +29,13 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 
 \item{UserData}{logical. do you want to load the UserData field? default: TRUE}
 
-\item{PointSourceID}{logical. do you want to load the PointSourceID field? default: FALSE}
+\item{PointSourceID}{logical. do you want to load the PointSourceID field? default: TRUE}
 
 \item{RGB}{logical. do you want to load R,G and B fields? default: TRUE}
+
+\item{clip_rect}{numeric vector. Bounding box of a rectangle. Internal spatial clipping without any extra memory allocation.}
+
+\item{clip_circ}{numeric vector. Center and radius of a disc. Internal spatial clipping without any extra memory allocation.}
 }
 \value{
 A \code{data.table}
