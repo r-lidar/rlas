@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/devel-1.1.0-brightgreen.svg)  ![CRAN](https://img.shields.io/badge/CRAN-1.0.3-brightgreen.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg) 
+![Version](https://img.shields.io/badge/Version-1.1.0.dev-brightgreen.svg)  ![CRAN](https://img.shields.io/badge/CRAN-1.0.3-green.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg) 
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
@@ -34,7 +34,7 @@ To install the package from github make sure you have a working development envi
 
 ### v1.1.0
 
-* Change: `readlasdata()` gains a parameters `filter` enabling to use memory optimized streaming filters. The file is read in two passes. First it computes the number of points to load to allocate only the required amount of memory for these point. Then it read the points into the computer's memory.
+* New: `readlasdata()` gains a parameters `filter` enabling to use memory optimized streaming filters. The file is read in two passes. First it computes the number of points to load to allocate only the required amount of memory for these point. Then it read the points into the computer's memory.
 * Change: all the default option for `readlasdata()` are now `TRUE`
 
 ## Copyright Information
