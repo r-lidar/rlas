@@ -38,9 +38,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
+
 using namespace Rcpp;
 
 int get_format(U8);
+List vlrsreader(LASreader*);
 
 // Read data from a las and laz file with LASlib
 //
@@ -259,6 +263,7 @@ List lasheaderreader(CharacterVector file)
     head.push_back(lasreader->header.min_y);
     head.push_back(lasreader->header.max_z);
     head.push_back(lasreader->header.min_z);
+    head.push_back(vlrsreader(lasreader));
 
     lasreader->close();
     delete lasreader;
@@ -297,6 +302,7 @@ List lasheaderreader(CharacterVector file)
     names.push_back("Min Y");
     names.push_back("Max Z");
     names.push_back("Min Z");
+    names.push_back("Variable Length Records");
 
     head.names() = names;
 
@@ -307,6 +313,78 @@ List lasheaderreader(CharacterVector file)
     Rcerr << "Error: " << e.what() << std::endl;
     return(List(0));
   }
+}
+
+List vlrsreader(LASreader* lasreader)
+{
+  List vlrs(0);
+  CharacterVector geostring;
+
+  LASheader* lasheader = &lasreader->header;
+
+  for (int i = 0; i < (int)lasheader->number_of_variable_length_records; i++)
+  {
+    List vlr = List::create(Named("reserved") = lasheader->vlrs[i].reserved,
+                            Named("user ID") = lasheader->vlrs[i].user_id ,
+                            Named("record ID") = lasheader->vlrs[i].record_id,
+                            Named("length after header") = lasheader->vlrs[i].record_length_after_header,
+                            Named("description") = lasheader->vlrs[i].description);
+
+    if ((strcmp(lasheader->vlrs[i].user_id, "LASF_Projection") == 0) && (lasheader->vlrs[i].data != 0))
+    {
+      if (lasheader->vlrs[i].record_id == 34735) // GeoKeyDirectoryTag
+      {
+        List GeoKeys(0);
+
+        for (int j = 0; j < lasheader->vlr_geo_keys->number_of_keys; j++)
+        {
+          List GeoKey = List::create(Named("key") = lasheader->vlr_geo_key_entries[j].key_id,
+                                     Named("tiff tag location") =  lasheader->vlr_geo_key_entries[j].tiff_tag_location,
+                                     Named("count") = lasheader->vlr_geo_key_entries[j].count,
+                                     Named("value offset") = lasheader->vlr_geo_key_entries[j].value_offset);
+          GeoKeys.push_back(GeoKey);
+
+        }
+
+        vlr.push_back(GeoKeys);
+      }
+      else if (lasheader->vlrs[i].record_id == 34736) // GeoDoubleParamsTag
+      {
+        int n = lasreader->header.vlrs[i].record_length_after_header/8;
+        NumericVector GeoDouble(n);
+
+        for (int j = 0; j < n; j++)
+        {
+          GeoDouble(j) = lasheader->vlr_geo_double_params[j];
+        }
+
+        vlr.push_back(GeoDouble);
+      }
+      else if (lasheader->vlrs[i].record_id == 34737) // GeoAsciiParamsTag
+      {
+        std::string GeoAscii = SSTR(lasheader->vlrs[i].data);
+        vlr.push_back(GeoAscii);
+      }
+      else if (lasheader->vlrs[i].record_id == 2111) // WKT OGC MATH TRANSFORM
+      {
+        std::string WKT = SSTR(lasheader->vlrs[i].data);
+        vlr.push_back(WKT);
+      }
+      else if (lasheader->vlrs[i].record_id == 2112) // WKT OGC COORDINATE SYSTEM
+      {
+        std::string WKT = SSTR(lasheader->vlrs[i].data);
+        vlr.push_back(WKT);
+      }
+    }
+    else if ((strcmp(lasheader->vlrs[i].user_id, "LASF_Spec") == 0) && (lasheader->vlrs[i].data != 0))
+    {
+      // not supported yet
+    }
+
+    vlrs.push_back(vlr);
+  }
+
+  return vlrs;
 }
 
 int get_format(U8 point_type)
