@@ -20,7 +20,6 @@ print.LASheader =  function(x, ...)
   cat("Offset X Y Z:            ", x$`X offset`, x$`Y offset`, x$`Z offset`, "\n")
   cat("min X Y Z:               ", x$`Min X`, x$`Min Y`, x$`Min Z`, "\n")
   cat("max X Y Z:               ", x$`Max X`, x$`Max Y`, x$`Max Z`, "\n")
-  cat("Variable length records:  void\n")
 
   n = length(x$`Variable Length Records`)
 
@@ -58,6 +57,9 @@ print.LASheader =  function(x, ...)
     }
   }
   else
+  {
+      cat("Variable length records:  void\n")
+  }
 
   return(invisible())
 }
