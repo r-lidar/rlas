@@ -20,38 +20,44 @@ print.LASheader =  function(x, ...)
   cat("Offset X Y Z:            ", x$`X offset`, x$`Y offset`, x$`Z offset`, "\n")
   cat("min X Y Z:               ", x$`Min X`, x$`Min Y`, x$`Min Z`, "\n")
   cat("max X Y Z:               ", x$`Max X`, x$`Max Y`, x$`Max Z`, "\n")
-  cat("Variable length records: \n")
+  cat("Variable length records:  void\n")
 
   n = length(x$`Variable Length Records`)
 
-  for(i in 1:n)
+  if(n > 0 )
   {
-    vlr = x$`Variable Length Records`[[i]]
+    cat("Variable length records: \n")
 
-    cat("   Variable length records ", i, "/", n, "\n", sep ="")
-    cat("       Reserved:            ", vlr$reserved, "\n")
-    cat("       User ID:             ", vlr$`user ID`, "\n")
-    cat("       record ID:           ", vlr$`record ID`, "\n")
-    cat("       Length after heaader:", vlr$`length after header`, "\n")
-    cat("       Description:         ", vlr$description, "\n")
-
-    if(vlr$`record ID` == 34735)
+    for(i in 1:n)
     {
-      cat("       Tags:\n")
-      lapply(vlr[[6]], function(xx)
+      vlr = x$`Variable Length Records`[[i]]
+
+      cat("   Variable length records ", i, "/", n, "\n", sep ="")
+      cat("       Reserved:            ", vlr$reserved, "\n")
+      cat("       User ID:             ", vlr$`user ID`, "\n")
+      cat("       record ID:           ", vlr$`record ID`, "\n")
+      cat("       Length after heaader:", vlr$`length after header`, "\n")
+      cat("       Description:         ", vlr$description, "\n")
+
+      if(vlr$`record ID` == 34735)
       {
-        cat("          Key", xx$key, "tiff_tag_location", xx$`tiff tag location`, "count", xx$count, "value offset", xx$`value offset`, "\n")
-      })
-    }
-    else if(vlr$`record ID` == 34736)
-    {
-        cat("       data:                ", vlr[[6]], "\n")
-    }
-    else if(vlr$`record ID` == 34737)
-    {
-        cat("       data:                ", vlr[[6]], "\n")
+        cat("       Tags:\n")
+        lapply(vlr[[6]], function(xx)
+        {
+          cat("          Key", xx$key, "tiff_tag_location", xx$`tiff tag location`, "count", xx$count, "value offset", xx$`value offset`, "\n")
+        })
+      }
+      else if(vlr$`record ID` == 34736)
+      {
+          cat("       data:                ", vlr[[6]], "\n")
+      }
+      else if(vlr$`record ID` == 34737)
+      {
+          cat("       data:                ", vlr[[6]], "\n")
+      }
     }
   }
+  else
 
   return(invisible())
 }
