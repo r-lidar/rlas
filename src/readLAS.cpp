@@ -38,9 +38,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
+
 using namespace Rcpp;
 
 int get_format(U8);
+List vlrsreader(LASheader*);
 
 // Read data from a las and laz file with LASlib
 //
@@ -221,44 +225,46 @@ List lasheaderreader(CharacterVector file)
     lasreadopener.set_file_name(filestd.c_str());
 
     LASreader* lasreader = lasreadopener.open();
+    LASheader* lasheader = &lasreader->header;
 
     if(0 == lasreader | NULL == lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
 
     List head(0);
-    head.push_back(lasreader->header.file_signature);
-    head.push_back(lasreader->header.file_source_ID);
-    head.push_back(lasreader->header.global_encoding);
-    head.push_back(0); //lasreader->header.GetProjectId();
-    head.push_back(lasreader->header.version_major);
-    head.push_back(lasreader->header.version_minor);
-    head.push_back(lasreader->header.system_identifier);
-    head.push_back(lasreader->header.generating_software);
-    head.push_back(lasreader->header.file_creation_day);
-    head.push_back(lasreader->header.file_creation_year);
-    head.push_back(lasreader->header.header_size);
-    head.push_back(lasreader->header.offset_to_point_data);
-    head.push_back(lasreader->header.number_of_variable_length_records);
-    head.push_back(lasreader->header.point_data_format);
-    head.push_back(lasreader->header.point_data_record_length);
-    head.push_back(lasreader->header.number_of_point_records);
-    head.push_back(lasreader->header.number_of_points_by_return[0]);
-    head.push_back(lasreader->header.number_of_points_by_return[1]);
-    head.push_back(lasreader->header.number_of_points_by_return[2]);
-    head.push_back(lasreader->header.number_of_points_by_return[3]);
-    head.push_back(lasreader->header.number_of_points_by_return[4]);
-    head.push_back(lasreader->header.x_scale_factor);
-    head.push_back(lasreader->header.y_scale_factor);
-    head.push_back(lasreader->header.z_scale_factor);
-    head.push_back(lasreader->header.x_offset);
-    head.push_back(lasreader->header.y_offset);
-    head.push_back(lasreader->header.z_offset);
-    head.push_back(lasreader->header.max_x);
-    head.push_back(lasreader->header.min_x);
-    head.push_back(lasreader->header.max_y);
-    head.push_back(lasreader->header.min_y);
-    head.push_back(lasreader->header.max_z);
-    head.push_back(lasreader->header.min_z);
+    head.push_back(lasheader->file_signature);
+    head.push_back(lasheader->file_source_ID);
+    head.push_back(lasheader->global_encoding);
+    head.push_back(0);
+    head.push_back((int)lasheader->version_major);
+    head.push_back((int)lasheader->version_minor);
+    head.push_back(lasheader->system_identifier);
+    head.push_back(lasheader->generating_software);
+    head.push_back(lasheader->file_creation_day);
+    head.push_back(lasheader->file_creation_year);
+    head.push_back(lasheader->header_size);
+    head.push_back(lasheader->offset_to_point_data);
+    head.push_back(lasheader->number_of_variable_length_records);
+    head.push_back((int)lasheader->point_data_format);
+    head.push_back(lasheader->point_data_record_length);
+    head.push_back(lasheader->number_of_point_records);
+    head.push_back(lasheader->number_of_points_by_return[0]);
+    head.push_back(lasheader->number_of_points_by_return[1]);
+    head.push_back(lasheader->number_of_points_by_return[2]);
+    head.push_back(lasheader->number_of_points_by_return[3]);
+    head.push_back(lasheader->number_of_points_by_return[4]);
+    head.push_back(lasheader->x_scale_factor);
+    head.push_back(lasheader->y_scale_factor);
+    head.push_back(lasheader->z_scale_factor);
+    head.push_back(lasheader->x_offset);
+    head.push_back(lasheader->y_offset);
+    head.push_back(lasheader->z_offset);
+    head.push_back(lasheader->max_x);
+    head.push_back(lasheader->min_x);
+    head.push_back(lasheader->max_y);
+    head.push_back(lasheader->min_y);
+    head.push_back(lasheader->max_z);
+    head.push_back(lasheader->min_z);
+    head.push_back(vlrsreader(lasheader));
 
     lasreader->close();
     delete lasreader;
@@ -297,6 +303,7 @@ List lasheaderreader(CharacterVector file)
     names.push_back("Min Y");
     names.push_back("Max Z");
     names.push_back("Min Z");
+    names.push_back("Variable Length Records");
 
     head.names() = names;
 
@@ -307,6 +314,92 @@ List lasheaderreader(CharacterVector file)
     Rcerr << "Error: " << e.what() << std::endl;
     return(List(0));
   }
+}
+
+List vlrsreader(LASheader* lasheader)
+{
+  int nvlrs = (int)lasheader->number_of_variable_length_records;
+
+  List lvlrs;
+  List lvlrsnames;
+
+  for (int i = 0; i < nvlrs; i++)
+  {
+    LASvlr vlr = lasheader->vlrs[i];
+
+    List lvlr      = List::create(vlr.reserved, vlr.user_id, vlr.record_id, vlr.record_length_after_header, vlr.description);
+    List lvlrnames = List::create("reserved", "user ID", "record ID", "length after header", "description");
+
+    if (strcmp(vlr.user_id, "LASF_Projection") == 0 && vlr.data != 0)
+    {
+      if (vlr.record_id == 34735) // GeoKeyDirectoryTag
+      {
+        List GeoKeys(0);
+
+        for (int j = 0; j < lasheader->vlr_geo_keys->number_of_keys; j++)
+        {
+          List GeoKey = List::create(Named("key") = lasheader->vlr_geo_key_entries[j].key_id,
+                                     Named("tiff tag location") =  lasheader->vlr_geo_key_entries[j].tiff_tag_location,
+                                     Named("count") = lasheader->vlr_geo_key_entries[j].count,
+                                     Named("value offset") = lasheader->vlr_geo_key_entries[j].value_offset);
+
+          GeoKeys.push_back(GeoKey);
+        }
+
+        lvlr.push_back(GeoKeys);
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoKeyDirectoryTag");
+      }
+      else if (vlr.record_id == 34736) // GeoDoubleParamsTag
+      {
+        int n = vlr.record_length_after_header/8;
+        NumericVector GeoDouble(n);
+
+        for (int j = 0; j < n; j++)
+        {
+          GeoDouble(j) = lasheader->vlr_geo_double_params[j];
+        }
+
+        lvlr.push_back(GeoDouble);
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoDoubleParamsTag");
+      }
+      else if (vlr.record_id == 34737) // GeoAsciiParamsTag
+      {
+        lvlr.push_back(SSTR(vlr.data));
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoAsciiParamsTag");
+      }
+      else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
+      {
+        lvlr.push_back(SSTR(vlr.data));
+        lvlrnames.push_back("WKT OGC MATH TRANSFORM");
+        lvlrsnames.push_back("WKT OGC MT");
+      }
+      else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
+      {
+        lvlr.push_back(SSTR(vlr.data));
+        lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
+        lvlrsnames.push_back("WKT OGC CS");
+      }
+    }
+    else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
+    {
+      // not supported yet
+      lvlrsnames.push_back(vlr.user_id);
+    }
+    else
+    {
+      // not supported yet
+      lvlrsnames.push_back(vlr.user_id);
+    }
+
+    lvlr.names() = lvlrnames;
+    lvlrs.push_back(lvlr);
+  }
+
+  lvlrs.names() = lvlrsnames;
+  return lvlrs;
 }
 
 int get_format(U8 point_type)
