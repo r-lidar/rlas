@@ -235,8 +235,8 @@ List lasheaderreader(CharacterVector file)
     head.push_back(lasheader->file_source_ID);
     head.push_back(lasheader->global_encoding);
     head.push_back(0);
-    head.push_back(lasheader->version_major);
-    head.push_back(lasheader->version_minor);
+    head.push_back((int)lasheader->version_major);
+    head.push_back((int)lasheader->version_minor);
     head.push_back(lasheader->system_identifier);
     head.push_back(lasheader->generating_software);
     head.push_back(lasheader->file_creation_day);
@@ -244,7 +244,7 @@ List lasheaderreader(CharacterVector file)
     head.push_back(lasheader->header_size);
     head.push_back(lasheader->offset_to_point_data);
     head.push_back(lasheader->number_of_variable_length_records);
-    head.push_back(lasheader->point_data_format);
+    head.push_back((int)lasheader->point_data_format);
     head.push_back(lasheader->point_data_record_length);
     head.push_back(lasheader->number_of_point_records);
     head.push_back(lasheader->number_of_points_by_return[0]);
