@@ -1,6 +1,10 @@
 #' @export
 print.LASheader =  function(x, ...)
 {
+  l <- list(...)
+  if (is.null(l$summary)) summary = FALSE
+  else summary = TRUE
+
   cat("File signature:          ", x$`File Signature`, "\n")
   cat("File source ID:          ", x$`File Source ID`, "\n")
   cat("Global encoding:         ", x$`Global Encoding`, "\n")
@@ -23,19 +27,25 @@ print.LASheader =  function(x, ...)
 
   n = length(x$`Variable Length Records`)
 
-  if(n > 0 )
+  if(n == 0)
   {
-    cat("Variable length records: \n")
+    cat("Variable length records:  void\n")
+    return(invisible())
+  }
 
-    for(i in 1:n)
+  cat("Variable length records: \n")
+
+  for(i in 1:n)
+  {
+    vlr = x$`Variable Length Records`[[i]]
+
+    if (!summary)
     {
-      vlr = x$`Variable Length Records`[[i]]
-
       cat("   Variable length records ", i, "/", n, "\n", sep ="")
       cat("       Reserved:            ", vlr$reserved, "\n")
       cat("       User ID:             ", vlr$`user ID`, "\n")
       cat("       record ID:           ", vlr$`record ID`, "\n")
-      cat("       Length after heaader:", vlr$`length after header`, "\n")
+      cat("       Length after header: ", vlr$`length after header`, "\n")
       cat("       Description:         ", vlr$description, "\n")
 
       if(vlr$`record ID` == 34735)
@@ -48,18 +58,26 @@ print.LASheader =  function(x, ...)
       }
       else if(vlr$`record ID` == 34736)
       {
-          cat("       data:                ", vlr[[6]], "\n")
+        cat("       data:                ", vlr[[6]], "\n")
       }
       else if(vlr$`record ID` == 34737)
       {
-          cat("       data:                ", vlr[[6]], "\n")
+        cat("       data:                ", vlr[[6]], "\n")
       }
     }
+    else
+    {
+      cat("  ", i, ": ", vlr$description, "\n", sep = "")
+    }
   }
-  else
-  {
-      cat("Variable length records:  void\n")
-  }
+
+  return(invisible())
+}
+
+#' @export
+summary.LASheader =  function(object, ...)
+{
+  print(object, summary = TRUE)
 
   return(invisible())
 }
