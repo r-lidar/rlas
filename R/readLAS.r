@@ -127,7 +127,6 @@ readlasheader = function(file)
   if(!islas)  stop("File not supported", call. = F)
 
   data = lasheaderreader(file)
-  class(data) = c("LASheader", class(data))
 
   return(data)
 }
