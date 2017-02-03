@@ -88,8 +88,6 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     lasreadopener.set_file_name(filechar);
     lasreadopener.parse_str(filterchar);
     LASreader* lasreader = lasreadopener.open();
-    // LASfilter lasfilter;
-    
 
     if(0 == lasreader || NULL == lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
@@ -106,12 +104,10 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     // First pass to read the whole file. Aims to know how much memory we must allocate
     if(stream)
     {
-//       lasfilter.parse_string(filterchar);
 
       npoints = 0;
       while (lasreader->read_point())
       {
-//         if(!lasfilter.filter(&lasreader->point))
           npoints++;
       }
 
@@ -144,8 +140,6 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     unsigned long int i = 0;
     while (lasreader->read_point())
     {
-//       if(stream && lasfilter.filter(&lasreader->point))
-//         continue;
 
       X[i]   = lasreader->point.get_x();
       Y[i]   = lasreader->point.get_y();
