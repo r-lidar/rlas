@@ -7,13 +7,13 @@
 readlasheader(file)
 }
 \arguments{
-\item{file}{characters path to the .las or .laz file}
+\item{file}{filepath character string to the .las or .laz file}
 }
 \value{
 A \code{list}
 }
 \description{
-Read header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 }
