@@ -32,11 +32,7 @@ To install the package from github make sure you have a working development envi
 
 ## Changelogs
 
-### v1.1.0
-
-* New: `readlasdata()` gains a parameters `filter` enabling to use memory optimized streaming filters. The file is read in two passes. First it computes the number of points to load to allocate only the required amount of memory for these point. Then it read the points into the computer's memory.
-* Change: all the default option for `readlasdata()` are now `TRUE`
-* Fix: `readlasheader()` is now able to read the `Variable length record`
+[See changelog here](https://github.com/Jean-Romain/rlas/blob/master/NEWS.md)
 
 ## Copyright Information
 
