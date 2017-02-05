@@ -1,4 +1,4 @@
-![CRAN](https://img.shields.io/badge/CRAN-1.0.3-brightgreen.svg)  ![Github](https://img.shields.io/badge/Github-1.1.0.dev-green.svg) ![Devel](https://img.shields.io/badge/devel-1.1.0.dev-yellowgreen.svg) ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
+![CRAN](https://img.shields.io/badge/CRAN-1.0.3-brightgreen.svg)  ![Github](https://img.shields.io/badge/Github-1.1.0-green.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
@@ -6,8 +6,8 @@ R package to read and write `.las` and `.laz` binary files used to store LiDAR d
 It enables users to read and write into R binary files commonly used to store LiDAR data.
 
 ```r
-las.data   = readlasdata("<myfile.las>")
-las.header = readlasheader("<myfile.las>")
+lasdata   = readlasdata("<myfile.las>")
+lasheader = readlasheader("<myfile.las>")
 ```
 
 ## Install `rlas`
@@ -30,7 +30,7 @@ To install the package from github make sure you have a working development envi
 * **Mac**: Install `Xcode` from the Mac App Store.
 * **Linux**: Install the R development package, usually called `r-devel` or `r-base-dev`
 
-## Changelogs
+## Changelog
 
 [See changelog here](https://github.com/Jean-Romain/rlas/blob/master/NEWS.md)
 
