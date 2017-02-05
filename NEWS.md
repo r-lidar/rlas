@@ -1,9 +1,9 @@
-### rlas v1.1.0 (in development)
+### rlas v1.1.0 (Release date: 2017-02-04)
 
 #### NEW
 
-* `readlasdata()` gains a parameters `filter` enabling to use memory optimized streaming filters.
-* `readlasdata()` support .lax files for faster filter (thanks to Florian de Boissieu [#2](https://github.com/Jean-Romain/rlas/pull/2))
+* `readlasdata()` gains a parameter `filter` enabling to use memory optimized streaming filters.
+* `readlasdata()` support .lax file for faster filter (thanks to Florian de Boissieu [#2](https://github.com/Jean-Romain/rlas/pull/2))
 
 #### CHANGE
 
@@ -14,7 +14,6 @@
 * `readlasheader()` is now able to read the `Variable length record`
 
 ### rlas v1.0.3 (Release date: 2016-12-24)
-
 
 CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 
@@ -33,7 +32,6 @@ Third submission
 * Change: Remove SystemRequirements field in DESCRIPTION
 
 #### rlas v1.0.1 (Release date: 2016-12-22)
-
 
 Second submission
 
