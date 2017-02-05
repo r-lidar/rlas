@@ -1,3 +1,6 @@
+### rlas v1.1.1 (in development)
+
+
 ### rlas v1.1.0 (Release date: 2017-02-04)
 
 #### NEW
