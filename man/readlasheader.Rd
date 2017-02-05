@@ -25,4 +25,3 @@ lasheader <- readlasheader(lazfile)
 Other rlas: \code{\link{readlasdata}},
   \code{\link{writelas}}
 }
-

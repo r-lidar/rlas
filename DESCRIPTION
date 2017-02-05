@@ -2,7 +2,7 @@ Package: rlas
 Type: Package
 Title: Read and Write 'las' and 'laz' Binary File Formats Used for Remote Sensing Data
 Version: 1.1.0
-Date: 2016-02-04
+Date: 2017-02-04
 Authors@R: c(
     person("Jean-Romain", "Roussel", email = "jean-romain.roussel.1@ulaval.ca", role = c("aut", "cre", "cph")),
     person("Martin", "Isenburg", email = "", role = "cph", comment = "Is the author of the LASlib and LASzip libraries"),
@@ -13,8 +13,8 @@ Description: Read and write 'las' and 'laz' binary file formats. The LAS file fo
 URL: https://github.com/Jean-Romain/rlas
 BugReports: https://github.com/Jean-Romain/rlas/issues
 License: GPL-3
-Depends:R (>= 3.0.0)
+Depends: R (>= 3.0.0)
 Imports: data.table,Rcpp
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.0
 LinkingTo: Rcpp
