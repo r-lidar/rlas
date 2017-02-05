@@ -68,4 +68,3 @@ lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 Other rlas: \code{\link{readlasheader}},
   \code{\link{writelas}}
 }
-
