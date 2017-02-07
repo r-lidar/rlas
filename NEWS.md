@@ -1,5 +1,22 @@
-rlas v1.0.3 (Release date: 2016-12-24)
-==============
+### rlas v1.1.1 (in development)
+
+
+### rlas v1.1.0 (Release date: 2017-02-04)
+
+#### NEW
+
+* `readlasdata()` gains a parameter `filter` enabling to use memory optimized streaming filters.
+* `readlasdata()` support .lax file for faster filter (thanks to Florian de Boissieu [#2](https://github.com/Jean-Romain/rlas/pull/2))
+
+#### CHANGE
+
+* All the default options for `readlasdata()` are now `TRUE`
+
+#### FIXE:
+
+* `readlasheader()` is now able to read the `Variable length record`
+
+### rlas v1.0.3 (Release date: 2016-12-24)
 
 CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 
@@ -10,16 +27,14 @@ CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 * Change: title in DESCRIPTION according to prof Bryan Ripley
 * Change: description in DESCRIPTION according to prof Bryan Ripley
 
-rlas v1.0.2 (Release date: 2016-12-23)
-==============
+#### rlas v1.0.2 (Release date: 2016-12-23)
 
 Third submission
 
 * Change: Manually list sources in makevars
 * Change: Remove SystemRequirements field in DESCRIPTION
 
-rlas v1.0.1 (Release date: 2016-12-22)
-==============
+#### rlas v1.0.1 (Release date: 2016-12-22)
 
 Second submission
 
@@ -28,7 +43,6 @@ Second submission
 * Change: single quoted 'las' and 'laz' in Description and Title fields in DESCRIPTION
 
 
-rlas v1.0.0 (Release date: 2016-12-22)
-==============
+#### rlas v1.0.0 (Release date: 2016-12-22)
 
 First submission

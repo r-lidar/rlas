@@ -29,24 +29,24 @@
 
 #' Read data from a .las or .laz file
 #'
-#' Read data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-#' The optional logical parameters enable the user to save memory by choosing to load only the
+#' The optional logical parameters enables the user to save memory by choosing to load only the
 #' fields they need. Indeed, data is loaded into the computer's memory (RAM) suboptimally because
-#' R does not accommodate many different data types. Moreover the function provides a streaming filter
-#' to load only the points of interest into the memory never allocating any usless memory.
+#' R does not accommodate many different data types. Moreover, the function provides a streaming filter
+#' to load only the points of interest into the memory without allocating any superfluous memory.
 #'
-#' Because \code{rlas} rely on the well know \code{LASlib} library written by Martin Isenburg
-#' to read the binary files, the package inherit also of filter commands avaible in
+#' Because \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
+#' to read the binary files, the package also inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
 #' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to
-#' display the documentation of \code{LASlib} and the avaible filters.\cr\cr
-#' The filter works in two passes. First it streams the file without loading anything and count
-#' the number of points of interest. Then it allocates the necessary amount of memory and read the file
-#' a second time and stores the point of interests into the computer's memory (RAM).
+#' display the \code{LASlib} documentation and the available filters.\cr\cr
+#' The filter works in two passes. First it streams the file without loading anything and counts
+#' the number of points of interest. Then it allocates the necessary amount of memory and reads the file
+#' a second time, and stores the points of interest in the computer's memory (RAM).
 #'
-#' @param file characters path to the .las or .laz file
+#' @param file filepath character string to the .las or .laz file
 #' @param Intensity logical. do you want to load the Intensity field? default: TRUE
 #' @param ReturnNumber logical. do you want to load the ReturnNumber field? default: TRUE
 #' @param NumberOfReturns logical. do you want to load the NumberOfReturns field? default: TRUE
@@ -105,11 +105,11 @@ readlasdata = function(file,
 
 #' Read header from a .las or .laz file
 #'
-#' Read header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #'
-#' @param file characters path to the .las or .laz file
+#' @param file filepath character string to the .las or .laz file
 #' @family rlas
 #' @return A \code{list}
 #' @importFrom Rcpp sourceCpp

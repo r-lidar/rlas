@@ -1,9 +1,8 @@
 ## Test environments
 * Linux Mint 18 (Ubuntu 16.04), R 3.3.2, g++
 * Linux Mint 18 (Ubuntu 16.04), R 3.3.2, clang++ -stdlib=libc++
-* Fedora 25, R 3.3.2, g++
-* Fedora 25, R 3.3.2, clang++ -stdlib=libc++
-* Ubuntu 14.04 (on travis-ci), g++
+* Fedora 25 (on VM), R 3.3.2, g++
+* Fedora 25 (on VM), R 3.3.2, clang++ -stdlib=libc++
 * Windows 7 (on VM), R 3.3.2, g++
 * win-builder (release and devel), g++
 
@@ -12,35 +11,16 @@ There were no ERRORs or WARNINGs.
 
 There were 2 NOTEs (1 on Windows platforms):
 
-Possibly mis-spelled words in DESCRIPTION:
-  LAS (12:70, 12:188, 12:357)
-  LAZ (12:287)
-  Photogrammetry (12:248)
-  lossless (12:318)
+* checking CRAN incoming feasibility ... NOTE
 
-`LAZ` and `LAS`: are two files formats
-`Photogrammetry`: this word exists
-`lossless`: this word exists
+Identical with the previous release
 
 * checking installed package size ... NOTE
 
-The source code of the `LASlib` library is included and compiled into the package.
-`LASlib` is not packaged for Linux nor MacOS and contains deprecated code.
-I modified the code to be compatible both with R and ISO C++98 and C++11.
-See section `LASlib and `LASzip` at the end of this file for more informations
+Identical with the previous release
 
 ## Downstream dependencies
-There are currently no downstream dependencies for this package
+There is currently 1 downstream dependency for this package.
 
-## LASlib and LASzip
-LASlib and LASzip are two libraries developed by Martin Isenburg under LGPL 2.1. I included
-the code into the package because the libraries are not packaged for any platform and must therefore
-be compiled by hand. To be usable on all platforms by everybody I included the code to enable
-automatic compilation during the installation.
-Moreover, the original source code contained non-admissible statement such as 'srand', 'rand', 'stdout',
-'stderr', exit(1) or non ISO code. I modified the code to be R compliant and ISO C++98 and C++11 .
+* `lidR` is my package so I can guarantee that there is no problem of compatibility
 
-According to such considerations:
-* I added Martin Isenburg as a copyright holder
-* I documented my modifications according to the LGPL license recommendations and I registered my modifications by adding the date, my name, the line number and the reason of the modifications in the header of the modified files
-* I used a GPL-3 license for the package which is compatible with LGPL.

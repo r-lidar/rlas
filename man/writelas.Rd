@@ -60,4 +60,3 @@ For more informations, see the ASPRS documentation for the
 Other rlas: \code{\link{readlasdata}},
   \code{\link{readlasheader}}
 }
-

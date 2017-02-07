@@ -25,6 +25,7 @@
   
   CHANGE HISTORY:
   
+    3 February 2017 -- by Florian de Boissieu -- L198 added parse_str because of strange problem with overloaded functions
      7 February 2014 -- added option '-apply_file_source_ID' when reading LAS/LAZ
     22 August 2012 -- added the '-pipe_on' option for a multi-stage LAStools pipeline
     11 August 2012 -- added on-the-fly buffered reading of LiDAR files (efficient with LAX)
@@ -194,6 +195,7 @@ public:
   void set_inside_circle(const F64 center_x, const F64 center_y, const F64 radius);
   void set_inside_rectangle(const F64 min_x, const F64 min_y, const F64 max_x, const F64 max_y);
   BOOL parse(int argc, char* argv[]);
+  BOOL parse_str(CHAR* string);
   BOOL is_piped() const;
   BOOL is_buffered() const;
   BOOL is_header_populated() const;

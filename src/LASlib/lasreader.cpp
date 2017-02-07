@@ -23,7 +23,7 @@
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
   CHANGE HISTORY:
-
+    3 February 2017 -- by Florian de Boissieu -- L1798,1813 added parse_str because of strange problem with overloaded functions
     23 December 2016 -- by Jean-Romain Roussel -- L430,434 %lf -> %f (ISO C++98)
     20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
     20 December 2016 -- by Jean-Romain Roussel -- Comment L38-43, L698-941, L1167-1269, L1827-1850
@@ -1793,6 +1793,29 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
   }
 
   return TRUE;
+}
+
+BOOL LASreadOpener::parse_str(CHAR* string)
+{
+  int p = 0;
+  int argc = 1;
+  char* argv[64];
+  int len = strlen(string);
+  
+  while (p < len)
+  {
+    while ((p < len) && (string[p] == ' ')) p++;
+    if (p < len)
+    {
+      argv[argc] = string + p;
+      argc++;
+      while ((p < len) && (string[p] != ' ')) p++;
+      string[p] = '\0';
+      p++;
+    }
+  }
+  
+  return parse(argc, argv);
 }
 
 U32 LASreadOpener::get_file_name_number() const
