@@ -58,7 +58,7 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
+    throw std::runtime_error(std::string("ERROR: cannot open file ") + std::string(file_name)); //
     return FALSE;
   }
 
@@ -1185,7 +1185,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
   {
     if (!header.laszip->check())
     {
-      throw std::runtime_error(std::string("ERROR: %s")); //header.laszip->get_error()
+      throw std::runtime_error(std::string("ERROR: ") + std::string(header.laszip->get_error())); //
       throw std::runtime_error(std::string("       please upgrade to the latest release of LAStools (with LASzip)"));
       throw std::runtime_error(std::string("       or contact 'martin.isenburg@rapidlasso.com' for assistance."));
       return FALSE;
@@ -1308,7 +1308,7 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->error())
       {
-        throw std::runtime_error(std::string("ERROR: '%s' after %u of %u points")); //reader->error(), (U32)p_count, (U32)npoints
+        throw std::runtime_error(std::string("ERROR: ") + std::string(reader->error()) + std::string(" after %u of %u points")); //reader->error(), (U32)p_count, (U32)npoints
       }
       else
       {
@@ -1348,12 +1348,12 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->check_end() == FALSE)
       {
-        throw std::runtime_error(std::string("ERROR: '%s' when reaching end of encoding")); //reader->error()
+        throw std::runtime_error(std::string("ERROR: ") + std::string(reader->error()) + std::string(" when reaching end of encoding"));
         p_count--;
       }
       if (reader->warning())
       {
-        throw std::runtime_error(std::string("WARNING: '%s'")); //reader->warning()
+        throw std::runtime_error(std::string("WARNING: ") + std::string(reader->warning())); //
       }
       checked_end = TRUE;
     }
