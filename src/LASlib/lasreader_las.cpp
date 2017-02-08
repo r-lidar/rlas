@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <Rcpp.h>
 
 BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_only)
 {
@@ -1308,11 +1309,11 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->error())
       {
-        throw std::runtime_error(std::string("ERROR: ") + std::string(reader->error()) + std::string(" after %u of %u points")); //reader->error(), (U32)p_count, (U32)npoints
+        Rcpp::Rcerr << "ERROR: " << reader->error() << " after " << p_count << " of " <<  npoints << " points" << std::endl;
       }
       else
       {
-        throw std::runtime_error(std::string("WARNING: end-of-file after %u of %u points")); //(U32)p_count, (U32)npoints
+        Rcpp::Rcerr << "WARNING: end-of-file after " << p_count << " of " <<  npoints << " points" << std::endl;
       }
       return FALSE;
     }
