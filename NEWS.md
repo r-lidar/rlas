@@ -1,18 +1,22 @@
 ### rlas v1.1.1 (in development)
 
+#### BUG FIXES:
+
+* [[#3](https://github.com/Jean-Romain/rlas/issues/3)] `readlasdata()` is able to read file when LAS specifications are not respected.
+
 
 ### rlas v1.1.0 (Release date: 2017-02-04)
 
-#### NEW
+#### NEW FEATURES
 
 * `readlasdata()` gains a parameter `filter` enabling to use memory optimized streaming filters.
 * `readlasdata()` support .lax file for faster filter (thanks to Florian de Boissieu [#2](https://github.com/Jean-Romain/rlas/pull/2))
 
-#### CHANGE
+#### OTHER CHANGES
 
 * All the default options for `readlasdata()` are now `TRUE`
 
-#### FIXE:
+#### BUG FIXES:
 
 * `readlasheader()` is now able to read the `Variable length record`
 
