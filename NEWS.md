@@ -4,6 +4,9 @@
 
 * [[#3](https://github.com/Jean-Romain/rlas/issues/3)] `readlasdata()` is able to read file when LAS specifications are not respected.
 
+#### OTHER CHANGES
+
+* `writelas` performs tests on the header before entering C++ code (enable to fail with informative errors).
 
 ### rlas v1.1.0 (Release date: 2017-02-04)
 
