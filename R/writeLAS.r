@@ -58,45 +58,75 @@
 #' @family rlas
 #' @return void
 writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
-                     NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline,
-                     Classification, ScanAngle, UserData, PointSourceID,
-                     R, G, B)
+                    NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline,
+                    Classification, ScanAngle, UserData, PointSourceID,
+                    R, G, B)
 {
   islas = tools::file_ext(file) %in% c("las", "laz")
 
-  if(length(file) > 1) stop("Please write only one file at a time", call. = F)
-  if(!islas) stop("File not supported", call. = F)
+  if(length(file) > 1)
+    stop("Please write only one file at a time.", call. = F)
+
+  if(!islas)
+    stop("File not supported. Extension should be 'las' or 'laz'", call. = F)
+
+  if(is.null(header[["X offset"]]) | is.null(header[["Y offset"]]) | is.null(header[["Z offset"]]))
+    stop("Offsetting not defined in the header", call. = FALSE)
+
+  if(is.null(header[["X scale factor"]]) | is.null(header[["Y scale factor"]]) | is.null(header[["Z scale factor"]]))
+    stop("Scaling not defined in the header", call. = FALSE)
+
+  if(is.null(header[["File Source ID"]]))
+	   stop("File source ID not defined in the header", call. = FALSE)
+
+  if(is.null(header[["Version Major"]]))
+    stop("Version major not defined in the header", call. = FALSE)
+
+  if(is.null(header[["Version Minor"]]))
+    stop("Version minor not defined in the header", call. = FALSE)
+
+  if(is.null(header[["File Creation Day of Year"]]))
+    stop("File Creation Day of Year not defined in the header", call. = FALSE)
+
+  if(is.null(header[["File Creation Year"]]))
+    stop("File Creation Year not defined in the header", call. = FALSE)
+
+  if(is.null(header[["Point Data Format ID"]]))
+    stop("Point Data Format ID not defined in the header", call. = FALSE)
+
+  if(is.null(header[["Point Data Record Length"]]))
+    stop("Point Data Record Length not defined in the header", call. = FALSE)
 
   file = path.expand(file)
 
-  I = RN = NoR = SDF = EoF = C = SA = UD = PSI = R = G = B = integer(0)
-  time = numeric(0)
+  I <- RN <- NoR <- SDF <- EoF <- C <- SA <- UD <- PSI <- R <- G <- B <- integer(0)
+  time <- numeric(0)
 
   if(!missing(Intensity))
-    I = Intensity
+    I <- Intensity
   if(!missing(ReturnNumber))
-    RN = ReturnNumber
+    RN <- ReturnNumber
   if(!missing(NumberOfReturns))
-    NoR = NumberOfReturns
+    NoR <- NumberOfReturns
   if(!missing(ScanDirectionFlag))
-    SDF = ScanDirectionFlag
+    SDF <- ScanDirectionFlag
   if(!missing(EdgeOfFlightline))
-    EoF = EdgeOfFlightline
+    EoF <- EdgeOfFlightline
   if(!missing(Classification))
-    C = Classification
+    C <- Classification
   if(!missing(ScanAngle))
-    SA = ScanAngle
+    SA <- ScanAngle
   if(!missing(UserData))
-    UD = UserData
+    UD <- UserData
   if(!missing(gpstime))
-    time = gpstime
+    time <- gpstime
   if(!missing(PointSourceID))
-    PSI = PointSourceID
+    PSI <- PointSourceID
   if(!missing(R) & !missing(G) & !missing(B))
   {
-    red = R
-    green = G
-    blue = B
+    red <- R
+    green <- G
+    blue <- B
   }
 
   laswriter(file,header,X,Y,Z,I,RN,NoR,SDF,EoF,C,SA,UD, PSI,time,red,green,blue)
