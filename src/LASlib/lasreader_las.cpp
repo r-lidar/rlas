@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <Rcpp.h>
 
 BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_only)
 {
@@ -58,13 +59,13 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
+    throw std::runtime_error(std::string("ERROR: cannot open file ") + std::string(file_name)); //
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    throw std::runtime_error(std::string("WARNING: setvbuf() failed with buffer size %d")); //io_buffer_size
+    Rcpp::Rcerr << "WARNING: setvbuf() failed with buffer size " << io_buffer_size << std::endl;
   }
 
   // create input
@@ -1185,7 +1186,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
   {
     if (!header.laszip->check())
     {
-      throw std::runtime_error(std::string("ERROR: %s")); //header.laszip->get_error()
+      throw std::runtime_error(std::string("ERROR: ") + std::string(header.laszip->get_error())); //
       throw std::runtime_error(std::string("       please upgrade to the latest release of LAStools (with LASzip)"));
       throw std::runtime_error(std::string("       or contact 'martin.isenburg@rapidlasso.com' for assistance."));
       return FALSE;
@@ -1308,11 +1309,11 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->error())
       {
-        throw std::runtime_error(std::string("ERROR: '%s' after %u of %u points")); //reader->error(), (U32)p_count, (U32)npoints
+        Rcpp::Rcerr << "ERROR: " << reader->error() << " after " << p_count << " of " <<  npoints << " points" << std::endl;
       }
       else
       {
-        throw std::runtime_error(std::string("WARNING: end-of-file after %u of %u points")); //(U32)p_count, (U32)npoints
+        Rcpp::Rcerr << "WARNING: end-of-file after " << p_count << " of " <<  npoints << " points" << std::endl;
       }
       return FALSE;
     }
@@ -1348,12 +1349,12 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->check_end() == FALSE)
       {
-        throw std::runtime_error(std::string("ERROR: '%s' when reaching end of encoding")); //reader->error()
+        throw std::runtime_error(std::string("ERROR: ") + std::string(reader->error()) + std::string(" when reaching end of encoding"));
         p_count--;
       }
       if (reader->warning())
       {
-        throw std::runtime_error(std::string("WARNING: '%s'")); //reader->warning()
+        throw std::runtime_error(std::string("WARNING: ") + std::string(reader->warning())); //
       }
       checked_end = TRUE;
     }
@@ -1469,14 +1470,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only)
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for min_x")); //orig_x_scale_factor, header.x_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_x_scale_factor<< " to " <<  header.x_scale_factor << " causes LAS integer overflow for min_x" << std::endl;
       }
       // make sure rescale does not cause integer overflow for max_x
       temp_f = (orig_x_scale_factor*quantizer.get_X(header.max_x))/header.x_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for max_x")); //orig_x_scale_factor, header.x_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_x_scale_factor<< " to " <<  header.x_scale_factor << " causes LAS integer overflow for max_x" << std::endl;
       }
     }
 
@@ -1487,14 +1488,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only)
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for min_y")); //orig_y_scale_factor, header.y_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_y_scale_factor<< " to " <<  header.y_scale_factor << " causes LAS integer overflow for min_z" << std::endl;
       }
       // make sure rescale does not cause integer overflow for max_y
       temp_f = (orig_y_scale_factor*quantizer.get_Y(header.max_y))/header.y_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for max_y")); //orig_y_scale_factor, header.y_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_y_scale_factor<< " to " <<  header.y_scale_factor << " causes LAS integer overflow for max_y" << std::endl;
       }
     }
 
@@ -1505,14 +1506,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only)
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for min_z")); //orig_z_scale_factor, header.z_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_z_scale_factor<< " to " <<  header.z_scale_factor << " causes LAS integer overflow for min_z" << std::endl;
       }
       // make sure rescale does not cause integer overflow for max_z
       temp_f = (orig_z_scale_factor*quantizer.get_Z(header.max_z))/header.z_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        throw std::runtime_error(std::string("WARNING: rescaling from %g to %g causes LAS integer overflow for max_z")); //orig_z_scale_factor, header.z_scale_factor
+        Rcpp::Rcerr << "WARNING: rescaling from " << orig_z_scale_factor<< " to " <<  header.z_scale_factor << " causes LAS integer overflow for max_z" << std::endl;
       }
     }
   }
@@ -1609,14 +1610,14 @@ BOOL LASreaderLASreoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_x")); //orig_x_offset, header.x_offset
+      Rcpp::Rcerr << "WARNING: reoffsetting from " << orig_x_offset<< " to " <<  header.x_offset << " causes LAS integer overflow for min_x" << std::endl;
     }
     // make sure reoffset_x does not cause integer overflow for max_x
     temp_f = ((header.x_scale_factor*quantizer.get_X(header.max_x))+orig_x_offset-header.x_offset)/header.x_scale_factor;
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_x")); //orig_x_offset, header.x_offset
+      Rcpp::Rcerr << "WARNING: reoffsetting from " << orig_x_offset<< " to " <<  header.x_offset << " causes LAS integer overflow for max_x" << std::endl;
     }
   }
 
@@ -1627,14 +1628,14 @@ BOOL LASreaderLASreoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_y")); //orig_y_offset, header.y_offset
+      Rcpp::Rcerr << "WARNING: reoffsetting from " << orig_y_offset<< " to " <<  header.y_offset << " causes LAS integer overflow for min_y" << std::endl;
     }
     // make sure reoffset_y does not cause integer overflow for max_y
     temp_f = ((header.y_scale_factor*quantizer.get_Y(header.max_y))+orig_y_offset-header.y_offset)/header.y_scale_factor;
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_y")); //orig_y_offset, header.y_offset
+      Rcpp::Rcerr << "WARNING: reoffsetting from " << orig_y_offset<< " to " <<  header.y_offset << " causes LAS integer overflow for max_y" << std::endl;
     }
   }
 
@@ -1765,7 +1766,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_x")); //orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_x_scale_factor<< " to " <<  header.x_scale_factor << " and reoffsetting from " << orig_x_offset << " to " << header.x_offset << " causes LAS integer overflow for min_x" << std::endl;
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_x
@@ -1780,10 +1781,9 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_x")); //orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_x_scale_factor<< " to " <<  header.x_scale_factor << " and reoffsetting from " << orig_x_offset << " to " << header.x_offset << " causes LAS integer overflow for max_x" << std::endl;
     }
   }
-
   if (reoffset_y || rescale_y)
   {
     // make sure rescale & reoffset do not cause integer overflow for min_y
@@ -1798,7 +1798,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_y")); //orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_y_scale_factor<< " to " <<  header.y_scale_factor << " and reoffsetting from " << orig_y_offset << " to " << header.y_offset << " causes LAS integer overflow for min_y" << std::endl;
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_y
@@ -1813,7 +1813,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_y")); //orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_y_scale_factor<< " to " <<  header.y_scale_factor << " and reoffsetting from " << orig_y_offset << " to " << header.y_offset << " causes LAS integer overflow for max_y" << std::endl;
     }
   }
 
@@ -1831,7 +1831,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_z")); //orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_z_scale_factor<< " to " <<  header.z_scale_factor << " and reoffsetting from " << orig_z_offset << " to " << header.z_offset << " causes LAS integer overflow for min_z" << std::endl;
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_z
@@ -1846,7 +1846,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only)
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      throw std::runtime_error(std::string("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_z")); //orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset
+      Rcpp::Rcerr << "WARNING: rescaling from " << orig_z_scale_factor<< " to " <<  header.z_scale_factor << " and reoffsetting from " << orig_z_offset << " to " << header.z_offset << " causes LAS integer overflow for max_z" << std::endl;
     }
   }
 
