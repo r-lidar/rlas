@@ -69,7 +69,7 @@
 #' lasdata <- readlasdata(lazfile)
 #' lasdata <- readlasdata(lazfile, filter = "-keep_first")
 #' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
-#' @useDynLib rlas
+#' @useDynLib rlas, .registration = TRUE
 readlasdata = function(file,
                        Intensity = TRUE,
                        ReturnNumber = TRUE,
