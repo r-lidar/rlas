@@ -312,7 +312,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
   {
     if (header.header_size < 235)
     {
-      throw std::runtime_error(std::string("WARNING: for LAS 1.%d header_size should at least be 235 but it is only %d")); //header.version_minor, header.header_size
+      Rcpp::Rcerr << "WARNING: for LAS 1." << header.version_minor << " header_size should at least be 235 but it is only " <<  header.header_size << std::endl;
       header.user_data_in_header_size = header.header_size - 227;
     }
     else
@@ -403,7 +403,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
 
       if (((int)header.offset_to_point_data - vlrs_size - header.header_size) < 54)
       {
-        throw std::runtime_error(std::string("WARNING: only %d bytes until point block after reading %d of %d vlrs. skipping remaining vlrs ...")); //(int)header.offset_to_point_data - vlrs_size - header.header_size, i, header.number_of_variable_length_records
+        Rcpp::Rcerr << "WARNING: only " << (int)header.offset_to_point_data - vlrs_size - header.header_size << " bytes until point block after reading " << i << " of " << header.number_of_variable_length_records << " vlrs. skipping remaining vlrs ..." << std::endl;
         header.number_of_variable_length_records = i;
         break;
       }
@@ -454,7 +454,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
 
       if (((int)header.offset_to_point_data - vlrs_size - header.header_size) < header.vlrs[i].record_length_after_header)
       {
-        throw std::runtime_error(std::string("WARNING: only %d bytes until point block when trying to read %d bytes into header.vlrs[%d].data")); //(int)header.offset_to_point_data - vlrs_size - header.header_size, header.vlrs[i].record_length_after_header, i
+        Rcpp::Rcerr << "WARNING: only " <<  (int)header.offset_to_point_data - vlrs_size - header.header_size << " bytes until point block when trying to read " << header.vlrs[i].record_length_after_header << " bytes into header.vlrs[" << i << "].data" << std::endl;
         header.vlrs[i].record_length_after_header = (int)header.offset_to_point_data - vlrs_size - header.header_size;
       }
 
@@ -703,7 +703,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
           {
             if (header.vlr_geo_keys)
             {
-              throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoKeyDirectoryTag"));
+              Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoKeyDirectoryTag" << std::endl;
             }
             header.vlr_geo_keys = (LASvlr_geo_keys*)header.vlrs[i].data;
 
@@ -711,15 +711,15 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
 
             if (header.vlr_geo_keys->key_directory_version != 1)
             {
-              throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->key_directory_version: %d != 1")); //header.vlr_geo_keys->key_directory_version
+              Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->key_directory_version: " << header.vlr_geo_keys->key_directory_version << " != 1" << std::endl;
             }
             if (header.vlr_geo_keys->key_revision != 1)
             {
-              throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->key_revision: %d != 1")); //header.vlr_geo_keys->key_revision
+              Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->key_revision: " << header.vlr_geo_keys->key_revision << " != 1" << std::endl;
             }
             if (header.vlr_geo_keys->minor_revision != 0)
             {
-              throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->minor_revision: %d != 0")); //header.vlr_geo_keys->minor_revision
+              Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->minor_revision: " << header.vlr_geo_keys->minor_revision << " != 0" << std::endl;
             }
             header.vlr_geo_key_entries = (LASvlr_key_entry*)&header.vlr_geo_keys[1];
           }
@@ -727,7 +727,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
           {
             if (header.vlr_geo_double_params)
             {
-              throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoF64ParamsTag"));
+              Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoDoubleParamsTag" << std::endl;
             }
             header.vlr_geo_double_params = (F64*)header.vlrs[i].data;
           }
@@ -735,18 +735,18 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
           {
             if (header.vlr_geo_ascii_params)
             {
-              throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoAsciiParamsTag"));
+              Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoAsciiParamsTag" << std::endl;
             }
             header.vlr_geo_ascii_params = (CHAR*)header.vlrs[i].data;
           }
           else if ((header.vlrs[i].record_id != 2111) && (header.vlrs[i].record_id != 2112)) // WKT OGC MATH TRANSFORM or WKT OGC COORDINATE SYSTEM
           {
-            throw std::runtime_error(std::string("WARNING: unknown LASF_Projection VLR with record_id %d.")); //header.vlrs[i].record_id
+            Rcpp::Rcerr << "WARNING: unknown LASF_Projection VLR with record_id " << header.vlrs[i].record_id << std::endl;
           }
         }
         else if (header.vlrs[i].record_id != 2112) // GeoAsciiParamsTag
         {
-          throw std::runtime_error(std::string("WARNING: no payload for LASF_Projection VLR with record_id %d.")); //header.vlrs[i].record_id
+          Rcpp::Rcerr << "WARNING: no payload for LASF_Projection VLR with record_id " << header.vlrs[i].record_id << std::endl;
         }
       }
       else if (strcmp(header.vlrs[i].user_id, "LASF_Spec") == 0)
@@ -757,7 +757,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
           {
             if (header.vlr_classification)
             {
-              throw std::runtime_error(std::string("WARNING: variable length records contain more than one ClassificationLookup"));
+              Rcpp::Rcerr << "WARNING: variable length records contain more than one ClassificationLookup" << std::endl;
             }
             header.vlr_classification = (LASvlr_classification*)header.vlrs[i].data;
           }
@@ -782,28 +782,28 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
             }
             if (header.vlr_wave_packet_descr[idx])
             {
-              throw std::runtime_error(std::string("WARNING: variable length records defines wave packet descr %d more than once")); //idx
+              Rcpp::Rcerr << "WARNING: variable length records defines wave packet descr " << idx << " more than once" << std::endl;
             }
             if (header.vlrs[i].record_length_after_header != 26)
             {
-              throw std::runtime_error(std::string("WARNING: variable length record payload for wave packet descr %d is %d instead of 26 bytes")); //idx, (I32)header.vlrs[i].record_length_after_header
+              Rcpp::Rcerr << "WARNING: variable length record payload for wave packet descr " << idx  << " is " << (I32)header.vlrs[i].record_length_after_header << " instead of 26 bytes" << std::endl;
             }
             header.vlr_wave_packet_descr[idx] = (LASvlr_wave_packet_descr*)header.vlrs[i].data;
             if ((header.vlr_wave_packet_descr[idx]->getBitsPerSample() != 8) && (header.vlr_wave_packet_descr[idx]->getBitsPerSample() != 16))
             {
-              throw std::runtime_error(std::string("WARNING: bits per sample for wave packet descr %d is %d instead of 8 or 16")); //idx, (I32)header.vlr_wave_packet_descr[idx]->getBitsPerSample()
+              Rcpp::Rcerr << "WARNING: bits per sample for wave packet descr " << idx << " is " << (I32)header.vlr_wave_packet_descr[idx]->getBitsPerSample() << " instead of 8 or 16" << std::endl;
             }
             if (header.vlr_wave_packet_descr[idx]->getNumberOfSamples() == 0)
             {
-              throw std::runtime_error(std::string("WARNING: number of samples for wave packet descr %d is zero")); //idx
+              Rcpp::Rcerr << "WARNING: number of samples for wave packet descr " << idx << " is zero"<< std::endl;
             }
             if (header.vlr_wave_packet_descr[idx]->getNumberOfSamples() > 8096)
             {
-              throw std::runtime_error(std::string("WARNING: number of samples of %u for wave packet descr %d is with unusually large")); //header.vlr_wave_packet_descr[idx]->getNumberOfSamples(), idx
+              Rcpp::Rcerr << "WARNING: number of samples of " << header.vlr_wave_packet_descr[idx]->getNumberOfSamples() << " for wave packet descr " << idx << " is with unusually large" << std::endl;
             }
             if (header.vlr_wave_packet_descr[idx]->getTemporalSpacing() == 0)
             {
-              throw std::runtime_error(std::string("WARNING: temporal spacing for wave packet descr %d is zero")); //idx
+              Rcpp::Rcerr << "WARNING: temporal spacing for wave packet descr " << idx << " is zero" << std::endl;
             }
 /*
             // fix for RiPROCESS export error
@@ -819,7 +819,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
         }
         else
         {
-          throw std::runtime_error(std::string("WARNING: no payload for LASF_Spec (not specification-conform)."));
+          Rcpp::Rcerr << "WARNING: no payload for LASF_Spec (not specification-conform)." << std::endl;
         }
       }
       else if ((strcmp(header.vlrs[i].user_id, "laszip encoded") == 0) || ((strcmp(header.vlrs[i].user_id, "LAStools") == 0) && (header.vlrs[i].record_id < 2000)) || (strcmp(header.vlrs[i].user_id, "lastools tile") == 0))
@@ -854,7 +854,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
     {
       if (!stream->isSeekable())
       {
-        throw std::runtime_error(std::string("WARNING: LAS %d.%d file has %d EVLRs but stream is not seekable ...")); //header.version_major, header.version_minor, header.number_of_extended_variable_length_records
+        Rcpp::Rcerr << "WARNING: LAS " << header.version_major << "." << header.version_minor << " file has " << header.number_of_extended_variable_length_records << " EVLRs but stream is not seekable ..." << std::endl;
       }
       else
       {
@@ -1094,7 +1094,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
             {
               if (header.vlr_geo_keys)
               {
-                throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoKeyDirectoryTag"));
+                Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoKeyDirectoryTag" << std::endl;
               }
               header.vlr_geo_keys = (LASvlr_geo_keys*)header.evlrs[i].data;
 
@@ -1102,15 +1102,15 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
 
               if (header.vlr_geo_keys->key_directory_version != 1)
               {
-                throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->key_directory_version: %d != 1")); //header.vlr_geo_keys->key_directory_version
+                Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->key_directory_version: " << header.vlr_geo_keys->key_directory_version << " != 1" << std::endl;
               }
               if (header.vlr_geo_keys->key_revision != 1)
               {
-                throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->key_revision: %d != 1")); //header.vlr_geo_keys->key_revision
+                Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->key_revision: " << header.vlr_geo_keys->key_revision << " != 1" << std::endl;
               }
               if (header.vlr_geo_keys->minor_revision != 0)
               {
-                throw std::runtime_error(std::string("WARNING: wrong vlr_geo_keys->minor_revision: %d != 0")); //header.vlr_geo_keys->minor_revision
+               Rcpp::Rcerr << "WARNING: wrong vlr_geo_keys->minor_revision: " << header.vlr_geo_keys->minor_revision << " != 0" << std::endl;
               }
               header.vlr_geo_key_entries = (LASvlr_key_entry*)&header.vlr_geo_keys[1];
             }
@@ -1118,7 +1118,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
             {
               if (header.vlr_geo_double_params)
               {
-                throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoF64ParamsTag"));
+                Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoDoubleParamsTag" << std::endl;
               }
               header.vlr_geo_double_params = (F64*)header.evlrs[i].data;
             }
@@ -1126,7 +1126,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
             {
               if (header.vlr_geo_ascii_params)
               {
-                throw std::runtime_error(std::string("WARNING: variable length records contain more than one GeoAsciiParamsTag"));
+                Rcpp::Rcerr << "WARNING: variable length records contain more than one GeoAsciiParamsTag" << std::endl;
               }
               header.vlr_geo_ascii_params = (CHAR*)header.evlrs[i].data;
             }
@@ -1137,7 +1137,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
             {
               if (header.vlr_classification)
               {
-                throw std::runtime_error(std::string("WARNING: variable length records contain more than one ClassificationLookup"));
+                Rcpp::Rcerr << "WARNING: variable length records contain more than one ClassificationLookup" << std::endl;
               }
               header.vlr_classification = (LASvlr_classification*)header.evlrs[i].data;
             }
@@ -1162,7 +1162,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
               }
               if (header.vlr_wave_packet_descr[idx])
               {
-                throw std::runtime_error(std::string("WARNING: extended variable length records defines wave packet descr %d more than once")); //idx
+               Rcpp::Rcerr << "WARNING: extended variable length records defines wave packet descr " << idx << " more than once" << std::endl;
               }
               header.vlr_wave_packet_descr[idx] = (LASvlr_wave_packet_descr*)header.evlrs[i].data;
             }
@@ -1187,8 +1187,8 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
     if (!header.laszip->check())
     {
       throw std::runtime_error(std::string("ERROR: ") + std::string(header.laszip->get_error())); //
-      throw std::runtime_error(std::string("       please upgrade to the latest release of LAStools (with LASzip)"));
-      throw std::runtime_error(std::string("       or contact 'martin.isenburg@rapidlasso.com' for assistance."));
+      //throw std::runtime_error(std::string("       please upgrade to the latest release of LAStools (with LASzip)"));
+      //throw std::runtime_error(std::string("       or contact 'martin.isenburg@rapidlasso.com' for assistance."));
       return FALSE;
     }
   }
@@ -1200,7 +1200,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only)
     if (!header.laszip)
     {
       throw std::runtime_error(std::string("ERROR: this file was compressed with an experimental version of laszip"));
-      throw std::runtime_error(std::string("ERROR: please contact 'martin.isenburg@rapidlasso.com' for assistance."));
+      //throw std::runtime_error(std::string("ERROR: please contact 'martin.isenburg@rapidlasso.com' for assistance."));
       return FALSE;
     }
     header.point_data_format &= 127;
@@ -1354,7 +1354,7 @@ BOOL LASreaderLAS::read_point_default()
       }
       if (reader->warning())
       {
-        throw std::runtime_error(std::string("WARNING: ") + std::string(reader->warning())); //
+        Rcpp::Rcerr << "WARNING: " << reader->warning() << std::endl;
       }
       checked_end = TRUE;
     }

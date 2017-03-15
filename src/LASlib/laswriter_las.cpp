@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <Rcpp.h>
 
 BOOL LASwriterLAS::refile(FILE* file)
 {
@@ -76,7 +77,7 @@ BOOL LASwriterLAS::open(const char* file_name, const LASheader* header, U32 comp
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    throw std::runtime_error(std::string("WARNING: setvbuf() failed with buffer size %d")); //io_buffer_size
+    Rcpp::Rcerr << "WARNING: setvbuf() failed with buffer size " << io_buffer_size << std::endl;
   }
 
   ByteStreamOut* out;
@@ -255,7 +256,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   U8 version_major = header->version_major;
   if (header->version_major != 1)
   {
-    throw std::runtime_error(std::string("WARNING: header->version_major is %d. writing 1 instead.")); //header->version_major
+    Rcpp::Rcerr << "WARNING: header->version_major is " <<  header->version_major << " writing 1 instead." << std::endl;
     version_major = 1;
   }
   if (!stream->putByte(header->version_major))
@@ -267,7 +268,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   U8 version_minor = header->version_minor;
   if (version_minor > 4)
   {
-    throw std::runtime_error(std::string("WARNING: header->version_minor is %d. writing 4 instead.")); //version_minor
+    Rcpp::Rcerr << "WARNING: header->version_minor is " <<  version_minor << " writing 4 instead." << std::endl;
     version_minor = 4;
   }
   if (!stream->putByte(version_minor))
@@ -410,9 +411,9 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     if (start_of_waveform_data_packet_record != 0)
     {
 #ifdef _WIN32
-      throw std::runtime_error(std::string("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.")); //start_of_waveform_data_packet_record
+      Rcpp::Rcerr << "WARNING: header->start_of_waveform_data_packet_record is " << start_of_waveform_data_packet_record << " writing 0 instead." << std::endl;
 #else
-      throw std::runtime_error(std::string("WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.")); //start_of_waveform_data_packet_record
+      Rcpp::Rcerr << "WARNING: header->start_of_waveform_data_packet_record is " << start_of_waveform_data_packet_record << " writing 0 instead." << std::endl;
 #endif
       start_of_waveform_data_packet_record = 0;
     }
@@ -440,9 +441,9 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     if (start_of_first_extended_variable_length_record != 0)
     {
 #ifdef _WIN32
-      throw std::runtime_error(std::string("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %I64d. writing 0 instead.")); //start_of_first_extended_variable_length_record
+      Rcpp::Rcerr << "WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is " << start_of_first_extended_variable_length_record << " writing 0 instead." << std::endl;
 #else
-      throw std::runtime_error(std::string("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %lld. writing 0 instead.")); //start_of_first_extended_variable_length_record
+      Rcpp::Rcerr << "WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is " << start_of_first_extended_variable_length_record << " writing 0 instead." << std::endl;
 #endif
       start_of_first_extended_variable_length_record = 0;
     }
@@ -454,7 +455,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     U32 number_of_extended_variable_length_records = header->number_of_extended_variable_length_records;
     if (number_of_extended_variable_length_records != 0)
     {
-      throw std::runtime_error(std::string("WARNING: EVLRs not supported. header->number_of_extended_variable_length_records is %u. writing 0 instead.")); //number_of_extended_variable_length_records
+      Rcpp::Rcerr << "WARNING: EVLRs not supported. header->number_of_extended_variable_length_records is " << number_of_extended_variable_length_records<< " writing 0 instead." << std::endl;
       number_of_extended_variable_length_records = 0;
     }
     if (!stream->put32bitsLE((U8*)&(number_of_extended_variable_length_records)))
@@ -939,7 +940,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       else
       {
-        throw std::runtime_error(std::string("WARNING: too many points in LAS %d.%d file. limit is %u.")); //header->version_major, header->version_minor, U32_MAX
+        Rcpp::Rcerr << "WARNING: too many points in LAS " << header->version_major << "." << header->version_minor << " file. limit is " << U32_MAX << "." << std::endl;
         number = U32_MAX;
       }
     }
@@ -1109,9 +1110,9 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       if (header->start_of_waveform_data_packet_record != 0)
       {
 #ifdef _WIN32
-        throw std::runtime_error(std::string("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.")); //header->start_of_waveform_data_packet_record
+        Rcpp::Rcout << "WARNING: header->start_of_waveform_data_packet_record is " << header->start_of_waveform_data_packet_record << ". writing 0 instead." << std::endl;
 #else
-        throw std::runtime_error(std::string("WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.")); //header->start_of_waveform_data_packet_record
+        Rcpp::Rcout << "WARNING: header->start_of_waveform_data_packet_record is " << header->start_of_waveform_data_packet_record << ". writing 0 instead." << std::endl;
 #endif
         U64 start_of_waveform_data_packet_record = 0;
         if (!stream->put64bitsLE((U8*)&start_of_waveform_data_packet_record))
@@ -1192,7 +1193,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       if (i == (I32)header->number_of_variable_length_records)
       {
-        throw std::runtime_error(std::string("WARNING: could not find extra bytes VLR for update"));
+        Rcpp::Rcerr << "WARNING: could not find extra bytes VLR for update" << std::endl;
       }
       else
       {
@@ -1216,9 +1217,9 @@ I64 LASwriterLAS::close(BOOL update_header)
   if (p_count != npoints)
   {
 #ifdef _WIN32
-    throw std::runtime_error(std::string("WARNING: written %I64d points but expected %I64d points")); //p_count, npoints
+   Rcpp::Rcerr << "WARNING: written " << p_count << " points but expected " << npoints << " points" << std::endl;
 #else
-    throw std::runtime_error(std::string("WARNING: written %lld points but expected %lld points")); //p_count, npoints
+   Rcpp::Rcerr << "WARNING: written " << p_count << " points but expected " << npoints << " points" << std::endl;
 #endif
   }
 
@@ -1236,9 +1237,9 @@ I64 LASwriterLAS::close(BOOL update_header)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        throw std::runtime_error(std::string("WARNING: stream not seekable. cannot update header from %I64d to %I64d points.")); //npoints, p_count
+        Rcpp::Rcerr << "WARNING: stream not seekable. cannot update header from " << npoints << " to "<< p_count << " points." << std::endl;
 #else
-        throw std::runtime_error(std::string("WARNING: stream not seekable. cannot update header from %lld to %lld points.")); //npoints, p_count
+        Rcpp::Rcerr << "WARNING: stream not seekable. cannot update header from " << npoints << " to "<< p_count << " points." << std::endl;
 #endif
       }
       else
