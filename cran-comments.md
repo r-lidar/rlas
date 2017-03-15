@@ -1,6 +1,6 @@
 ## Test environments
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, g++
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.2, clang++ -stdlib=libc++
+* Linux Mint 18 (Ubuntu 16.04), R 3.3.3, g++
+* Linux Mint 18 (Ubuntu 16.04), R 3.3.3, clang++ -stdlib=libc++
 * win-builder (release and devel), g++
 
 ## R CMD check results
