@@ -99,7 +99,7 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 
   file = path.expand(file)
 
-  I <- RN <- NoR <- SDF <- EoF <- C <- SA <- UD <- PSI <- R <- G <- B <- integer(0)
+  I <- RN <- NoR <- SDF <- EoF <- C <- SA <- UD <- PSI <- red <- green <- blue <- integer(0)
   time <- numeric(0)
 
   if(!missing(Intensity))
