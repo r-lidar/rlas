@@ -1,9 +1,15 @@
-### rlas v1.1.2 (in development)
+### rlas v1.1.2 (Release date: 2017-06-09)
+
+#### BUG FIXES:
+
+* Fix  [[#4](https://github.com/Jean-Romain/rlas/issues/4)] bug computer precision when writing files 
+* Fix  [[#61](https://github.com/Jean-Romain/lidR/issues/61)] wrong header size for files version 1.3
+
+### rlas v1.1.2 (Release date: 2017-05-04)
 
 #### BUG FIXES:
 
 * Write the proper RGB colors instead of 0.
-* Write properly las file version 1.3
 
 ### rlas v1.1.1 (Release date: 2017-03-15)
 
