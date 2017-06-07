@@ -51,6 +51,8 @@
 
 #define LAS_TOOLS_VERSION 160730
 
+#include <Rcpp.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -455,38 +457,38 @@ public:
   {
     if (strncmp(file_signature, "LASF", 4) != 0)
     {
-      throw std::runtime_error(std::string("ERROR: wrong file signature '%4s'")); //file_signature
+      Rcpp::Rcerr << "ERROR: wrong file signature " << file_signature << std::endl;
       return FALSE;
     }
     if ((version_major != 1) || (version_minor > 4))
     {
-      throw std::runtime_error(std::string("WARNING: unknown version %d.%d (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)")); //version_major, version_minor
+      Rcpp::Rcerr << "WARNING: unknown version " << version_major << "." << version_minor << " (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)" << std::endl; //version_major, version_minor << std::endl;
     }
     if (header_size < 227)
     {
-      throw std::runtime_error(std::string("ERROR: header size is %d but should be at least 227")); //header_size
+      Rcpp::Rcerr << "ERROR: header size is " << header_size << " but should be at least 227" << std::endl;
       return FALSE;
     }
     if (offset_to_point_data < header_size)
     {
-      throw std::runtime_error(std::string("ERROR: offset to point data %d is smaller than header size %d")); //offset_to_point_data, header_size
+      Rcpp::Rcerr << "ERROR: offset to point data " << offset_to_point_data << " is smaller than header size  " << header_size << std::endl;
       return FALSE;
     }
     if (x_scale_factor == 0)
     {
-      throw std::runtime_error(std::string("WARNING: x scale factor is zero."));
+      Rcpp::Rcerr << "WARNING: x scale factor is zero."<< std::endl;
     }
     if (y_scale_factor == 0)
     {
-      throw std::runtime_error(std::string("WARNING: y scale factor is zero."));
+      Rcpp::Rcerr << "WARNING: y scale factor is zero." << std::endl;
     }
     if (z_scale_factor == 0)
     {
-      throw std::runtime_error(std::string("WARNING: z scale factor is zero."));
+      Rcpp::Rcerr << "WARNING: z scale factor is zero." << std::endl;
     }
     if (max_x < min_x || max_y < min_y || max_z < min_z)
     {
-      throw std::runtime_error(std::string("WARNING: invalid bounding box [ %g %g %g / %g %g %g ]")); //min_x, min_y, min_z, max_x, max_y, max_z
+      Rcpp::Rcerr << "WARNING: invalid bounding box [" << min_x << " " << min_y << " " << min_z << " / " << max_x << " " << max_y << " " << max_z << "]" << std::endl;
     }
     return TRUE;
   };
