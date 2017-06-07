@@ -3,6 +3,7 @@
 #### BUG FIXES:
 
 * Write the proper RGB colors instead of 0.
+* Write properly las file version 1.3
 
 ### rlas v1.1.1 (Release date: 2017-03-15)
 
