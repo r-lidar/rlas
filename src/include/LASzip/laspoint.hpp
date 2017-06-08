@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  laspoint.hpp
-  
+
   CONTENTS:
-  
+
     This class describes an LAS point and offers helper functions to access,
     convert, and set the default (and any additional) point attributes.
 
@@ -22,13 +22,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     10 March 2017 -- fix in copy_to() and copy_from() new LAS 1.4 point types
     10 October 2016 -- small fixes for NIR and extended scanner channel
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
-  
+
 ===============================================================================
 */
 #ifndef LAS_POINT_HPP
@@ -269,7 +269,7 @@ public:
 
     if (!LASzip().setup(&num_items, &items, point_type, point_size, LASZIP_COMPRESSOR_NONE))
     {
-      fprintf(stderr,"ERROR: unknown point type %d with point size %d\n", (I32)point_type, (I32)point_size);
+      REprintf("ERROR: unknown point type %d with point size %d\n", (I32)point_type, (I32)point_size);
       return FALSE;
     }
 
@@ -513,7 +513,7 @@ public:
     have_nir = FALSE;
     extra_bytes_number = 0;
     total_point_size = 0;
-    
+
     num_items = 0;
     if (items) delete [] items;
     items = 0;
@@ -561,7 +561,7 @@ public:
   inline U16 get_B() const { return rgb[2]; };
   inline U16 get_I() const { return rgb[3]; };
   inline U16 get_NIR() const { return rgb[3]; };
-  
+
   inline void set_X(const I32 X) { this->X = X; };
   inline void set_Y(const I32 Y) { this->Y = Y; };
   inline void set_Z(const I32 Z) { this->Z = Z; };
@@ -657,7 +657,7 @@ public:
     return FALSE;
   };
 
-  inline BOOL set_attribute(I32 index, const U8* data) 
+  inline BOOL set_attribute(I32 index, const U8* data)
   {
     if (has_attribute(index))
     {
