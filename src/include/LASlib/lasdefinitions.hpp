@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasdefinitions.hpp
-
+  
   CONTENTS:
-
+  
     Contains the Header and Point classes for reading and writing LiDAR points
     in the LAS format
 
@@ -20,7 +20,7 @@
 
   COPYRIGHT:
 
-    (c) 2005-2014, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2005-2017, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -28,36 +28,33 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
+    19 April 2017 -- support for selective decompression for new LAS 1.4 points 
+    1 February 2017 -- better support for OGC WKT strings in VLRs or EVLRs
     22 June 2016 -- set default of VLR header "reserved" to 0 instead of 0xAABB
     1 August 2015 -- moving LASpoint, LASquantizer, and LASattributer to LASzip
     9 December 2013 -- bug fix and improved writing of new LAS 1.4 point types
-    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes
+    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes 
     10 January 2011 -- licensing change for LGPL release and liblas integration
     16 December 2010 -- updated to support generic LASitem point formats
     3 December 2010 -- updated to (somewhat) support LAS format 1.3
-    7 September 2008 -- updated to support LAS format 1.2
+    7 September 2008 -- updated to support LAS format 1.2 
     11 June 2007 -- number of return / scan direction bitfield order was wrong
     18 February 2007 -- created after repairing 2 vacuum cleaners in the garden
-
+  
 ===============================================================================
 */
 #ifndef LAS_DEFINITIONS_HPP
 #define LAS_DEFINITIONS_HPP
 
-#define LAS_TOOLS_VERSION 160730
-
-#include <Rcpp.h>
+#define LAS_TOOLS_VERSION 170528
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <stdexcept>
 
 #include "mydefs.hpp"
 #include "laszip.hpp"
@@ -89,7 +86,7 @@ class LASvlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16];
+  CHAR user_id[16]; 
   U16 record_id;
   U16 record_length_after_header;
   CHAR description[32];
@@ -101,7 +98,7 @@ class LASevlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16];
+  CHAR user_id[16]; 
   U16 record_id;
   I64 record_length_after_header;
   CHAR description[32];
@@ -230,8 +227,8 @@ public:
   LASvlr_key_entry* vlr_geo_key_entries;
   F64* vlr_geo_double_params;
   CHAR* vlr_geo_ascii_params;
-  CHAR* vlr_geo_wkt_ogc_math;
-  CHAR* vlr_geo_wkt_ogc_cs;
+  CHAR* vlr_geo_ogc_wkt_math;
+  CHAR* vlr_geo_ogc_wkt;
   LASvlr_classification* vlr_classification;
   LASvlr_wave_packet_descr** vlr_wave_packet_descr;
 
@@ -345,8 +342,8 @@ public:
       vlr_geo_key_entries = 0;
       vlr_geo_double_params = 0;
       vlr_geo_ascii_params = 0;
-      vlr_geo_wkt_ogc_math = 0;
-      vlr_geo_wkt_ogc_cs = 0;
+      vlr_geo_ogc_wkt_math = 0;
+      vlr_geo_ogc_wkt = 0;
       vlr_classification = 0;
       if (vlr_wave_packet_descr) delete [] vlr_wave_packet_descr;
       vlr_wave_packet_descr = 0;
@@ -457,38 +454,38 @@ public:
   {
     if (strncmp(file_signature, "LASF", 4) != 0)
     {
-      Rcpp::Rcerr << "ERROR: wrong file signature " << file_signature << std::endl;
+      fprintf(stderr,"ERROR: wrong file signature '%4s'\n", file_signature);
       return FALSE;
     }
     if ((version_major != 1) || (version_minor > 4))
     {
-      Rcpp::Rcerr << "WARNING: unknown version " << version_major << "." << version_minor << " (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)" << std::endl; //version_major, version_minor << std::endl;
+      fprintf(stderr,"WARNING: unknown version %d.%d (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)\n", version_major, version_minor);
     }
     if (header_size < 227)
     {
-      Rcpp::Rcerr << "ERROR: header size is " << header_size << " but should be at least 227" << std::endl;
+      fprintf(stderr,"ERROR: header size is %d but should be at least 227\n", header_size);
       return FALSE;
     }
     if (offset_to_point_data < header_size)
     {
-      Rcpp::Rcerr << "ERROR: offset to point data " << offset_to_point_data << " is smaller than header size  " << header_size << std::endl;
+      fprintf(stderr,"ERROR: offset to point data %d is smaller than header size %d\n", offset_to_point_data, header_size);
       return FALSE;
     }
     if (x_scale_factor == 0)
     {
-      Rcpp::Rcerr << "WARNING: x scale factor is zero."<< std::endl;
+      fprintf(stderr,"WARNING: x scale factor is zero.\n");
     }
     if (y_scale_factor == 0)
     {
-      Rcpp::Rcerr << "WARNING: y scale factor is zero." << std::endl;
+      fprintf(stderr,"WARNING: y scale factor is zero.\n");
     }
     if (z_scale_factor == 0)
     {
-      Rcpp::Rcerr << "WARNING: z scale factor is zero." << std::endl;
+      fprintf(stderr,"WARNING: z scale factor is zero.\n");
     }
     if (max_x < min_x || max_y < min_y || max_z < min_z)
     {
-      Rcpp::Rcerr << "WARNING: invalid bounding box [" << min_x << " " << min_y << " " << min_z << " / " << max_x << " " << max_y << " " << max_z << "]" << std::endl;
+      fprintf(stderr,"WARNING: invalid bounding box [ %g %g %g / %g %g %g ]\n", min_x, min_y, min_z, max_x, max_y, max_z);
     }
     return TRUE;
   };
@@ -515,7 +512,7 @@ public:
   };
 
   // note that data needs to be allocated with new [] and not malloc and that LASheader
-  // will become the owner over this and manage its deallocation
+  // will become the owner over this and manage its deallocation 
   void add_vlr(const CHAR* user_id, const U16 record_id, const U16 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
   {
     U32 i = 0;
@@ -635,6 +632,71 @@ public:
       }
     }
     return FALSE;
+  };
+
+  // note that data needs to be allocated with new [] and not malloc and that LASheader
+  // will become the owner over this and manage its deallocation 
+  void add_evlr(const CHAR* user_id, const U16 record_id, const I64 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
+  {
+    U32 i = 0;
+    BOOL found_description = FALSE;
+    if (evlrs)
+    {
+      if (keep_existing)
+      {
+        i = number_of_variable_length_records;
+      }
+      else
+      {
+        for (i = 0; i < number_of_variable_length_records; i++)
+        {
+          if ((strcmp(evlrs[i].user_id, user_id) == 0) && (evlrs[i].record_id == record_id))
+          {
+            if (evlrs[i].record_length_after_header)
+            {
+              delete [] evlrs[i].data;
+              evlrs[i].data = 0;
+            }
+            found_description = TRUE;
+            break;
+          }
+        }
+      }
+      if (i == number_of_extended_variable_length_records)
+      {
+        number_of_extended_variable_length_records++;
+        evlrs = (LASevlr*)realloc(evlrs, sizeof(LASevlr)*number_of_extended_variable_length_records);
+      }
+    }
+    else
+    {
+      number_of_extended_variable_length_records = 1;
+      evlrs = (LASevlr*)malloc(sizeof(LASevlr)*number_of_extended_variable_length_records);
+    }
+    evlrs[i].reserved = 0; // used to be 0xAABB
+    strncpy(evlrs[i].user_id, user_id, 16);
+    evlrs[i].record_id = record_id;
+    evlrs[i].record_length_after_header = record_length_after_header;
+    if (keep_description && found_description)
+    {
+      // do nothing
+    }
+    else if (description)
+    {
+      sprintf(evlrs[i].description, "%.31s", description);
+    }
+    else
+    {
+      sprintf(evlrs[i].description, "by LAStools of rapidlasso GmbH");
+    }
+    if (record_length_after_header)
+    {
+      evlrs[i].data = data;
+    }
+    else
+    {
+      evlrs[i].data = 0;
+    }
   };
 
   void set_lastiling(U32 level, U32 level_index, U32 implicit_levels, BOOL buffer, BOOL reversible, F32 min_x, F32 max_x, F32 min_y, F32 max_y)
@@ -783,33 +845,60 @@ public:
 
   void set_geo_wkt_ogc_math(const I32 num_geo_wkt_ogc_math, const CHAR* geo_wkt_ogc_math)
   {
-    vlr_geo_wkt_ogc_math = new CHAR[num_geo_wkt_ogc_math];
-    memcpy(vlr_geo_wkt_ogc_math, geo_wkt_ogc_math, sizeof(CHAR)*num_geo_wkt_ogc_math);
-    add_vlr("LASF_Projection", 2111, sizeof(CHAR)*num_geo_wkt_ogc_math, (U8*)vlr_geo_wkt_ogc_math);
+    I32 null_terminator = 0;
+    if (geo_wkt_ogc_math[num_geo_wkt_ogc_math-1] == '\0')
+    {
+      vlr_geo_ogc_wkt_math = new CHAR[num_geo_wkt_ogc_math];
+    }
+    else
+    {
+      null_terminator = 1;
+      vlr_geo_ogc_wkt_math = new CHAR[num_geo_wkt_ogc_math+1];
+      vlr_geo_ogc_wkt_math[num_geo_wkt_ogc_math] = '\0';
+    }
+    memcpy(vlr_geo_ogc_wkt_math, geo_wkt_ogc_math, sizeof(CHAR)*num_geo_wkt_ogc_math);
+    add_vlr("LASF_Projection", 2111, sizeof(CHAR)*(num_geo_wkt_ogc_math+null_terminator), (U8*)vlr_geo_ogc_wkt_math);
   }
 
   void del_geo_wkt_ogc_math()
   {
-    if (vlr_geo_wkt_ogc_math)
+    if (vlr_geo_ogc_wkt_math)
     {
       remove_vlr("LASF_Projection", 2111);
-      vlr_geo_wkt_ogc_math = 0;
+      vlr_geo_ogc_wkt_math = 0;
     }
   }
 
-  void set_geo_wkt_ogc_cs(const I32 num_geo_wkt_ogc_cs, const CHAR* geo_wkt_ogc_cs)
+  void set_geo_ogc_wkt(const I32 num_geo_ogc_wkt, const CHAR* geo_ogc_wkt, BOOL in_evlr=FALSE)
   {
-    vlr_geo_wkt_ogc_cs = new CHAR[num_geo_wkt_ogc_cs];
-    memcpy(vlr_geo_wkt_ogc_cs, geo_wkt_ogc_cs, sizeof(CHAR)*num_geo_wkt_ogc_cs);
-    add_vlr("LASF_Projection", 2112, sizeof(CHAR)*num_geo_wkt_ogc_cs, (U8*)vlr_geo_wkt_ogc_cs);
+    I32 null_terminator = 0;
+    if (geo_ogc_wkt[num_geo_ogc_wkt-1] == '\0')
+    {
+      vlr_geo_ogc_wkt = new CHAR[num_geo_ogc_wkt];
+    }
+    else
+    {
+      null_terminator = 1;
+      vlr_geo_ogc_wkt = new CHAR[num_geo_ogc_wkt+1];
+      vlr_geo_ogc_wkt[num_geo_ogc_wkt] = '\0';
+    }
+    memcpy(vlr_geo_ogc_wkt, geo_ogc_wkt, sizeof(CHAR)*num_geo_ogc_wkt);
+    if (in_evlr)
+    {
+      add_evlr("LASF_Projection", 2112, sizeof(CHAR)*(num_geo_ogc_wkt+null_terminator), (U8*)vlr_geo_ogc_wkt);
+    }
+    else
+    {
+      add_vlr("LASF_Projection", 2112, sizeof(CHAR)*(num_geo_ogc_wkt+null_terminator), (U8*)vlr_geo_ogc_wkt);
+    }
   }
 
-  void del_geo_wkt_ogc_cs()
+  void del_geo_ogc_wkt()
   {
-    if (vlr_geo_wkt_ogc_cs)
+    if (vlr_geo_ogc_wkt)
     {
       remove_vlr("LASF_Projection", 2112);
-      vlr_geo_wkt_ogc_cs = 0;
+      vlr_geo_ogc_wkt = 0;
     }
   }
 

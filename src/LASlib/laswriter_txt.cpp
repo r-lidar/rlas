@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  laswriter_txt.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,20 +21,17 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "laswriter_txt.hpp"
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 
 BOOL LASwriterTXT::refile(FILE* file)
 {
@@ -61,7 +58,7 @@ BOOL LASwriterTXT::open(const CHAR* file_name, const LASheader* header, const CH
 {
   if (file_name == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file name pointer is zero"));
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -69,7 +66,7 @@ BOOL LASwriterTXT::open(const CHAR* file_name, const LASheader* header, const CH
 
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
@@ -82,7 +79,7 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
 {
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file pointer is zero"));
+    fprintf(stderr,"ERROR: file pointer is zero\n");
     return FALSE;
   }
 
@@ -131,7 +128,7 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     }
     else
     {
-      throw std::runtime_error(std::string("ERROR: unknown seperator '%s'")); //separator
+      fprintf(stderr, "ERROR: unknown seperator '%s'\n", separator);
       return FALSE;
     }
   }
@@ -156,24 +153,24 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
         }
         else if (ptsVLR)
         {
-          throw std::runtime_error(std::string("WARNING: found VLR for PTS with wrong payload size of %d.")); //ptsVLR->record_length_after_header
+          fprintf(stderr, "WARNING: found VLR for PTS with wrong payload size of %d.\n", ptsVLR->record_length_after_header);
         }
         else if (ptxVLR)
         {
-          throw std::runtime_error(std::string("WARNING: found VLR for PTX with wrong payload size of %d.")); //ptxVLR->record_length_after_header
+          fprintf(stderr, "WARNING: found VLR for PTX with wrong payload size of %d.\n", ptxVLR->record_length_after_header);
         }
       }
     }
     else
     {
-      throw std::runtime_error(std::string("WARNING: found no VLR with PTS or PTX info."));
+      fprintf(stderr, "WARNING: found no VLR with PTS or PTX info.\n");
     }
     if (header->version_minor >= 4)
     {
 #ifdef _WIN32
-      fprintf(file, "%ld       \012", header->extended_number_of_point_records);
+      fprintf(file, "%I64d       \012", header->extended_number_of_point_records);
 #else
-      fprintf(file, "%ld       \012", header->extended_number_of_point_records);
+      fprintf(file, "%lld       \012", header->extended_number_of_point_records);
 #endif
     }
     else
@@ -182,11 +179,11 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     }
     if (this->parse_string && strcmp(this->parse_string, "xyz") && strcmp(this->parse_string, "xyzi") && strcmp(this->parse_string, "xyziRGB") && strcmp(this->parse_string, "xyzRGB"))
     {
-      throw std::runtime_error(std::string("WARNING: the parse string for PTS should be 'xyz', 'xyzi', 'xyziRGB', or 'xyzRGB'"));
+      fprintf(stderr, "WARNING: the parse string for PTS should be 'xyz', 'xyzi', 'xyziRGB', or 'xyzRGB'\n");
     }
     if (separator_sign != ' ')
     {
-      throw std::runtime_error(std::string("WARNING: the separator for PTS should be 'space' not '%s'")); //separator
+      fprintf(stderr, "WARNING: the separator for PTS should be 'space' not '%s'\n", separator);
     }
   }
   else if (optx)
@@ -216,19 +213,19 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     {
       if (ptxVLR)
       {
-        throw std::runtime_error(std::string("WARNING: found VLR for PTX with wrong payload size of %d.")); //ptxVLR->record_length_after_header
+        fprintf(stderr, "WARNING: found VLR for PTX with wrong payload size of %d.\n", ptxVLR->record_length_after_header);
       }
       else
       {
-        throw std::runtime_error(std::string("WARNING: found no VLR with PTX info."));
+        fprintf(stderr, "WARNING: found no VLR with PTX info.\n");
       }
-      throw std::runtime_error(std::string("         outputting PTS instead ..."));
+      fprintf(stderr, "         outputting PTS instead ...\n");
       if (header->version_minor >= 4)
       {
 #ifdef _WIN32
-        fprintf(file, "%ld       \012", header->extended_number_of_point_records);
+        fprintf(file, "%I64d       \012", header->extended_number_of_point_records);
 #else
-        fprintf(file, "%ld       \012", header->extended_number_of_point_records);
+        fprintf(file, "%lld       \012", header->extended_number_of_point_records);
 #endif
       }
       else
@@ -238,11 +235,11 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     }
     if (this->parse_string && strcmp(this->parse_string, "xyz") && strcmp(this->parse_string, "xyzi") && strcmp(this->parse_string, "xyziRGB") && strcmp(this->parse_string, "xyzRGB"))
     {
-      throw std::runtime_error(std::string("WARNING: the parse string for PTX should be 'xyz', 'xyzi', 'xyziRGB', or 'xyzRGB'"));
+      fprintf(stderr, "WARNING: the parse string for PTX should be 'xyz', 'xyzi', 'xyziRGB', or 'xyzRGB'\n");
     }
     if (separator_sign != ' ')
     {
-      throw std::runtime_error(std::string("WARNING: the separator for PTX should be 'space' not '%s'")); //separator
+      fprintf(stderr, "WARNING: the separator for PTX should be 'space' not '%s'\n", separator);
     }
   }
 
@@ -422,7 +419,7 @@ BOOL LASwriterTXT::unparse_attribute(const LASpoint* point, I32 index)
   }
   else
   {
-    throw std::runtime_error(std::string("WARNING: attribute %d not (yet) implemented.")); //index
+    fprintf(stderr, "WARNING: attribute %d not (yet) implemented.\n", index);
     return FALSE;
   }
   return TRUE;
@@ -507,16 +504,16 @@ BOOL LASwriterTXT::write_point(const LASpoint* point)
       break;
     case 'm': // the index of the point (count starts at 0)
 #ifdef _WIN32
-      fprintf(file, "%ld", p_count-1);
+      fprintf(file, "%I64d", p_count-1);
 #else
-      fprintf(file, "%ld", p_count-1);
+      fprintf(file, "%lld", p_count-1);
 #endif
       break;
     case 'M': // the index of the point (count starts at 1)
 #ifdef _WIN32
-      fprintf(file, "%ld", p_count);
+      fprintf(file, "%I64d", p_count);
 #else
-      fprintf(file, "%ld", p_count);
+      fprintf(file, "%lld", p_count);
 #endif
       break;
     case 'w': // the wavepacket descriptor index
@@ -632,37 +629,37 @@ BOOL LASwriterTXT::check_parse_string(const CHAR* parse_string)
         I32 index = (I32)(p[0] - '0');
         if (index >= header->number_attributes)
         {
-          throw std::runtime_error(std::string("ERROR: extra bytes attribute '%d' does not exist.")); //index
+          fprintf(stderr, "ERROR: extra bytes attribute '%d' does not exist.\n", index);
           return FALSE;
         }
         attribute_starts[index] = header->get_attribute_start(index);
       }
       else
       {
-        throw std::runtime_error(std::string("ERROR: unknown symbol '%c' in parse string. valid are")); //p[0]
-        throw std::runtime_error(std::string("       'x' : the x coordinate"));
-        throw std::runtime_error(std::string("       'y' : the y coordinate"));
-        throw std::runtime_error(std::string("       'z' : the z coordinate"));
-        throw std::runtime_error(std::string("       't' : the gps time"));
-        throw std::runtime_error(std::string("       'R' : the red channel of the RGB field"));
-        throw std::runtime_error(std::string("       'G' : the green channel of the RGB field"));
-        throw std::runtime_error(std::string("       'B' : the blue channel of the RGB field"));
-        throw std::runtime_error(std::string("       's' : a string or a number that we don't care about"));
-        throw std::runtime_error(std::string("       'i' : the intensity"));
-        throw std::runtime_error(std::string("       'a' : the scan angle"));
-        throw std::runtime_error(std::string("       'n' : the number of returns of that given pulse"));
-        throw std::runtime_error(std::string("       'r' : the number of the return"));
-        throw std::runtime_error(std::string("       'c' : the classification"));
-        throw std::runtime_error(std::string("       'u' : the user data"));
-        throw std::runtime_error(std::string("       'p' : the point source ID"));
-        throw std::runtime_error(std::string("       'e' : the edge of flight line flag"));
-        throw std::runtime_error(std::string("       'd' : the direction of scan flag"));
-        throw std::runtime_error(std::string("       'M' : the index of the point"));
-        throw std::runtime_error(std::string("       'w' : the wavepacket descriptor index"));
-        throw std::runtime_error(std::string("       'W' : all wavepacket attributes"));
-        throw std::runtime_error(std::string("       'X' : the unscaled and unoffset integer x coordinate"));
-        throw std::runtime_error(std::string("       'Y' : the unscaled and unoffset integer y coordinate"));
-        throw std::runtime_error(std::string("       'Z' : the unscaled and unoffset integer z coordinate"));
+        fprintf(stderr, "ERROR: unknown symbol '%c' in parse string. valid are\n", p[0]);
+        fprintf(stderr, "       'x' : the x coordinate\n");
+        fprintf(stderr, "       'y' : the y coordinate\n");
+        fprintf(stderr, "       'z' : the z coordinate\n");
+        fprintf(stderr, "       't' : the gps time\n");
+        fprintf(stderr, "       'R' : the red channel of the RGB field\n");
+        fprintf(stderr, "       'G' : the green channel of the RGB field\n");
+        fprintf(stderr, "       'B' : the blue channel of the RGB field\n");
+        fprintf(stderr, "       's' : a string or a number that we don't care about\n");
+        fprintf(stderr, "       'i' : the intensity\n");
+        fprintf(stderr, "       'a' : the scan angle\n");
+        fprintf(stderr, "       'n' : the number of returns of that given pulse\n");
+        fprintf(stderr, "       'r' : the number of the return\n");
+        fprintf(stderr, "       'c' : the classification\n");
+        fprintf(stderr, "       'u' : the user data\n");
+        fprintf(stderr, "       'p' : the point source ID\n");
+        fprintf(stderr, "       'e' : the edge of flight line flag\n");
+        fprintf(stderr, "       'd' : the direction of scan flag\n");
+        fprintf(stderr, "       'M' : the index of the point\n");
+        fprintf(stderr, "       'w' : the wavepacket descriptor index\n");
+        fprintf(stderr, "       'W' : all wavepacket attributes\n");
+        fprintf(stderr, "       'X' : the unscaled and unoffset integer x coordinate\n");
+        fprintf(stderr, "       'Y' : the unscaled and unoffset integer y coordinate\n");
+        fprintf(stderr, "       'Z' : the unscaled and unoffset integer z coordinate\n");
         return FALSE;
       }
     }

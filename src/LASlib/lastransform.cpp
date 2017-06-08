@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lastransform.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,14 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-    20 December 2016 -- by Jean-Romain Roussel -- L349 remove srand and rand, replaced by R::runif
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lastransform.hpp"
@@ -38,9 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 #include <math.h>
-#include <Rcpp.h>
 
 class LASoperationTranslateX : public LASoperation
 {
@@ -285,6 +280,14 @@ private:
   I32 index;
 };
 
+class LASoperationCopyIntensityIntoZ : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_intensity_into_z"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_z((F64)point->get_intensity()); };
+};
+
 class LASoperationTranslateRawX : public LASoperation
 {
 public:
@@ -346,9 +349,8 @@ public:
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), max_raw_offset[0], max_raw_offset[1]); };
   inline void transform(LASpoint* point) {
     I32 r;
-    //srand(seed);
-    //seed = rand();
-    seed = R::runif(0, RAND_MAX);
+    srand(seed);
+    seed = rand();
     r = ((seed >> 3) % ((2 * max_raw_offset[0]) + 1)) - max_raw_offset[0];
     point->set_X(point->get_X() + r);
     r = ((seed >> 6) % ((2 * max_raw_offset[1]) + 1)) - max_raw_offset[1];
@@ -522,6 +524,17 @@ public:
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), classification); };
   inline void transform(LASpoint* point) { if (classification > 31) point->extended_classification = classification; else point->classification = classification; };
   LASoperationSetClassification(U8 classification) { this->classification = classification; };
+private:
+  U8 classification;
+};
+
+class LASoperationSetExtendedClassification : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "set_extended_classification"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), classification); };
+  inline void transform(LASpoint* point) { point->extended_classification = classification; };
+  LASoperationSetExtendedClassification(U8 classification) { this->classification = classification; };
 private:
   U8 classification;
 };
@@ -724,6 +737,31 @@ private:
   U8 class_to;
 };
 
+class LASoperationClassifyIntensityBetweenAs : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "classify_intensity_between_as"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d %d %d ", name(), (I32)intensity_below, (I32)intensity_above, (I32)class_to); };
+  inline void transform(LASpoint* point) {
+    if ((intensity_above <= point->intensity) && (point->intensity <= intensity_above))
+    {
+      if (class_to >= 32)
+      {
+        point->classification = class_to;
+      }
+      else
+      {
+        point->classification = (point->classification & 224) | class_to;
+      }
+    }
+  };
+  LASoperationClassifyIntensityBetweenAs(U16 intensity_below, U16 intensity_above, U8 class_to) { this->intensity_below = intensity_below; this->intensity_above = intensity_above; this->class_to = class_to; };
+private:
+  U16 intensity_below;
+  U16 intensity_above;
+  U8 class_to;
+};
+
 class LASoperationSetWithheldFlag : public LASoperation
 {
 public:
@@ -760,7 +798,7 @@ private:
 class LASoperationSetExtendedOverlapFlag : public LASoperation
 {
 public:
-  inline const CHAR* name() const { return "set_extended_overlap_flag"; };
+  inline const CHAR* name() const { return "set_overlap_flag"; };
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), flag); };
   inline void transform(LASpoint* point) { point->set_extended_overlap_flag(flag); };
   LASoperationSetExtendedOverlapFlag(U8 flag) { this->flag = (flag ? 1 : 0); };
@@ -771,7 +809,7 @@ private:
 class LASoperationSetExtendedScannerChannel : public LASoperation
 {
 public:
-  inline const CHAR* name() const { return "set_extended_scanner_channel"; };
+  inline const CHAR* name() const { return "set_scanner_channel"; };
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), channel); };
   inline void transform(LASpoint* point) { point->set_extended_scanner_channel(channel); };
   LASoperationSetExtendedScannerChannel(U8 channel) { this->channel = (channel >= 3 ? 3 : channel); };
@@ -800,6 +838,28 @@ public:
 private:
   U8 user_data_from;
   U8 user_data_to;
+};
+
+class LASoperationCopyClassificationIntoUserData : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_classification_into_user_data"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_user_data(point->get_classification() ? point->get_classification() : point->get_extended_classification()); };
+};
+
+class LASoperationCopyAttributeIntoUserData : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_attribute_into_user_data"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), index); };
+  inline void transform(LASpoint* point) {
+    F64 user_data = point->get_attribute_as_float(index);
+    point->set_user_data(U8_CLAMP(user_data));
+  };
+  LASoperationCopyAttributeIntoUserData(I32 index) { this->index = index; };
+private:
+  I32 index;
 };
 
 class LASoperationSetPointSource : public LASoperation
@@ -959,6 +1019,18 @@ private:
   U16 RGB[3];
 };
 
+class LASoperationSetRGBofClass : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "set_RGB_of_class"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d %d %d %d ", name(), c, RGB[0], RGB[1], RGB[2]); };
+  inline void transform(LASpoint* point) { if (point->get_classification() == c) point->set_RGB(RGB); };
+  LASoperationSetRGBofClass(U8 c, U16 R, U16 G, U16 B) { this->c = c; RGB[0] = R; RGB[1] = G; RGB[2] = B; };
+private:
+  U8 c;
+  U16 RGB[3];
+};
+
 class LASoperationScaleRGB : public LASoperation
 {
 public:
@@ -1034,6 +1106,62 @@ public:
   inline void transform(LASpoint* point) { I16 temp = point->get_G(); point->set_G(point->get_B()); point->set_B(temp); };
 };
 
+class LASoperationCopyRintoIntensity : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_R_into_intensity"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_intensity(point->get_R()); };
+};
+
+class LASoperationCopyRintoNIR : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_R_into_NIR"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_NIR(point->get_R()); };
+};
+
+class LASoperationCopyGintoIntensity : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_G_into_intensity"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_intensity(point->get_G()); };
+};
+
+class LASoperationCopyGintoNIR : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_G_into_NIR"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_NIR(point->get_G()); };
+};
+
+class LASoperationCopyBintoIntensity : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_B_into_intensity"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_intensity(point->get_B()); };
+};
+
+class LASoperationCopyBintoNIR : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_B_into_NIR"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_NIR(point->get_B()); };
+};
+
+class LASoperationCopyNIRintoIntensity : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_NIR_into_intensity"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->set_intensity(point->get_NIR()); };
+};
+
 class LASoperationFlipWaveformDirection : public LASoperation
 {
 public:
@@ -1047,7 +1175,39 @@ class LASoperationCopyUserDataIntoPointSource : public LASoperation
 public:
   inline const CHAR* name() const { return "copy_user_data_into_point_source"; };
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline void transform(LASpoint* point) { point->point_source_ID = point->user_data; };
+  inline void transform(LASpoint* point) { point->point_source_ID = point->get_user_data(); };
+};
+
+class LASoperationCopyUserDataIntoScannerChannel : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_user_data_into_scanner_channel"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->extended_scanner_channel = (point->get_user_data() & 0x0003); };
+};
+
+class LASoperationCopyScannerChannelIntoPointSource : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "copy_scanner_channel_into_point_source"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->point_source_ID = point->get_extended_scanner_channel(); };
+};
+
+class LASoperationMergeScannerChannelIntoPointSource : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "merge_scanner_channel_into_point_source"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->point_source_ID = (point->get_point_source_ID() << 2) | point->get_extended_scanner_channel(); };
+};
+
+class LASoperationSplitScannerChannelFromPointSource : public LASoperation
+{
+public:
+  inline const CHAR* name() const { return "split_scanner_channel_from_point_source"; };
+  inline int get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline void transform(LASpoint* point) { point->extended_scanner_channel = (point->get_point_source_ID() & 0x0003); point->point_source_ID = (point->get_point_source_ID() >> 2); };
 };
 
 class LASoperationBinZintoPointSource : public LASoperation
@@ -1093,77 +1253,91 @@ void LAStransform::clean()
 
 void LAStransform::usage() const
 {
-  throw std::runtime_error(std::string("Transform coordinates."));
-  throw std::runtime_error(std::string("  -translate_x -2.5"));
-  throw std::runtime_error(std::string("  -scale_z 0.3048"));
-  throw std::runtime_error(std::string("  -rotate_xy 15.0 620000 4100000 (angle + origin)"));
-  throw std::runtime_error(std::string("  -translate_xyz 0.5 0.5 0"));
-  throw std::runtime_error(std::string("  -translate_then_scale_y -0.5 1.001"));
-  throw std::runtime_error(std::string("  -switch_x_y -switch_x_z -switch_y_z"));
-  throw std::runtime_error(std::string("  -clamp_z_below 70.5"));
-  throw std::runtime_error(std::string("  -clamp_z 70.5 72.5"));
-  throw std::runtime_error(std::string("  -copy_attribute_into_z 0"));
-  throw std::runtime_error(std::string("Transform raw xyz integers."));
-  throw std::runtime_error(std::string("  -translate_raw_z 20"));
-  throw std::runtime_error(std::string("  -translate_raw_xyz 1 1 0"));
-  throw std::runtime_error(std::string("  -translate_raw_xy_at_random 2 2"));
-  throw std::runtime_error(std::string("  -clamp_raw_z 500 800"));
-  throw std::runtime_error(std::string("Transform intensity."));
-  throw std::runtime_error(std::string("  -set_intensity 0"));
-  throw std::runtime_error(std::string("  -scale_intensity 2.5"));
-  throw std::runtime_error(std::string("  -translate_intensity 50"));
-  throw std::runtime_error(std::string("  -translate_then_scale_intensity 0.5 3.1"));
-  throw std::runtime_error(std::string("  -clamp_intensity 0 255"));
-  throw std::runtime_error(std::string("  -clamp_intensity_above 255"));
-  throw std::runtime_error(std::string("Transform scan_angle."));
-  throw std::runtime_error(std::string("  -scale_scan_angle 1.944445"));
-  throw std::runtime_error(std::string("  -translate_scan_angle -5"));
-  throw std::runtime_error(std::string("  -translate_then_scale_scan_angle -0.5 2.1"));
-  throw std::runtime_error(std::string("Change the return number or return count of points."));
-  throw std::runtime_error(std::string("  -repair_zero_returns"));
-  throw std::runtime_error(std::string("  -set_return_number 1"));
-  throw std::runtime_error(std::string("  -set_extended_return_number 10"));
-  throw std::runtime_error(std::string("  -change_return_number_from_to 2 1"));
-  throw std::runtime_error(std::string("  -set_number_of_returns 2"));
-  throw std::runtime_error(std::string("  -set_number_of_returns 15"));
-  throw std::runtime_error(std::string("  -change_number_of_returns_from_to 0 2"));
-  throw std::runtime_error(std::string("Modify the classification."));
-  throw std::runtime_error(std::string("  -set_classification 2"));
-  throw std::runtime_error(std::string("  -change_classification_from_to 2 4"));
-  throw std::runtime_error(std::string("  -classify_z_below_as -5.0 7"));
-  throw std::runtime_error(std::string("  -classify_z_above_as 70.0 7"));
-  throw std::runtime_error(std::string("  -classify_z_between_as 2.0 5.0 4"));
-  throw std::runtime_error(std::string("  -classify_intensity_above_as 200 9"));
-  throw std::runtime_error(std::string("  -classify_intensity_below_as 30 11 "));
-  throw std::runtime_error(std::string("  -change_extended_classification_from_to 6 46"));
-  throw std::runtime_error(std::string("  -move_ancient_to_extended_classification"));
-  throw std::runtime_error(std::string("Change the flags."));
-  throw std::runtime_error(std::string("  -set_withheld_flag 0"));
-  throw std::runtime_error(std::string("  -set_synthetic_flag 1"));
-  throw std::runtime_error(std::string("  -set_keypoint_flag 0"));
-  throw std::runtime_error(std::string("  -set_extended_overlap_flag 1"));
-  throw std::runtime_error(std::string("Modify the extended scanner channel."));
-  throw std::runtime_error(std::string("  -set_extended_scanner_channel 2"));
-  throw std::runtime_error(std::string("Modify the user data."));
-  throw std::runtime_error(std::string("  -set_user_data 0"));
-  throw std::runtime_error(std::string("  -change_user_data_from_to 23 26"));
-  throw std::runtime_error(std::string("Modify the point source ID."));
-  throw std::runtime_error(std::string("  -set_point_source 500"));
-  throw std::runtime_error(std::string("  -change_point_source_from_to 1023 1024"));
-  throw std::runtime_error(std::string("  -copy_user_data_into_point_source"));
-  throw std::runtime_error(std::string("  -bin_Z_into_point_source 200"));
-  throw std::runtime_error(std::string("  -bin_abs_scan_angle_into_point_source 2"));
-  throw std::runtime_error(std::string("Transform gps_time."));
-  throw std::runtime_error(std::string("  -set_gps_time 113556962.005715"));
-  throw std::runtime_error(std::string("  -translate_gps_time 40.50"));
-  throw std::runtime_error(std::string("  -adjusted_to_week"));
-  throw std::runtime_error(std::string("  -week_to_adjusted 1671"));
-  throw std::runtime_error(std::string("Transform RGB colors."));
-  throw std::runtime_error(std::string("  -set_RGB 255 0 127"));
-  throw std::runtime_error(std::string("  -scale_RGB 2 4 2"));
-  throw std::runtime_error(std::string("  -scale_RGB_down (by 256)"));
-  throw std::runtime_error(std::string("  -scale_RGB_up (by 256)"));
-  throw std::runtime_error(std::string("  -switch_R_G -switch_R_B -switch_B_G"));
+  fprintf(stderr,"Transform coordinates.\n");
+  fprintf(stderr,"  -translate_x -2.5\n");
+  fprintf(stderr,"  -scale_z 0.3048\n");
+  fprintf(stderr,"  -rotate_xy 15.0 620000 4100000 (angle + origin)\n");
+  fprintf(stderr,"  -translate_xyz 0.5 0.5 0\n");
+  fprintf(stderr,"  -translate_then_scale_y -0.5 1.001\n");
+  fprintf(stderr,"  -switch_x_y -switch_x_z -switch_y_z\n");
+  fprintf(stderr,"  -clamp_z_below 70.5\n");
+  fprintf(stderr,"  -clamp_z 70.5 72.5\n");
+  fprintf(stderr,"  -copy_attribute_into_z 0\n");
+  fprintf(stderr,"  -copy_intensity_into_z\n");
+  fprintf(stderr,"Transform raw xyz integers.\n");
+  fprintf(stderr,"  -translate_raw_z 20\n");
+  fprintf(stderr,"  -translate_raw_xyz 1 1 0\n");
+  fprintf(stderr,"  -translate_raw_xy_at_random 2 2\n");
+  fprintf(stderr,"  -clamp_raw_z 500 800\n");
+  fprintf(stderr,"Transform intensity.\n");
+  fprintf(stderr,"  -set_intensity 0\n");
+  fprintf(stderr,"  -scale_intensity 2.5\n");
+  fprintf(stderr,"  -translate_intensity 50\n");
+  fprintf(stderr,"  -translate_then_scale_intensity 0.5 3.1\n");
+  fprintf(stderr,"  -clamp_intensity 0 255\n");
+  fprintf(stderr,"  -clamp_intensity_above 255\n");
+  fprintf(stderr,"  -copy_NIR_into_intensity\n");
+  fprintf(stderr,"Transform scan_angle.\n");
+  fprintf(stderr,"  -scale_scan_angle 1.944445\n");
+  fprintf(stderr,"  -translate_scan_angle -5\n");
+  fprintf(stderr,"  -translate_then_scale_scan_angle -0.5 2.1\n");
+  fprintf(stderr,"Change the return number or return count of points.\n");
+  fprintf(stderr,"  -repair_zero_returns\n");
+  fprintf(stderr,"  -set_return_number 1\n");
+  fprintf(stderr,"  -set_extended_return_number 10\n");
+  fprintf(stderr,"  -change_return_number_from_to 2 1\n");
+  fprintf(stderr,"  -set_number_of_returns 2\n");
+  fprintf(stderr,"  -set_number_of_returns 15\n");
+  fprintf(stderr,"  -change_number_of_returns_from_to 0 2\n");
+  fprintf(stderr,"Modify the classification.\n");
+  fprintf(stderr,"  -set_classification 2\n");
+  fprintf(stderr,"  -set_extended_classification 0\n");
+  fprintf(stderr,"  -change_classification_from_to 2 4\n");
+  fprintf(stderr,"  -classify_z_below_as -5.0 7\n");
+  fprintf(stderr,"  -classify_z_above_as 70.0 7\n");
+  fprintf(stderr,"  -classify_z_between_as 2.0 5.0 4\n");
+  fprintf(stderr,"  -classify_intensity_above_as 200 9\n");
+  fprintf(stderr,"  -classify_intensity_below_as 30 11 \n");
+  fprintf(stderr,"  -classify_intensity_between_as 500 900 15\n");
+  fprintf(stderr,"  -change_extended_classification_from_to 6 46\n");
+  fprintf(stderr,"  -move_ancient_to_extended_classification\n");
+  fprintf(stderr,"Change the flags.\n");
+  fprintf(stderr,"  -set_withheld_flag 0\n");
+  fprintf(stderr,"  -set_synthetic_flag 1\n");
+  fprintf(stderr,"  -set_keypoint_flag 0\n");
+  fprintf(stderr,"  -set_overlap_flag 1\n");
+  fprintf(stderr,"Modify the extended scanner channel.\n");
+  fprintf(stderr,"  -set_scanner_channel 2\n");
+  fprintf(stderr,"  -copy_user_data_into_scanner_channel\n");
+  fprintf(stderr,"Modify the user data.\n");
+  fprintf(stderr,"  -set_user_data 0\n");
+  fprintf(stderr,"  -change_user_data_from_to 23 26\n");
+  fprintf(stderr,"  -change_user_data_from_to 23 26\n");
+  fprintf(stderr,"  -copy_attribute_into_user_data 1\n");
+  fprintf(stderr,"Modify the point source ID.\n");
+  fprintf(stderr,"  -set_point_source 500\n");
+  fprintf(stderr,"  -change_point_source_from_to 1023 1024\n");
+  fprintf(stderr,"  -copy_user_data_into_point_source\n");
+  fprintf(stderr,"  -copy_scanner_channel_into_point_source\n");
+  fprintf(stderr,"  -merge_scanner_channel_into_point_source\n");
+  fprintf(stderr,"  -split_scanner_channel_from_point_source\n");
+  fprintf(stderr,"  -bin_Z_into_point_source 200\n");
+  fprintf(stderr,"  -bin_abs_scan_angle_into_point_source 2\n");
+  fprintf(stderr,"Transform gps_time.\n");
+  fprintf(stderr,"  -set_gps_time 113556962.005715\n");
+  fprintf(stderr,"  -translate_gps_time 40.50\n");
+  fprintf(stderr,"  -adjusted_to_week\n");
+  fprintf(stderr,"  -week_to_adjusted 1671\n");
+  fprintf(stderr,"Transform RGB/NIR colors.\n");
+  fprintf(stderr,"  -set_RGB 255 0 127\n");
+  fprintf(stderr,"  -set_RGB_of_class 9 0 0 255\n");
+  fprintf(stderr,"  -scale_RGB 2 4 2\n");
+  fprintf(stderr,"  -scale_RGB_down (by 256)\n");
+  fprintf(stderr,"  -scale_RGB_up (by 256)\n");
+  fprintf(stderr,"  -switch_R_G -switch_R_B -switch_B_G\n");
+  fprintf(stderr,"  -copy_R_into_NIR -copy_R_into_intensity\n");
+  fprintf(stderr,"  -copy_G_into_NIR -copy_G_into_intensity\n");
+  fprintf(stderr,"  -copy_B_into_NIR -copy_B_into_intensity\n");
 }
 
 BOOL LAStransform::parse(int argc, char* argv[])
@@ -1187,78 +1361,78 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateX((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-translate_y") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateY((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-translate_z") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateZ((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-translate_xyz") == 0)
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: offset_x offset_y offset_z")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 3 arguments: offset_x offset_y offset_z\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateXYZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
       }
       else if (strcmp(argv[i],"-translate_then_scale_x") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: offset scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: offset scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleX((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-translate_then_scale_y") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: offset scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: offset scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleY((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-translate_then_scale_z") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: offset scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: offset scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strncmp(argv[i],"-translate_raw_", 14) == 0)
       {
@@ -1266,107 +1440,107 @@ BOOL LAStransform::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: raw_offset")); //argv[i]
+            fprintf(stderr,"ERROR: '%s' needs 1 argument: raw_offset\n", argv[i]);
             return FALSE;
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawX((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
         }
         else if (strcmp(argv[i],"-translate_raw_y") == 0)
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: raw_offset")); //argv[i]
+            fprintf(stderr,"ERROR: '%s' needs 1 argument: raw_offset\n", argv[i]);
             return FALSE;
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawY((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
         }
         else if (strcmp(argv[i],"-translate_raw_z") == 0)
         {
           if ((i+1) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: raw_offset")); //argv[i]
+            fprintf(stderr,"ERROR: '%s' needs 1 argument: raw_offset\n", argv[i]);
             return FALSE;
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawZ((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
         }
         else if (strcmp(argv[i],"-translate_raw_xyz") == 0)
         {
           if ((i+3) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: raw_offset_x raw_offset_y raw_offset_z")); //argv[i]
+            fprintf(stderr,"ERROR: '%s' needs 3 arguments: raw_offset_x raw_offset_y raw_offset_z\n", argv[i]);
             return FALSE;
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawXYZ((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2]), (I32)atoi(argv[i+3])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
         }
         else if (strcmp(argv[i],"-translate_raw_xy_at_random") == 0)
         {
           if ((i+2) >= argc)
           {
-            throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: max_raw_offset_x max_raw_offset_y")); //argv[i]
+            fprintf(stderr,"ERROR: '%s' needs 2 arguments: max_raw_offset_x max_raw_offset_y\n", argv[i]);
             return FALSE;
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawXYatRandom((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
         }
       }
       else if (strcmp(argv[i],"-translate_intensity") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationTranslateIntensity((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-translate_then_scale_intensity") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: offset scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: offset scale\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationTranslateThenScaleIntensity((F32)atof(argv[i+1]), (F32)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-translate_scan_angle") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationTranslateScanAngle((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-translate_then_scale_scan_angle") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: offset scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: offset scale\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationTranslateThenScaleScanAngle((F32)atof(argv[i+1]), (F32)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-translate_gps_time") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: offset")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: offset\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationTranslateGpsTime(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
     }
     else if (strncmp(argv[i],"-rotate_", 8) == 0)
@@ -1375,23 +1549,23 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: angle, x, y")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 3 arguments: angle, x, y\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationRotateXY((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
       }
       else if (strcmp(argv[i],"-rotate_xz") == 0)
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: angle, x, y")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 3 arguments: angle, x, y\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationRotateXZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
       }
     }
     else if (strncmp(argv[i],"-clamp_", 7) == 0)
@@ -1400,95 +1574,176 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: below above")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: below above\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZ(atof(argv[i+1]), atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-clamp_z_below") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: below")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: below\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZbelow(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-clamp_z_above") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: above")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: above\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZabove(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-clamp_intensity") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: below above")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: below above\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationClampIntensity(U16_CLAMP(atoi(argv[i+1])), U16_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-clamp_intensity_below") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: below")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: below\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationClampIntensityBelow(U16_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-clamp_intensity_above") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: above")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: above\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationClampIntensityAbove(U16_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-clamp_raw_z") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: below above")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: below above\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampRawZ((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
     }
     else if (strncmp(argv[i],"-copy_", 6) == 0)
     {
-      if (strcmp(argv[i],"-copy_attribute_into_z") == 0)
+      if (strncmp(argv[i],"-copy_attribute_", 16) == 0)
       {
-        if ((i+1) >= argc)
+        if (strcmp(argv[i],"-copy_attribute_into_z") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: index of attribute")); //argv[i]
-          return FALSE;
+          if ((i+1) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 1 argument: index of attribute\n", argv[i]);
+            return FALSE;
+          }
+          change_coordinates = TRUE;
+          add_operation(new LASoperationCopyAttributeIntoZ(atoi(argv[i+1])));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
         }
-        change_coordinates = TRUE;
-        add_operation(new LASoperationCopyAttributeIntoZ(atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        else if (strcmp(argv[i],"-copy_attribute_into_user_data") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 1 argument: index of attribute\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationCopyAttributeIntoUserData(atoi(argv[i+1])));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        }
       }
-      else if (strcmp(argv[i],"-copy_user_data_into_point_source") == 0)
+      else if (strncmp(argv[i],"-copy_user_data_", 16) == 0)
       {
-        add_operation(new LASoperationCopyUserDataIntoPointSource());
-        *argv[i]='\0';
+        if (strcmp(argv[i],"-copy_user_data_into_point_source") == 0)
+        {
+          add_operation(new LASoperationCopyUserDataIntoPointSource());
+          *argv[i]='\0'; 
+        }
+        else if (strcmp(argv[i],"-copy_user_data_into_scanner_channel") == 0)
+        {
+          add_operation(new LASoperationCopyUserDataIntoScannerChannel());
+          *argv[i]='\0'; 
+        }
       }
+      else if (strcmp(argv[i],"-copy_scanner_channel_into_point_source") == 0)
+      {
+        add_operation(new LASoperationCopyScannerChannelIntoPointSource());
+        *argv[i]='\0'; 
+      }
+      else if (strncmp(argv[i],"-copy_R_", 8) == 0)
+      {
+        if (strcmp(argv[i],"-copy_R_into_intensity") == 0)
+        {
+          add_operation(new LASoperationCopyRintoIntensity());
+          *argv[i]='\0'; 
+        }
+        else if (strcmp(argv[i],"-copy_R_into_NIR") == 0)
+        {
+          add_operation(new LASoperationCopyRintoNIR());
+          *argv[i]='\0';
+        }
+      }
+      else if (strncmp(argv[i],"-copy_G_", 8) == 0)
+      {
+        if (strcmp(argv[i],"-copy_G_into_intensity") == 0)
+        {
+          add_operation(new LASoperationCopyGintoIntensity());
+          *argv[i]='\0'; 
+        }
+        else if (strcmp(argv[i],"-copy_G_into_NIR") == 0)
+        {
+          add_operation(new LASoperationCopyGintoNIR());
+          *argv[i]='\0'; 
+        }
+      }
+      else if (strncmp(argv[i],"-copy_B_", 8) == 0)
+      {
+        if (strcmp(argv[i],"-copy_B_into_intensity") == 0)
+        {
+          add_operation(new LASoperationCopyBintoIntensity());
+          *argv[i]='\0'; 
+        }
+        else if (strcmp(argv[i],"-copy_B_into_NIR") == 0)
+        {
+          add_operation(new LASoperationCopyBintoNIR());
+          *argv[i]='\0'; 
+        }
+      }
+      else if (strcmp(argv[i],"-copy_NIR_into_intensity") == 0)
+      {
+        add_operation(new LASoperationCopyNIRintoIntensity());
+        *argv[i]='\0'; 
+      }
+      else if (strcmp(argv[i],"-copy_intensity_into_z") == 0)
+      {
+        change_coordinates = TRUE;
+        add_operation(new LASoperationCopyIntensityIntoZ());
+        *argv[i]='\0'; 
+      } 
+      else if (strcmp(argv[i],"-copy_classification_into_user_data") == 0)
+      {
+        add_operation(new LASoperationCopyClassificationIntoUserData());
+        *argv[i]='\0'; 
+      } 
     }
     else if (strncmp(argv[i],"-set_", 5) == 0)
     {
@@ -1496,151 +1751,180 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: classification")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: classification\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetClassification(U8_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+      }
+      else if (strncmp(argv[i],"-set_extended_classification", 28) == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: classification\n", argv[i]);
+          return FALSE;
+        }
+        add_operation(new LASoperationSetExtendedClassification(U8_CLAMP(atoi(argv[i+1]))));
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_intensity") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetIntensity(U16_CLAMP(atof(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_withheld_flag") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetWithheldFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_synthetic_flag") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetSyntheticFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_keypoint_flag") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetKeypointFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
-      else if (strcmp(argv[i],"-set_extended_overlap_flag") == 0)
+      else if ((strcmp(argv[i],"-set_extended_overlap_flag") == 0) || (strcmp(argv[i],"-set_overlap_flag") == 0))
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedOverlapFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
-      else if (strcmp(argv[i],"-set_extended_scanner_channel") == 0)
+      else if ((strcmp(argv[i],"-set_extended_scanner_channel") == 0) || (strcmp(argv[i],"-set_scanner_channel") == 0))
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedScannerChannel((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_user_data") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetUserData((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strncmp(argv[i],"-set_point_source", 17) == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' need 1 argument: psid")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' need 1 argument: psid\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetPointSource((U16)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_return_number") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: return_number")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: return_number\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetReturnNumber((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_extended_return_number") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: extended_return_number")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: extended_return_number\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedReturnNumber((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_number_of_returns") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: number_of_returns")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: number_of_returns\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetNumberOfReturns((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_extended_number_of_returns") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: extended_number_of_returns")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: extended_number_of_returns\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedNumberOfReturns((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-set_gps_time") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationSetGpsTime(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
-      else if (strcmp(argv[i],"-set_RGB") == 0)
+      else if (strncmp(argv[i],"-set_RGB", 8) == 0)
       {
-        if ((i+3) >= argc)
+        if (strcmp(argv[i],"-set_RGB") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: R G B")); //argv[i]
-          return FALSE;
+          if ((i+3) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 3 arguments: R G B\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationSetRGB((U16)atoi(argv[i+1]), (U16)atoi(argv[i+2]), (U16)atoi(argv[i+3])));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
         }
-        add_operation(new LASoperationSetRGB((U16)atoi(argv[i+1]), (U16)atoi(argv[i+2]), (U16)atoi(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=1;
+        else if (strcmp(argv[i],"-set_RGB_of_class") == 0)
+        {
+          if ((i+4) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 4 arguments: class R G B\n", argv[i]);
+            return FALSE;
+          }
+          I32 c = atoi(argv[i+1]);
+          if ((c < 0) || (c > 255))
+          {
+            fprintf(stderr,"ERROR: '%s' needs class between 0 and 255 but got %d\n", argv[i], c);
+            return FALSE;
+          }
+          add_operation(new LASoperationSetRGBofClass((U8)c, (U16)atoi(argv[i+2]), (U16)atoi(argv[i+3]), (U16)atoi(argv[i+4])));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+        }
       }
     }
     else if (strncmp(argv[i],"-change_",8) == 0)
@@ -1649,114 +1933,130 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_value to_value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_value to_value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangeClassificationFromTo(U8_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-change_extended_classification_from_to") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_value to_value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_value to_value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangeExtendedClassificationFromTo(U8_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-change_user_data_from_to") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_value to_value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_value to_value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangeUserDataFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-change_point_source_from_to") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_value to_value")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_value to_value\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangePointSourceFromTo((U16)atoi(argv[i+1]), (U16)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-change_return_number_from_to") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_return_number to_return_number")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_return_number to_return_number\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangeReturnNumberFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
       else if (strcmp(argv[i],"-change_number_of_returns_from_to") == 0)
       {
         if ((i+2) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: from_number_of_returns to_number_of_returns")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 2 arguments: from_number_of_returns to_number_of_returns\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationChangeNumberOfReturnsFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
       }
     }
     else if (strncmp(argv[i],"-classify_", 10) == 0)
     {
-      if (strcmp(argv[i],"-classify_z_below_as") == 0)
+      if (strncmp(argv[i],"-classify_z_", 12) == 0)
       {
-        if ((i+2) >= argc)
+        if (strcmp(argv[i],"-classify_z_below_as") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: z_value classification_code")); //argv[i]
-          return FALSE;
+          if ((i+2) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 2 arguments: z_value classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyZbelowAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
         }
-        add_operation(new LASoperationClassifyZbelowAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        else if (strcmp(argv[i],"-classify_z_above_as") == 0)
+        {
+          if ((i+2) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 2 arguments: z_value classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyZaboveAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        }
+        else if (strcmp(argv[i],"-classify_z_between_as") == 0)
+        {
+          if ((i+3) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 3 arguments: z_min z_max classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyZbetweenAs(atof(argv[i+1]), atof(argv[i+2]), U8_CLAMP(atoi(argv[i+3]))));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        }
       }
-      else if (strcmp(argv[i],"-classify_z_above_as") == 0)
+      if (strncmp(argv[i],"-classify_intensity_", 20) == 0)
       {
-        if ((i+2) >= argc)
+        if (strcmp(argv[i],"-classify_intensity_below_as") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: z_value classification_code")); //argv[i]
-          return FALSE;
+          if ((i+2) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 2 arguments: intensity_value classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyIntensityBelowAs(U16_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
         }
-        add_operation(new LASoperationClassifyZaboveAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-      }
-      else if (strcmp(argv[i],"-classify_z_between_as") == 0)
-      {
-        if ((i+3) >= argc)
+        else if (strcmp(argv[i],"-classify_intensity_above_as") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: z_min z_max classification_code")); //argv[i]
-          return FALSE;
+          if ((i+2) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 2 arguments: intensity_value classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyIntensityAboveAs(U16_CLAMP(atoi(argv[i+1])), (U8)atoi(argv[i+2])));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
         }
-        add_operation(new LASoperationClassifyZbetweenAs(atof(argv[i+1]), atof(argv[i+2]), U8_CLAMP(atoi(argv[i+3]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
-      }
-      else if (strcmp(argv[i],"-classify_intensity_below_as") == 0)
-      {
-        if ((i+2) >= argc)
+        else if (strcmp(argv[i],"-classify_intensity_between_as") == 0)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: intensity_value classification_code")); //argv[i]
-          return FALSE;
+          if ((i+3) >= argc)
+          {
+            fprintf(stderr,"ERROR: '%s' needs 3 arguments: min_intensity_value max_intensity_value classification_code\n", argv[i]);
+            return FALSE;
+          }
+          add_operation(new LASoperationClassifyIntensityBetweenAs(U16_CLAMP(atoi(argv[i+1])), U16_CLAMP(atoi(argv[i+2])), (U8)atoi(argv[i+3])));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
         }
-        add_operation(new LASoperationClassifyIntensityBelowAs(U16_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-      }
-      else if (strcmp(argv[i],"-classify_intensity_above_as") == 0)
-      {
-        if ((i+2) >= argc)
-        {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 2 arguments: intensity_value classification_code")); //argv[i]
-          return FALSE;
-        }
-        add_operation(new LASoperationClassifyIntensityAboveAs(U16_CLAMP(atoi(argv[i+1])), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
     }
     else if (strncmp(argv[i],"-scale_", 7) == 0)
@@ -1765,85 +2065,85 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleX((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-scale_y") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleY((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-scale_z") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: scale\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleZ((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-scale_xyz") == 0)
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: scale_x scale_y scale_z")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 3 arguments: scale_x scale_y scale_z\n", argv[i]);
           return FALSE;
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleXYZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
       }
       else if (strcmp(argv[i],"-scale_intensity") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: scale\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationScaleIntensity((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-scale_scan_angle") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: scale")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: scale\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationScaleScanAngle((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-scale_RGB") == 0 || strcmp(argv[i],"-scale_rgb") == 0)
       {
         if ((i+3) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 3 arguments: scale_R scale_G scale_B")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 3 arguments: scale_R scale_G scale_B\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationScaleRGB((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
       }
       else if (strcmp(argv[i],"-scale_RGB_down") == 0 || strcmp(argv[i],"-scale_rgb_down") == 0)
       {
         add_operation(new LASoperationScaleRGBdown());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-scale_RGB_up") == 0 || strcmp(argv[i],"-scale_rgb_up") == 0)
       {
         add_operation(new LASoperationScaleRGBup());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
     }
     else if (strncmp(argv[i],"-switch_", 8) == 0)
@@ -1851,32 +2151,32 @@ BOOL LAStransform::parse(int argc, char* argv[])
       if (strcmp(argv[i],"-switch_x_y") == 0)
       {
         add_operation(new LASoperationSwitchXY());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-switch_x_z") == 0)
       {
         add_operation(new LASoperationSwitchXZ());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-switch_y_z") == 0)
       {
         add_operation(new LASoperationSwitchYZ());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-switch_R_G") == 0)
       {
         add_operation(new LASoperationSwitchRG());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-switch_R_B") == 0)
       {
         add_operation(new LASoperationSwitchRB());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
       else if (strcmp(argv[i],"-switch_G_B") == 0)
       {
         add_operation(new LASoperationSwitchGB());
-        *argv[i]='\0';
+        *argv[i]='\0'; 
       }
     }
     else if (strncmp(argv[i],"-bin_", 5) == 0)
@@ -1885,22 +2185,32 @@ BOOL LAStransform::parse(int argc, char* argv[])
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: bin_size")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: bin_size\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationBinZintoPointSource(atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
       else if (strcmp(argv[i],"-bin_abs_scan_angle_into_point_source") == 0)
       {
         if ((i+1) >= argc)
         {
-          throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: bin_size")); //argv[i]
+          fprintf(stderr,"ERROR: '%s' needs 1 argument: bin_size\n", argv[i]);
           return FALSE;
         }
         add_operation(new LASoperationBinAbsScanAngleIntoPointSource((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
       }
+    }
+    else if (strcmp(argv[i],"-merge_scanner_channel_into_point_source") == 0)
+    {
+      add_operation(new LASoperationMergeScannerChannelIntoPointSource());
+      *argv[i]='\0';
+    }
+    else if (strcmp(argv[i],"-split_scanner_channel_from_point_source") == 0)
+    {
+      add_operation(new LASoperationSplitScannerChannelFromPointSource());
+      *argv[i]='\0';
     }
     else if (strcmp(argv[i],"-move_ancient_to_extended_classification") == 0)
     {
@@ -1910,32 +2220,32 @@ BOOL LAStransform::parse(int argc, char* argv[])
     else if (strcmp(argv[i],"-flip_waveform_direction") == 0)
     {
       add_operation(new LASoperationFlipWaveformDirection());
-      *argv[i]='\0';
+      *argv[i]='\0'; 
     }
     else if (strcmp(argv[i],"-repair_zero_returns") == 0)
     {
       add_operation(new LASoperationRepairZeroReturns());
-      *argv[i]='\0';
+      *argv[i]='\0'; 
     }
     else if (strcmp(argv[i],"-adjusted_to_week") == 0)
     {
       add_operation(new LASoperationConvertAdjustedGpsToWeek());
-      *argv[i]='\0';
+      *argv[i]='\0'; 
     }
     else if (strcmp(argv[i],"-week_to_adjusted") == 0)
     {
       if ((i+1) >= argc)
       {
-        throw std::runtime_error(std::string("ERROR: '%s' needs 1 argument: week")); //argv[i]
+        fprintf(stderr,"ERROR: '%s' needs 1 argument: week\n", argv[i]);
         return FALSE;
       }
       add_operation(new LASoperationConvertWeekToAdjustedGps(atoi(argv[i+1])));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
     }
     else if (strcmp(argv[i],"-filtered_transform") == 0)
     {
       is_filtered = TRUE;
-      *argv[i]='\0';
+      *argv[i]='\0'; 
     }
   }
   return TRUE;
@@ -1968,14 +2278,14 @@ I32 LAStransform::unparse(CHAR* string) const
 {
   U32 i;
   I32 n = 0;
+  if (filter)
+  {
+    n += filter->unparse(&string[n]);
+    n += sprintf(&string[n], "-filtered_transform ");
+  }
   for (i = 0; i < num_operations; i++)
   {
     n += operations[i]->get_command(&string[n]);
-  }
-  if (filter)
-  {
-    n += sprintf(&string[n], "-filtered_transform ");
-    n += filter->unparse(&string[n]);
   }
   return n;
 }
@@ -2052,7 +2362,7 @@ void LAStransform::setPointSource(U16 value)
     U32 i;
     for (i = 0; i < num_operations; i++)
     {
-      if (strcmp(operations[i]->name(), "set_point_source"))
+      if (strcmp(operations[i]->name(), "set_point_source") == 0)
       {
         delete operations[i];
         operations[i] = new LASoperationSetPointSource(value);

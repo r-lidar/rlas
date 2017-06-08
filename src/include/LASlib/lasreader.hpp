@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasreader.hpp
-  
+
   CONTENTS:
-  
+
     Interface to read LIDAR points from the LAS format versions 1.0 - 1.3 and
     per on-the-fly conversion from simple ASCII files.
 
@@ -22,10 +22,9 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
-    3 February 2017 -- by Florian de Boissieu -- L198 added parse_str because of strange problem with overloaded functions
+
      7 February 2014 -- added option '-apply_file_source_ID' when reading LAS/LAZ
     22 August 2012 -- added the '-pipe_on' option for a multi-stage LAStools pipeline
     11 August 2012 -- added on-the-fly buffered reading of LiDAR files (efficient with LAX)
@@ -35,9 +34,9 @@
     24 January 2011 -- introduced LASreadOpener
     21 January 2011 -- turned into abstract reader to support multiple files
     3 December 2010 -- updated to (somewhat) support LAS format 1.3
-    7 September 2008 -- updated to support LAS format 1.2 
+    7 September 2008 -- updated to support LAS format 1.2
     18 February 2007 -- created after repairing 2 vacuum cleaners in the garden
-  
+
 ===============================================================================
 */
 #ifndef LAS_READER_HPP
@@ -156,6 +155,7 @@ public:
   U32 get_file_name_number() const;
   U32 get_file_name_current() const;
   const CHAR* get_file_name() const;
+  const CHAR* get_file_name_only() const;
   const CHAR* get_file_name(U32 number) const;
   void set_file_name(const CHAR* file_name, BOOL unique=FALSE);
   BOOL add_file_name(const CHAR* file_name, BOOL unique=FALSE);
@@ -167,6 +167,7 @@ public:
   BOOL is_merged() const { return merged; };
   void set_buffer_size(const F32 buffer_size);
   F32 get_buffer_size() const;
+  void set_unbuffered(const BOOL unbuffered);
   void set_neighbor_file_name(const CHAR* neighbor_file_name, BOOL unique=FALSE);
   BOOL add_neighbor_file_name(const CHAR* neighbor_file_name, BOOL unique=FALSE);
   void set_auto_reoffset(const BOOL auto_reoffset);
@@ -183,7 +184,8 @@ public:
   void set_scale_intensity(F32 scale_intensity);
   void set_translate_scan_angle(F32 translate_scan_angle);
   void set_scale_scan_angle(F32 scale_scan_angle);
-  void add_attribute(I32 data_type, const CHAR* name, const CHAR* description=0, F64 scale=1.0, F64 offset=0.0, F64 pre_scale=1.0, F64 pre_offset=0.0);
+  void add_attribute(I32 data_type, const CHAR* name, const CHAR* description=0, F64 scale=1.0, F64 offset=0.0, F64 pre_scale=1.0, F64 pre_offset=0.0, F64 no_data=F64_MAX);
+  BOOL set_point_type(U8 point_type);
   void set_parse_string(const CHAR* parse_string);
   void set_skip_lines(I32 skip_lines);
   void set_populate_header(BOOL populate_header);
@@ -191,6 +193,7 @@ public:
   void set_pipe_on(BOOL pipe_on);
   const CHAR* get_parse_string() const;
   void usage() const;
+  void set_decompress_selective(U32 decompress_selective);
   void set_inside_tile(const F32 ll_x, const F32 ll_y, const F32 size);
   void set_inside_circle(const F64 center_x, const F64 center_y, const F64 radius);
   void set_inside_rectangle(const F64 min_x, const F64 min_y, const F64 max_x, const F64 max_y);
@@ -226,7 +229,8 @@ private:
   U32 file_name_allocated;
   U32 file_name_current;
   F32 buffer_size;
-  const CHAR* temp_file_base;
+  BOOL unbuffered;
+  CHAR* temp_file_base;
   CHAR** neighbor_file_names;
   U32 neighbor_file_name_number;
   U32 neighbor_file_name_allocated;
@@ -251,6 +255,8 @@ private:
   F64 attribute_offsets[10];
   F64 attribute_pre_scales[10];
   F64 attribute_pre_offsets[10];
+  F64 attribute_no_datas[10];
+  U8 point_type;
   CHAR* parse_string;
   I32 skip_lines;
   BOOL populate_header;
@@ -264,7 +270,10 @@ private:
   LASfilter* filter;
   LAStransform* transform;
 
-  // optional area-of-interest query (spatially indexed) 
+  // optional selective decompression (compressed new LAS 1.4 point types only)
+  U32 decompress_selective;
+
+  // optional area-of-interest query (spatially indexed)
   F32* inside_tile;
   F64* inside_circle;
   F64* inside_rectangle;

@@ -13,7 +13,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -24,13 +24,14 @@
   
   CHANGE HISTORY:
   
+    23 August 2016 -- layering of items for selective decompression in LAS 1.4 
     10 January 2011 -- licensing change for LGPL release and liblas integration
     12 December 2010 -- refactored after watching two movies with silke
   
 ===============================================================================
 */
-#ifndef LAS_WRITE_ITEM_H
-#define LAS_WRITE_ITEM_H
+#ifndef LAS_WRITE_ITEM_HPP
+#define LAS_WRITE_ITEM_HPP
 
 #include "mydefs.hpp"
 
@@ -66,6 +67,8 @@ class LASwriteItemCompressed : public LASwriteItem
 {
 public:
   virtual BOOL init(const U8* item)=0;
+  virtual BOOL chunk_sizes() { return FALSE; };
+  virtual BOOL chunk_bytes() { return FALSE; };
 
   virtual ~LASwriteItemCompressed(){};
 };

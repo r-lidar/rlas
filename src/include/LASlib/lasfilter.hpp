@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasfilter.hpp
-
+  
   CONTENTS:
-
+  
     Filters LIDAR points based on certain criteria being true (or not).
 
   PROGRAMMERS:
@@ -21,12 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    30 December 2016 -- by Jean-Romain Roussel -- L54 rename parse into parse_string because of strange problem with overloaded functions
+  
     25 December 2010 -- created after swinging in Mara's hammock for hours
-
+  
 ===============================================================================
 */
 #ifndef LAS_FILTER_HPP
@@ -39,6 +38,7 @@ class LAScriterion
 public:
   virtual const CHAR * name() const = 0;
   virtual I32 get_command(CHAR* string) const = 0;
+  virtual U32 get_decompress_selective() const = 0;
   virtual BOOL filter(const LASpoint* point) = 0;
   virtual void reset(){};
   virtual ~LAScriterion(){};
@@ -51,9 +51,10 @@ public:
   void usage() const;
   void clean();
   BOOL parse(int argc, char* argv[]);
-  BOOL parse_string(CHAR* string);
+  BOOL parse(CHAR* string);
   I32 unparse(CHAR* string) const;
   inline BOOL active() const { return (num_criteria != 0); };
+  U32 get_decompress_selective() const;
 
   void addClipCircle(F64 x, F64 y, F64 radius);
   void addClipBox(F64 min_x, F64 min_y, F64 min_z, F64 max_x, F64 max_y, F64 max_z);

@@ -2,17 +2,17 @@
 ===============================================================================
 
   FILE:  lasreaderbuffered.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
-
+  
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-
+  
   COPYRIGHT:
-
+  
     (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
@@ -21,13 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lasreaderbuffered.hpp"
@@ -38,7 +36,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 
 void LASreaderBuffered::set_scale_factor(const F64* scale_factor)
 {
@@ -99,14 +96,14 @@ BOOL LASreaderBuffered::set_file_name(const char* file_name)
   // do we have a file name
   if (file_name == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file name pointer is NULL"));
+    fprintf(stderr, "ERROR: file name pointer is NULL\n");
     return FALSE;
   }
   // does the file exist
   FILE* file = fopen(file_name, "r");
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file '%s' cannot be opened")); //file_name
+    fprintf(stderr, "ERROR: file '%s' cannot be opened\n", file_name);
     return FALSE;
   }
   fclose(file);
@@ -120,14 +117,14 @@ BOOL LASreaderBuffered::add_neighbor_file_name(const char* file_name)
   // do we have a file name
   if (file_name == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file name pointer is NULL"));
+    fprintf(stderr, "ERROR: file name pointer is NULL\n");
     return FALSE;
   }
   // does the file exist
   FILE* file = fopen(file_name, "r");
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file '%s' cannot be opened")); //file_name
+    fprintf(stderr, "ERROR: file '%s' cannot be opened\n", file_name);
     return FALSE;
   }
   fclose(file);
@@ -145,7 +142,7 @@ BOOL LASreaderBuffered::open()
 {
   if (!lasreadopener.active())
   {
-    throw std::runtime_error(std::string("ERROR: no input name"));
+    fprintf(stderr, "ERROR: no input name\n");
     return FALSE;
   }
 
@@ -154,7 +151,7 @@ BOOL LASreaderBuffered::open()
   lasreader = lasreadopener.open();
   if (lasreader == 0)
   {
-    throw std::runtime_error(std::string("ERROR: opening '%s'")); //lasreadopener.get_file_name()
+    fprintf(stderr, "ERROR: opening '%s'\n", lasreadopener.get_file_name());
     return FALSE;
   }
 
@@ -207,20 +204,20 @@ BOOL LASreaderBuffered::open()
     LASreader* lasreader_neighbor = lasreadopener_neighbors.open();
     if (lasreader_neighbor == 0)
     {
-      throw std::runtime_error(std::string("ERROR: opening neighbor '%s'")); //lasreadopener_neighbors.get_file_name()
+      fprintf(stderr, "ERROR: opening neighbor '%s'\n", lasreadopener_neighbors.get_file_name());
       return FALSE;
     }
 
     // a point type change could be problematic
     if (header.point_data_format != lasreader_neighbor->header.point_data_format)
     {
-      if (!point_type_change) throw std::runtime_error(std::string("WARNING: files have different point types: %d vs %d")); //header.point_data_format, lasreader_neighbor->header.point_data_format
+      if (!point_type_change) fprintf(stderr, "WARNING: files have different point types: %d vs %d\n", header.point_data_format, lasreader_neighbor->header.point_data_format);
       point_type_change = TRUE;
     }
     // a point size change could be problematic
     if (header.point_data_record_length != lasreader_neighbor->header.point_data_record_length)
     {
-      if (!point_size_change) throw std::runtime_error(std::string("WARNING: files have different point sizes: %d vs %d")); //header.point_data_record_length, lasreader_neighbor->header.point_data_record_length
+      if (!point_size_change) fprintf(stderr, "WARNING: files have different point sizes: %d vs %d\n", header.point_data_record_length, lasreader_neighbor->header.point_data_record_length);
       point_size_change = TRUE;
     }
 
@@ -274,7 +271,7 @@ BOOL LASreaderBuffered::open()
       header.extended_number_of_point_records += buffered_points;
     }
 
-    throw std::runtime_error(std::string("LASreaderBuffered: adding %u buffer points.")); //buffered_points
+    fprintf(stderr, "LASreaderBuffered: adding %u buffer points.\n", buffered_points);
   }
 
   // check if the header can support the enlarged bounding box
@@ -292,19 +289,19 @@ BOOL LASreaderBuffered::open()
     }
     if (header.x_scale_factor != x_scale_factor)
     {
-      throw std::runtime_error(std::string("WARNING: i changed x_scale_factor from %g to %g to accommodate enlarged bounding box")); //header.x_scale_factor, x_scale_factor
+      fprintf(stderr, "WARNING: i changed x_scale_factor from %g to %g to accommodate enlarged bounding box\n", header.x_scale_factor, x_scale_factor);
       header.x_scale_factor = x_scale_factor;
       rescale = TRUE;
     }
     // maybe we changed the resolution ... so do we really need to adjuste the offset
     if ((((header.max_x - header.x_offset) / x_scale_factor) > I32_MAX) || (((header.min_x - header.x_offset) / x_scale_factor) < I32_MIN))
     {
-      throw std::runtime_error(std::string("WARNING: i changed x_offset from %g to %g to accommodate enlarged bounding box")); //header.x_offset, x_offset
+      fprintf(stderr, "WARNING: i changed x_offset from %g to %g to accommodate enlarged bounding box\n", header.x_offset, x_offset);
       header.x_offset = x_offset;
       reoffset = TRUE;
     }
   }
-
+    
   // check y
 
   if ((((header.max_y - header.y_offset) / header.y_scale_factor) > I32_MAX) || (((header.min_y - header.y_offset) / header.y_scale_factor) < I32_MIN))
@@ -318,19 +315,19 @@ BOOL LASreaderBuffered::open()
     }
     if (header.y_scale_factor != y_scale_factor)
     {
-      throw std::runtime_error(std::string("WARNING: i changed y_scale_factor from %g to %g to accommodate enlarged bounding box")); //header.y_scale_factor, y_scale_factor
+      fprintf(stderr, "WARNING: i changed y_scale_factor from %g to %g to accommodate enlarged bounding box\n", header.y_scale_factor, y_scale_factor);
       header.y_scale_factor = y_scale_factor;
       rescale = TRUE;
     }
     // maybe we changed the resolution ... so do we really need to adjuste the offset
     if ((((header.max_y - header.y_offset) / y_scale_factor) > I32_MAX) || (((header.min_y - header.y_offset) / y_scale_factor) < I32_MIN))
     {
-      throw std::runtime_error(std::string("WARNING: i changed y_offset from %g to %g to accommodate enlarged bounding box")); //header.y_offset, y_offset
+      fprintf(stderr, "WARNING: i changed y_offset from %g to %g to accommodate enlarged bounding box\n", header.y_offset, y_offset);
       header.y_offset = y_offset;
       reoffset = TRUE;
     }
   }
-
+    
   // check z
 
   if ((((header.max_z - header.z_offset) / header.z_scale_factor) > I32_MAX) || (((header.min_z - header.z_offset) / header.z_scale_factor) < I32_MIN))
@@ -344,14 +341,14 @@ BOOL LASreaderBuffered::open()
     }
     if (header.z_scale_factor != z_scale_factor)
     {
-      throw std::runtime_error(std::string("WARNING: i changed  z_scale_factor from %g to %g to accommodate enlarged bounding box")); //header.z_scale_factor, z_scale_factor
+      fprintf(stderr, "WARNING: i changed  z_scale_factor from %g to %g to accommodate enlarged bounding box\n", header.z_scale_factor, z_scale_factor);
       header.z_scale_factor = z_scale_factor;
       rescale = TRUE;
     }
     // maybe we changed the resolution ... so do we really need to adjuste the offset
     if ((((header.max_z - header.z_offset) / z_scale_factor) > I32_MAX) || (((header.min_z - header.z_offset) / z_scale_factor) < I32_MIN))
     {
-      throw std::runtime_error(std::string("WARNING: i changed z_offset from %g to %g to accommodate enlarged bounding box")); //header.z_offset, z_offset
+      fprintf(stderr, "WARNING: i changed z_offset from %g to %g to accommodate enlarged bounding box\n", header.z_offset, z_offset);
       header.z_offset = z_offset;
       reoffset = TRUE;
     }
@@ -475,7 +472,7 @@ BOOL LASreaderBuffered::read_point_default()
 
 void LASreaderBuffered::close(BOOL close_stream)
 {
-  if (lasreader)
+  if (lasreader) 
   {
     lasreader->close(close_stream);
   }
@@ -485,7 +482,7 @@ void LASreaderBuffered::close(BOOL close_stream)
 void LASreaderBuffered::clean()
 {
 /*
-  if (lasreader)
+  if (lasreader) 
   {
     delete lasreader;
     lasreader = 0;

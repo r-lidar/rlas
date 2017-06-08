@@ -25,6 +25,8 @@
   
   CHANGE HISTORY:
   
+    29 March 2017 -- enable "native LAS 1.4 extension" for LASzip via '-native'
+    13 November 2016 -- return early FALSE when set_directory() will not succeed  
     5 September 2011 -- support for writing Terrasolid's BIN format
     11 June 2011 -- billion point support: p_count & npoints are 64 bit counters
     8 May 2011 -- DO NOT USE option for variable chunking via chunk()
@@ -70,10 +72,11 @@ class LASLIB_DLL LASwriteOpener
 public:
   void set_io_obuffer_size(I32 io_obuffer_size);
   inline I32 get_io_obuffer_size() const { return io_obuffer_size; };
-  void set_directory(const CHAR* directory);
+  BOOL set_directory(const CHAR* directory);
   void set_file_name(const CHAR* file_name);
   void set_appendix(const CHAR* appendix);
   void set_cut(U32 cut);
+  void set_native(BOOL native);
   BOOL set_format(I32 format);
   BOOL set_format(const CHAR* format);
   void set_force(BOOL force);
@@ -86,6 +89,7 @@ public:
   const CHAR* get_file_name_only() const;
   CHAR* get_file_name_base() const;
   U32 get_cut() const;
+  BOOL get_native() const;
   BOOL format_was_specified() const;
   I32 get_format() const;
   const CHAR* get_format_name() const;
@@ -119,6 +123,7 @@ private:
   U32 format;
   BOOL specified;
   BOOL force;
+  BOOL native;
   U32 chunk_size;
   BOOL use_stdout;
   BOOL use_nil;

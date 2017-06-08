@@ -14,7 +14,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2016, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -22,16 +22,20 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    23 December 2016 -- by Jean-Romain Roussel -- L50 use int64_t instead of long long
-
+  
+    28 May 2017 -- support for "LAS 1.4 selective decompression" added into DLL API
+    8 April 2017 -- new check for whether point size and total size of items match
+    30 March 2017 -- support for "native LAS 1.4 extension" added into main branch
+    7 January 2017 -- set reserved VLR field from 0xAABB to 0x0 in DLL
+    7 January 2017 -- consistent compatibility mode scan angle quantization in DLL
+    7 January 2017 -- compatibility mode *decompression* fix for waveforms in DLL
     25 February 2016 -- depreciating old libLAS laszipper/lasunzipper binding
-    29 July 2013 -- reorganized to create an easy-to-use LASzip DLL
+    29 July 2013 -- reorganized to create an easy-to-use LASzip DLL 
     5 December 2011 -- learns the chunk table if it is missing (e.g. truncated LAZ)
     6 October 2011 -- large file support, ability to read with missing chunk table
-    23 June 2011 -- turned on LASzip version 2.0 compressor with chunking
+    23 June 2011 -- turned on LASzip version 2.0 compressor with chunking 
     8 May 2011 -- added an option for variable chunking via chunk()
     23 April 2011 -- changed interface for simplicity and chunking support
     20 March 2011 -- incrementing LASZIP_VERSION to 1.2 for improved compression
@@ -43,13 +47,11 @@
 #ifndef LASZIP_HPP
 #define LASZIP_HPP
 
-#include <stdint.h>
-
 #if defined(_MSC_VER) && (_MSC_VER < 1300)
 #define LZ_WIN32_VC6
 typedef __int64   SIGNED_INT64;
 #else
-typedef int64_t SIGNED_INT64;
+typedef long long SIGNED_INT64;
 #endif
 
 #if defined(_MSC_VER) && \
@@ -59,15 +61,16 @@ typedef int64_t SIGNED_INT64;
 #define LASCopyString strdup
 #endif
 
-#define LASZIP_VERSION_MAJOR                2
-#define LASZIP_VERSION_MINOR                4
+#define LASZIP_VERSION_MAJOR                3
+#define LASZIP_VERSION_MINOR                0
 #define LASZIP_VERSION_REVISION             1
-#define LASZIP_VERSION_BUILD_DATE      150923
+#define LASZIP_VERSION_BUILD_DATE      170528
 
 #define LASZIP_COMPRESSOR_NONE              0
 #define LASZIP_COMPRESSOR_POINTWISE         1
 #define LASZIP_COMPRESSOR_POINTWISE_CHUNKED 2
-#define LASZIP_COMPRESSOR_TOTAL_NUMBER_OF   3
+#define LASZIP_COMPRESSOR_LAYERED_CHUNKED   3
+#define LASZIP_COMPRESSOR_TOTAL_NUMBER_OF   4
 
 #define LASZIP_COMPRESSOR_CHUNKED LASZIP_COMPRESSOR_POINTWISE_CHUNKED
 #define LASZIP_COMPRESSOR_NOT_CHUNKED LASZIP_COMPRESSOR_POINTWISE
@@ -82,7 +85,7 @@ typedef int64_t SIGNED_INT64;
 class LASitem
 {
 public:
-  enum Type { BYTE = 0, SHORT, INT, LONG, FLOAT, DOUBLE, POINT10, GPSTIME11, RGB12, WAVEPACKET13, POINT14, RGBNIR14 } type;
+  enum Type { BYTE = 0, SHORT, INT, LONG, FLOAT, DOUBLE, POINT10, GPSTIME11, RGB12, WAVEPACKET13, POINT14, RGB14, RGBNIR14, WAVEPACKET14, BYTE14 } type;
   unsigned short size;
   unsigned short version;
   bool is_type(LASitem::Type t) const;
@@ -97,8 +100,8 @@ public:
   bool check_compressor(const unsigned short compressor);
   bool check_coder(const unsigned short coder);
   bool check_item(const LASitem* item);
-  bool check_items(const unsigned short num_items, const LASitem* items);
-  bool check();
+  bool check_items(const unsigned short num_items, const LASitem* items, const unsigned short point_size=0);
+  bool check(const unsigned short point_size=0);
 
   // go back and forth between item array and point type & size
   bool setup(unsigned short* num_items, LASitem** items, const unsigned char point_type, const unsigned short point_size, const unsigned short compressor=LASZIP_COMPRESSOR_NONE);
@@ -127,7 +130,7 @@ public:
   unsigned char version_minor;
   unsigned short version_revision;
   unsigned int options;
-  unsigned int chunk_size;
+  unsigned int chunk_size; 
   SIGNED_INT64 number_of_special_evlrs; /* must be -1 if unused */
   SIGNED_INT64 offset_to_special_evlrs; /* must be -1 if unused */
   unsigned short num_items;
