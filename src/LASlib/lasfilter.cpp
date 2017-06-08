@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasfilter.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,13 +21,16 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
+
+#include <Rcpp.h>
+
 #include "lasfilter.hpp"
 #include "laszip_decompress_selective_v3.hpp"
 
@@ -664,7 +667,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s%s %g %g ", name(), (NIR == 3 ? "" : (NIR == 1 ? "_green_is_NIR" : "_blue_is_NIR")),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { if (NIR == 3) return LASZIP_DECOMPRESS_SELECTIVE_RGB | LASZIP_DECOMPRESS_SELECTIVE_NIR; else return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->rgb[NIR] - point->get_R())) / ((F32)(point->rgb[NIR] + point->get_R()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -681,7 +684,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->get_R() - point->get_G())) / ((F32)(point->get_R() + point->get_G()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -697,7 +700,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB | LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->get_intensity() - point->get_R())) / ((F32)(point->get_intensity() + point->get_R()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -830,7 +833,7 @@ class LAScriterionDropClassifications : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_classification_mask"; };
-  inline I32 get_command(CHAR* string) const { 
+  inline I32 get_command(CHAR* string) const {
     U32 i, n, drop = 0;
     for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) drop++;
     if (drop < 16)
@@ -1290,8 +1293,9 @@ public:
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point)
   {
-    srand(seed);
-    seed = rand();
+    //srand(seed);
+    //seed = rand();
+    seed = R::runif(0, RAND_MAX);
     return ((F32)seed/(F32)RAND_MAX) > fraction;
   };
   void reset() { seed = 0; };
@@ -1308,7 +1312,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (grid_spacing > 0 ? grid_spacing : -grid_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     if (grid_spacing < 0)
     {
       grid_spacing = -grid_spacing;
@@ -1520,7 +1524,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     I64 pos_t = I64_FLOOR(point->get_gps_time() / time_spacing);
     my_I64_F64_map::iterator map_element = times.find(pos_t);
     if (map_element == times.end())
@@ -1558,7 +1562,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     I64 pos_t = I64_FLOOR(point->get_gps_time() / time_spacing);
     my_I64_set::iterator map_element = times.find(pos_t);
     if (map_element == times.end())
@@ -1884,7 +1888,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_xyz") == 0)
         {
@@ -1894,7 +1898,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-keep_x") == 0)
         {
@@ -1937,7 +1941,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepXY(atoi(argv[i+1]), atoi(argv[i+2]), atoi(argv[i+3]), atoi(argv[i+4])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_X") == 0)
         {
@@ -1947,7 +1951,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepX(atoi(argv[i+1]), atoi(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
       else if (strcmp(argv[i],"-keep_Y") == 0)
@@ -1958,7 +1962,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionKeepY(atoi(argv[i+1]), atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-keep_Z") == 0)
       {
@@ -1968,7 +1972,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionKeepZ(atoi(argv[i+1]), atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-keep_tile") == 0)
       {
@@ -1978,7 +1982,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionKeepTile((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-keep_circle") == 0)
       {
@@ -2486,7 +2490,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionDropxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-drop_xyz") == 0)
         {
@@ -2496,7 +2500,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionDropxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-drop_x") == 0)
         {
@@ -2830,7 +2834,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           }
           add_criterion(new LAScriterionDropScanAngleBelow(atoi(argv[i+1])));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-        }    
+        }
         else if (strcmp(argv[i],"-drop_scan_angle_between") == 0)
         {
           if ((i+2) >= argc)
