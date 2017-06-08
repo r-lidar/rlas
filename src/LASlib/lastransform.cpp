@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lastransform.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,13 +21,16 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
+
+#include <Rcpp.h>
+
 #include "lastransform.hpp"
 
 #include "lasfilter.hpp"
@@ -349,8 +352,9 @@ public:
   inline int get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), max_raw_offset[0], max_raw_offset[1]); };
   inline void transform(LASpoint* point) {
     I32 r;
-    srand(seed);
-    seed = rand();
+    //srand(seed);
+    //seed = rand();
+    seed = R::runif(0, RAND_MAX);
     r = ((seed >> 3) % ((2 * max_raw_offset[0]) + 1)) - max_raw_offset[0];
     point->set_X(point->get_X() + r);
     r = ((seed >> 6) % ((2 * max_raw_offset[1]) + 1)) - max_raw_offset[1];
@@ -1366,7 +1370,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateX((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-translate_y") == 0)
       {
@@ -1377,7 +1381,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateY((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-translate_z") == 0)
       {
@@ -1388,7 +1392,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateZ((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-translate_xyz") == 0)
       {
@@ -1399,7 +1403,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateXYZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-translate_then_scale_x") == 0)
       {
@@ -1410,7 +1414,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleX((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-translate_then_scale_y") == 0)
       {
@@ -1421,7 +1425,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleY((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-translate_then_scale_z") == 0)
       {
@@ -1432,7 +1436,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationTranslateThenScaleZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strncmp(argv[i],"-translate_raw_", 14) == 0)
       {
@@ -1445,7 +1449,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawX((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-translate_raw_y") == 0)
         {
@@ -1456,7 +1460,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawY((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-translate_raw_z") == 0)
         {
@@ -1467,7 +1471,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawZ((I32)atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-translate_raw_xyz") == 0)
         {
@@ -1478,7 +1482,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawXYZ((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2]), (I32)atoi(argv[i+3])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
         else if (strcmp(argv[i],"-translate_raw_xy_at_random") == 0)
         {
@@ -1489,7 +1493,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationTranslateRawXYatRandom((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
       else if (strcmp(argv[i],"-translate_intensity") == 0)
@@ -1500,7 +1504,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationTranslateIntensity((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-translate_then_scale_intensity") == 0)
       {
@@ -1510,7 +1514,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationTranslateThenScaleIntensity((F32)atof(argv[i+1]), (F32)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-translate_scan_angle") == 0)
       {
@@ -1520,7 +1524,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationTranslateScanAngle((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-translate_then_scale_scan_angle") == 0)
       {
@@ -1530,7 +1534,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationTranslateThenScaleScanAngle((F32)atof(argv[i+1]), (F32)atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-translate_gps_time") == 0)
       {
@@ -1540,7 +1544,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationTranslateGpsTime(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
     }
     else if (strncmp(argv[i],"-rotate_", 8) == 0)
@@ -1554,7 +1558,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationRotateXY((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-rotate_xz") == 0)
       {
@@ -1565,7 +1569,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationRotateXZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
     }
     else if (strncmp(argv[i],"-clamp_", 7) == 0)
@@ -1579,7 +1583,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZ(atof(argv[i+1]), atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-clamp_z_below") == 0)
       {
@@ -1590,7 +1594,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZbelow(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-clamp_z_above") == 0)
       {
@@ -1601,7 +1605,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampZabove(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-clamp_intensity") == 0)
       {
@@ -1611,7 +1615,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationClampIntensity(U16_CLAMP(atoi(argv[i+1])), U16_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-clamp_intensity_below") == 0)
       {
@@ -1621,7 +1625,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationClampIntensityBelow(U16_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-clamp_intensity_above") == 0)
       {
@@ -1631,7 +1635,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationClampIntensityAbove(U16_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-clamp_raw_z") == 0)
       {
@@ -1642,7 +1646,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationClampRawZ((I32)atoi(argv[i+1]), (I32)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
     }
     else if (strncmp(argv[i],"-copy_", 6) == 0)
@@ -1658,7 +1662,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           }
           change_coordinates = TRUE;
           add_operation(new LASoperationCopyAttributeIntoZ(atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-copy_attribute_into_user_data") == 0)
         {
@@ -1668,7 +1672,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationCopyAttributeIntoUserData(atoi(argv[i+1])));
-          *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
       else if (strncmp(argv[i],"-copy_user_data_", 16) == 0)
@@ -1676,25 +1680,25 @@ BOOL LAStransform::parse(int argc, char* argv[])
         if (strcmp(argv[i],"-copy_user_data_into_point_source") == 0)
         {
           add_operation(new LASoperationCopyUserDataIntoPointSource());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
         else if (strcmp(argv[i],"-copy_user_data_into_scanner_channel") == 0)
         {
           add_operation(new LASoperationCopyUserDataIntoScannerChannel());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
       }
       else if (strcmp(argv[i],"-copy_scanner_channel_into_point_source") == 0)
       {
         add_operation(new LASoperationCopyScannerChannelIntoPointSource());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strncmp(argv[i],"-copy_R_", 8) == 0)
       {
         if (strcmp(argv[i],"-copy_R_into_intensity") == 0)
         {
           add_operation(new LASoperationCopyRintoIntensity());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
         else if (strcmp(argv[i],"-copy_R_into_NIR") == 0)
         {
@@ -1707,12 +1711,12 @@ BOOL LAStransform::parse(int argc, char* argv[])
         if (strcmp(argv[i],"-copy_G_into_intensity") == 0)
         {
           add_operation(new LASoperationCopyGintoIntensity());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
         else if (strcmp(argv[i],"-copy_G_into_NIR") == 0)
         {
           add_operation(new LASoperationCopyGintoNIR());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
       }
       else if (strncmp(argv[i],"-copy_B_", 8) == 0)
@@ -1720,30 +1724,30 @@ BOOL LAStransform::parse(int argc, char* argv[])
         if (strcmp(argv[i],"-copy_B_into_intensity") == 0)
         {
           add_operation(new LASoperationCopyBintoIntensity());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
         else if (strcmp(argv[i],"-copy_B_into_NIR") == 0)
         {
           add_operation(new LASoperationCopyBintoNIR());
-          *argv[i]='\0'; 
+          *argv[i]='\0';
         }
       }
       else if (strcmp(argv[i],"-copy_NIR_into_intensity") == 0)
       {
         add_operation(new LASoperationCopyNIRintoIntensity());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-copy_intensity_into_z") == 0)
       {
         change_coordinates = TRUE;
         add_operation(new LASoperationCopyIntensityIntoZ());
-        *argv[i]='\0'; 
-      } 
+        *argv[i]='\0';
+      }
       else if (strcmp(argv[i],"-copy_classification_into_user_data") == 0)
       {
         add_operation(new LASoperationCopyClassificationIntoUserData());
-        *argv[i]='\0'; 
-      } 
+        *argv[i]='\0';
+      }
     }
     else if (strncmp(argv[i],"-set_", 5) == 0)
     {
@@ -1755,7 +1759,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetClassification(U8_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strncmp(argv[i],"-set_extended_classification", 28) == 0)
       {
@@ -1765,7 +1769,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedClassification(U8_CLAMP(atoi(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_intensity") == 0)
       {
@@ -1775,7 +1779,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetIntensity(U16_CLAMP(atof(argv[i+1]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_withheld_flag") == 0)
       {
@@ -1785,7 +1789,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetWithheldFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_synthetic_flag") == 0)
       {
@@ -1795,7 +1799,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetSyntheticFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_keypoint_flag") == 0)
       {
@@ -1805,7 +1809,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetKeypointFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if ((strcmp(argv[i],"-set_extended_overlap_flag") == 0) || (strcmp(argv[i],"-set_overlap_flag") == 0))
       {
@@ -1815,7 +1819,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedOverlapFlag((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if ((strcmp(argv[i],"-set_extended_scanner_channel") == 0) || (strcmp(argv[i],"-set_scanner_channel") == 0))
       {
@@ -1825,7 +1829,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedScannerChannel((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_user_data") == 0)
       {
@@ -1835,7 +1839,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetUserData((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strncmp(argv[i],"-set_point_source", 17) == 0)
       {
@@ -1845,7 +1849,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetPointSource((U16)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_return_number") == 0)
       {
@@ -1855,7 +1859,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetReturnNumber((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_extended_return_number") == 0)
       {
@@ -1865,7 +1869,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedReturnNumber((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_number_of_returns") == 0)
       {
@@ -1875,7 +1879,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetNumberOfReturns((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_extended_number_of_returns") == 0)
       {
@@ -1885,7 +1889,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetExtendedNumberOfReturns((U8)atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-set_gps_time") == 0)
       {
@@ -1895,7 +1899,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationSetGpsTime(atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strncmp(argv[i],"-set_RGB", 8) == 0)
       {
@@ -1907,7 +1911,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationSetRGB((U16)atoi(argv[i+1]), (U16)atoi(argv[i+2]), (U16)atoi(argv[i+3])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
         else if (strcmp(argv[i],"-set_RGB_of_class") == 0)
         {
@@ -1923,7 +1927,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationSetRGBofClass((U8)c, (U16)atoi(argv[i+2]), (U16)atoi(argv[i+3]), (U16)atoi(argv[i+4])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
       }
     }
@@ -1937,7 +1941,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangeClassificationFromTo(U8_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-change_extended_classification_from_to") == 0)
       {
@@ -1947,7 +1951,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangeExtendedClassificationFromTo(U8_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-change_user_data_from_to") == 0)
       {
@@ -1957,7 +1961,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangeUserDataFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-change_point_source_from_to") == 0)
       {
@@ -1967,7 +1971,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangePointSourceFromTo((U16)atoi(argv[i+1]), (U16)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-change_return_number_from_to") == 0)
       {
@@ -1977,7 +1981,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangeReturnNumberFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strcmp(argv[i],"-change_number_of_returns_from_to") == 0)
       {
@@ -1987,7 +1991,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationChangeNumberOfReturnsFromTo((U8)atoi(argv[i+1]), (U8)atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
     }
     else if (strncmp(argv[i],"-classify_", 10) == 0)
@@ -2002,7 +2006,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyZbelowAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-classify_z_above_as") == 0)
         {
@@ -2012,7 +2016,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyZaboveAs(atof(argv[i+1]), U8_CLAMP(atoi(argv[i+2]))));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-classify_z_between_as") == 0)
         {
@@ -2022,7 +2026,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyZbetweenAs(atof(argv[i+1]), atof(argv[i+2]), U8_CLAMP(atoi(argv[i+3]))));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
       }
       if (strncmp(argv[i],"-classify_intensity_", 20) == 0)
@@ -2035,7 +2039,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyIntensityBelowAs(U16_CLAMP(atoi(argv[i+1])), U8_CLAMP(atoi(argv[i+2]))));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-classify_intensity_above_as") == 0)
         {
@@ -2045,7 +2049,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyIntensityAboveAs(U16_CLAMP(atoi(argv[i+1])), (U8)atoi(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-classify_intensity_between_as") == 0)
         {
@@ -2055,7 +2059,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
             return FALSE;
           }
           add_operation(new LASoperationClassifyIntensityBetweenAs(U16_CLAMP(atoi(argv[i+1])), U16_CLAMP(atoi(argv[i+2])), (U8)atoi(argv[i+3])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
       }
     }
@@ -2070,7 +2074,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleX((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-scale_y") == 0)
       {
@@ -2081,7 +2085,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleY((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-scale_z") == 0)
       {
@@ -2092,7 +2096,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleZ((F64)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-scale_xyz") == 0)
       {
@@ -2103,7 +2107,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
         }
         change_coordinates = TRUE;
         add_operation(new LASoperationScaleXYZ((F64)atof(argv[i+1]), (F64)atof(argv[i+2]), (F64)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-scale_intensity") == 0)
       {
@@ -2113,7 +2117,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationScaleIntensity((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-scale_scan_angle") == 0)
       {
@@ -2123,7 +2127,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationScaleScanAngle((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-scale_RGB") == 0 || strcmp(argv[i],"-scale_rgb") == 0)
       {
@@ -2133,17 +2137,17 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationScaleRGB((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-scale_RGB_down") == 0 || strcmp(argv[i],"-scale_rgb_down") == 0)
       {
         add_operation(new LASoperationScaleRGBdown());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-scale_RGB_up") == 0 || strcmp(argv[i],"-scale_rgb_up") == 0)
       {
         add_operation(new LASoperationScaleRGBup());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
     }
     else if (strncmp(argv[i],"-switch_", 8) == 0)
@@ -2151,32 +2155,32 @@ BOOL LAStransform::parse(int argc, char* argv[])
       if (strcmp(argv[i],"-switch_x_y") == 0)
       {
         add_operation(new LASoperationSwitchXY());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-switch_x_z") == 0)
       {
         add_operation(new LASoperationSwitchXZ());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-switch_y_z") == 0)
       {
         add_operation(new LASoperationSwitchYZ());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-switch_R_G") == 0)
       {
         add_operation(new LASoperationSwitchRG());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-switch_R_B") == 0)
       {
         add_operation(new LASoperationSwitchRB());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
       else if (strcmp(argv[i],"-switch_G_B") == 0)
       {
         add_operation(new LASoperationSwitchGB());
-        *argv[i]='\0'; 
+        *argv[i]='\0';
       }
     }
     else if (strncmp(argv[i],"-bin_", 5) == 0)
@@ -2189,7 +2193,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationBinZintoPointSource(atoi(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-bin_abs_scan_angle_into_point_source") == 0)
       {
@@ -2199,7 +2203,7 @@ BOOL LAStransform::parse(int argc, char* argv[])
           return FALSE;
         }
         add_operation(new LASoperationBinAbsScanAngleIntoPointSource((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
     }
     else if (strcmp(argv[i],"-merge_scanner_channel_into_point_source") == 0)
@@ -2220,17 +2224,17 @@ BOOL LAStransform::parse(int argc, char* argv[])
     else if (strcmp(argv[i],"-flip_waveform_direction") == 0)
     {
       add_operation(new LASoperationFlipWaveformDirection());
-      *argv[i]='\0'; 
+      *argv[i]='\0';
     }
     else if (strcmp(argv[i],"-repair_zero_returns") == 0)
     {
       add_operation(new LASoperationRepairZeroReturns());
-      *argv[i]='\0'; 
+      *argv[i]='\0';
     }
     else if (strcmp(argv[i],"-adjusted_to_week") == 0)
     {
       add_operation(new LASoperationConvertAdjustedGpsToWeek());
-      *argv[i]='\0'; 
+      *argv[i]='\0';
     }
     else if (strcmp(argv[i],"-week_to_adjusted") == 0)
     {
@@ -2240,12 +2244,12 @@ BOOL LAStransform::parse(int argc, char* argv[])
         return FALSE;
       }
       add_operation(new LASoperationConvertWeekToAdjustedGps(atoi(argv[i+1])));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1; 
+      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
     }
     else if (strcmp(argv[i],"-filtered_transform") == 0)
     {
       is_filtered = TRUE;
-      *argv[i]='\0'; 
+      *argv[i]='\0';
     }
   }
   return TRUE;
