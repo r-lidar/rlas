@@ -101,7 +101,7 @@ void LASindex::complete(U32 minimum_points, I32 maximum_intervals, const BOOL ve
 {
   if (verbose)
   {
-    fprintf(stderr,"before complete %d %d\n", minimum_points, maximum_intervals);
+    REprintf("before complete %d %d\n", minimum_points, maximum_intervals);
     print(FALSE);
   }
   if (minimum_points)
@@ -173,7 +173,7 @@ void LASindex::complete(U32 minimum_points, I32 maximum_intervals, const BOOL ve
     }
     if (verbose)
     {
-      fprintf(stderr,"after minimum_points %d\n", minimum_points);
+      REprintf("after minimum_points %d\n", minimum_points);
       print(FALSE);
     }
   }
@@ -186,7 +186,7 @@ void LASindex::complete(U32 minimum_points, I32 maximum_intervals, const BOOL ve
     interval->merge_intervals(maximum_intervals, verbose);
     if (verbose)
     {
-      fprintf(stderr,"after maximum_intervals %d\n", maximum_intervals);
+      REprintf("after maximum_intervals %d\n", maximum_intervals);
       print(FALSE);
     }
   }
@@ -212,15 +212,15 @@ void LASindex::print(BOOL verbose)
     }
     if (total_check != interval->total)
     {
-      fprintf(stderr,"ERROR: total_check %d != interval->total %d\n", total_check, interval->total);
+      REprintf("ERROR: total_check %d != interval->total %d\n", total_check, interval->total);
     }
-    if (verbose) fprintf(stderr,"cell %d intervals %d full %d total %d (%.2f)\n", interval->index, intervals, interval->full, interval->total, 100.0f*interval->full/interval->total);
+    if (verbose) REprintf("cell %d intervals %d full %d total %d (%.2f)\n", interval->index, intervals, interval->full, interval->total, 100.0f*interval->full/interval->total);
     total_cells++;
     total_full += interval->full;
     total_total += interval->total;
     total_intervals += intervals;
   }
-  if (verbose) fprintf(stderr,"total cells/intervals %d/%d full %d (%.2f)\n", total_cells, total_intervals, total_full, 100.0f*total_full/total_total);
+  if (verbose) REprintf("total cells/intervals %d/%d full %d (%.2f)\n", total_cells, total_intervals, total_full, 100.0f*total_full/total_total);
 }
 
 LASquadtree* LASindex::get_spatial() const
@@ -237,7 +237,7 @@ BOOL LASindex::intersect_rectangle(const F64 r_min_x, const F64 r_min_y, const F
 {
   have_interval = FALSE;
   cells = spatial->intersect_rectangle(r_min_x, r_min_y, r_max_x, r_max_y);
-//  fprintf(stderr,"%d cells of %g/%g %g/%g intersect rect %g/%g %g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), r_min_x, r_min_y, r_max_x, r_max_y);
+//  REprintf("%d cells of %g/%g %g/%g intersect rect %g/%g %g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), r_min_x, r_min_y, r_max_x, r_max_y);
   if (cells)
     return merge_intervals();
   return FALSE;
@@ -247,7 +247,7 @@ BOOL LASindex::intersect_tile(const F32 ll_x, const F32 ll_y, const F32 size)
 {
   have_interval = FALSE;
   cells = spatial->intersect_tile(ll_x, ll_y, size);
-//  fprintf(stderr,"%d cells of %g/%g %g/%g intersect tile %g/%g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), ll_x, ll_y, size);
+//  REprintf("%d cells of %g/%g %g/%g intersect tile %g/%g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), ll_x, ll_y, size);
   if (cells)
     return merge_intervals();
   return FALSE;
@@ -257,7 +257,7 @@ BOOL LASindex::intersect_circle(const F64 center_x, const F64 center_y, const F6
 {
   have_interval = FALSE;
   cells = spatial->intersect_circle(center_x, center_y, radius);
-//  fprintf(stderr,"%d cells of %g/%g %g/%g intersect circle %g/%g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), center_x, center_y, radius);
+//  REprintf("%d cells of %g/%g %g/%g intersect circle %g/%g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), center_x, center_y, radius);
   if (cells)
     return merge_intervals();
   return FALSE;
@@ -343,7 +343,7 @@ BOOL LASindex::read(const char* file_name)
   }
   if (!read(file))
   {
-    fprintf(stderr,"ERROR (LASindex): cannot read '%s'\n", name);
+    REprintf("ERROR (LASindex): cannot read '%s'\n", name);
     fclose(file);
     free(name);
     return FALSE;
@@ -406,7 +406,7 @@ BOOL LASindex::append(const char* file_name) const
       CHAR user_id[16];
       try { bytestreamin->getBytes((U8*)user_id, 16); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].user_id\n", u);
+        REprintf("ERROR: reading header.vlrs[%d].user_id\n", u);
         return FALSE;
       }
       if (strcmp(user_id, "laszip encoded") == 0)
@@ -417,13 +417,13 @@ BOOL LASindex::append(const char* file_name) const
       U16 record_id;
       try { bytestreamin->get16bitsLE((U8*)&record_id); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].record_id\n", u);
+        REprintf("ERROR: reading header.vlrs[%d].record_id\n", u);
         return FALSE;
       }
       U16 record_length_after_header;
       try { bytestreamin->get16bitsLE((U8*)&record_length_after_header); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].record_length_after_header\n", u);
+        REprintf("ERROR: reading header.vlrs[%d].record_length_after_header\n", u);
         return FALSE;
       }
       total += (54 + record_length_after_header);
@@ -456,7 +456,7 @@ BOOL LASindex::append(const char* file_name) const
 
   if (!write(bytestreamout))
   {
-    fprintf(stderr,"ERROR (LASindex): cannot append LAX to '%s'\n", file_name);
+    REprintf("ERROR (LASindex): cannot append LAX to '%s'\n", file_name);
     delete bytestreamout;
     fclose(file);
     delete lasreader;
@@ -513,13 +513,13 @@ BOOL LASindex::write(const char* file_name) const
   FILE* file = fopen(name, "wb");
   if (file == 0)
   {
-    fprintf(stderr,"ERROR (LASindex): cannot open '%s' for write\n", name);
+    REprintf("ERROR (LASindex): cannot open '%s' for write\n", name);
     free(name);
     return FALSE;
   }
   if (!write(file))
   {
-    fprintf(stderr,"ERROR (LASindex): cannot write '%s'\n", name);
+    REprintf("ERROR (LASindex): cannot write '%s'\n", name);
     fclose(file);
     free(name);
     return FALSE;
@@ -544,32 +544,32 @@ BOOL LASindex::read(ByteStreamIn* stream)
   char signature[4];
   try { stream->getBytes((U8*)signature, 4); } catch (...)
   {
-    fprintf(stderr,"ERROR (LASindex): reading signature\n");
+    REprintf("ERROR (LASindex): reading signature\n");
     return FALSE;
   }
   if (strncmp(signature, "LASX", 4) != 0)
   {
-    fprintf(stderr,"ERROR (LASindex): wrong signature %4s instead of 'LASX'\n", signature);
+    REprintf("ERROR (LASindex): wrong signature %4s instead of 'LASX'\n", signature);
     return FALSE;
   }
   U32 version;
   try { stream->get32bitsLE((U8*)&version); } catch (...)
   {
-    fprintf(stderr,"ERROR (LASindex): reading version\n");
+    REprintf("ERROR (LASindex): reading version\n");
     return FALSE;
   }
   // read spatial quadtree
   spatial = new LASquadtree();
   if (!spatial->read(stream))
   {
-    fprintf(stderr,"ERROR (LASindex): cannot read LASspatial (LASquadtree)\n");
+    REprintf("ERROR (LASindex): cannot read LASspatial (LASquadtree)\n");
     return FALSE;
   }
   // read interval
   interval = new LASinterval();
   if (!interval->read(stream))
   {
-    fprintf(stderr,"ERROR (LASindex): reading LASinterval\n");
+    REprintf("ERROR (LASindex): reading LASinterval\n");
     return FALSE;
   }
   // tell spatial about the existing cells
@@ -585,25 +585,25 @@ BOOL LASindex::write(ByteStreamOut* stream) const
 {
   if (!stream->putBytes((U8*)"LASX", 4))
   {
-    fprintf(stderr,"ERROR (LASindex): writing signature\n");
+    REprintf("ERROR (LASindex): writing signature\n");
     return FALSE;
   }
   U32 version = 0;
   if (!stream->put32bitsLE((U8*)&version))
   {
-    fprintf(stderr,"ERROR (LASindex): writing version\n");
+    REprintf("ERROR (LASindex): writing version\n");
     return FALSE;
   }
   // write spatial quadtree
   if (!spatial->write(stream))
   {
-    fprintf(stderr,"ERROR (LASindex): cannot write LASspatial (LASquadtree)\n");
+    REprintf("ERROR (LASindex): cannot write LASspatial (LASquadtree)\n");
     return FALSE;
   }
   // write interval
   if (!interval->write(stream))
   {
-    fprintf(stderr,"ERROR (LASindex): writing LASinterval\n");
+    REprintf("ERROR (LASindex): writing LASinterval\n");
     return FALSE;
   }
   return TRUE;
@@ -656,7 +656,7 @@ BOOL LASindex::merge_intervals()
         used_cells++;
       }
     }
-//    fprintf(stderr,"LASindex: used %d cells of total %d\n", used_cells, interval->get_number_cells());
+//    REprintf("LASindex: used %d cells of total %d\n", used_cells, interval->get_number_cells());
     if (used_cells)
     {
       BOOL r = interval->merge();

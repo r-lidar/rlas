@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasdefinitions.hpp
-  
+
   CONTENTS:
-  
+
     Contains the Header and Point classes for reading and writing LiDAR points
     in the LAS format
 
@@ -28,22 +28,22 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
-    19 April 2017 -- support for selective decompression for new LAS 1.4 points 
+
+    19 April 2017 -- support for selective decompression for new LAS 1.4 points
     1 February 2017 -- better support for OGC WKT strings in VLRs or EVLRs
     22 June 2016 -- set default of VLR header "reserved" to 0 instead of 0xAABB
     1 August 2015 -- moving LASpoint, LASquantizer, and LASattributer to LASzip
     9 December 2013 -- bug fix and improved writing of new LAS 1.4 point types
-    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes 
+    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes
     10 January 2011 -- licensing change for LGPL release and liblas integration
     16 December 2010 -- updated to support generic LASitem point formats
     3 December 2010 -- updated to (somewhat) support LAS format 1.3
-    7 September 2008 -- updated to support LAS format 1.2 
+    7 September 2008 -- updated to support LAS format 1.2
     11 June 2007 -- number of return / scan direction bitfield order was wrong
     18 February 2007 -- created after repairing 2 vacuum cleaners in the garden
-  
+
 ===============================================================================
 */
 #ifndef LAS_DEFINITIONS_HPP
@@ -86,7 +86,7 @@ class LASvlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16]; 
+  CHAR user_id[16];
   U16 record_id;
   U16 record_length_after_header;
   CHAR description[32];
@@ -98,7 +98,7 @@ class LASevlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16]; 
+  CHAR user_id[16];
   U16 record_id;
   I64 record_length_after_header;
   CHAR description[32];
@@ -454,38 +454,38 @@ public:
   {
     if (strncmp(file_signature, "LASF", 4) != 0)
     {
-      fprintf(stderr,"ERROR: wrong file signature '%4s'\n", file_signature);
+      REprintf("ERROR: wrong file signature '%4s'\n", file_signature);
       return FALSE;
     }
     if ((version_major != 1) || (version_minor > 4))
     {
-      fprintf(stderr,"WARNING: unknown version %d.%d (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)\n", version_major, version_minor);
+      REprintf("WARNING: unknown version %d.%d (should be 1.0 or 1.1 or 1.2 or 1.3 or 1.4)\n", version_major, version_minor);
     }
     if (header_size < 227)
     {
-      fprintf(stderr,"ERROR: header size is %d but should be at least 227\n", header_size);
+      REprintf("ERROR: header size is %d but should be at least 227\n", header_size);
       return FALSE;
     }
     if (offset_to_point_data < header_size)
     {
-      fprintf(stderr,"ERROR: offset to point data %d is smaller than header size %d\n", offset_to_point_data, header_size);
+      REprintf("ERROR: offset to point data %d is smaller than header size %d\n", offset_to_point_data, header_size);
       return FALSE;
     }
     if (x_scale_factor == 0)
     {
-      fprintf(stderr,"WARNING: x scale factor is zero.\n");
+      REprintf("WARNING: x scale factor is zero.\n");
     }
     if (y_scale_factor == 0)
     {
-      fprintf(stderr,"WARNING: y scale factor is zero.\n");
+      REprintf("WARNING: y scale factor is zero.\n");
     }
     if (z_scale_factor == 0)
     {
-      fprintf(stderr,"WARNING: z scale factor is zero.\n");
+      REprintf("WARNING: z scale factor is zero.\n");
     }
     if (max_x < min_x || max_y < min_y || max_z < min_z)
     {
-      fprintf(stderr,"WARNING: invalid bounding box [ %g %g %g / %g %g %g ]\n", min_x, min_y, min_z, max_x, max_y, max_z);
+      REprintf("WARNING: invalid bounding box [ %g %g %g / %g %g %g ]\n", min_x, min_y, min_z, max_x, max_y, max_z);
     }
     return TRUE;
   };
@@ -512,7 +512,7 @@ public:
   };
 
   // note that data needs to be allocated with new [] and not malloc and that LASheader
-  // will become the owner over this and manage its deallocation 
+  // will become the owner over this and manage its deallocation
   void add_vlr(const CHAR* user_id, const U16 record_id, const U16 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
   {
     U32 i = 0;
@@ -635,7 +635,7 @@ public:
   };
 
   // note that data needs to be allocated with new [] and not malloc and that LASheader
-  // will become the owner over this and manage its deallocation 
+  // will become the owner over this and manage its deallocation
   void add_evlr(const CHAR* user_id, const U16 record_id, const I64 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
   {
     U32 i = 0;
