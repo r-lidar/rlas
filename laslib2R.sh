@@ -13,7 +13,7 @@ perl -pi -w -e 's/fprintf\(stderr,/REprintf(/g;' $files
 
 files=`grep -lr "exit(1)" src/`
 
-perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\(std::string\("Internal error"\)\)/g;' $files
+perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $files
 
 # Some extra changes were done manually:
 
