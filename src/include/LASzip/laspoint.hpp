@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  laspoint.hpp
-
+  
   CONTENTS:
-
+  
     This class describes an LAS point and offers helper functions to access,
     convert, and set the default (and any additional) point attributes.
 
@@ -14,7 +14,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2015, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -22,13 +22,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
+    10 March 2017 -- fix in copy_to() and copy_from() new LAS 1.4 point types
+    10 October 2016 -- small fixes for NIR and extended scanner channel
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
-
+  
 ===============================================================================
 */
 #ifndef LAS_POINT_HPP
@@ -36,8 +36,6 @@
 
 #include "lasquantizer.hpp"
 #include "lasattributer.hpp"
-#include <stdexcept>
-#include <string>
 
 class LASwavepacket
 {
@@ -197,7 +195,7 @@ public:
       extended_number_of_returns = other.number_of_returns;
       extended_return_number = other.return_number;
       extended_scan_angle = I16_QUANTIZE(((F32)other.scan_angle_rank)/0.006);
-      extended_scanner_channel = 0;
+      extended_scanner_channel = other.extended_scanner_channel;
     }
 
     return *this;
@@ -205,9 +203,24 @@ public:
 
   void copy_to(U8* buffer) const
   {
+    if (extended_point_type)
+    {
+      memcpy(buffer, &X, 14);
+      *((U8*)&(buffer[14])) = ((U8*)&X)[24];
+      *((U8*)&(buffer[15])) = (extended_classification_flags << 4) | (extended_scanner_channel << 2) | (((U8*)&X)[14] & 0x03);
+      *((U8*)&(buffer[16])) = extended_classification;
+      *((U8*)&(buffer[17])) = ((U8*)&X)[17];
+      *((I16*)&(buffer[18])) = *((I16*)&(((U8*)&X)[20]));
+      *((U16*)&(buffer[20])) = *((U16*)&(((U8*)&X)[18]));
+      memcpy(buffer+22, &gps_time, 8);
+    }
+    else
+    {
+      memcpy(buffer, &X, 20);
+    }
     U32 i;
-    U32 b = 0;
-    for (i = 0; i < num_items; i++)
+    U32 b = items[0].size;
+    for (i = 1; i < num_items; i++)
     {
       memcpy(&buffer[b], point[i], items[i].size);
       b += items[i].size;
@@ -216,9 +229,28 @@ public:
 
   void copy_from(const U8* buffer)
   {
+    if (extended_point_type)
+    {
+      memcpy(&X, buffer, 14);
+      ((U8*)&X)[24] = *((U8*)&(buffer[14]));
+      extended_classification_flags = (*((U8*)&(buffer[15])) >> 4);
+      extended_scanner_channel = ((*((U8*)&(buffer[15])) >> 2) & 0x03);
+      scan_direction_flag = ((*((U8*)&(buffer[15])) >> 1) & 0x01);
+      edge_of_flight_line = (*((U8*)&(buffer[15])) & 0x01);
+      extended_classification = *((U8*)&(buffer[16]));
+      if (extended_classification < 32) classification = extended_classification;
+      ((U8*)&X)[17] = *((U8*)&(buffer[17]));
+      *((I16*)&(((U8*)&X)[20])) = *((I16*)&(buffer[18])); ;
+      *((U16*)&(((U8*)&X)[18])) = *((U16*)&(buffer[20]));
+      memcpy(&gps_time, buffer+22, 8);
+    }
+    else
+    {
+      memcpy(&X, buffer, 20);
+    }
     U32 i;
-    U32 b = 0;
-    for (i = 0; i < num_items; i++)
+    U32 b = items[0].size;
+    for (i = 1; i < num_items; i++)
     {
       memcpy(point[i], &buffer[b], items[i].size);
       b += items[i].size;
@@ -237,7 +269,7 @@ public:
 
     if (!LASzip().setup(&num_items, &items, point_type, point_size, LASZIP_COMPRESSOR_NONE))
     {
-      throw std::runtime_error(std::string("ERROR: unknown point type %d with point size %d")); //(I32)point_type, (I32)point_size
+      fprintf(stderr,"ERROR: unknown point type %d with point size %d\n", (I32)point_type, (I32)point_size);
       return FALSE;
     }
 
@@ -264,14 +296,17 @@ public:
       case LASitem::RGBNIR14:
         have_nir = TRUE;
       case LASitem::RGB12:
+      case LASitem::RGB14:
         have_rgb = TRUE;
         this->point[i] = (U8*)(this->rgb);
         break;
       case LASitem::WAVEPACKET13:
+      case LASitem::WAVEPACKET14:
         have_wavepacket = TRUE;
         this->point[i] = (U8*)&(this->wavepacket);
         break;
       case LASitem::BYTE:
+      case LASitem::BYTE14:
         extra_bytes_number = items[i].size;
         extra_bytes = new U8[extra_bytes_number];
         this->point[i] = extra_bytes;
@@ -320,14 +355,17 @@ public:
       case LASitem::RGBNIR14:
         have_nir = TRUE;
       case LASitem::RGB12:
+      case LASitem::RGB14:
         have_rgb = TRUE;
         this->point[i] = (U8*)(this->rgb);
         break;
       case LASitem::WAVEPACKET13:
+      case LASitem::WAVEPACKET14:
         have_wavepacket = TRUE;
         this->point[i] = (U8*)&(this->wavepacket);
         break;
       case LASitem::BYTE:
+      case LASitem::BYTE14:
         extra_bytes_number = items[i].size;
         extra_bytes = new U8[extra_bytes_number];
         this->point[i] = extra_bytes;
@@ -475,14 +513,13 @@ public:
     have_nir = FALSE;
     extra_bytes_number = 0;
     total_point_size = 0;
-
+    
     num_items = 0;
     if (items) delete [] items;
     items = 0;
 
     // LAS 1.4 only
     extended_point_type = 0;
-
   };
 
   LASpoint()
@@ -523,7 +560,8 @@ public:
   inline U16 get_G() const { return rgb[1]; };
   inline U16 get_B() const { return rgb[2]; };
   inline U16 get_I() const { return rgb[3]; };
-
+  inline U16 get_NIR() const { return rgb[3]; };
+  
   inline void set_X(const I32 X) { this->X = X; };
   inline void set_Y(const I32 Y) { this->Y = Y; };
   inline void set_Z(const I32 Z) { this->Z = Z; };
@@ -547,6 +585,7 @@ public:
   inline void set_G(const U16 G) { this->rgb[1] = G; };
   inline void set_B(const U16 B) { this->rgb[2] = B; };
   inline void set_I(const U16 I) { this->rgb[3] = I; };
+  inline void set_NIR(const U16 NIR) { this->rgb[3] = NIR; };
 
   inline F64 get_x() const { return quantizer->get_x(X); };
   inline F64 get_y() const { return quantizer->get_y(Y); };
@@ -564,6 +603,8 @@ public:
   inline U8 get_extended_scanner_channel() const { return extended_scanner_channel; };
 
   inline void set_extended_classification(U8 extended_classification) { this->extended_classification = extended_classification; };
+  inline void set_extended_return_number(U8 extended_return_number) { this->extended_return_number = extended_return_number; };
+  inline void set_extended_number_of_returns(U8 extended_number_of_returns) { this->extended_number_of_returns = extended_number_of_returns; };
   inline void set_extended_scan_angle(I16 extended_scan_angle) { this->extended_scan_angle = extended_scan_angle; };
   inline void set_extended_overlap_flag(U8 extended_overlap_flag) { this->extended_classification_flags = (extended_overlap_flag << 3) | (this->extended_classification_flags & 7); };
   inline void set_extended_scanner_channel(U8 extended_scanner_channel) { this->extended_scanner_channel = extended_scanner_channel; };
@@ -616,7 +657,7 @@ public:
     return FALSE;
   };
 
-  inline BOOL set_attribute(I32 index, const U8* data)
+  inline BOOL set_attribute(I32 index, const U8* data) 
   {
     if (has_attribute(index))
     {

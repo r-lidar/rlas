@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  laswriter_bin.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
-
+  
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
 
   COPYRIGHT:
@@ -21,13 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "laswriter_bin.hpp"
@@ -41,7 +39,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 
 struct TSrow
 {
@@ -92,7 +89,7 @@ BOOL LASwriterBIN::open(const char* file_name, const LASheader* header, const ch
 {
   if (file_name == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file name pointer is zero"));
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -100,13 +97,13 @@ BOOL LASwriterBIN::open(const char* file_name, const LASheader* header, const ch
 
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: cannot open file '%s'")); //file_name
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    throw std::runtime_error(std::string("WARNING: setvbuf() failed with buffer size %u")); //io_buffer_size
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %u\n", io_buffer_size);
   }
 
   ByteStreamOut* out;
@@ -122,7 +119,7 @@ BOOL LASwriterBIN::open(FILE* file, const LASheader* header, const char* version
 {
   if (file == 0)
   {
-    throw std::runtime_error(std::string("ERROR: file pointer is zero"));
+    fprintf(stderr,"ERROR: file pointer is zero\n");
     return FALSE;
   }
 
@@ -131,7 +128,7 @@ BOOL LASwriterBIN::open(FILE* file, const LASheader* header, const char* version
   {
     if(_setmode( _fileno( stdout ), _O_BINARY ) == -1 )
     {
-      throw std::runtime_error(std::string("ERROR: cannot set stdout to binary (untranslated) mode"));
+      fprintf(stderr, "ERROR: cannot set stdout to binary (untranslated) mode\n");
     }
   }
 #endif
@@ -149,14 +146,14 @@ BOOL LASwriterBIN::open(ByteStreamOut* stream, const LASheader* header, const ch
 {
   if (stream == 0)
   {
-    throw std::runtime_error(std::string("ERROR: ByteStreamOut pointer is zero"));
+    fprintf(stderr,"ERROR: ByteStreamOut pointer is zero\n");
     return FALSE;
   }
   this->stream = stream;
 
   if (header == 0)
   {
-    throw std::runtime_error(std::string("ERROR: LASheader pointer is zero"));
+    fprintf(stderr,"ERROR: LASheader pointer is zero\n");
     return FALSE;
   }
 
@@ -176,8 +173,8 @@ BOOL LASwriterBIN::open(ByteStreamOut* stream, const LASheader* header, const ch
   strncpy(tsheader.recog_str, "CXYZ", 4);
   tsheader.npoints = (header->number_of_point_records ? header->number_of_point_records : (U32)header->extended_number_of_point_records);
   double scale = header->x_scale_factor;
-  if (header->y_scale_factor < scale) scale = header->y_scale_factor;
-  if (header->z_scale_factor < scale) scale = header->z_scale_factor;
+  if (header->y_scale_factor < scale) scale = header->y_scale_factor; 
+  if (header->z_scale_factor < scale) scale = header->z_scale_factor; 
   units = tsheader.units = (I32)(1.0 / scale);
   origin_x = tsheader.origin_x = -header->x_offset/scale;
   origin_y = tsheader.origin_y = -header->y_offset/scale;
@@ -253,7 +250,7 @@ BOOL LASwriterBIN::update_header(const LASheader* header, BOOL use_inventory, BO
 I64 LASwriterBIN::close(BOOL update_header)
 {
   I64 bytes = 0;
-
+  
   if (stream)
   {
     if (update_header && p_count != npoints)
@@ -261,9 +258,9 @@ I64 LASwriterBIN::close(BOOL update_header)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        throw std::runtime_error(std::string("ERROR: stream not seekable. cannot update header from %I64d to %I64d points.")); //npoints, p_count
+        fprintf(stderr, "ERROR: stream not seekable. cannot update header from %I64d to %I64d points.\n", npoints, p_count);
 #else
-        throw std::runtime_error(std::string("ERROR: stream not seekable. cannot update header from %lld to %lld points.")); //npoints, p_count
+        fprintf(stderr, "ERROR: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
 #endif
       }
       else

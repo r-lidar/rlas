@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  fopen_compressed.cpp
-
+  
   CONTENTS:
-
+      
   PROGRAMMERS:
-
+  
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-
+  
   COPYRIGHT:
 
     (c) 2003-2012, martin isenburg, rapidlasso - fast tools to catch reality
@@ -19,26 +19,17 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
     20 March 2011 -- added capability for *.zip, *.rar, and *.7z on Windows
     12 December 2003 -- adapted from Stefan Gumhold's SIGGRAPH submission hack
-
+  
 ===============================================================================
 */
 
 #include <stdio.h>
-
-#if defined(__clang__)
-  #include <string>
-#else
-  #include <string.h>
-#endif
-
-#include <stdexcept>
+#include <string.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -61,7 +52,7 @@ static FILE* fopen7zipped(const char* filename, const char* mode)
 		int hPipe[2];
 		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
 		{
-			throw std::runtime_error(std::string("could not create pipe"));
+			fprintf(stderr, "could not create pipe\n");
 			return NULL;
 		}
 
@@ -71,14 +62,14 @@ static FILE* fopen7zipped(const char* filename, const char* mode)
 		// make the write end of pipe go to stdout
 		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not set pipe output"));
+			fprintf(stderr, "could not set pipe output\n");
 			return NULL;
 		}
 
 		// redirect read end of pipe to input file
 		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect input file"));
+			fprintf(stderr, "could not redirect input file\n");
 			return NULL;
 		}
 
@@ -91,11 +82,11 @@ static FILE* fopen7zipped(const char* filename, const char* mode)
 		// redirect stdout back into stdout
 		if (_dup2(hStdOut, _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdout"));
+			fprintf(stderr, "could not reconstruct stdout\n");
 			return NULL;
 		}
 
-		// return redirected stdin
+		// return redirected stdin 
 		return stdin;
 	}
 	else
@@ -113,7 +104,7 @@ static FILE* fopenZIPped(const char* filename, const char* mode)
 		int hPipe[2];
 		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
 		{
-			throw std::runtime_error(std::string("could not create pipe"));
+			fprintf(stderr, "could not create pipe\n");
 			return NULL;
 		}
 
@@ -123,14 +114,14 @@ static FILE* fopenZIPped(const char* filename, const char* mode)
 		// make the write end of pipe go to stdout
 		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not set pipe output"));
+			fprintf(stderr, "could not set pipe output\n");
 			return NULL;
 		}
 
 		// redirect read end of pipe to input file
 		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect input file"));
+			fprintf(stderr, "could not redirect input file\n");
 			return NULL;
 		}
 
@@ -143,11 +134,11 @@ static FILE* fopenZIPped(const char* filename, const char* mode)
 		// redirect stdout back into stdout
 		if (_dup2(hStdOut, _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdout"));
+			fprintf(stderr, "could not reconstruct stdout\n");
 			return NULL;
 		}
 
-		// return redirected stdin
+		// return redirected stdin 
 		return stdin;
 	}
 	else
@@ -169,7 +160,7 @@ static FILE* fopenGzipped(const char* filename, const char* mode)
 		int hPipe[2];
 		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
 		{
-			throw std::runtime_error(std::string("could not create pipe"));
+			fprintf(stderr, "could not create pipe\n");
 			return NULL;
 		}
 
@@ -178,7 +169,7 @@ static FILE* fopenGzipped(const char* filename, const char* mode)
 		// redirect stdin to input file
 		if (_dup2(_fileno(gzipInput), _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect stdin"));
+			fprintf(stderr, "could not redirect stdin\n");
 			return NULL;
 		}
 
@@ -187,7 +178,7 @@ static FILE* fopenGzipped(const char* filename, const char* mode)
 		// redirect stdout to write end of pipe
 		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not set pipe output"));
+			fprintf(stderr, "could not set pipe output\n");
 			return NULL;
 		}
 
@@ -197,7 +188,7 @@ static FILE* fopenGzipped(const char* filename, const char* mode)
 		// redirect read end of pipe to input file
 		if (_dup2(hPipe[READ_HANDLE], _fileno(gzipInput)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect input file"));
+			fprintf(stderr, "could not redirect input file\n");
 			return NULL;
 		}
 
@@ -210,14 +201,14 @@ static FILE* fopenGzipped(const char* filename, const char* mode)
 		// redirect stdin back into stdin
 		if (_dup2(hStdIn, _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdin"));
+			fprintf(stderr, "could not reconstruct stdin\n");
 			return NULL;
 		}
 
 		// redirect stdout back into stdout
 		if (_dup2(hStdOut, _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdout"));
+			fprintf(stderr, "could not reconstruct stdout\n");
 			return NULL;
 		}
 
@@ -239,7 +230,7 @@ static FILE* fopenGzippedNew(const char* filename, const char* mode)
 		int hPipe[2];
 		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
 		{
-			throw std::runtime_error(std::string("could not create pipe"));
+			fprintf(stderr, "could not create pipe\n");
 			return NULL;
 		}
 
@@ -249,14 +240,14 @@ static FILE* fopenGzippedNew(const char* filename, const char* mode)
 		// make the write end of pipe go to stdout
 		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not set pipe output"));
+			fprintf(stderr, "could not set pipe output\n");
 			return NULL;
 		}
 
 		// redirect read end of pipe to input file
 		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect input file"));
+			fprintf(stderr, "could not redirect input file\n");
 			return NULL;
 		}
 
@@ -269,11 +260,11 @@ static FILE* fopenGzippedNew(const char* filename, const char* mode)
 		// redirect stdout back into stdout
 		if (_dup2(hStdOut, _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdout"));
+			fprintf(stderr, "could not reconstruct stdout\n");
 			return NULL;
 		}
 
-		// return redirected stdin
+		// return redirected stdin 
 		return stdin;
 	}
 	else
@@ -291,7 +282,7 @@ static FILE* fopenRARed(const char* filename, const char* mode)
 		int hPipe[2];
 		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
 		{
-			throw std::runtime_error(std::string("could not create pipe"));
+			fprintf(stderr, "could not create pipe\n");
 			return NULL;
 		}
 
@@ -301,14 +292,14 @@ static FILE* fopenRARed(const char* filename, const char* mode)
 		// make the write end of pipe go to stdout
 		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not set pipe output"));
+			fprintf(stderr, "could not set pipe output\n");
 			return NULL;
 		}
 
 		// redirect read end of pipe to input file
 		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
 		{
-			throw std::runtime_error(std::string("could not redirect input file"));
+			fprintf(stderr, "could not redirect input file\n");
 			return NULL;
 		}
 
@@ -321,11 +312,11 @@ static FILE* fopenRARed(const char* filename, const char* mode)
 		// redirect stdout back into stdout
 		if (_dup2(hStdOut, _fileno(stdout)) != 0)
 		{
-			throw std::runtime_error(std::string("could not reconstruct stdout"));
+			fprintf(stderr, "could not reconstruct stdout\n");
 			return NULL;
 		}
 
-		// return redirected stdin
+		// return redirected stdin 
 		return stdin;
 	}
 	else
@@ -347,7 +338,7 @@ FILE* fopen_compressed(const char* filename, const char* mode, bool* piped)
     file = fopenGzipped(filename, mode);
     if (piped) *piped = true;
 #else
-    throw std::runtime_error(std::string("ERROR: no support for gzipped input"));
+    fprintf(stderr, "ERROR: no support for gzipped input\n");
     return 0;
 #endif
   }
@@ -357,7 +348,7 @@ FILE* fopen_compressed(const char* filename, const char* mode, bool* piped)
     file = fopenZIPped(filename, mode);
     if (piped) *piped = true;
 #else
-    throw std::runtime_error(std::string("ERROR: no support for ZIPped input"));
+    fprintf(stderr, "ERROR: no support for ZIPped input\n");
     return 0;
 #endif
   }
@@ -367,7 +358,7 @@ FILE* fopen_compressed(const char* filename, const char* mode, bool* piped)
     file = fopen7zipped(filename, mode);
     if (piped) *piped = true;
 #else
-    throw std::runtime_error(std::string("ERROR: no support for 7zipped input"));
+    fprintf(stderr, "ERROR: no support for 7zipped input\n");
     return 0;
 #endif
   }
@@ -377,7 +368,7 @@ FILE* fopen_compressed(const char* filename, const char* mode, bool* piped)
     file = fopenRARed(filename, mode);
     if (piped) *piped = true;
 #else
-    throw std::runtime_error(std::string("ERROR: no support for RARed input"));
+    fprintf(stderr, "ERROR: no support for RARed input\n");
     return 0;
 #endif
   }

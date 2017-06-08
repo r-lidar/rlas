@@ -2,7 +2,7 @@
 ===============================================================================
 
   FILE:  integercompressor.cpp
-
+  
   CONTENTS:
 
     see corresponding header file
@@ -21,13 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
-    20 December 2016 -- by Jean-Romain Roussel -- Change fprint(stderr, ...), raise an exeption
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "integercompressor.hpp"
@@ -40,7 +38,6 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <stdexcept>
 
 #ifdef CREATE_HISTOGRAMS
 #include <math.h>
@@ -104,7 +101,7 @@ IntegerCompressor::IntegerCompressor(ArithmeticEncoder* enc, U32 bits, U32 conte
     {
       corr_histogram[k][c] = 0;
     }
-  }
+  }  
 #endif
 }
 
@@ -208,12 +205,12 @@ IntegerCompressor::~IntegerCompressor()
           entropy -= log(prob)*prob/log(2.0);
         }
       }
-      throw std::runtime_error(std::string("k: %d number: %d different: %d entropy: %lg raw: %1.1f")); //k,number,different,entropy, (float)(k?k:1)
+      fprintf(stderr, "k: %d number: %d different: %d entropy: %lg raw: %1.1f\n",k,number,different,entropy, (float)(k?k:1));
       total_number += number;
       total_entropy += (entropy*number);
       total_raw += ((k?k:1)*number);
-    }
-    throw std::runtime_error(std::string("TOTAL: number: %d entropy: %lg raw: %lg")); //total_number,total_entropy/total_number,total_raw/total_number
+    }  
+    fprintf(stderr, "TOTAL: number: %d entropy: %lg raw: %lg\n",total_number,total_entropy/total_number,total_raw/total_number);
   }
 #endif
 }
@@ -329,7 +326,7 @@ I32 IntegerCompressor::decompress(I32 pred, U32 context)
 }
 
 /*
-static const char log_table256[256] =
+static const char log_table256[256] = 
 {
   -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -357,7 +354,7 @@ if (tt = v >> 16)
 {
   r = (t = tt >> 8) ? 24 + LogTable256[t] : 16 + LogTable256[tt];
 }
-else
+else 
 {
   r = (t = v >> 8) ? 8 + LogTable256[t] : LogTable256[v];
 }
@@ -445,7 +442,7 @@ void IntegerCompressor::writeCorrector(I32 c, ArithmeticModel* mBits)
       }
       else // for larger k we need to code the interval in two steps
       {
-        // figure out how many lower bits there are
+        // figure out how many lower bits there are 
         int k1 = k-bits_high;
         // c1 represents the lowest k-bits_high+1 bits
         c1 = c & ((1<<k1) - 1);
@@ -485,7 +482,7 @@ I32 IntegerCompressor::readCorrector(ArithmeticModel* mBits)
 
       if (c >= (1<<(k-1))) // if c is in the interval [ 2^(k-1)  ...  + 2^k - 1 ]
       {
-        // so we translate c back into the interval [ 2^(k-1) + 1  ...  2^k ] by adding 1
+        // so we translate c back into the interval [ 2^(k-1) + 1  ...  2^k ] by adding 1 
         c += 1;
       }
       else // otherwise c is in the interval [ 0 ...  + 2^(k-1) - 1 ]
@@ -527,7 +524,7 @@ I32 IntegerCompressor::readCorrector(ArithmeticModel* mBits)
       // translate c back into its correct interval
       if (c >= (1<<(k-1))) // if c is in the interval [ 2^(k-1)  ...  + 2^k - 1 ]
       {
-        // so we translate c back into the interval [ 2^(k-1) + 1  ...  2^k ] by adding 1
+        // so we translate c back into the interval [ 2^(k-1) + 1  ...  2^k ] by adding 1 
         c += 1;
       }
       else // otherwise c is in the interval [ 0 ...  + 2^(k-1) - 1 ]
