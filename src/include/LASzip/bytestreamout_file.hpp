@@ -130,7 +130,8 @@ inline BOOL ByteStreamOutFile::putBytes(const U8* bytes, U32 num_bytes)
 
 inline BOOL ByteStreamOutFile::isSeekable() const
 {
-  return (file != stdout);
+  return (true);
+  //return (file != stdout);
 }
 
 inline I64 ByteStreamOutFile::tell() const
