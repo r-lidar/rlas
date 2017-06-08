@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasutility.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasutility.hpp"
@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 LASinventory::LASinventory()
 {
@@ -432,7 +433,7 @@ void LASbin::add_to_bin(I32 bin)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_pos; i++) bins_pos[i] = 0;
       }
@@ -443,7 +444,7 @@ void LASbin::add_to_bin(I32 bin)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_pos; i < new_size; i++) bins_pos[i] = 0;
         size_pos = new_size;
@@ -464,7 +465,7 @@ void LASbin::add_to_bin(I32 bin)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_neg; i++) bins_neg[i] = 0;
       }
@@ -475,7 +476,7 @@ void LASbin::add_to_bin(I32 bin)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_neg; i < new_size; i++) bins_neg[i] = 0;
         size_neg = new_size;
@@ -509,12 +510,12 @@ void LASbin::add(I32 item, I32 value)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_pos == 0)
         {
           REprintf( "ERROR: allocating %u pos values\012", size_pos);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
       }
@@ -526,12 +527,12 @@ void LASbin::add(I32 item, I32 value)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_pos == 0)
         {
           REprintf( "ERROR: reallocating %u pos values\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
         size_pos = new_size;
@@ -554,12 +555,12 @@ void LASbin::add(I32 item, I32 value)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_neg == 0)
         {
           REprintf( "ERROR: allocating %u neg values\012", size_neg);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
       }
@@ -571,12 +572,12 @@ void LASbin::add(I32 item, I32 value)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_neg == 0)
         {
           REprintf( "ERROR: reallocating %u neg values\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
         size_neg = new_size;
@@ -611,12 +612,12 @@ void LASbin::add(F64 item, F64 value)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_pos == 0)
         {
           REprintf( "ERROR: allocating %u pos values\012", size_pos);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
       }
@@ -628,12 +629,12 @@ void LASbin::add(F64 item, F64 value)
         if (bins_pos == 0)
         {
           REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_pos == 0)
         {
           REprintf( "ERROR: reallocating %u pos values\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
         size_pos = new_size;
@@ -656,12 +657,12 @@ void LASbin::add(F64 item, F64 value)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_neg == 0)
         {
           REprintf( "ERROR: allocating %u neg values\012", size_neg);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
       }
@@ -673,12 +674,12 @@ void LASbin::add(F64 item, F64 value)
         if (bins_neg == 0)
         {
           REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         if (values_neg == 0)
         {
           REprintf( "ERROR: reallocating %u neg values\012", new_size);
-          exit(1);
+          throw std::runtime_error(std::string("Internal error"));
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
         size_neg = new_size;
@@ -889,7 +890,7 @@ BOOL LAShistogram::parse(int argc, char* argv[])
         return FALSE;
       }
       if (!histo(argv[i+1], (F32)atof(argv[i+2]))) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
     }
     else if (strcmp(argv[i],"-histo_avg") == 0)
     {
@@ -899,7 +900,7 @@ BOOL LAShistogram::parse(int argc, char* argv[])
         return FALSE;
       }
       if (!histo_avg(argv[i+1], (F32)atof(argv[i+2]), argv[i+3])) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
     }
   }
   return TRUE;
@@ -1515,7 +1516,7 @@ LASoccupancyGrid::LASoccupancyGrid(F32 grid_spacing)
   this->grid_spacing = -grid_spacing;
   minus_ankers = 0;
   minus_minus_size = 0;
-  minus_minus = 0; 
+  minus_minus = 0;
   minus_minus_sizes = 0;
   minus_plus_size = 0;
   minus_plus = 0;
