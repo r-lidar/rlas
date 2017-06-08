@@ -33,6 +33,7 @@
 #ifndef MYDEFS_HPP
 #define MYDEFS_HPP
 
+#define STRICT_R_HEADERS
 #include <R.h>
 
 #ifndef _WIN32
