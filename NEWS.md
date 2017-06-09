@@ -1,8 +1,14 @@
-### rlas v1.1.2 (Release date: 2017-06-09)
+### rlas v1.1.4 (in development)
 
 #### BUG FIXES:
 
-* Fix  [[#4](https://github.com/Jean-Romain/rlas/issues/4)] bug computer precision when writing files 
+* Should solve the compilation issue on CRAN with clang++ and gnu++11
+
+### rlas v1.1.3 (Release date: 2017-06-09)
+
+#### BUG FIXES:
+
+* Fix  [[#4](https://github.com/Jean-Romain/rlas/issues/4)] bug of computer precision when writing files 
 * Fix  [[#61](https://github.com/Jean-Romain/lidR/issues/61)] wrong header size for files version 1.3
 
 #### OTHER CHANGES
