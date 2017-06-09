@@ -40,8 +40,8 @@ To install the package from github make sure you have a working development envi
 for technical reasons. Details below.
 
 * For `LASlib` and `LASzip`:
- - (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
- - Provided under LGPL license and modified to be R-compliant by Jean-Romain Roussel. Each modification is dated and registered into the file headers.
+  - (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
+  - Provided under LGPL license and modified to be R-compliant by Jean-Romain Roussel. Each modification is dated and registered into the file headers.
 * For `rlas` code enabling Martin Isenburg's code to be wrapped into R:
- - (c) 2016 Jean-Romain Roussel
- - Provided under GPL-3 license.
+  - (c) 2016 Jean-Romain Roussel
+  - Provided under GPL-3 license.
