@@ -359,19 +359,19 @@ List vlrsreader(LASheader* lasheader)
       }
       else if (vlr.record_id == 34737) // GeoAsciiParamsTag
       {
-        lvlr.push_back(std::to_string((long)vlr.data));
+        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
         lvlrnames.push_back("tags");
         lvlrsnames.push_back("GeoAsciiParamsTag");
       }
       else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
       {
-        lvlr.push_back(std::to_string((long)vlr.data));
+        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
         lvlrnames.push_back("WKT OGC MATH TRANSFORM");
         lvlrsnames.push_back("WKT OGC MT");
       }
       else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
       {
-        lvlr.push_back(std::to_string((long)vlr.data));
+        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
         lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
         lvlrsnames.push_back("WKT OGC CS");
       }
