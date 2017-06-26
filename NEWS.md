@@ -1,8 +1,8 @@
-### rlas v1.1.4 (in development)
+### rlas v1.1.4 (Release date: 2017-06-26)
 
 #### BUG FIXES:
 
-* Should solve the compilation issue on CRAN with clang++ and gnu++11
+* Solved the compilation issue on CRAN with clang++ and gnu++11
 
 ### rlas v1.1.3 (Release date: 2017-06-09)
 
