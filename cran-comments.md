@@ -7,9 +7,8 @@ I cannot ensure this will solve the problem since I was not able to reproduce th
 error (compilation ended without error even with the macro) but I am pretty confident it will work.
 
 ## Test environments
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.3, g++
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.3, clang++ -stdlib=libc++
-* Linux Mint 18 (Ubuntu 16.04), R 3.3.3, clang++ -stdlib=gnu++11
+* Linux Mint 18 (Ubuntu 16.04), R 3.4.0, g++
+* Linux Mint 18 (Ubuntu 16.04), R 3.4.0, clang++ -stdlib=gnu++11
 * win-builder (release and devel), g++
 
 ## R CMD check results
