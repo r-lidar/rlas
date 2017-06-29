@@ -1,4 +1,4 @@
-### rlas v1.1.4 (Release data: 2017-07-26)
+### rlas v1.1.4 (Release date: 2017-07-26)
 
 #### BUG FIXES:
 
