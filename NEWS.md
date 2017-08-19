@@ -1,3 +1,9 @@
+### rlas v1.1.5 (In development)
+
+#### OTHER CHANGES
+
+* `readlasdata` enable to load or not the gpstime field.
+
 ### rlas v1.1.4 (Release date: 2017-06-26)
 
 #### BUG FIXES:

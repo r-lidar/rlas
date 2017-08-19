@@ -57,6 +57,7 @@
 #' @param UserData logical. do you want to load the UserData field? default: TRUE
 #' @param PointSourceID logical. do you want to load the PointSourceID field? default: TRUE
 #' @param RGB logical. do you want to load R,G and B fields? default: TRUE
+#' @param gpstime logical. do you want to load R,G and B fields? default: TRUE
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).
 #' @importFrom Rcpp sourceCpp
@@ -81,6 +82,7 @@ readlasdata = function(file,
                        UserData = TRUE,
                        PointSourceID = TRUE,
                        RGB = TRUE,
+                       gpstime = TRUE,
                        filter = "")
 {
   valid = file.exists(file)
@@ -96,7 +98,7 @@ readlasdata = function(file,
   if(!is.character(filter))
     stop("Incorrect argument 'filter'", call. = F)
 
-  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, filter)
+  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpstime, filter)
 
   data.table::setDT(data)
 

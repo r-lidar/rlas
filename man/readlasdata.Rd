@@ -7,7 +7,8 @@
 readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
   NumberOfReturns = TRUE, ScanDirectionFlag = TRUE,
   EdgeOfFlightline = TRUE, Classification = TRUE, ScanAngle = TRUE,
-  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE, filter = "")
+  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE, gpstime = TRUE,
+  filter = "")
 }
 \arguments{
 \item{file}{filepath character string to the .las or .laz file}
@@ -31,6 +32,8 @@ readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
 \item{PointSourceID}{logical. do you want to load the PointSourceID field? default: TRUE}
 
 \item{RGB}{logical. do you want to load R,G and B fields? default: TRUE}
+
+\item{gpstime}{logical. do you want to load R,G and B fields? default: TRUE}
 
 \item{filter}{character. filter data while reading the file (streaming filter) without
 allocating any useless memory. (see Details).}
