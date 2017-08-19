@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // lasdatareader
-List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB, CharacterVector filter);
-RcppExport SEXP rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP filterSEXP) {
+List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB, bool gpst, CharacterVector filter);
+RcppExport SEXP rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP gpstSEXP, SEXP filterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,8 +22,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type UserData(UserDataSEXP);
     Rcpp::traits::input_parameter< bool >::type PointSourceID(PointSourceIDSEXP);
     Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
+    Rcpp::traits::input_parameter< bool >::type gpst(gpstSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, filter));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst, filter));
     return rcpp_result_gen;
 END_RCPP
 }

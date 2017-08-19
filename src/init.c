@@ -3,18 +3,18 @@
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
-/* FIXME: 
+/* FIXME:
    Check these declarations against the C/Fortran source code.
 */
 
 /* .Call calls */
-extern SEXP rlas_lasdatareader(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP rlas_lasdatareader(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP rlas_lasfilterusage();
 extern SEXP rlas_lasheaderreader(SEXP);
 extern SEXP rlas_laswriter(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"rlas_lasdatareader",   (DL_FUNC) &rlas_lasdatareader,   12},
+    {"rlas_lasdatareader",   (DL_FUNC) &rlas_lasdatareader,   13},
     {"rlas_lasfilterusage",  (DL_FUNC) &rlas_lasfilterusage,   0},
     {"rlas_lasheaderreader", (DL_FUNC) &rlas_lasheaderreader,  1},
     {"rlas_laswriter",       (DL_FUNC) &rlas_laswriter,       18},

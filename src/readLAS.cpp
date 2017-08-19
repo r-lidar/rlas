@@ -63,9 +63,18 @@ List vlrsreader(LASheader*);
 //
 // @return list
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns,
-                   bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle,
-                   bool UserData, bool PointSourceID, bool RGB,
+List lasdatareader(CharacterVector file,
+                   bool Intensity,
+                   bool ReturnNumber,
+                   bool NumberOfReturns,
+                   bool ScanDirectionFlag,
+                   bool EdgeOfFlightline,
+                   bool Classification,
+                   bool ScanAngle,
+                   bool UserData,
+                   bool PointSourceID,
+                   bool RGB,
+                   bool gpst,
                    CharacterVector filter)
 {
   try
@@ -101,12 +110,9 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     // First pass to read the whole file. Aims to know how much memory we must allocate
     if(stream)
     {
-
       npoints = 0;
       while (lasreader->read_point())
-      {
-          npoints++;
-      }
+        npoints++;
 
       lasreadopener.reopen(lasreader);
     }
@@ -116,7 +122,7 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     Y = NumericVector(npoints);
     Z = NumericVector(npoints);
 
-    if(hasgpst)           T   = NumericVector(npoints);
+    if(gpst && hasgpst)   T   = NumericVector(npoints);
     if(Intensity)         I   = IntegerVector(npoints);
     if(ReturnNumber)      RN  = IntegerVector(npoints);
     if(NumberOfReturns)   NoR = IntegerVector(npoints);
@@ -142,7 +148,7 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
       Y[i]   = lasreader->point.get_y();
       Z[i]   = lasreader->point.get_z();
 
-      if(hasgpst)           T[i]   = lasreader->point.get_gps_time();
+      if(gpst && hasgpst)   T[i]   = lasreader->point.get_gps_time();
       if(Intensity)         I[i]   = lasreader->point.get_intensity();
       if(ReturnNumber)      RN[i]  = lasreader->point.get_return_number();
       if(NumberOfReturns)   NoR[i] = lasreader->point.get_number_of_returns();
@@ -171,7 +177,7 @@ List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool
     field.push_back("Y");
     field.push_back("Z");
 
-    if(hasgpst)           lasdata.push_back(T),   field.push_back("gpstime");
+    if(gpst && hasgpst)   lasdata.push_back(T),   field.push_back("gpstime");
     if(Intensity)         lasdata.push_back(I),   field.push_back("Intensity");
     if(ReturnNumber)      lasdata.push_back(RN),  field.push_back("ReturnNumber");
     if(NumberOfReturns)   lasdata.push_back(NoR), field.push_back("NumberOfReturns");
