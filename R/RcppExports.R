@@ -2,18 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 lasdatareader <- function(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst, filter) {
-    .Call(rlas_lasdatareader, file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst, filter)
+    .Call(`_rlas_lasdatareader`, file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst, filter)
 }
 
 lasheaderreader <- function(file) {
-    .Call(rlas_lasheaderreader, file)
+    .Call(`_rlas_lasheaderreader`, file)
 }
 
 lasfilterusage <- function() {
-    invisible(.Call(rlas_lasfilterusage))
+    invisible(.Call(`_rlas_lasfilterusage`))
 }
 
 laswriter <- function(file, LASheader, X, Y, Z, I = integer(0), RN = integer(0), NoR = integer(0), SDF = integer(0), EoF = integer(0), C = integer(0), SA = integer(0), UD = integer(0), PSI = integer(0), T = numeric(0), R = integer(0), G = integer(0), B = integer(0)) {
-    invisible(.Call(rlas_laswriter, file, LASheader, X, Y, Z, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B))
+    invisible(.Call(`_rlas_laswriter`, file, LASheader, X, Y, Z, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B))
+}
+
+laxwriter <- function(file) {
+    invisible(.Call(`_rlas_laxwriter`, file))
 }
 

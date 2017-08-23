@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // lasdatareader
 List lasdatareader(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB, bool gpst, CharacterVector filter);
-RcppExport SEXP rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP gpstSEXP, SEXP filterSEXP) {
+RcppExport SEXP _rlas_lasdatareader(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP gpstSEXP, SEXP filterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // lasheaderreader
 List lasheaderreader(CharacterVector file);
-RcppExport SEXP rlas_lasheaderreader(SEXP fileSEXP) {
+RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,7 @@ END_RCPP
 }
 // lasfilterusage
 void lasfilterusage();
-RcppExport SEXP rlas_lasfilterusage() {
+RcppExport SEXP _rlas_lasfilterusage() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     lasfilterusage();
@@ -50,7 +50,7 @@ END_RCPP
 }
 // laswriter
 void laswriter(CharacterVector file, List LASheader, NumericVector X, NumericVector Y, NumericVector Z, IntegerVector I, IntegerVector RN, IntegerVector NoR, IntegerVector SDF, IntegerVector EoF, IntegerVector C, IntegerVector SA, IntegerVector UD, IntegerVector PSI, NumericVector T, IntegerVector R, IntegerVector G, IntegerVector B);
-RcppExport SEXP rlas_laswriter(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP XSEXP, SEXP YSEXP, SEXP ZSEXP, SEXP ISEXP, SEXP RNSEXP, SEXP NoRSEXP, SEXP SDFSEXP, SEXP EoFSEXP, SEXP CSEXP, SEXP SASEXP, SEXP UDSEXP, SEXP PSISEXP, SEXP TSEXP, SEXP RSEXP, SEXP GSEXP, SEXP BSEXP) {
+RcppExport SEXP _rlas_laswriter(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP XSEXP, SEXP YSEXP, SEXP ZSEXP, SEXP ISEXP, SEXP RNSEXP, SEXP NoRSEXP, SEXP SDFSEXP, SEXP EoFSEXP, SEXP CSEXP, SEXP SASEXP, SEXP UDSEXP, SEXP PSISEXP, SEXP TSEXP, SEXP RSEXP, SEXP GSEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
@@ -72,6 +72,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type G(GSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type B(BSEXP);
     laswriter(file, LASheader, X, Y, Z, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B);
+    return R_NilValue;
+END_RCPP
+}
+// laxwriter
+void laxwriter(CharacterVector file);
+RcppExport SEXP _rlas_laxwriter(SEXP fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
+    laxwriter(file);
     return R_NilValue;
 END_RCPP
 }
