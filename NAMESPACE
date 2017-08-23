@@ -3,5 +3,6 @@
 export(readlasdata)
 export(readlasheader)
 export(writelas)
+export(writelax)
 importFrom(Rcpp,sourceCpp)
 useDynLib(rlas, .registration = TRUE)
