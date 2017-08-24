@@ -1,5 +1,9 @@
 ### rlas v1.1.5 (In development)
 
+#### NEW FEATURES
+
+* `writelax` enable for writing LAX files.
+
 #### OTHER CHANGES
 
 * `readlasdata` enable to load or not the gpstime field.
