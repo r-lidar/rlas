@@ -7,9 +7,12 @@
 
  COPYRIGHT:
 
- Copyright 2016 Jean-Romain Roussel
+ Copyright 2017 Jean-Romain Roussel
+ Copyright 2011-17, martin isenburg, rapidlasso - fast tools to catch reality
 
- This file is part of rlas R package.
+ This file is part of rlas R package. It is mainly a subset of the code
+ from lasindex a tool writen by martin isenburg in lastools integrated in
+ R.
 
  rlas is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -90,6 +93,7 @@ void laxwriter(CharacterVector file)
     lasreader->close();
     delete lasreader;
 
+    lasindex.complete(100000, -20);
     lasindex.write(lasreadopener.get_file_name());
 
     return;
