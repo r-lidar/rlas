@@ -10,9 +10,9 @@
 
 #### BUG FIXES:
 
-* The file was read twice every time. readLAS is twice faster
+* The file was read twice every time. `lasdatareader` is twice faster
 
-### rlas v1.1.4 (Release date: 2017-06-26)
+### rlas v1.1.4 (Release date: 2017-07-26)
 
 #### BUG FIXES:
 
