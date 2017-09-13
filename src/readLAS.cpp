@@ -104,7 +104,7 @@ List lasdatareader(CharacterVector file,
     int npoints   = lasreader->header.number_of_point_records;
     bool hasrgb   = format == 2 || format == 3;
     bool hasgpst  = format == 1 || format == 3;
-    bool stream   = filter.length() > 0;
+    bool stream   = filter[0] != "";
 
     // If the user want stream the data (clip data during the reading)
     // First pass to read the whole file. Aims to know how much memory we must allocate

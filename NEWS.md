@@ -8,6 +8,10 @@
 
 * `readlasdata` enable to load or not the gpstime field.
 
+#### BUG FIXES:
+
+* The file was read twice every time. readLAS is twice faster
+
 ### rlas v1.1.4 (Release date: 2017-06-26)
 
 #### BUG FIXES:
