@@ -63,7 +63,7 @@ List vlrsreader(LASheader*);
 //
 // @return list
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector file,
+List lasdatareader_all(CharacterVector file,
                    bool Intensity,
                    bool ReturnNumber,
                    bool NumberOfReturns,
@@ -74,8 +74,7 @@ List lasdatareader(CharacterVector file,
                    bool UserData,
                    bool PointSourceID,
                    bool RGB,
-                   bool gpst,
-                   CharacterVector filter)
+                   bool gpst)
 {
   try
   {
@@ -85,14 +84,11 @@ List lasdatareader(CharacterVector file,
 
     // Cast CharacterVector into proper types
     std::string filestd   = as<std::string>(file);
-    std::string filterstd = as<std::string>(filter);
     const char* filechar = filestd.c_str();
-    char* filterchar = const_cast<char*>(filterstd.c_str());
 
     // Initialize las objects
     LASreadOpener lasreadopener;
     lasreadopener.set_file_name(filechar);
-    lasreadopener.parse_str(filterchar);
     LASreader* lasreader = lasreadopener.open();
 
     if(0 == lasreader || NULL == lasreader)
@@ -104,18 +100,6 @@ List lasdatareader(CharacterVector file,
     int npoints   = lasreader->header.number_of_point_records;
     bool hasrgb   = format == 2 || format == 3;
     bool hasgpst  = format == 1 || format == 3;
-    bool stream   = filter[0] != "";
-
-    // If the user want stream the data (clip data during the reading)
-    // First pass to read the whole file. Aims to know how much memory we must allocate
-    if(stream)
-    {
-      npoints = 0;
-      while (lasreader->read_point())
-        npoints++;
-
-      lasreadopener.reopen(lasreader);
-    }
 
     // Allocate the required amount of data only if necessary
     X = NumericVector(npoints);
@@ -143,10 +127,9 @@ List lasdatareader(CharacterVector file,
     unsigned long int i = 0;
     while (lasreader->read_point())
     {
-
-      X[i]   = lasreader->point.get_x();
-      Y[i]   = lasreader->point.get_y();
-      Z[i]   = lasreader->point.get_z();
+      X[i] = lasreader->point.get_x();
+      Y[i] = lasreader->point.get_y();
+      Z[i] = lasreader->point.get_z();
 
       if(gpst && hasgpst)   T[i]   = lasreader->point.get_gps_time();
       if(Intensity)         I[i]   = lasreader->point.get_intensity();
@@ -166,6 +149,137 @@ List lasdatareader(CharacterVector file,
       }
 
       i++;
+    }
+
+    lasreader->close();
+    delete lasreader;
+
+    List lasdata = List::create(X,Y,Z);
+    CharacterVector field(0);
+    field.push_back("X");
+    field.push_back("Y");
+    field.push_back("Z");
+
+    if(gpst && hasgpst)   lasdata.push_back(T),   field.push_back("gpstime");
+    if(Intensity)         lasdata.push_back(I),   field.push_back("Intensity");
+    if(ReturnNumber)      lasdata.push_back(RN),  field.push_back("ReturnNumber");
+    if(NumberOfReturns)   lasdata.push_back(NoR), field.push_back("NumberOfReturns");
+    if(ScanDirectionFlag) lasdata.push_back(SDF), field.push_back("ScanDirectionFlag");
+    if(EdgeOfFlightline)  lasdata.push_back(EoF), field.push_back("EdgeOfFlightline");
+    if(Classification)    lasdata.push_back(C),   field.push_back("Classification");
+    if(ScanAngle)         lasdata.push_back(SA),  field.push_back("ScanAngle");
+    if(UserData)          lasdata.push_back(UD),  field.push_back("UserData");
+    if(PointSourceID)     lasdata.push_back(PSI), field.push_back("PointSourceID");
+    if(RGB && hasrgb)
+    {
+      lasdata.push_back(R), field.push_back("R");
+      lasdata.push_back(G), field.push_back("G");
+      lasdata.push_back(B), field.push_back("B");
+    }
+
+    lasdata.names() = field;
+
+    return(lasdata);
+  }
+  catch (std::exception const& e)
+  {
+    Rcerr << "Error: " << e.what() << std::endl;
+    return(List(0));
+  }
+}
+
+// [[Rcpp::export]]
+List lasdatareader_filtered(CharacterVector file,
+                   bool Intensity,
+                   bool ReturnNumber,
+                   bool NumberOfReturns,
+                   bool ScanDirectionFlag,
+                   bool EdgeOfFlightline,
+                   bool Classification,
+                   bool ScanAngle,
+                   bool UserData,
+                   bool PointSourceID,
+                   bool RGB,
+                   bool gpst,
+                   CharacterVector filter)
+{
+  try
+  {
+    // Initialize 0 length data
+    std::vector<double> X,Y,Z,T;
+    std::vector<long> I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
+
+    // Cast CharacterVector into proper types
+    std::string filestd   = as<std::string>(file);
+    std::string filterstd = as<std::string>(filter);
+    const char* filechar = filestd.c_str();
+    char* filterchar = const_cast<char*>(filterstd.c_str());
+
+    // Initialize las objects
+    LASreadOpener lasreadopener;
+    lasreadopener.set_file_name(filechar);
+    lasreadopener.parse_str(filterchar);
+    LASreader* lasreader = lasreadopener.open();
+
+    if(0 == lasreader || NULL == lasreader)
+      throw std::runtime_error("LASlib internal error. See message above.");
+
+    // Read the header and test some properties of the file
+    U8 point_type = lasreader->header.point_data_format;
+    int format    = get_format(point_type);
+    int npoints   = lasreader->header.number_of_point_records;
+    bool hasrgb   = format == 2 || format == 3;
+    bool hasgpst  = format == 1 || format == 3;
+
+    // If the user want stream the data (clip data during the reading)
+    // First pass to read the whole file. Aims to know how much memory we must allocate
+    int nalloc = ceil((float)npoints/8);
+
+    // Allocate the required amount of data only if necessary
+    X.reserve(nalloc);
+    Y.reserve(nalloc);
+    Z.reserve(nalloc);
+
+    if(gpst && hasgpst)   T.reserve(nalloc);
+    if(Intensity)         I.reserve(nalloc);
+    if(ReturnNumber)      RN.reserve(nalloc);
+    if(NumberOfReturns)   NoR.reserve(nalloc);
+    if(ScanDirectionFlag) SDF.reserve(nalloc);;
+    if(EdgeOfFlightline)  EoF.reserve(nalloc);
+    if(Classification)    C.reserve(nalloc);
+    if(ScanAngle)         SA.reserve(nalloc);
+    if(UserData)          UD.reserve(nalloc);;
+    if(PointSourceID)     PSI.reserve(nalloc);
+    if(RGB && hasrgb)
+    {
+      R.reserve(nalloc);
+      G.reserve(nalloc);
+      B.reserve(nalloc);
+    }
+
+    // Set data
+    while (lasreader->read_point())
+    {
+      X.push_back(lasreader->point.get_x());
+      Y.push_back(lasreader->point.get_y());
+      Z.push_back(lasreader->point.get_z());
+
+      if(gpst && hasgpst)   T.push_back(lasreader->point.get_gps_time());
+      if(Intensity)         I.push_back(lasreader->point.get_intensity());
+      if(ReturnNumber)      RN.push_back(lasreader->point.get_return_number());
+      if(NumberOfReturns)   NoR.push_back(lasreader->point.get_number_of_returns());
+      if(ScanDirectionFlag) SDF.push_back(lasreader->point.get_scan_direction_flag());
+      if(EdgeOfFlightline)  EoF.push_back(lasreader->point.get_edge_of_flight_line());
+      if(Classification)    C.push_back(lasreader->point.get_classification());
+      if(ScanAngle)         SA.push_back(lasreader->point.get_scan_angle_rank());
+      if(UserData)          UD.push_back(lasreader->point.get_user_data());
+      if(PointSourceID)     PSI.push_back(lasreader->point.get_point_source_ID());
+      if(RGB && hasrgb)
+      {
+        R.push_back(lasreader->point.get_R());
+        G.push_back(lasreader->point.get_G());
+        B.push_back(lasreader->point.get_B());
+      }
     }
 
     lasreader->close();
