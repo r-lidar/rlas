@@ -89,16 +89,19 @@ readlasdata = function(file,
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
 
-  if(!valid)
+  if (!valid)
     stop("File not found", call. = F)
 
-  if(!islas)
+  if (!islas)
     stop("File not supported", call. = F)
 
-  if(!is.character(filter))
+  if (!is.character(filter))
     stop("Incorrect argument 'filter'", call. = F)
 
-  data = lasdatareader(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpstime, filter)
+  if (filter == "")
+    data = lasdatareader_all(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpstime)
+  else
+    data = lasdatareader_filtered(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpstime, filter)
 
   data.table::setDT(data)
 

@@ -4,13 +4,10 @@
 
 * `writelax` enable for writing LAX files.
 
-#### OTHER CHANGES
-
-* `readlasdata` enable to load or not the gpstime field.
-
 #### BUG FIXES:
 
-* The file was read twice every time. `lasdatareader` is twice faster
+* The las files were read twice every time. `lasdatareader` is twice faster read file only once
+* `readlasdata` enable to load or not the gpstime field.
 
 ### rlas v1.1.4 (Release date: 2017-07-26)
 
