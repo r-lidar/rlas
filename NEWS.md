@@ -3,6 +3,7 @@
 #### NEW FEATURES
 
 * `writelax` enable for writing LAX files.
+* Moved the headers in `inst/include` to make the lib callable from other packages
 
 #### BUG FIXES:
 
