@@ -5,51 +5,6 @@
 
 using namespace Rcpp;
 
-// lasdatareader_all
-List lasdatareader_all(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB, bool gpst);
-RcppExport SEXP _rlas_lasdatareader_all(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP gpstSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    Rcpp::traits::input_parameter< bool >::type Intensity(IntensitySEXP);
-    Rcpp::traits::input_parameter< bool >::type ReturnNumber(ReturnNumberSEXP);
-    Rcpp::traits::input_parameter< bool >::type NumberOfReturns(NumberOfReturnsSEXP);
-    Rcpp::traits::input_parameter< bool >::type ScanDirectionFlag(ScanDirectionFlagSEXP);
-    Rcpp::traits::input_parameter< bool >::type EdgeOfFlightline(EdgeOfFlightlineSEXP);
-    Rcpp::traits::input_parameter< bool >::type Classification(ClassificationSEXP);
-    Rcpp::traits::input_parameter< bool >::type ScanAngle(ScanAngleSEXP);
-    Rcpp::traits::input_parameter< bool >::type UserData(UserDataSEXP);
-    Rcpp::traits::input_parameter< bool >::type PointSourceID(PointSourceIDSEXP);
-    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
-    Rcpp::traits::input_parameter< bool >::type gpst(gpstSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader_all(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lasdatareader_filtered
-List lasdatareader_filtered(CharacterVector file, bool Intensity, bool ReturnNumber, bool NumberOfReturns, bool ScanDirectionFlag, bool EdgeOfFlightline, bool Classification, bool ScanAngle, bool UserData, bool PointSourceID, bool RGB, bool gpst, CharacterVector filter);
-RcppExport SEXP _rlas_lasdatareader_filtered(SEXP fileSEXP, SEXP IntensitySEXP, SEXP ReturnNumberSEXP, SEXP NumberOfReturnsSEXP, SEXP ScanDirectionFlagSEXP, SEXP EdgeOfFlightlineSEXP, SEXP ClassificationSEXP, SEXP ScanAngleSEXP, SEXP UserDataSEXP, SEXP PointSourceIDSEXP, SEXP RGBSEXP, SEXP gpstSEXP, SEXP filterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    Rcpp::traits::input_parameter< bool >::type Intensity(IntensitySEXP);
-    Rcpp::traits::input_parameter< bool >::type ReturnNumber(ReturnNumberSEXP);
-    Rcpp::traits::input_parameter< bool >::type NumberOfReturns(NumberOfReturnsSEXP);
-    Rcpp::traits::input_parameter< bool >::type ScanDirectionFlag(ScanDirectionFlagSEXP);
-    Rcpp::traits::input_parameter< bool >::type EdgeOfFlightline(EdgeOfFlightlineSEXP);
-    Rcpp::traits::input_parameter< bool >::type Classification(ClassificationSEXP);
-    Rcpp::traits::input_parameter< bool >::type ScanAngle(ScanAngleSEXP);
-    Rcpp::traits::input_parameter< bool >::type UserData(UserDataSEXP);
-    Rcpp::traits::input_parameter< bool >::type PointSourceID(PointSourceIDSEXP);
-    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
-    Rcpp::traits::input_parameter< bool >::type gpst(gpstSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader_filtered(file, Intensity, ReturnNumber, NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification, ScanAngle, UserData, PointSourceID, RGB, gpst, filter));
-    return rcpp_result_gen;
-END_RCPP
-}
 // lasheaderreader
 List lasheaderreader(CharacterVector file);
 RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
@@ -68,6 +23,52 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     lasfilterusage();
     return R_NilValue;
+END_RCPP
+}
+// lasdatareader
+List lasdatareader(CharacterVector file, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t);
+RcppExport SEXP _rlas_lasdatareader(SEXP fileSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< bool >::type i(iSEXP);
+    Rcpp::traits::input_parameter< bool >::type r(rSEXP);
+    Rcpp::traits::input_parameter< bool >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type d(dSEXP);
+    Rcpp::traits::input_parameter< bool >::type e(eSEXP);
+    Rcpp::traits::input_parameter< bool >::type c(cSEXP);
+    Rcpp::traits::input_parameter< bool >::type a(aSEXP);
+    Rcpp::traits::input_parameter< bool >::type u(uSEXP);
+    Rcpp::traits::input_parameter< bool >::type p(pSEXP);
+    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
+    Rcpp::traits::input_parameter< bool >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(file, i, r, n, d, e, c, a, u, p, RGB, t));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lasdatastreamer
+List lasdatastreamer(std::string ifile, std::string ofile, std::string filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t);
+RcppExport SEXP _rlas_lasdatastreamer(SEXP ifileSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type ifile(ifileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type ofile(ofileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filter(filterSEXP);
+    Rcpp::traits::input_parameter< bool >::type i(iSEXP);
+    Rcpp::traits::input_parameter< bool >::type r(rSEXP);
+    Rcpp::traits::input_parameter< bool >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type d(dSEXP);
+    Rcpp::traits::input_parameter< bool >::type e(eSEXP);
+    Rcpp::traits::input_parameter< bool >::type c(cSEXP);
+    Rcpp::traits::input_parameter< bool >::type a(aSEXP);
+    Rcpp::traits::input_parameter< bool >::type u(uSEXP);
+    Rcpp::traits::input_parameter< bool >::type p(pSEXP);
+    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
+    Rcpp::traits::input_parameter< bool >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(lasdatastreamer(ifile, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t));
+    return rcpp_result_gen;
 END_RCPP
 }
 // laswriter

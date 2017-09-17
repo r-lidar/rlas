@@ -143,11 +143,11 @@ void laswriter(CharacterVector file,
       laswriter->update_inventory(&p);
     }
 
-    laswriter->update_header(&header, TRUE);
+    laswriter->update_header(&header, true);
     I64 total_bytes = laswriter->close();
     delete laswriter;
 
-    Rcout << total_bytes << " bytes written" << std::endl;
+    //Rcout << total_bytes << " bytes written" << std::endl;
   }
   catch (std::exception const& e)
   {
