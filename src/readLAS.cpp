@@ -62,7 +62,7 @@ int get_format(U8);
 //
 // @return list
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector file, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t)
+List lasdatareader(CharacterVector files, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t)
 {
   try
   {
@@ -70,13 +70,18 @@ List lasdatareader(CharacterVector file, bool i, bool r, bool n, bool d, bool e,
     NumericVector X,Y,Z,T;
     IntegerVector I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
 
-    // Cast CharacterVector into proper types
-    std::string filestd   = as<std::string>(file);
-    const char* filechar = filestd.c_str();
-
-    // Initialize las objects
+    // Initialize reader
     LASreadOpener lasreadopener;
-    lasreadopener.set_file_name(filechar);
+    lasreadopener.set_merged(true);
+    lasreadopener.set_populate_header(true);
+
+    for (int j = 0; j < files.length(); j++)
+    {
+      std::string filestd   = as<std::string>(files[j]);
+      const char* filechar = filestd.c_str();
+      lasreadopener.add_file_name(filechar);
+    }
+
     LASreader* lasreader = lasreadopener.open();
 
     if(0 == lasreader || NULL == lasreader)
@@ -180,7 +185,7 @@ List lasdatareader(CharacterVector file, bool i, bool r, bool n, bool d, bool e,
 }
 
 // [[Rcpp::export]]
-List lasdatastreamer(std::string ifile, std::string ofile, std::string filter,
+List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter,
                      bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t)
 {
   try
@@ -192,7 +197,6 @@ List lasdatastreamer(std::string ifile, std::string ofile, std::string filter,
     bool inmemory = ofile == "";
 
     // Cast string into char*
-    const char* ifilechar  = ifile.c_str();
     const char* ofilechar  = ofile.c_str();
     char* filterchar = const_cast<char*>(filter.c_str());
 
@@ -201,7 +205,16 @@ List lasdatastreamer(std::string ifile, std::string ofile, std::string filter,
     LASwriteOpener laswriteopener;
 
     // Initialize reader
-    lasreadopener.set_file_name(ifilechar);
+    lasreadopener.set_merged(true);
+    lasreadopener.set_populate_header(true);
+
+    for (int j = 0; j < ifiles.length(); j++)
+    {
+      std::string filestd  = as<std::string>(ifiles[j]);
+      const char* filechar = filestd.c_str();
+      lasreadopener.add_file_name(filechar);
+    }
+
     lasreadopener.parse_str(filterchar);
     LASreader* lasreader = lasreadopener.open();
     LASheader* header = &lasreader->header;

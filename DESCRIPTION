@@ -15,7 +15,6 @@ BugReports: https://github.com/Jean-Romain/rlas/issues
 License: GPL-3
 Depends: R (>= 3.0.0)
 Imports: data.table,Rcpp
-Suggests: lidR
 LazyData: true
 RoxygenNote: 6.0.1
 LinkingTo: Rcpp

@@ -46,7 +46,7 @@
 #' the number of points of interest. Then it allocates the necessary amount of memory and reads the file
 #' a second time, and stores the points of interest in the computer's memory (RAM).
 #'
-#' @param file filepath character string to the .las or .laz file
+#' @param files filepath character string to the .las or .laz files
 #' @param i logical. do you want to load the Intensity field? default: TRUE
 #' @param r logical. do you want to load the ReturnNumber field? default: TRUE
 #' @param n logical. do you want to load the NumberOfReturns field? default: TRUE
@@ -71,32 +71,32 @@
 #' lasdata <- readlasdata(lazfile, filter = "-keep_first")
 #' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 #' @useDynLib rlas, .registration = TRUE
-readlasdata = function(file, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "")
+readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "")
 {
-  check_file(file)
+  check_file(files)
   check_filter(filter)
 
-  file = path.expand(file)
+  files = normalizePath(files)
 
   if (filter == "")
-    data = lasdatareader(file, i, r, n, d, e, c, a, u, p, rgb, t)
+    data = lasdatareader(files, i, r, n, d, e, c, a, u, p, rgb, t)
   else
-    data = lasdatastreamer(file, "", filter, i, r, n, d, e, c, a, u, p, rgb, t)
+    data = lasdatastreamer(files, "", filter, i, r, n, d, e, c, a, u, p, rgb, t)
 
   data.table::setDT(data)
 
   return(data)
 }
 
-streamlasdata = function(ifile, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", ofile = "")
+streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", ofile = "")
 {
-  check_file(ifile)
+  check_file(ifiles)
   check_filter(filter)
 
-  ifile = path.expand(ifile)
-  ofile = path.expand(ofile)
+  ifiles = normalizePath(ifiles)
+  ofile  = normalizePath(ofile)
 
-  data = lasdatastreamer(ifile, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+  data = lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
 
   if (ofile != "")
     return(invisible())
@@ -140,10 +140,10 @@ check_file = function(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
 
-  if (!valid)
+  if (!all(valid))
     stop("File not found", call. = F)
 
-  if (!islas)
+  if (!all(islas))
     stop("File not supported", call. = F)
 }
 
