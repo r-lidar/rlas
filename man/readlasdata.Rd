@@ -4,36 +4,34 @@
 \alias{readlasdata}
 \title{Read data from a .las or .laz file}
 \usage{
-readlasdata(file, Intensity = TRUE, ReturnNumber = TRUE,
-  NumberOfReturns = TRUE, ScanDirectionFlag = TRUE,
-  EdgeOfFlightline = TRUE, Classification = TRUE, ScanAngle = TRUE,
-  UserData = TRUE, PointSourceID = TRUE, RGB = TRUE, gpstime = TRUE,
+readlasdata(file, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
+  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
   filter = "")
 }
 \arguments{
 \item{file}{filepath character string to the .las or .laz file}
 
-\item{Intensity}{logical. do you want to load the Intensity field? default: TRUE}
+\item{i}{logical. do you want to load the Intensity field? default: TRUE}
 
-\item{ReturnNumber}{logical. do you want to load the ReturnNumber field? default: TRUE}
+\item{r}{logical. do you want to load the ReturnNumber field? default: TRUE}
 
-\item{NumberOfReturns}{logical. do you want to load the NumberOfReturns field? default: TRUE}
+\item{n}{logical. do you want to load the NumberOfReturns field? default: TRUE}
 
-\item{ScanDirectionFlag}{logical. do you want to load the ScanDirectionFlag field? default: TRUE}
+\item{d}{logical. do you want to load the ScanDirectionFlag field? default: TRUE}
 
-\item{EdgeOfFlightline}{logical. do you want to load the EdgeOfFlightline field? default: TRUE}
+\item{e}{logical. do you want to load the EdgeOfFlightline field? default: TRUE}
 
-\item{Classification}{logical. do you want to load the Classification field? default: TRUE}
+\item{c}{logical. do you want to load the Classification field? default: TRUE}
 
-\item{ScanAngle}{logical. do you want to load the ScanAngle field? default: TRUE}
+\item{a}{logical. do you want to load the ScanAngle field? default: TRUE}
 
-\item{UserData}{logical. do you want to load the UserData field? default: TRUE}
+\item{u}{logical. do you want to load the UserData field? default: TRUE}
 
-\item{PointSourceID}{logical. do you want to load the PointSourceID field? default: TRUE}
+\item{p}{logical. do you want to load the PointSourceID field? default: TRUE}
 
-\item{RGB}{logical. do you want to load R,G and B fields? default: TRUE}
+\item{rgb}{logical. do you want to load R,G and B fields? default: TRUE}
 
-\item{gpstime}{logical. do you want to load R,G and B fields? default: TRUE}
+\item{t}{logical. do you want to load gpstime fields? default: TRUE}
 
 \item{filter}{character. filter data while reading the file (streaming filter) without
 allocating any useless memory. (see Details).}

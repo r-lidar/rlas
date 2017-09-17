@@ -44,6 +44,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/lasinterval.cpp \
 					LASzip/laszipper.cpp \
 					./readLAS.cpp \
+					./readheader.cpp \
 					./writeLAS.cpp \
 					./writeLAX.cpp \
 					./RcppExports.cpp \
