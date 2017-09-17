@@ -5,6 +5,40 @@
 
 using namespace Rcpp;
 
+// point_in_polygon
+bool point_in_polygon(NumericVector vertx, NumericVector verty, double pointx, double pointy);
+RcppExport SEXP _rlas_point_in_polygon(SEXP vertxSEXP, SEXP vertySEXP, SEXP pointxSEXP, SEXP pointySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type vertx(vertxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type verty(vertySEXP);
+    Rcpp::traits::input_parameter< double >::type pointx(pointxSEXP);
+    Rcpp::traits::input_parameter< double >::type pointy(pointySEXP);
+    rcpp_result_gen = Rcpp::wrap(point_in_polygon(vertx, verty, pointx, pointy));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lasheaderreader
+List lasheaderreader(CharacterVector file);
+RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
+    rcpp_result_gen = Rcpp::wrap(lasheaderreader(file));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lasfilterusage
+void lasfilterusage();
+RcppExport SEXP _rlas_lasfilterusage() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    lasfilterusage();
+    return R_NilValue;
+END_RCPP
+}
 // lasdatareader
 List lasdatareader(CharacterVector files, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t);
 RcppExport SEXP _rlas_lasdatareader(SEXP filesSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP) {
@@ -28,8 +62,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // lasdatastreamer
-List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t);
-RcppExport SEXP _rlas_lasdatastreamer(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP) {
+List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t, NumericVector xpoly, NumericVector ypoly);
+RcppExport SEXP _rlas_lasdatastreamer(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP, SEXP xpolySEXP, SEXP ypolySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,28 +81,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
     Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t));
+    Rcpp::traits::input_parameter< NumericVector >::type xpoly(xpolySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ypoly(ypolySEXP);
+    rcpp_result_gen = Rcpp::wrap(lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t, xpoly, ypoly));
     return rcpp_result_gen;
-END_RCPP
-}
-// lasheaderreader
-List lasheaderreader(CharacterVector file);
-RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasheaderreader(file));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lasfilterusage
-void lasfilterusage();
-RcppExport SEXP _rlas_lasfilterusage() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    lasfilterusage();
-    return R_NilValue;
 END_RCPP
 }
 // laswriter
