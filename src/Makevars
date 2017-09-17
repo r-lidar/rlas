@@ -45,6 +45,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/laszipper.cpp \
 					./readLAS.cpp \
 					./readheader.cpp \
+					./point_in_polygon.cpp \
 					./writeLAS.cpp \
 					./writeLAX.cpp \
 					./RcppExports.cpp \

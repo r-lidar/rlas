@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 using namespace Rcpp;
 
 int get_format(U8);
+bool point_in_polygon(NumericVector, NumericVector, double, double);
 
 // Read data from a las and laz file with LASlib
 //
@@ -186,7 +187,8 @@ List lasdatareader(CharacterVector files, bool i, bool r, bool n, bool d, bool e
 
 // [[Rcpp::export]]
 List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter,
-                     bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t)
+                     bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t,
+                     NumericVector xpoly, NumericVector ypoly)
 {
   try
   {
@@ -195,6 +197,7 @@ List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filt
     std::vector<long> I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
 
     bool inmemory = ofile == "";
+    bool filter_in_poly = xpoly.length() > 0;
 
     // Cast string into char*
     const char* ofilechar  = ofile.c_str();
@@ -276,6 +279,12 @@ List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filt
     // Set data
     while (lasreader->read_point())
     {
+      if (filter_in_poly)
+      {
+        if (!point_in_polygon(xpoly, ypoly, lasreader->point.get_x(), lasreader->point.get_y()))
+            continue;
+      }
+
       if (inmemory)
       {
         X.push_back(lasreader->point.get_x());

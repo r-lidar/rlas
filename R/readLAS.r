@@ -81,22 +81,38 @@ readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, 
   if (filter == "")
     data = lasdatareader(files, i, r, n, d, e, c, a, u, p, rgb, t)
   else
-    data = lasdatastreamer(files, "", filter, i, r, n, d, e, c, a, u, p, rgb, t)
+    data = lasdatastreamer(files, "", filter, i, r, n, d, e, c, a, u, p, rgb, t, numeric(0), numeric(0))
 
   data.table::setDT(data)
 
   return(data)
 }
 
-streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", ofile = "")
+streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", ofile = "", xpoly = NULL, ypoly = NULL)
 {
   check_file(ifiles)
   check_filter(filter)
 
   ifiles = normalizePath(ifiles)
-  ofile  = normalizePath(ofile)
 
-  data = lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+  if (ofile != "")
+    ofile  = normalizePath(ofile)
+
+  if (!is.null(xpoly) & !is.null(ypoly))
+  {
+    if (length(xpoly) != length(ypoly))
+      stop("Invalide polygon", call. = FALSE)
+
+    xmin <- min(xpoly)-0.5
+    xmax <- max(xpoly)+0.5
+    ymin <- min(ypoly)-0.5
+    ymax <- max(ypoly)+0.5
+
+    filter <- paste("-inside", xmin, ymin, xmax, ymax)
+  }
+
+
+  data = lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, xpoly, ypoly)
 
   if (ofile != "")
     return(invisible())
