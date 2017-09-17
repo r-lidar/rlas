@@ -3,6 +3,7 @@
 #### NEW FEATURES
 
 * `writelax` enable for writing LAX files.
+* `readlasdata` enable for reading several files.
 * Moved the headers in `inst/include` to make the lib callable from other packages
 
 #### BUG FIXES:

@@ -4,12 +4,12 @@
 \alias{readlasdata}
 \title{Read data from a .las or .laz file}
 \usage{
-readlasdata(file, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
+readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
   c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
   filter = "")
 }
 \arguments{
-\item{file}{filepath character string to the .las or .laz file}
+\item{files}{filepath character string to the .las or .laz files}
 
 \item{i}{logical. do you want to load the Intensity field? default: TRUE}
 
