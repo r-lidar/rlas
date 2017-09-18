@@ -29,11 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include <Rcpp.h>
 
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
@@ -234,7 +229,7 @@ List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filt
 
       laswriter = laswriteopener.open(header);
 
-      if(0 == lasreader || NULL == lasreader)
+      if(0 == laswriter || NULL == laswriter)
         throw std::runtime_error("LASlib internal error. See message above.");
     }
 
