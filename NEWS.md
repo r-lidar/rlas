@@ -1,4 +1,4 @@
-### rlas v1.1.5 (In development)
+### rlas v1.1.5 (Release date: 2017-10-23)
 
 #### NEW FEATURES
 
@@ -8,7 +8,7 @@
 
 #### BUG FIXES:
 
-* The las files were read twice every time. `lasdatareader` is twice faster read file only once
+* The las files were read twice every time. `lasdatareader` is twice faster reading files only once
 * `readlasdata` enable to load or not the gpstime field.
 
 ### rlas v1.1.4 (Release date: 2017-07-26)
