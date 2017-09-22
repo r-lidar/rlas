@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -I. -I./include/LASlib -I./include/LASzip
+PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -I. -I../inst/include/
 
 SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/fopen_compressed.cpp \
@@ -47,6 +47,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					./readheader.cpp \
 					./point_in_polygon.cpp \
 					./writeLAS.cpp \
+					./writeLAX.cpp \
 					./RcppExports.cpp \
 					./init.c
 
