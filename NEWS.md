@@ -1,3 +1,9 @@
+### rlas v1.1.5 (Release date: 2017-10-27)
+
+#### BUG FIXES:
+
+* Fix some internal features which cannot be used by regular users. Does not affect users.
+
 ### rlas v1.1.5 (Release date: 2017-10-23)
 
 #### NEW FEATURES

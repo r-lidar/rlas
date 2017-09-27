@@ -103,12 +103,20 @@ streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRU
     if (length(xpoly) != length(ypoly))
       stop("Invalide polygon", call. = FALSE)
 
+    if (xpoly[1] != xpoly[length(xpoly)] | xpoly[1] != xpoly[length(xpoly)])
+      stop("The polygon is not closed", call. = FALSE)
+
     xmin <- min(xpoly)-0.5
     xmax <- max(xpoly)+0.5
     ymin <- min(ypoly)-0.5
     ymax <- max(ypoly)+0.5
 
     filter <- paste("-inside", xmin, ymin, xmax, ymax)
+  }
+  else
+  {
+    xpoly = numeric(0)
+    ypoly = numeric(0)
   }
 
 
