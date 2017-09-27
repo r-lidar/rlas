@@ -96,7 +96,7 @@ streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRU
   ifiles = normalizePath(ifiles)
 
   if (ofile != "")
-    ofile  = normalizePath(ofile)
+    ofile = suppressWarnings(normalizePath(ofile))
 
   if (!is.null(xpoly) & !is.null(ypoly))
   {
