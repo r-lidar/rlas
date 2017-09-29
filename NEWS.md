@@ -1,4 +1,8 @@
-### rlas v1.1.5 (Release date: 2017-10-27)
+### rlas v1.1.6 (In development)
+
+#### NEW FEATURES
+
+* new straighforward C++ class `RLASstreamer` to use `rlas`at the C++ level.
 
 #### BUG FIXES:
 

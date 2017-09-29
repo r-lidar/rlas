@@ -13,12 +13,12 @@ lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
 }
 
-lasdatareader <- function(files, i, r, n, d, e, c, a, u, p, RGB, t) {
-    .Call(`_rlas_lasdatareader`, files, i, r, n, d, e, c, a, u, p, RGB, t)
+lasdatareader <- function(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t) {
+    .Call(`_rlas_lasdatareader`, ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
 }
 
-lasdatastreamer <- function(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t, xpoly, ypoly) {
-    .Call(`_rlas_lasdatastreamer`, ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t, xpoly, ypoly)
+lasdatareader_inpoly <- function(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t) {
+    .Call(`_rlas_lasdatareader_inpoly`, ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
 }
 
 laswriter <- function(file, LASheader, X, Y, Z, I = integer(0), RN = integer(0), NoR = integer(0), SDF = integer(0), EoF = integer(0), C = integer(0), SA = integer(0), UD = integer(0), PSI = integer(0), T = numeric(0), R = integer(0), G = integer(0), B = integer(0)) {

@@ -40,36 +40,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // lasdatareader
-List lasdatareader(CharacterVector files, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t);
-RcppExport SEXP _rlas_lasdatareader(SEXP filesSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type files(filesSEXP);
-    Rcpp::traits::input_parameter< bool >::type i(iSEXP);
-    Rcpp::traits::input_parameter< bool >::type r(rSEXP);
-    Rcpp::traits::input_parameter< bool >::type n(nSEXP);
-    Rcpp::traits::input_parameter< bool >::type d(dSEXP);
-    Rcpp::traits::input_parameter< bool >::type e(eSEXP);
-    Rcpp::traits::input_parameter< bool >::type c(cSEXP);
-    Rcpp::traits::input_parameter< bool >::type a(aSEXP);
-    Rcpp::traits::input_parameter< bool >::type u(uSEXP);
-    Rcpp::traits::input_parameter< bool >::type p(pSEXP);
-    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
-    Rcpp::traits::input_parameter< bool >::type t(tSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader(files, i, r, n, d, e, c, a, u, p, RGB, t));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lasdatastreamer
-List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t, NumericVector xpoly, NumericVector ypoly);
-RcppExport SEXP _rlas_lasdatastreamer(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP RGBSEXP, SEXP tSEXP, SEXP xpolySEXP, SEXP ypolySEXP) {
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t);
+RcppExport SEXP _rlas_lasdatareader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type ifiles(ifilesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type ofile(ofileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type filter(filterSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
     Rcpp::traits::input_parameter< bool >::type i(iSEXP);
     Rcpp::traits::input_parameter< bool >::type r(rSEXP);
     Rcpp::traits::input_parameter< bool >::type n(nSEXP);
@@ -79,11 +57,35 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type a(aSEXP);
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
-    Rcpp::traits::input_parameter< bool >::type RGB(RGBSEXP);
+    Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type xpoly(xpolySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type ypoly(ypolySEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, RGB, t, xpoly, ypoly));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lasdatareader_inpoly
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t);
+RcppExport SEXP _rlas_lasdatareader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ifiles(ifilesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
+    Rcpp::traits::input_parameter< bool >::type i(iSEXP);
+    Rcpp::traits::input_parameter< bool >::type r(rSEXP);
+    Rcpp::traits::input_parameter< bool >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type d(dSEXP);
+    Rcpp::traits::input_parameter< bool >::type e(eSEXP);
+    Rcpp::traits::input_parameter< bool >::type c(cSEXP);
+    Rcpp::traits::input_parameter< bool >::type a(aSEXP);
+    Rcpp::traits::input_parameter< bool >::type u(uSEXP);
+    Rcpp::traits::input_parameter< bool >::type p(pSEXP);
+    Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
+    Rcpp::traits::input_parameter< bool >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(lasdatareader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t));
     return rcpp_result_gen;
 END_RCPP
 }

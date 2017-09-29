@@ -43,6 +43,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/integercompressor.cpp \
 					LASzip/lasinterval.cpp \
 					LASzip/laszipper.cpp \
+					./rlasstreamer.cpp \
 					./readLAS.cpp \
 					./readheader.cpp \
 					./point_in_polygon.cpp \
