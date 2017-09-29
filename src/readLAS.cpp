@@ -28,14 +28,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include <Rcpp.h>
-
+#include "rlasstreamer.h"
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
 using namespace Rcpp;
 
-int get_format(U8);
 bool point_in_polygon(NumericVector, NumericVector, double, double);
 
 // Read data from a las and laz file with LASlib
@@ -44,362 +43,90 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 //
 // This function musn't be used as is. It is an internal function. Please use \link[lidR:readLAS]{readLAS} abstraction.
 //
-// @param file character. The name of the file which the data are to be read from
-// @param Intensity logical. do you want to load Intensity field? default: TRUE
-// @param ReturnNumber logical. do you want to load ReturnNumber field? default: TRUE
-// @param NumberOfReturns logical. do you want to load NumberOfReturns field? default: TRUE
-// @param ScanDirectionFlag logical. do you want to load ScanDirectionFlag field? default: FALSE
-// @param EdgeOfFlightline logical. do you want to load EdgeofFlightline field? default: FALSE
-// @param Classification logical. do you want to load Classification field? default: TRUE
-// @param ScanAngle logical. do you want to load intensity field? default: TRUE
-// @param UserData logical. do you want to load UserData field? default: FALSE
-// @param PointSourceID logical. do you want to load PointSourceID field? default: FALSE
-// @param RGB logical. do you want to load intensity R,G and B? default: TRUE
+// @param ifiles character. The name of the files to be read
+// @param ofile character. The name of the output file. If ofile = "" then it is loaded into R.
+// @param filter character. LASlib filters
+// @param i bool. do you want to load Intensity field?
+// @param r bool. do you want to load ReturnNumber field?
+// @param n bool. do you want to load NumberOfReturns field?
+// @param s bool. do you want to load ScanDirectionFlag field?
+// @param e bool. do you want to load EdgeofFlightline field?
+// @param c bool. do you want to load Classification field?
+// @param a bool. do you want to load intensity field?
+// @param u bool. do you want to load UserData field?
+// @param p bool. do you want to load PointSourceID field?
+// @param rgb bool. do you want to load intensity R,G and B?
 //
-// @return list
+// @return Rcpp::List
+
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector files, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t)
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t)
 {
   try
   {
-    // Initialize 0 length data
-    NumericVector X,Y,Z,T;
-    IntegerVector I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
+    RLASstreamer streamer(ifiles, ofile, filter);
 
-    // Initialize reader
-    LASreadOpener lasreadopener;
-    lasreadopener.set_merged(true);
-    lasreadopener.set_populate_header(true);
+    streamer.read_t(t);
+    streamer.read_i(i);
+    streamer.read_r(r);
+    streamer.read_n(n);
+    streamer.read_d(d);
+    streamer.read_e(e);
+    streamer.read_c(c);
+    streamer.read_a(a);
+    streamer.read_u(u);
+    streamer.read_p(p);
+    streamer.read_rgb(rgb);
 
-    for (int j = 0; j < files.length(); j++)
+    while(streamer.read_point())
     {
-      std::string filestd   = as<std::string>(files[j]);
-      const char* filechar = filestd.c_str();
-      lasreadopener.add_file_name(filechar);
+      streamer.write_point();
     }
 
-    LASreader* lasreader = lasreadopener.open();
-
-    if(0 == lasreader || NULL == lasreader)
-      throw std::runtime_error("LASlib internal error. See message above.");
-
-    // Read the header and test some properties of the file
-    U8 point_type = lasreader->header.point_data_format;
-    int format    = get_format(point_type);
-    int npoints   = lasreader->header.number_of_point_records;
-    bool hasrgb   = format == 2 || format == 3;
-    bool hast    = format == 1 || format == 3;
-
-    t = t && hast;
-    RGB = RGB && hasrgb;
-
-    // Allocate the required amount of data only if necessary
-    X = NumericVector(npoints);
-    Y = NumericVector(npoints);
-    Z = NumericVector(npoints);
-
-    if(t) T   = NumericVector(npoints);
-    if(i) I   = IntegerVector(npoints);
-    if(r) RN  = IntegerVector(npoints);
-    if(n) NoR = IntegerVector(npoints);
-    if(d) SDF = IntegerVector(npoints);
-    if(e) EoF = IntegerVector(npoints);
-    if(c) C   = IntegerVector(npoints);
-    if(a) SA  = IntegerVector(npoints);
-    if(u) UD  = IntegerVector(npoints);
-    if(p) PSI = IntegerVector(npoints);
-    if(RGB)
-    {
-      R   = IntegerVector(npoints);
-      G   = IntegerVector(npoints);
-      B   = IntegerVector(npoints);
-    }
-
-    // Set data
-    unsigned long int k = 0;
-    while (lasreader->read_point())
-    {
-      X[k] = lasreader->point.get_x();
-      Y[k] = lasreader->point.get_y();
-      Z[k] = lasreader->point.get_z();
-
-      if(t) T[k]   = lasreader->point.get_gps_time();
-      if(i) I[k]   = lasreader->point.get_intensity();
-      if(r) RN[k]  = lasreader->point.get_return_number();
-      if(n) NoR[k] = lasreader->point.get_number_of_returns();
-      if(d) SDF[k] = lasreader->point.get_scan_direction_flag();
-      if(e) EoF[k] = lasreader->point.get_edge_of_flight_line();
-      if(c) C[k]   = lasreader->point.get_classification();
-      if(a) SA[k]  = lasreader->point.get_scan_angle_rank();
-      if(u) UD[k]  = lasreader->point.get_user_data();
-      if(p) PSI[k] = lasreader->point.get_point_source_ID();
-      if(RGB)
-      {
-        R[k]   = lasreader->point.get_R();
-        G[k]   = lasreader->point.get_G();
-        B[k]   = lasreader->point.get_B();
-      }
-
-      k++;
-    }
-
-    lasreader->close();
-    delete lasreader;
-
-    List lasdata = List::create(X,Y,Z);
-    CharacterVector field(0);
-    field.push_back("X");
-    field.push_back("Y");
-    field.push_back("Z");
-
-    if(t) lasdata.push_back(T),   field.push_back("gpstime");
-    if(i) lasdata.push_back(I),   field.push_back("Intensity");
-    if(r) lasdata.push_back(RN),  field.push_back("ReturnNumber");
-    if(n) lasdata.push_back(NoR), field.push_back("NumberOfReturns");
-    if(d) lasdata.push_back(SDF), field.push_back("ScanDirectionFlag");
-    if(e) lasdata.push_back(EoF), field.push_back("EdgeOfFlightline");
-    if(c) lasdata.push_back(C),   field.push_back("Classification");
-    if(a) lasdata.push_back(SA),  field.push_back("ScanAngle");
-    if(u) lasdata.push_back(UD),  field.push_back("UserData");
-    if(p) lasdata.push_back(PSI), field.push_back("PointSourceID");
-    if(RGB)
-    {
-      lasdata.push_back(R), field.push_back("R");
-      lasdata.push_back(G), field.push_back("G");
-      lasdata.push_back(B), field.push_back("B");
-    }
-
-    lasdata.names() = field;
-
-    return(lasdata);
+    return streamer.terminate();
   }
-  catch (std::exception const& e)
+  catch (std::exception const& ex)
   {
-    Rcerr << "Error: " << e.what() << std::endl;
+    Rcerr << "Error: " << ex.what() << std::endl;
     return(List(0));
   }
 }
 
 // [[Rcpp::export]]
-List lasdatastreamer(CharacterVector ifiles, std::string ofile, std::string filter,
-                     bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool RGB, bool t,
-                     NumericVector xpoly, NumericVector ypoly)
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t)
 {
   try
   {
-    // Initialize 0 length data
-    std::vector<double> X,Y,Z,T;
-    std::vector<long> I,RN,NoR,SDF,EoF,C,SA,UD,PSI,R,G,B;
+    RLASstreamer streamer(ifiles, ofile, filter);
 
-    bool inmemory = ofile == "";
-    bool filter_in_poly = xpoly.length() > 0;
+    streamer.read_t(t);
+    streamer.read_i(i);
+    streamer.read_r(r);
+    streamer.read_n(n);
+    streamer.read_d(d);
+    streamer.read_e(e);
+    streamer.read_c(c);
+    streamer.read_a(a);
+    streamer.read_u(u);
+    streamer.read_p(p);
+    streamer.read_rgb(rgb);
 
-    // Cast string into char*
-    const char* ofilechar  = ofile.c_str();
-    char* filterchar = const_cast<char*>(filter.c_str());
-
-    // Create reader and writer
-    LASreadOpener  lasreadopener;
-    LASwriteOpener laswriteopener;
-
-    // Initialize reader
-    lasreadopener.set_merged(true);
-    lasreadopener.set_populate_header(true);
-
-    for (int j = 0; j < ifiles.length(); j++)
+    while(streamer.read_point())
     {
-      std::string filestd  = as<std::string>(ifiles[j]);
-      const char* filechar = filestd.c_str();
-      lasreadopener.add_file_name(filechar);
-    }
+      double xi = streamer.point()->get_x();
+      double yi = streamer.point()->get_y();
 
-    lasreadopener.parse_str(filterchar);
-    LASreader* lasreader = lasreadopener.open();
-    LASheader* header = &lasreader->header;
-
-    if(0 == lasreader || NULL == lasreader)
-      throw std::runtime_error("LASlib internal error. See message above.");
-
-    // Initialize writer
-    LASwriter* laswriter;
-
-    if (!inmemory)
-    {
-      laswriteopener.set_file_name(ofilechar);
-
-      laswriter = laswriteopener.open(header);
-
-      if(0 == laswriter || NULL == laswriter)
-        throw std::runtime_error("LASlib internal error. See message above.");
-    }
-
-    // Read the header and test some properties of the file
-    U8 point_type = lasreader->header.point_data_format;
-    int format    = get_format(point_type);
-    int npoints   = lasreader->header.number_of_point_records;
-    bool hasrgb   = format == 2 || format == 3;
-    bool hast  = format == 1 || format == 3;
-
-    t = t && hast;
-    RGB = RGB && hasrgb;
-
-    // If the user want to load data in R, then reserve memory
-    if(inmemory)
-    {
-      int nalloc = ceil((float)npoints/8);
-
-      // Allocate the required amount of data only if necessary
-      X.reserve(nalloc);
-      Y.reserve(nalloc);
-      Z.reserve(nalloc);
-
-      if(t) T.reserve(nalloc);
-      if(i) I.reserve(nalloc);
-      if(r) RN.reserve(nalloc);
-      if(n) NoR.reserve(nalloc);
-      if(d) SDF.reserve(nalloc);
-      if(e) EoF.reserve(nalloc);
-      if(c) C.reserve(nalloc);
-      if(a) SA.reserve(nalloc);
-      if(u) UD.reserve(nalloc);
-      if(p) PSI.reserve(nalloc);
-      if(RGB)
+      if (point_in_polygon(x, y, xi, yi))
       {
-        R.reserve(nalloc);
-        G.reserve(nalloc);
-        B.reserve(nalloc);
+        streamer.write_point();
       }
     }
 
-    // Set data
-    while (lasreader->read_point())
-    {
-      if (filter_in_poly)
-      {
-        if (!point_in_polygon(xpoly, ypoly, lasreader->point.get_x(), lasreader->point.get_y()))
-            continue;
-      }
-
-      if (inmemory)
-      {
-        X.push_back(lasreader->point.get_x());
-        Y.push_back(lasreader->point.get_y());
-        Z.push_back(lasreader->point.get_z());
-
-        if(t) T.push_back(lasreader->point.get_gps_time());
-        if(i) I.push_back(lasreader->point.get_intensity());
-        if(r) RN.push_back(lasreader->point.get_return_number());
-        if(n) NoR.push_back(lasreader->point.get_number_of_returns());
-        if(d) SDF.push_back(lasreader->point.get_scan_direction_flag());
-        if(e) EoF.push_back(lasreader->point.get_edge_of_flight_line());
-        if(c) C.push_back(lasreader->point.get_classification());
-        if(a) SA.push_back(lasreader->point.get_scan_angle_rank());
-        if(u) UD.push_back(lasreader->point.get_user_data());
-        if(p) PSI.push_back(lasreader->point.get_point_source_ID());
-        if(RGB)
-        {
-          R.push_back(lasreader->point.get_R());
-          G.push_back(lasreader->point.get_G());
-          B.push_back(lasreader->point.get_B());
-        }
-      }
-      else
-      {
-        laswriter->write_point(&lasreader->point);
-        laswriter->update_inventory(&lasreader->point);
-      }
-    }
-
-    lasreader->close();
-    delete lasreader;
-
-    if(!inmemory)
-    {
-      laswriter->update_header(header, true);
-      laswriter->close();
-      delete laswriter;
-
-      return List(0);
-    }
-    else
-    {
-      List lasdata = List::create(X,Y,Z);
-      CharacterVector field(0);
-      field.push_back("X");
-      field.push_back("Y");
-      field.push_back("Z");
-
-      if(t) lasdata.push_back(T),   field.push_back("gpstime");
-      if(i) lasdata.push_back(I),   field.push_back("Intensity");
-      if(r) lasdata.push_back(RN),  field.push_back("ReturnNumber");
-      if(n) lasdata.push_back(NoR), field.push_back("NumberOfReturns");
-      if(d) lasdata.push_back(SDF), field.push_back("ScanDirectionFlag");
-      if(e) lasdata.push_back(EoF), field.push_back("EdgeOfFlightline");
-      if(c) lasdata.push_back(C),   field.push_back("Classification");
-      if(a) lasdata.push_back(SA),  field.push_back("ScanAngle");
-      if(u) lasdata.push_back(UD),  field.push_back("UserData");
-      if(p) lasdata.push_back(PSI), field.push_back("PointSourceID");
-      if(RGB)
-      {
-        lasdata.push_back(R), field.push_back("R");
-        lasdata.push_back(G), field.push_back("G");
-        lasdata.push_back(B), field.push_back("B");
-      }
-
-      lasdata.names() = field;
-
-      return(lasdata);
-    }
+    return streamer.terminate();
   }
-  catch (std::exception const& e)
+  catch (std::exception const& ex)
   {
-    Rcerr << "Error: " << e.what() << std::endl;
+    Rcerr << "Error: " << ex.what() << std::endl;
     return(List(0));
   }
-}
-
-int get_format(U8 point_type)
-{
-  int format;
-
-  switch (point_type)
-  {
-  case 0:
-    format = 0;
-    break;
-  case 1:
-    format = 1;
-    break;
-  case 2:
-    format = 2;
-    break;
-  case 3:
-    format = 3;
-    break;
-  case 4:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 5:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 6:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 7:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 8:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 9:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  case 10:
-    throw std::runtime_error("LAS format not yet supported");
-    break;
-  default:
-    throw std::runtime_error("LAS format not valid");
-  }
-
-  return(format);
 }

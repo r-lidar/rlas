@@ -3,12 +3,7 @@
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
 `rlas` relies on a modified version of the open source parts of [LAStools](https://github.com/LAStools/LAStools). `LASlib` and `LASzip` were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complaints from `R CMD check`.
-It enables users to read and write into R binary files commonly used to store LiDAR data.
-
-```r
-lasdata   = readlasdata("<myfile.las>")
-lasheader = readlasheader("<myfile.las>")
-```
+It enables users to read and write into R binary files commonly used to store LiDAR data in R both at the R level and at the C++ level.
 
 ## Install `rlas`
 
@@ -29,6 +24,46 @@ To install the package from github make sure you have a working development envi
 * **Windows**: Install [Rtools.exe](https://cran.r-project.org/bin/windows/Rtools/).  
 * **Mac**: Install `Xcode` from the Mac App Store.
 * **Linux**: Install the R development package, usually called `r-devel` or `r-base-dev`
+
+## Read las and laz files
+
+### At the R level
+
+```r
+lasdata   = readlasdata("<myfile.las>")
+lasheader = readlasheader("<myfile.las>")
+```
+
+### At the C++ level
+
+Linking `rlas` into your c++ code.
+
+```cpp
+// [[Rcpp::depends(rlas)]]
+
+#include <rlasstreamer.h>
+
+// [[Rcpp::export]]
+List readlasdata(CharacterVector ifiles, CharacterVector filter)
+{
+  try
+  {
+    RLASstreamer lasstreamer(ifiles, filter);
+  
+    while(lasstreamer.read_point())
+    {
+      lasstreamer.write_point();
+    }
+  
+    return lasstreamer.terminate();
+  }
+  catch (std::exception const& ex)
+  {
+    Rcerr << "Error: " << ex.what() << std::endl;
+    return(List(0));
+  }
+}
+```
 
 ## Changelog
 

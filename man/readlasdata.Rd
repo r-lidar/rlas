@@ -53,10 +53,7 @@ Because \code{rlas} relies on the well-known \code{LASlib} library written by Ma
 to read the binary files, the package also inherits the filter commands available in
 \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
 common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to
-display the \code{LASlib} documentation and the available filters.\cr\cr
-The filter works in two passes. First it streams the file without loading anything and counts
-the number of points of interest. Then it allocates the necessary amount of memory and reads the file
-a second time, and stores the points of interest in the computer's memory (RAM).
+display the \code{LASlib} documentation and the available filters.
 }
 \examples{
 lazfile <- system.file("extdata", "example.laz", package="rlas")

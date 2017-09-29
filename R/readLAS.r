@@ -41,10 +41,7 @@
 #' to read the binary files, the package also inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
 #' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to
-#' display the \code{LASlib} documentation and the available filters.\cr\cr
-#' The filter works in two passes. First it streams the file without loading anything and counts
-#' the number of points of interest. Then it allocates the necessary amount of memory and reads the file
-#' a second time, and stores the points of interest in the computer's memory (RAM).
+#' display the \code{LASlib} documentation and the available filters.
 #'
 #' @param files filepath character string to the .las or .laz files
 #' @param i logical. do you want to load the Intensity field? default: TRUE
@@ -73,22 +70,12 @@
 #' @useDynLib rlas, .registration = TRUE
 readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "")
 {
-  check_file(files)
-  check_filter(filter)
-
-  files = normalizePath(files)
-
-  if (filter == "")
-    data = lasdatareader(files, i, r, n, d, e, c, a, u, p, rgb, t)
-  else
-    data = lasdatastreamer(files, "", filter, i, r, n, d, e, c, a, u, p, rgb, t, numeric(0), numeric(0))
-
-  data.table::setDT(data)
-
+  ofile = ""
+  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
   return(data)
 }
 
-streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", ofile = "", xpoly = NULL, ypoly = NULL)
+streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE)
 {
   check_file(ifiles)
   check_filter(filter)
@@ -98,29 +85,40 @@ streamlasdata = function(ifiles, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRU
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
 
-  if (!is.null(xpoly) & !is.null(ypoly))
-  {
-    if (length(xpoly) != length(ypoly))
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+
+  if (ofile != "")
+    return(invisible())
+
+  data.table::setDT(data)
+
+  return(data)
+}
+
+streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE)
+{
+  check_file(ifiles)
+  check_filter(filter)
+
+  ifiles = normalizePath(ifiles)
+
+  if (ofile != "")
+    ofile = suppressWarnings(normalizePath(ofile))
+
+  if (length(xpoly) != length(ypoly))
       stop("Invalide polygon", call. = FALSE)
 
-    if (xpoly[1] != xpoly[length(xpoly)] | xpoly[1] != xpoly[length(xpoly)])
+  if (xpoly[1] != xpoly[length(xpoly)] | xpoly[1] != xpoly[length(xpoly)])
       stop("The polygon is not closed", call. = FALSE)
 
-    xmin <- min(xpoly)-0.5
-    xmax <- max(xpoly)+0.5
-    ymin <- min(ypoly)-0.5
-    ymax <- max(ypoly)+0.5
+  xmin <- min(xpoly)-0.1
+  xmax <- max(xpoly)+0.1
+  ymin <- min(ypoly)-0.1
+  ymax <- max(ypoly)+0.1
 
-    filter <- paste("-inside", xmin, ymin, xmax, ymax)
-  }
-  else
-  {
-    xpoly = numeric(0)
-    ypoly = numeric(0)
-  }
+  filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-
-  data = lasdatastreamer(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, xpoly, ypoly)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
 
   if (ofile != "")
     return(invisible())
