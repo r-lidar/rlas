@@ -33,6 +33,8 @@ readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
 
 \item{rgb}{logical. do you want to load R,G and B fields? default: TRUE}
 
+\item{at0, at1, at2, at3, at4, at5, at6, at7, at8, at9}{logical. which extra byte attribute fields (see LAS v1.4) do you want to load? default: TRUE}
+
 \item{t}{logical. do you want to load gpstime fields? default: TRUE}
 
 \item{filter}{character. filter data while reading the file (streaming filter) without

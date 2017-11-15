@@ -192,182 +192,10 @@ void RLASstreamer::initialize()
   return;
 }
 
-// void get_scaled_attribute(const LASheader* header, const LASpoint* point, I32 index, double &data)
-// {
-//   if (index >= header->number_attributes)
-//   {
-//     return FALSE;
-//   }
-//   if (header->attributes[index].data_type == 1)
-//   {
-//     U8 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       data = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//     }
-//     else
-//     {
-//       data = (F64)value;
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 2)
-//   {
-//     I8 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%d", (I32)value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 3)
-//   {
-//     U16 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%d", (I32)value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 4)
-//   {
-//     I16 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%d", (I32)value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 5)
-//   {
-//     U32 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%d", (I32)value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 6)
-//   {
-//     I32 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%d", value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 7)
-//   {
-//     U64 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*((I64)value) + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-// #ifdef _WIN32
-//       fprintf(file, "%I64d", (I64)value);
-// #else
-//       fprintf(file, "%lld", (I64)value);
-// #endif
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 8)
-//   {
-//     I64 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-// #ifdef _WIN32
-//       fprintf(file, "%I64d", value);
-// #else
-//       fprintf(file, "%lld", value);
-// #endif
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 9)
-//   {
-//     F32 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%g", value);
-//     }
-//   }
-//   else if (header->attributes[index].data_type == 10)
-//   {
-//     F64 value;
-//     point->get_attribute(attribute_starts[index], value);
-//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
-//     {
-//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
-//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
-//       fprintf(file, "%s", printstring);
-//     }
-//     else
-//     {
-//       fprintf(file, "%g", value);
-//     }
-//   }
-//   else
-//   {
-//     fprintf(stderr, "WARNING: attribute %d not (yet) implemented.\n", index);
-//     return FALSE;
-//   }
-//   return TRUE;
-// }
-
 bool RLASstreamer::read_point()
 {
   return lasreader->read_point();
 }
-
-I32 attribute_starts[10];
 
 void RLASstreamer::write_point()
 {
@@ -440,7 +268,6 @@ List RLASstreamer::terminate()
     for(int i = 0; i < header->number_attributes; i++)
     {
       attribute_names.push_back(header->attributes[i].name);
-      Rcout << "Attribute " << i << ": " << attribute_names[i] << std::endl;
     }
 
     lasreader->close();
@@ -675,46 +502,6 @@ void RLASstreamer::read_at(bool* b, int index)
 {
   *b = *b && (index < header->number_attributes);
 }
-
-
-// void RLASstreamer::read_at0(bool b)
-// {
-//   at0 = b && (0 < header->number_attributes);
-// }
-
-// void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }
-//
-// void RLASstreamer::read_at2(bool b)
-// {
-//   at2 = b && (2 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }void RLASstreamer::read_at1(bool b)
-// {
-//   at1 = b && (1 < header->number_attributes);
-// }
-
-
-
 
 
 int RLASstreamer::get_format(U8 point_type)
