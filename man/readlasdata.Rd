@@ -5,10 +5,8 @@
 \title{Read data from a .las or .laz file}
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
-  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at0 = TRUE,
-  at1 = TRUE, at2 = TRUE, at3 = TRUE, at4 = TRUE, at5 = TRUE,
-  at6 = TRUE, at7 = TRUE, at8 = TRUE, at9 = TRUE, t = TRUE,
-  filter = "")
+  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at = c(0:9),
+  t = TRUE, filter = "")
 }
 \arguments{
 \item{files}{filepath character string to the .las or .laz files}
@@ -33,7 +31,8 @@ readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
 
 \item{rgb}{logical. do you want to load R,G and B fields? default: TRUE}
 
-\item{at0, at1, at2, at3, at4, at5, at6, at7, at8, at9}{logical. which extra byte attribute fields (see LAS v1.4) do you want to load? default: TRUE}
+\item{at}{numeric vector. which extra byte attribute fields (see LAS v1.4) to load?
+default: c(0:9). Numbering is zero-based and none is \code{numeric(0)}.}
 
 \item{t}{logical. do you want to load gpstime fields? default: TRUE}
 

@@ -136,18 +136,9 @@ void RLASstreamer::initialize()
 
     t = t && has_t;
     rgb = rgb && has_rgb;
-    read_at(&at0, 0);
-    read_at(&at1, 1);
-    read_at(&at2, 2);
-    read_at(&at3, 3);
-    read_at(&at4, 4);
-    read_at(&at5, 5);
-    read_at(&at6, 6);
-    read_at(&at7, 7);
-    read_at(&at8, 8);
-    read_at(&at9, 9);
 
-    int nalloc;
+
+
 
     if (useFilter)
       nalloc = ceil((float)npoints/8);
@@ -175,21 +166,31 @@ void RLASstreamer::initialize()
       G.reserve(nalloc);
       B.reserve(nalloc);
     }
-    if(at0) At0.reserve(nalloc);
-    if(at1) At1.reserve(nalloc);
-    if(at2) At2.reserve(nalloc);
-    if(at3) At3.reserve(nalloc);
-    if(at4) At4.reserve(nalloc);
-    if(at5) At5.reserve(nalloc);
-    if(at6) At6.reserve(nalloc);
-    if(at7) At7.reserve(nalloc);
-    if(at8) At8.reserve(nalloc);
-    if(at9) At9.reserve(nalloc);
   }
 
   initialized = true;
 
   return;
+}
+
+void RLASstreamer::allocation()
+{
+  // remove all attributes non available
+  for(int j = header->number_attributes; j < 10; j++)
+  {
+    at[j] = false;
+  }
+
+  if(at[0]) At0.reserve(nalloc);
+  if(at[1]) At1.reserve(nalloc);
+  if(at[2]) At2.reserve(nalloc);
+  if(at[3]) At3.reserve(nalloc);
+  if(at[4]) At4.reserve(nalloc);
+  if(at[5]) At5.reserve(nalloc);
+  if(at[6]) At6.reserve(nalloc);
+  if(at[7]) At7.reserve(nalloc);
+  if(at[8]) At8.reserve(nalloc);
+  if(at[9]) At9.reserve(nalloc);
 }
 
 bool RLASstreamer::read_point()
@@ -226,16 +227,17 @@ void RLASstreamer::write_point()
       G.push_back(lasreader->point.get_G());
       B.push_back(lasreader->point.get_B());
     }
-    if(at0) At0.push_back(lasreader->point.get_attribute_as_float(0));
-    if(at1) At1.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at2) At2.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at3) At3.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at4) At4.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at5) At5.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at6) At6.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at7) At7.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at8) At8.push_back(lasreader->point.get_attribute_as_float(1));
-    if(at9) At9.push_back(lasreader->point.get_attribute_as_float(1));
+
+    if(at[0]) At0.push_back(lasreader->point.get_attribute_as_float(0));
+    if(at[1]) At1.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at[2]) At2.push_back(lasreader->point.get_attribute_as_float(2));
+    if(at[3]) At3.push_back(lasreader->point.get_attribute_as_float(3));
+    if(at[4]) At4.push_back(lasreader->point.get_attribute_as_float(4));
+    if(at[5]) At5.push_back(lasreader->point.get_attribute_as_float(5));
+    if(at[6]) At6.push_back(lasreader->point.get_attribute_as_float(6));
+    if(at[7]) At7.push_back(lasreader->point.get_attribute_as_float(7));
+    if(at[8]) At8.push_back(lasreader->point.get_attribute_as_float(8));
+    if(at[9]) At9.push_back(lasreader->point.get_attribute_as_float(9));
   }
 }
 
@@ -265,9 +267,9 @@ List RLASstreamer::terminate()
   else
   {
     CharacterVector attribute_names;
-    for(int i = 0; i < header->number_attributes; i++)
+    for(int j = 0; j < header->number_attributes; j++)
     {
-      attribute_names.push_back(header->attributes[i].name);
+      attribute_names.push_back(header->attributes[j].name);
     }
 
     lasreader->close();
@@ -353,61 +355,61 @@ List RLASstreamer::terminate()
       field.push_back("B");
     }
 
-    if(at0)
+    if(at[0])
     {
       lasdata.push_back(At0);
       field.push_back(attribute_names[0]);
     }
 
-    if(at1)
+    if(at[1])
     {
       lasdata.push_back(At1);
       field.push_back(attribute_names[1]);
     }
 
-    if(at2)
+    if(at[2])
     {
       lasdata.push_back(At2);
       field.push_back(attribute_names[2]);
     }
 
-    if(at3)
+    if(at[3])
     {
       lasdata.push_back(At3);
       field.push_back(attribute_names[3]);
     }
 
-    if(at4)
+    if(at[4])
     {
       lasdata.push_back(At4);
       field.push_back(attribute_names[4]);
     }
 
-    if(at5)
+    if(at[5])
     {
       lasdata.push_back(At5);
       field.push_back(attribute_names[5]);
     }
 
-    if(at6)
+    if(at[6])
     {
       lasdata.push_back(At6);
       field.push_back(attribute_names[6]);
     }
 
-    if(at7)
+    if(at[7])
     {
       lasdata.push_back(At7);
       field.push_back(attribute_names[7]);
     }
 
-    if(at8)
+    if(at[8])
     {
       lasdata.push_back(At8);
       field.push_back(attribute_names[8]);
     }
 
-    if(at9)
+    if(at[9])
     {
       lasdata.push_back(At9);
       field.push_back(attribute_names[9]);
@@ -434,7 +436,8 @@ void RLASstreamer::initialize_bool()
   u = true;
   p = true;
   rgb = true;
-  at1 = true; // attribute 1
+  at = std::vector<bool>(10, false);
+
   inR = true;
   useFilter = false;
   initialized = false;
@@ -498,9 +501,12 @@ void RLASstreamer::read_rgb(bool b)
   rgb = b && (format == 2 || format == 3);
 }
 
-void RLASstreamer::read_at(bool* b, int index)
+void RLASstreamer::read_at(IntegerVector x)
 {
-  *b = *b && (index < header->number_attributes);
+  for(int j = 0; j < x.size(); j++)
+  {
+    at[x[j]] = x[j] < header->number_attributes;
+  }
 }
 
 

@@ -40,8 +40,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // lasdatareader
-List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool at0, bool at1, bool at2, bool at3, bool at4, bool at5, bool at6, bool at7, bool at8, bool at9, bool t);
-RcppExport SEXP _rlas_lasdatareader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP at0SEXP, SEXP at1SEXP, SEXP at2SEXP, SEXP at3SEXP, SEXP at4SEXP, SEXP at5SEXP, SEXP at6SEXP, SEXP at7SEXP, SEXP at8SEXP, SEXP at9SEXP, SEXP tSEXP) {
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, IntegerVector at, bool t);
+RcppExport SEXP _rlas_lasdatareader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP atSEXP, SEXP tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,24 +58,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
     Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
-    Rcpp::traits::input_parameter< bool >::type at0(at0SEXP);
-    Rcpp::traits::input_parameter< bool >::type at1(at1SEXP);
-    Rcpp::traits::input_parameter< bool >::type at2(at2SEXP);
-    Rcpp::traits::input_parameter< bool >::type at3(at3SEXP);
-    Rcpp::traits::input_parameter< bool >::type at4(at4SEXP);
-    Rcpp::traits::input_parameter< bool >::type at5(at5SEXP);
-    Rcpp::traits::input_parameter< bool >::type at6(at6SEXP);
-    Rcpp::traits::input_parameter< bool >::type at7(at7SEXP);
-    Rcpp::traits::input_parameter< bool >::type at8(at8SEXP);
-    Rcpp::traits::input_parameter< bool >::type at9(at9SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type at(atSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t));
     return rcpp_result_gen;
 END_RCPP
 }
 // lasdatareader_inpoly
-List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool at0, bool at1, bool at2, bool at3, bool at4, bool at5, bool at6, bool at7, bool at8, bool at9, bool t);
-RcppExport SEXP _rlas_lasdatareader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP at0SEXP, SEXP at1SEXP, SEXP at2SEXP, SEXP at3SEXP, SEXP at4SEXP, SEXP at5SEXP, SEXP at6SEXP, SEXP at7SEXP, SEXP at8SEXP, SEXP at9SEXP, SEXP tSEXP) {
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, IntegerVector at, bool t);
+RcppExport SEXP _rlas_lasdatareader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP atSEXP, SEXP tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,18 +85,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
     Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
-    Rcpp::traits::input_parameter< bool >::type at0(at0SEXP);
-    Rcpp::traits::input_parameter< bool >::type at1(at1SEXP);
-    Rcpp::traits::input_parameter< bool >::type at2(at2SEXP);
-    Rcpp::traits::input_parameter< bool >::type at3(at3SEXP);
-    Rcpp::traits::input_parameter< bool >::type at4(at4SEXP);
-    Rcpp::traits::input_parameter< bool >::type at5(at5SEXP);
-    Rcpp::traits::input_parameter< bool >::type at6(at6SEXP);
-    Rcpp::traits::input_parameter< bool >::type at7(at7SEXP);
-    Rcpp::traits::input_parameter< bool >::type at8(at8SEXP);
-    Rcpp::traits::input_parameter< bool >::type at9(at9SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type at(atSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t));
     return rcpp_result_gen;
 END_RCPP
 }
