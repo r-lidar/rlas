@@ -78,3 +78,12 @@ test_that("read in poly works with filter and select", {
 
   expect_equal(dim(las), c(8, 11))
 })
+
+test_that("load selected extra_byte data",
+          {
+            lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
+            las = readlasdata(lazfile, at = 1)
+            expect_true("Pulse width" %in% names(las))
+            expect_false("Amplitude" %in% names(las))
+          }
+)
