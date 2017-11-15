@@ -19,6 +19,7 @@ class RLASstreamer
     void setinputfiles(CharacterVector);
     void setoutputfile(CharacterVector);
     void setfilter(CharacterVector);
+    void allocation();
     bool read_point();
     void write_point();
     LASpoint* point();
@@ -34,7 +35,7 @@ class RLASstreamer
     void read_u(bool);
     void read_p(bool);
     void read_rgb(bool);
-    void read_at(bool*, int);
+    void read_at(IntegerVector);
 
   private:
     void initialize_bool();
@@ -58,7 +59,7 @@ class RLASstreamer
     std::vector<unsigned short> R;
     std::vector<unsigned short> G;
     std::vector<unsigned short> B;
-    std::vector<double> At0;
+    std::vector<double> At0; // extra_byte attributes
     std::vector<double> At1;
     std::vector<double> At2;
     std::vector<double> At3;
@@ -77,6 +78,7 @@ class RLASstreamer
     LASheader* header;
 
     int format;
+    int nalloc;
 
     bool inR;
     bool useFilter;
@@ -94,16 +96,7 @@ class RLASstreamer
     bool u;
     bool p;
     bool rgb;
-    bool at0; // attribute0
-    bool at1; // attribute1
-    bool at2; // attribute2
-    bool at3; // attribute3
-    bool at4; // attribute4
-    bool at5; // attribute5
-    bool at6; // attribute6
-    bool at7; // attribute7
-    bool at8; // attribute8
-    bool at9; // attribute9
+    std::vector<bool> at; // extra_byte attributes numbers
 };
 
 #endif //LASSTREAMER_H

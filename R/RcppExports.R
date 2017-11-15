@@ -13,12 +13,12 @@ lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
 }
 
-lasdatareader <- function(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t) {
-    .Call(`_rlas_lasdatareader`, ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t)
+lasdatareader <- function(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t) {
+    .Call(`_rlas_lasdatareader`, ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t)
 }
 
-lasdatareader_inpoly <- function(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t) {
-    .Call(`_rlas_lasdatareader_inpoly`, ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t)
+lasdatareader_inpoly <- function(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t) {
+    .Call(`_rlas_lasdatareader_inpoly`, ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t)
 }
 
 laswriter <- function(file, LASheader, X, Y, Z, I = integer(0), RN = integer(0), NoR = integer(0), SDF = integer(0), EoF = integer(0), C = integer(0), SA = integer(0), UD = integer(0), PSI = integer(0), T = numeric(0), R = integer(0), G = integer(0), B = integer(0)) {
