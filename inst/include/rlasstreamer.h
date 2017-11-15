@@ -34,6 +34,7 @@ class RLASstreamer
     void read_u(bool);
     void read_p(bool);
     void read_rgb(bool);
+    void read_at(bool*, int);
 
   private:
     void initialize_bool();
@@ -57,6 +58,17 @@ class RLASstreamer
     std::vector<unsigned short> R;
     std::vector<unsigned short> G;
     std::vector<unsigned short> B;
+    std::vector<double> At0;
+    std::vector<double> At1;
+    std::vector<double> At2;
+    std::vector<double> At3;
+    std::vector<double> At4;
+    std::vector<double> At5;
+    std::vector<double> At6;
+    std::vector<double> At7;
+    std::vector<double> At8;
+    std::vector<double> At9;
+
 
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
@@ -82,6 +94,16 @@ class RLASstreamer
     bool u;
     bool p;
     bool rgb;
+    bool at0; // attribute0
+    bool at1; // attribute1
+    bool at2; // attribute2
+    bool at3; // attribute3
+    bool at4; // attribute4
+    bool at5; // attribute5
+    bool at6; // attribute6
+    bool at7; // attribute7
+    bool at8; // attribute8
+    bool at9; // attribute9
 };
 
 #endif //LASSTREAMER_H

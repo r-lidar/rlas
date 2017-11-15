@@ -68,14 +68,19 @@
 #' lasdata <- readlasdata(lazfile, filter = "-keep_first")
 #' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 #' @useDynLib rlas, .registration = TRUE
-readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "")
+readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE,
+                       at0 = TRUE, at1 = TRUE, at2 = TRUE, at3 = TRUE, at4 = TRUE, at5 = TRUE, at6 = TRUE, at7 = TRUE, at8 = TRUE, at9 = TRUE,
+                       t = TRUE, filter = "")
 {
   ofile = ""
-  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb,
+                        at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t)
   return(data)
 }
 
-streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE)
+streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE,
+                         at0 = TRUE, at1 = TRUE, at2 = TRUE, at3 = TRUE, at4 = TRUE, at5 = TRUE, at6 = TRUE, at7 = TRUE, at8 = TRUE, at9 = TRUE,
+                         t = TRUE)
 {
   check_file(ifiles)
   check_filter(filter)
@@ -85,7 +90,8 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
 
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb,
+                       at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t)
 
   if (ofile != "")
     return(invisible())
@@ -95,7 +101,9 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   return(data)
 }
 
-streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE)
+streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE,
+                                at0 = TRUE, at1 = TRUE, at2 = TRUE, at3 = TRUE, at4 = TRUE, at5 = TRUE, at6 = TRUE, at7 = TRUE, at8 = TRUE, at9 = TRUE,
+                                t = TRUE)
 {
   check_file(ifiles)
   check_filter(filter)
@@ -118,7 +126,8 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb,
+                              at0, at1, at2, at3, at4, at5, at6, at7, at8, at9, t)
 
   if (ofile != "")
     return(invisible())
