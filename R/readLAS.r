@@ -54,6 +54,7 @@
 #' @param u logical. do you want to load the UserData field? default: TRUE
 #' @param p logical. do you want to load the PointSourceID field? default: TRUE
 #' @param rgb logical. do you want to load R,G and B fields? default: TRUE
+#' @param at0,at1,at2,at3,at4,at5,at6,at7,at8,at9 logical. which extra byte attribute fields (see LAS v1.4) do you want to load? default: TRUE
 #' @param t logical. do you want to load gpstime fields? default: TRUE
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).
