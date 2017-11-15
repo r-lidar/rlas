@@ -136,6 +136,16 @@ void RLASstreamer::initialize()
 
     t = t && has_t;
     rgb = rgb && has_rgb;
+    read_at(&at0, 0);
+    read_at(&at1, 1);
+    read_at(&at2, 2);
+    read_at(&at3, 3);
+    read_at(&at4, 4);
+    read_at(&at5, 5);
+    read_at(&at6, 6);
+    read_at(&at7, 7);
+    read_at(&at8, 8);
+    read_at(&at9, 9);
 
     int nalloc;
 
@@ -165,6 +175,16 @@ void RLASstreamer::initialize()
       G.reserve(nalloc);
       B.reserve(nalloc);
     }
+    if(at0) At0.reserve(nalloc);
+    if(at1) At1.reserve(nalloc);
+    if(at2) At2.reserve(nalloc);
+    if(at3) At3.reserve(nalloc);
+    if(at4) At4.reserve(nalloc);
+    if(at5) At5.reserve(nalloc);
+    if(at6) At6.reserve(nalloc);
+    if(at7) At7.reserve(nalloc);
+    if(at8) At8.reserve(nalloc);
+    if(at9) At9.reserve(nalloc);
   }
 
   initialized = true;
@@ -172,10 +192,182 @@ void RLASstreamer::initialize()
   return;
 }
 
+// void get_scaled_attribute(const LASheader* header, const LASpoint* point, I32 index, double &data)
+// {
+//   if (index >= header->number_attributes)
+//   {
+//     return FALSE;
+//   }
+//   if (header->attributes[index].data_type == 1)
+//   {
+//     U8 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       data = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//     }
+//     else
+//     {
+//       data = (F64)value;
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 2)
+//   {
+//     I8 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%d", (I32)value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 3)
+//   {
+//     U16 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%d", (I32)value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 4)
+//   {
+//     I16 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%d", (I32)value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 5)
+//   {
+//     U32 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%d", (I32)value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 6)
+//   {
+//     I32 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%d", value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 7)
+//   {
+//     U64 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*((I64)value) + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+// #ifdef _WIN32
+//       fprintf(file, "%I64d", (I64)value);
+// #else
+//       fprintf(file, "%lld", (I64)value);
+// #endif
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 8)
+//   {
+//     I64 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+// #ifdef _WIN32
+//       fprintf(file, "%I64d", value);
+// #else
+//       fprintf(file, "%lld", value);
+// #endif
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 9)
+//   {
+//     F32 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%g", value);
+//     }
+//   }
+//   else if (header->attributes[index].data_type == 10)
+//   {
+//     F64 value;
+//     point->get_attribute(attribute_starts[index], value);
+//     if (header->attributes[index].has_scale() || header->attributes[index].has_offset())
+//     {
+//       F64 temp_d = header->attributes[index].scale[0]*value + header->attributes[index].offset[0];
+//       lidardouble2string(printstring, temp_d, header->attributes[index].scale[0]);
+//       fprintf(file, "%s", printstring);
+//     }
+//     else
+//     {
+//       fprintf(file, "%g", value);
+//     }
+//   }
+//   else
+//   {
+//     fprintf(stderr, "WARNING: attribute %d not (yet) implemented.\n", index);
+//     return FALSE;
+//   }
+//   return TRUE;
+// }
+
 bool RLASstreamer::read_point()
 {
   return lasreader->read_point();
 }
+
+I32 attribute_starts[10];
 
 void RLASstreamer::write_point()
 {
@@ -206,6 +398,16 @@ void RLASstreamer::write_point()
       G.push_back(lasreader->point.get_G());
       B.push_back(lasreader->point.get_B());
     }
+    if(at0) At0.push_back(lasreader->point.get_attribute_as_float(0));
+    if(at1) At1.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at2) At2.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at3) At3.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at4) At4.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at5) At5.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at6) At6.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at7) At7.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at8) At8.push_back(lasreader->point.get_attribute_as_float(1));
+    if(at9) At9.push_back(lasreader->point.get_attribute_as_float(1));
   }
 }
 
@@ -234,6 +436,13 @@ List RLASstreamer::terminate()
   }
   else
   {
+    CharacterVector attribute_names;
+    for(int i = 0; i < header->number_attributes; i++)
+    {
+      attribute_names.push_back(header->attributes[i].name);
+      Rcout << "Attribute " << i << ": " << attribute_names[i] << std::endl;
+    }
+
     lasreader->close();
     delete lasreader;
     lasreader = 0;
@@ -317,6 +526,66 @@ List RLASstreamer::terminate()
       field.push_back("B");
     }
 
+    if(at0)
+    {
+      lasdata.push_back(At0);
+      field.push_back(attribute_names[0]);
+    }
+
+    if(at1)
+    {
+      lasdata.push_back(At1);
+      field.push_back(attribute_names[1]);
+    }
+
+    if(at2)
+    {
+      lasdata.push_back(At2);
+      field.push_back(attribute_names[2]);
+    }
+
+    if(at3)
+    {
+      lasdata.push_back(At3);
+      field.push_back(attribute_names[3]);
+    }
+
+    if(at4)
+    {
+      lasdata.push_back(At4);
+      field.push_back(attribute_names[4]);
+    }
+
+    if(at5)
+    {
+      lasdata.push_back(At5);
+      field.push_back(attribute_names[5]);
+    }
+
+    if(at6)
+    {
+      lasdata.push_back(At6);
+      field.push_back(attribute_names[6]);
+    }
+
+    if(at7)
+    {
+      lasdata.push_back(At7);
+      field.push_back(attribute_names[7]);
+    }
+
+    if(at8)
+    {
+      lasdata.push_back(At8);
+      field.push_back(attribute_names[8]);
+    }
+
+    if(at9)
+    {
+      lasdata.push_back(At9);
+      field.push_back(attribute_names[9]);
+    }
+
     lasdata.names() = field;
 
     ended = true;
@@ -338,6 +607,7 @@ void RLASstreamer::initialize_bool()
   u = true;
   p = true;
   rgb = true;
+  at1 = true; // attribute 1
   inR = true;
   useFilter = false;
   initialized = false;
@@ -400,6 +670,52 @@ void RLASstreamer::read_rgb(bool b)
 {
   rgb = b && (format == 2 || format == 3);
 }
+
+void RLASstreamer::read_at(bool* b, int index)
+{
+  *b = *b && (index < header->number_attributes);
+}
+
+
+// void RLASstreamer::read_at0(bool b)
+// {
+//   at0 = b && (0 < header->number_attributes);
+// }
+
+// void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }
+//
+// void RLASstreamer::read_at2(bool b)
+// {
+//   at2 = b && (2 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }void RLASstreamer::read_at1(bool b)
+// {
+//   at1 = b && (1 < header->number_attributes);
+// }
+
+
+
+
 
 int RLASstreamer::get_format(U8 point_type)
 {

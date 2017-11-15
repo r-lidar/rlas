@@ -5,7 +5,9 @@
 \title{Read data from a .las or .laz file}
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
-  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
+  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at0 = TRUE,
+  at1 = TRUE, at2 = TRUE, at3 = TRUE, at4 = TRUE, at5 = TRUE,
+  at6 = TRUE, at7 = TRUE, at8 = TRUE, at9 = TRUE, t = TRUE,
   filter = "")
 }
 \arguments{
