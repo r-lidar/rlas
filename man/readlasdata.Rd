@@ -6,7 +6,7 @@
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
   c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
-  eb = c(1:9), filter = "")
+  eb = 0, filter = "")
 }
 \arguments{
 \item{files}{filepath character string to the .las or .laz files}
