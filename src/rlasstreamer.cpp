@@ -137,9 +137,6 @@ void RLASstreamer::initialize()
     t = t && has_t;
     rgb = rgb && has_rgb;
 
-
-
-
     if (useFilter)
       nalloc = ceil((float)npoints/8);
     else
@@ -149,7 +146,6 @@ void RLASstreamer::initialize()
     X.reserve(nalloc);
     Y.reserve(nalloc);
     Z.reserve(nalloc);
-
   }
 
   initialized = true;
@@ -177,11 +173,27 @@ void RLASstreamer::allocation()
     B.reserve(nalloc);
   }
 
-  ExtraBytes.resize(eb.size());
+  // Find if extra bytes are 32 of 64 bytes types
   for(int j = 0; j < eb.size(); j++)
   {
-    ExtraBytes[j].reserve(nalloc);
+    int type = header->attributes[eb[j]].data_type;
+
+    if (type <= 6)                          // unsigned char | char | unsigned shor | short | unsigned long | long
+      eb32.push_back(eb[j]);
+    else if (type >=  7 && type <= 10)      // unsigned long long | long long | unsigned double | double
+      eb64.push_back(eb[j]);
+    else
+      Rprintf("WARNING: data type %d of attribute %d not implemented.\n", type, j);
   }
+
+  ExtraBytes32.resize(eb32.size());
+  ExtraBytes64.resize(eb64.size());
+
+  for(int j = 0; j < eb32.size(); j++)
+    ExtraBytes32[j].reserve(nalloc);
+
+  for(int j = 0; j < eb64.size(); j++)
+    ExtraBytes64[j].reserve(nalloc);
 }
 
 bool RLASstreamer::read_point()
@@ -219,9 +231,18 @@ void RLASstreamer::write_point()
       B.push_back(lasreader->point.get_B());
     }
 
-    for(int j = 0; j < eb.size(); j++)
+    for(int j = 0; j < eb32.size(); j++)
     {
-      ExtraBytes[j].push_back(lasreader->point.get_attribute_as_float(eb[j]));
+      int value;
+      lasreader->point.get_attribute(eb32[j], value);
+      ExtraBytes32[j].push_back(value);
+    }
+
+    for(int j = 0; j < eb64.size(); j++)
+    {
+      double value;
+      lasreader->point.get_attribute(eb64[j], value);
+      ExtraBytes64[j].push_back(value);
     }
   }
 }
@@ -260,8 +281,15 @@ List RLASstreamer::terminate()
     lasreader->close();
     delete lasreader;
     lasreader = 0;
+    ended = true;
 
     List lasdata = List::create(X,Y,Z);
+    X.clear();
+    X.shrink_to_fit();
+    Y.clear();
+    Y.shrink_to_fit();
+    Z.clear();
+    Z.shrink_to_fit();
 
     CharacterVector field(0);
     field.push_back("X");
@@ -272,83 +300,113 @@ List RLASstreamer::terminate()
     {
       lasdata.push_back(T);
       field.push_back("gpstime");
+      T.clear();
+      T.shrink_to_fit();
     }
 
     if(i)
     {
       lasdata.push_back(I);
       field.push_back("Intensity");
+      I.clear();
+      I.shrink_to_fit();
     }
 
     if(r)
     {
       lasdata.push_back(RN);
       field.push_back("ReturnNumber");
+      RN.clear();
+      RN.shrink_to_fit();
     }
 
     if(n)
     {
       lasdata.push_back(NoR);
       field.push_back("NumberOfReturns");
+      NoR.clear();
+      NoR.shrink_to_fit();
     }
 
     if(d)
     {
       lasdata.push_back(SDF);
       field.push_back("ScanDirectionFlag");
+      SDF.clear();
+      SDF.shrink_to_fit();
     }
 
     if(e)
     {
       lasdata.push_back(EoF);
       field.push_back("EdgeOfFlightline");
+      EoF.clear();
+      EoF.shrink_to_fit();
     }
 
     if(c)
     {
       lasdata.push_back(C);
       field.push_back("Classification");
+      C.clear();
+      C.shrink_to_fit();
     }
 
     if(a)
     {
       lasdata.push_back(SA);
       field.push_back("ScanAngle");
+      SA.clear();
+      SA.shrink_to_fit();
     }
 
     if(u)
     {
       lasdata.push_back(UD);
       field.push_back("UserData");
+      UD.clear();
+      UD.shrink_to_fit();
     }
 
     if(p)
     {
       lasdata.push_back(PSI);
       field.push_back("PointSourceID");
+      PSI.clear();
+      PSI.shrink_to_fit();
     }
 
     if(rgb)
     {
       lasdata.push_back(R);
       field.push_back("R");
+      R.clear();
+      R.shrink_to_fit();
 
       lasdata.push_back(G);
       field.push_back("G");
+      G.clear();
+      G.shrink_to_fit();
 
       lasdata.push_back(B);
       field.push_back("B");
+      B.clear();
+      B.shrink_to_fit();
     }
 
-    for(int j = 0; j < eb.size(); j++)
+    for(int j = 0; j < eb32.size(); j++)
     {
-      lasdata.push_back(ExtraBytes[j]);
-      field.push_back(attribute_names[eb[j]]);
+      lasdata.push_back(ExtraBytes32[j]);
+      field.push_back(attribute_names[eb32[j]]);
+    }
+
+    for(int j = 0; j < eb64.size(); j++)
+    {
+      lasdata.push_back(ExtraBytes64[j]);
+      field.push_back(attribute_names[eb64[j]]);
     }
 
     lasdata.names() = field;
-
-    ended = true;
 
     return(lasdata);
   }
@@ -395,6 +453,7 @@ void RLASstreamer::read_n(bool b)
 {
   n = b;
 }
+
 
 void RLASstreamer::read_d(bool b)
 {
@@ -473,6 +532,7 @@ int RLASstreamer::get_format(U8 point_type)
     format = 2;
     break;
   case 3:
+
     format = 3;
     break;
   case 4:

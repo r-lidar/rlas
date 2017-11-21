@@ -33,8 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
-using namespace Rcpp;
-
 bool point_in_polygon(NumericVector, NumericVector, double, double);
 
 // Read data from a las and laz file with LASlib
@@ -95,6 +93,7 @@ List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVecto
     return(List(0));
   }
 }
+
 
 // [[Rcpp::export]]
 List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb)
