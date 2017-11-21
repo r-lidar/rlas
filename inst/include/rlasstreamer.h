@@ -35,7 +35,7 @@ class RLASstreamer
     void read_u(bool);
     void read_p(bool);
     void read_rgb(bool);
-    void read_at(IntegerVector);
+    void read_eb(IntegerVector); // extra byte numbers
 
   private:
     void initialize_bool();
@@ -59,17 +59,7 @@ class RLASstreamer
     std::vector<unsigned short> R;
     std::vector<unsigned short> G;
     std::vector<unsigned short> B;
-    std::vector<double> At0; // extra_byte attributes
-    std::vector<double> At1;
-    std::vector<double> At2;
-    std::vector<double> At3;
-    std::vector<double> At4;
-    std::vector<double> At5;
-    std::vector<double> At6;
-    std::vector<double> At7;
-    std::vector<double> At8;
-    std::vector<double> At9;
-
+    std::vector< std::vector<double> > ExtraBytes; // extra_byte attributes
 
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
@@ -96,7 +86,7 @@ class RLASstreamer
     bool u;
     bool p;
     bool rgb;
-    std::vector<bool> at; // extra_byte attributes numbers
+    std::vector<int> eb; // extra_byte attribute numbers
 };
 
 #endif //LASSTREAMER_H

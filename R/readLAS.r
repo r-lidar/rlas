@@ -54,8 +54,8 @@
 #' @param u logical. do you want to load the UserData field? default: TRUE
 #' @param p logical. do you want to load the PointSourceID field? default: TRUE
 #' @param rgb logical. do you want to load R,G and B fields? default: TRUE
-#' @param at numeric vector. which extra byte attribute fields (see LAS v1.4) to load?
-#' default: c(0:9). Numbering is zero-based and none is \code{numeric(0)}.
+#' @param eb integer vector. which extra byte attributes to load (see LAS v1.4)?
+#' default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}.
 #' @param t logical. do you want to load gpstime fields? default: TRUE
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).
@@ -70,14 +70,14 @@
 #' lasdata <- readlasdata(lazfile, filter = "-keep_first")
 #' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 #' @useDynLib rlas, .registration = TRUE
-readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at = c(0:9), t = TRUE, filter = "")
+readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9), filter = "")
 {
   ofile = ""
-  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t)
+  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb)
   return(data)
 }
 
-streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at = c(0:9), t = TRUE)
+streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
 {
   check_file(ifiles)
   check_filter(filter)
@@ -87,7 +87,8 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
 
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t)
+  # converts eb to zero-based numbering
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
 
   if (ofile != "")
     return(invisible())
@@ -97,7 +98,7 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   return(data)
 }
 
-streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at = c(0:9), t = TRUE)
+streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
 {
   check_file(ifiles)
   check_filter(filter)
@@ -120,7 +121,8 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, at, t)
+  # converts eb to zero-based numbering
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
 
   if (ofile != "")
     return(invisible())

@@ -56,11 +56,12 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 // @param u bool. do you want to load UserData field?
 // @param p bool. do you want to load PointSourceID field?
 // @param rgb bool. do you want to load intensity R,G and B?
+// @param eb IntegerVector. which extra byte attributes to load (see LAS v1.4)? zero-based numering.
 //
 // @return Rcpp::List
 
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, IntegerVector at, bool t) // bool at0, bool at1, bool at2, bool at3, bool at4, bool at5, bool at6, bool at7, bool at8, bool at9
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb)
 {
   try
   {
@@ -77,19 +78,9 @@ List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVecto
     streamer.read_u(u);
     streamer.read_p(p);
     streamer.read_rgb(rgb);
-    streamer.read_at(at);
+    streamer.read_eb(eb);
 
     streamer.allocation();
-    // streamer.read_at0(at0, 0);
-    // streamer.read_at1(at1, 1);
-    // streamer.read_at2(at2, 2);
-    // streamer.read_at3(at3, 3);
-    // streamer.read_at4(at4, 4);
-    // streamer.read_at5(at5, 5);
-    // streamer.read_at6(at6, 6);
-    // streamer.read_at7(at7, 7);
-    // streamer.read_at8(at8, 8);
-    // streamer.read_at9(at9, 9);
 
     while(streamer.read_point())
     {
@@ -106,7 +97,7 @@ List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVecto
 }
 
 // [[Rcpp::export]]
-List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, IntegerVector at, bool t) // bool at0, bool at1, bool at2, bool at3, bool at4, bool at5, bool at6, bool at7, bool at8, bool at9,
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb)
 {
   try
   {
@@ -123,20 +114,9 @@ List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector
     streamer.read_u(u);
     streamer.read_p(p);
     streamer.read_rgb(rgb);
-    streamer.read_at(at);
+    streamer.read_eb(eb);
 
     streamer.allocation();
-
-    // streamer.read_at(&at0, 0);
-    // streamer.read_at(&at1, 1);
-    // streamer.read_at(&at2, 2);
-    // streamer.read_at(&at3, 3);
-    // streamer.read_at(&at4, 4);
-    // streamer.read_at(&at5, 5);
-    // streamer.read_at(&at6, 6);
-    // streamer.read_at(&at7, 7);
-    // streamer.read_at(&at8, 8);
-    // streamer.read_at(&at9, 9);
 
     while(streamer.read_point())
     {
