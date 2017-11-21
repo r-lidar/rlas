@@ -5,8 +5,8 @@
 \title{Read data from a .las or .laz file}
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
-  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, at = c(0:9),
-  t = TRUE, filter = "")
+  c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
+  eb = c(1:9), filter = "")
 }
 \arguments{
 \item{files}{filepath character string to the .las or .laz files}
@@ -31,10 +31,10 @@ readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
 
 \item{rgb}{logical. do you want to load R,G and B fields? default: TRUE}
 
-\item{at}{numeric vector. which extra byte attribute fields (see LAS v1.4) to load?
-default: c(0:9). Numbering is zero-based and none is \code{numeric(0)}.}
-
 \item{t}{logical. do you want to load gpstime fields? default: TRUE}
+
+\item{eb}{integer vector. which extra byte attributes to load (see LAS v1.4)?
+default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}.}
 
 \item{filter}{character. filter data while reading the file (streaming filter) without
 allocating any useless memory. (see Details).}
