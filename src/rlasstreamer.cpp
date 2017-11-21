@@ -433,6 +433,7 @@ void RLASstreamer::read_rgb(bool b)
 void RLASstreamer::read_eb(IntegerVector x)
 {
   std::sort(x.begin(), x.end());
+  x.erase( std::unique( x.begin(), x.end() ), x.end() );
   if(x.size() && x[0]==-1 )
   {// 0 means get all available extra_bytes
     for(int j = 0; j < header->number_attributes; j++)
