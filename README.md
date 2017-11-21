@@ -49,6 +49,7 @@ List readlasdata(CharacterVector ifiles, CharacterVector filter)
   try
   {
     RLASstreamer lasstreamer(ifiles, filter);
+    lasstreamer.allocation();
   
     while(lasstreamer.read_point())
     {

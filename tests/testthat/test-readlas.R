@@ -47,6 +47,17 @@ test_that("streaming works", {
   expect_equal(las1, las2)
 })
 
+test_that("streaming works with extra bytes", {
+  lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
+  ofile = paste0(tempfile(), ".las")
+
+  las1 = readlasdata(lazfile, filter = "-keep_first")
+  rlas:::streamlasdata(lazfile, ofile, "-keep_first")
+  las2 = readlasdata(ofile)
+
+  expect_equal(las1, las2)
+})
+
 test_that("streaming reads if no ofile", {
   ofile = ""
 
@@ -79,15 +90,30 @@ test_that("read in poly works with filter and select", {
   expect_equal(dim(las), c(8, 11))
 })
 
-test_that("load selected extra_byte data",
-          {
-            lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
-            las = readlasdata(lazfile, eb = 0)
-            expect_true("Pulse width" %in% names(las))
-            expect_true("Amplitude" %in% names(las))
-            las = readlasdata(lazfile, eb = c(2,5))
-            expect_true("Pulse width" %in% names(las))
-            expect_false("Amplitude" %in% names(las))
-            expect_equal(ncol(las), 14)
-          }
-)
+test_that("extra byte selection works", {
+  lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
+
+  las = readlasdata(lazfile, eb = 0)
+
+  expect_true("Pulse width" %in% names(las))
+  expect_true("Amplitude" %in% names(las))
+  expect_equal(ncol(las), 15)
+
+  las = readlasdata(lazfile, eb = c(2,5))
+
+  expect_true("Pulse width" %in% names(las))
+  expect_false("Amplitude" %in% names(las))
+  expect_equal(ncol(las), 14)
+
+  las = readlasdata(lazfile, eb = numeric(0))
+
+  expect_false("Pulse width" %in% names(las))
+  expect_false("Amplitude" %in% names(las))
+  expect_equal(ncol(las), 13)
+
+  las = readlasdata(lazfile, eb = NULL)
+
+  expect_false("Pulse width" %in% names(las))
+  expect_false("Amplitude" %in% names(las))
+  expect_equal(ncol(las), 13)
+})

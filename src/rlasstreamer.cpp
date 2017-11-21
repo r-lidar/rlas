@@ -159,8 +159,7 @@ void RLASstreamer::initialize()
 
 void RLASstreamer::allocation()
 {
-
-  // Allocate the required amount of data for activaated options
+  // Allocate the required amount of data for activated options
   if(t) T.reserve(nalloc);
   if(i) I.reserve(nalloc);
   if(r) RN.reserve(nalloc);
@@ -179,7 +178,8 @@ void RLASstreamer::allocation()
   }
 
   ExtraBytes.resize(eb.size());
-  for(int j = 0; j < eb.size(); j++){
+  for(int j = 0; j < eb.size(); j++)
+  {
     ExtraBytes[j].reserve(nalloc);
   }
 }
@@ -219,7 +219,8 @@ void RLASstreamer::write_point()
       B.push_back(lasreader->point.get_B());
     }
 
-    for(int j = 0; j < eb.size(); j++){
+    for(int j = 0; j < eb.size(); j++)
+    {
       ExtraBytes[j].push_back(lasreader->point.get_attribute_as_float(eb[j]));
     }
   }
@@ -434,15 +435,16 @@ void RLASstreamer::read_eb(IntegerVector x)
 {
   std::sort(x.begin(), x.end());
   x.erase( std::unique( x.begin(), x.end() ), x.end() );
-  if(x.size() && x[0]==-1 )
-  {// 0 means get all available extra_bytes
+
+  if(x.size() && x[0]==-1 ) // 0 means get all available extra_bytes
+  {
     for(int j = 0; j < header->number_attributes; j++)
     {
       eb.push_back(j);
     }
   }
-  else
-  {// filters attribute numbers not existing
+  else // filters attribute numbers not existing
+  {
     for(int j = 0; j < x.size(); j++)
     {
       if(x[j] < header->number_attributes)
