@@ -34,7 +34,7 @@ readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
 \item{t}{logical. do you want to load gpstime fields? default: TRUE}
 
 \item{eb}{integer vector. which extra byte attributes to load (see LAS v1.4)?
-default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}.}
+default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}. All is \code{eb = 0}.}
 
 \item{filter}{character. filter data while reading the file (streaming filter) without
 allocating any useless memory. (see Details).}

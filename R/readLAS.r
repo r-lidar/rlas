@@ -55,7 +55,7 @@
 #' @param p logical. do you want to load the PointSourceID field? default: TRUE
 #' @param rgb logical. do you want to load R,G and B fields? default: TRUE
 #' @param eb integer vector. which extra byte attributes to load (see LAS v1.4)?
-#' default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}.
+#' default: c(1:9), i.e. the first 9 extra byte attributes. None is \code{numeric(0)}. All is \code{eb = 0}.
 #' @param t logical. do you want to load gpstime fields? default: TRUE
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).

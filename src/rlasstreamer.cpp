@@ -431,12 +431,23 @@ void RLASstreamer::read_rgb(bool b)
 }
 
 void RLASstreamer::read_eb(IntegerVector x)
-{// filters attribute numbers not existing
-  for(int j = 0; j < x.size(); j++)
-  {
-    if(x[j] < header->number_attributes)
+{
+  std::sort(x.begin(), x.end());
+  if(x.size() && x[0]==-1 )
+  {// 0 means get all available extra_bytes
+    for(int j = 0; j < header->number_attributes; j++)
     {
-      eb.push_back(x[j]);
+      eb.push_back(j);
+    }
+  }
+  else
+  {// filters attribute numbers not existing
+    for(int j = 0; j < x.size(); j++)
+    {
+      if(x[j] < header->number_attributes)
+      {
+        eb.push_back(x[j]);
+      }
     }
   }
 }
