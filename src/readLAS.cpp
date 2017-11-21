@@ -56,7 +56,7 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 // @param u bool. do you want to load UserData field?
 // @param p bool. do you want to load PointSourceID field?
 // @param rgb bool. do you want to load intensity R,G and B?
-// @param eb IntegerVector. which extra byte attributes to load (see LAS v1.4)? zero-based numering.
+// @param eb IntegerVector. which extra byte attributes to load (see LAS v1.4)? zero-based numering. -1 means all extra bytes.
 //
 // @return Rcpp::List
 
