@@ -36,6 +36,8 @@ class RLASstreamer
     void read_p(bool);
     void read_rgb(bool);
     void read_eb(IntegerVector); // extra byte numbers
+    F64 get_attribute_double(LASpoint*, I32);
+    I32 get_attribute_int(LASpoint*, I32);
 
   private:
     void initialize_bool();
@@ -88,6 +90,7 @@ class RLASstreamer
     bool p;
     bool rgb;
     std::vector<int> eb; // extra_byte attribute numbers
+    std::vector<int> attribute_starts;
     std::vector<int> eb32;
     std::vector<int> eb64;
 };
