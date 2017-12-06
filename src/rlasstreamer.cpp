@@ -177,10 +177,12 @@ void RLASstreamer::allocation()
   for(int j = 0; j < eb.size(); j++)
   {
     int type = header->attributes[eb[j]].data_type;
+    bool has_scale = header->attributes[eb[j]].has_scale();
+    bool has_offset = header->attributes[eb[j]].has_offset();
 
-    if (type <= 6)                          // unsigned char | char | unsigned shor | short | unsigned long | long
+    if (type <= 6 && !(has_scale || has_offset))    // unsigned char | char | unsigned shor | short | unsigned long | long
       eb32.push_back(eb[j]);
-    else if (type >=  7 && type <= 10)      // unsigned long long | long long | unsigned double | double
+    else if (type <= 10)      // unsigned long long | long long | unsigned double | double
       eb64.push_back(eb[j]);
     else
       Rprintf("WARNING: data type %d of attribute %d not implemented.\n", type, j);
@@ -233,18 +235,98 @@ void RLASstreamer::write_point()
 
     for(int j = 0; j < eb32.size(); j++)
     {
-      int value;
-      lasreader->point.get_attribute(eb32[j], value);
-      ExtraBytes32[j].push_back(value);
+      ExtraBytes32[j].push_back(get_attribute_int(&lasreader->point, eb32[j]));
     }
 
     for(int j = 0; j < eb64.size(); j++)
     {
-      double value;
-      lasreader->point.get_attribute(eb64[j], value);
-      ExtraBytes64[j].push_back(value);
+      ExtraBytes64[j].push_back(get_attribute_double(&lasreader->point, eb64[j]));
     }
   }
+}
+
+F64 RLASstreamer::get_attribute_double(LASpoint* point, I32 index)
+{
+  F64 casted_value;
+  U8* value = point->extra_bytes + attribute_starts[index];
+  // I32 type = get_type();
+  if (index < header->number_attributes)
+  {
+    switch (header->attributes[index].data_type)
+    {
+    case 1:
+      casted_value = (F64)*((U8*)value);
+      break;
+    case 2:
+      casted_value = (F64)*((I8*)value);
+      break;
+    case 3:
+      casted_value = (F64)*((U16*)value);
+      break;
+    case 4:
+      casted_value = (F64)*((I16*)value);
+      break;
+    case 5:
+      casted_value = (F64)*((U32*)value);
+      break;
+    case 6:
+      casted_value = (F64)*((I32*)value);
+      break;
+    case 7:
+      casted_value = (F64)(I64)*((U64*)value);
+      break;
+    case 8:
+      casted_value = (F64)*((I64*)value);
+      break;
+    case 9:
+      casted_value = (F64)*((F32*)value);
+      break;
+    case 10:
+      casted_value = *((F64*)value);
+      break;
+    default:
+      throw std::runtime_error("LAS Extra Byte data type not supported.");
+    }
+    if(header->attributes[index].has_scale() || header->attributes[index].has_offset())
+      return header->attributes[index].scale[0]*casted_value + header->attributes[index].offset[0];
+    else
+      return casted_value;
+  }
+  return 0.0;
+}
+
+I32 RLASstreamer::get_attribute_int(LASpoint* point, I32 index)
+{
+  I32 casted_value;
+  U8* value = point->extra_bytes + attribute_starts[index];
+  // I32 type = get_type();
+  if (index < header->number_attributes)
+  {
+    switch (header->attributes[index].data_type)
+    {
+    case 1:
+      casted_value = (I32)*((U8*)value);
+      break;
+    case 2:
+      casted_value = (I32)*((I8*)value);
+      break;
+    case 3:
+      casted_value = (I32)*((U16*)value);
+      break;
+    case 4:
+      casted_value = (I32)*((I16*)value);
+      break;
+    case 5:
+      casted_value = (I32)*((U32*)value);
+      break;
+    case 6:
+      casted_value = (I32)*((I32*)value);
+      break;
+    default:
+      throw std::runtime_error("LAS Extra Byte data type not supported in I32.");
+    }
+  }
+  return 0;
 }
 
 LASpoint* RLASstreamer::point()
@@ -500,6 +582,7 @@ void RLASstreamer::read_eb(IntegerVector x)
     for(int j = 0; j < header->number_attributes; j++)
     {
       eb.push_back(j);
+      attribute_starts.push_back(header->get_attribute_start(j));
     }
   }
   else // filters attribute numbers not existing
@@ -509,6 +592,7 @@ void RLASstreamer::read_eb(IntegerVector x)
       if(x[j] < header->number_attributes)
       {
         eb.push_back(x[j]);
+        attribute_starts.push_back(header->get_attribute_start(j));
       }
     }
   }
