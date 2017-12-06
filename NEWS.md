@@ -3,7 +3,7 @@
 #### NEW FEATURES
 
 * new straighforward C++ class `RLASstreamer` to use `rlas`at the C++ level.
-* Support of extra bytes in `readlasdata`
+* Support of extra bytes attributes in `readlasdata`
 
 #### BUG FIXES:
 
