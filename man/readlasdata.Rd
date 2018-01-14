@@ -6,7 +6,7 @@
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
   c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
-  eb = 0, filter = "")
+  filter = "", eb = 0)
 }
 \arguments{
 \item{files}{filepath character string to the .las or .laz files}
@@ -33,13 +33,13 @@ readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
 
 \item{t}{logical. do you want to load gpstime fields? default: TRUE}
 
+\item{filter}{character. filter data while reading the file (streaming filter) without
+allocating any useless memory. (see Details).}
+
 \item{eb}{integer vector. which extra byte attributes to load (see
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format specs}).
 default is 0 meaning that all extra fields will be loaded. \code{c(1,3,7)} to load the first, the
 third and the seventh extra byte attributes. None is \code{numeric(0)} or \code{NULL}.}
-
-\item{filter}{character. filter data while reading the file (streaming filter) without
-allocating any useless memory. (see Details).}
 }
 \value{
 A \code{data.table}
