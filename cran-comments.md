@@ -1,10 +1,10 @@
-Second submission. I added some reference for the format specifications as requiered.
-As discussed I'm not able to reproduce the warnings reported on CRAN for debian and fedora. 
-I enforced several compilers and R CMD check never reported any warning.
+I finally figured out how to fix the warnings with gcc 7+ on fedora an debian flavors. 
+Hopefully the CRAN logs where more informative than mine thus I found the true
+incriminated lines of code. This release is expected to resolve the problem. My compilation 
+logs do not show any -Wformat-overflow type warnings with gcc > 7.
 
 ## Test environments
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.3, g++ -std=gnu++11
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, g++-5 -std=gnu++11
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.3, g++-7 -std=gnu++11
 * win-builder (release and devel), g++
 
