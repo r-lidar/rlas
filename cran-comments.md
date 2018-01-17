@@ -1,6 +1,6 @@
 This is an early release because compilation failed on CRAN with osx and solaris (segfault)
 
-There was indeed a segfault in the code that, for unknown reason, was not a segfault in any
+There was indeed a segfault in the code that, for an unknown reason, was not a segfault in any
 other platform. I was not able to reproduce the issue whatever the compiler I used. The only 
 way I reproduced the segfault was compiling the package via the r-hub.io osx builder.
 
@@ -19,7 +19,6 @@ on those two platforms.
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.3, clang++-4.0 -stdlib=libc++
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.3, clang++-4.0 -std-gnu++11
 * osx release via r-hub.io builder
-* solaris x86 patched via r-hub.io builder
 * windows via CRAN builder
 
 ## R CMD check results
