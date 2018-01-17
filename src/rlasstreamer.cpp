@@ -248,8 +248,8 @@ void RLASstreamer::write_point()
 F64 RLASstreamer::get_attribute_double(LASpoint* point, I32 index)
 {
   F64 casted_value;
-  U8* value = point->extra_bytes + attribute_starts[index];
-  // I32 type = get_type();
+  U8* value = point->extra_bytes + header->get_attribute_start(index);
+
   if (index < header->number_attributes)
   {
     switch (header->attributes[index].data_type)
@@ -298,8 +298,8 @@ F64 RLASstreamer::get_attribute_double(LASpoint* point, I32 index)
 I32 RLASstreamer::get_attribute_int(LASpoint* point, I32 index)
 {
   I32 casted_value;
-  U8* value = point->extra_bytes + attribute_starts[index];
-  // I32 type = get_type();
+  U8* value = point->extra_bytes + + header->get_attribute_start(index);
+
   if (index < header->number_attributes)
   {
     switch (header->attributes[index].data_type)
@@ -582,7 +582,6 @@ void RLASstreamer::read_eb(IntegerVector x)
     for(int j = 0; j < header->number_attributes; j++)
     {
       eb.push_back(j);
-      attribute_starts.push_back(header->get_attribute_start(j));
     }
   }
   else // filters attribute numbers not existing
@@ -592,7 +591,6 @@ void RLASstreamer::read_eb(IntegerVector x)
       if(x[j] < header->number_attributes)
       {
         eb.push_back(x[j]);
-        attribute_starts.push_back(header->get_attribute_start(j));
       }
     }
   }

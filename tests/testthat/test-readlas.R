@@ -99,11 +99,17 @@ test_that("extra byte selection works", {
   expect_true("Amplitude" %in% names(las))
   expect_equal(ncol(las), 15)
 
+  pw1 = las$`Pulse width`
+
   las = readlasdata(lazfile, eb = c(2,5))
 
   expect_true("Pulse width" %in% names(las))
   expect_false("Amplitude" %in% names(las))
   expect_equal(ncol(las), 14)
+
+  pw2 = las$`Pulse width`
+
+  expect_equal(pw1, pw2)
 
   las = readlasdata(lazfile, eb = numeric(0))
 
