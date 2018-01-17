@@ -1,4 +1,10 @@
-### rlas v1.1.6 (In development)
+### rlas v1.1.9 (Release date: 2018-01-17)
+
+#### BUG FIXES:
+
+* Fix a segfault when reading extrabytes
+
+### rlas v1.1.8 (Release date: 2018-01-15)
 
 #### NEW FEATURES
 
