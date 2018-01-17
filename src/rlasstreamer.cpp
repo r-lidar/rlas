@@ -298,7 +298,7 @@ F64 RLASstreamer::get_attribute_double(LASpoint* point, I32 index)
 I32 RLASstreamer::get_attribute_int(LASpoint* point, I32 index)
 {
   I32 casted_value;
-  U8* value = point->extra_bytes + + header->get_attribute_start(index);
+  U8* value = point->extra_bytes + header->get_attribute_start(index);
 
   if (index < header->number_attributes)
   {
