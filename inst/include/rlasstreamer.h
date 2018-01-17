@@ -61,8 +61,8 @@ class RLASstreamer
     std::vector<unsigned short> R;
     std::vector<unsigned short> G;
     std::vector<unsigned short> B;
-    std::vector<std::vector<int>> ExtraBytes32;     // extra_byte attributes for less than 32 bits types
-    std::vector<std::vector<double>> ExtraBytes64;  // extra_byte attributes for 32 to 64 bits types
+    std::vector<std::vector<int> > ExtraBytes32;     // extra_byte attributes for less than 32 bits types
+    std::vector<std::vector<double> > ExtraBytes64;  // extra_byte attributes for 32 to 64 bits types
 
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
@@ -90,7 +90,6 @@ class RLASstreamer
     bool p;
     bool rgb;
     std::vector<int> eb; // extra_byte attribute numbers
-    std::vector<int> attribute_starts;
     std::vector<int> eb32;
     std::vector<int> eb64;
 };
