@@ -156,46 +156,49 @@ void RLASstreamer::initialize()
 void RLASstreamer::allocation()
 {
   // Allocate the required amount of data for activated options
-  if(t) T.reserve(nalloc);
-  if(i) I.reserve(nalloc);
-  if(r) RN.reserve(nalloc);
-  if(n) NoR.reserve(nalloc);
-  if(d) SDF.reserve(nalloc);
-  if(e) EoF.reserve(nalloc);
-  if(c) C.reserve(nalloc);
-  if(a) SA.reserve(nalloc);
-  if(u) UD.reserve(nalloc);
-  if(p) PSI.reserve(nalloc);
-  if(rgb)
+  if(inR)
   {
-    R.reserve(nalloc);
-    G.reserve(nalloc);
-    B.reserve(nalloc);
+    if(t) T.reserve(nalloc);
+    if(i) I.reserve(nalloc);
+    if(r) RN.reserve(nalloc);
+    if(n) NoR.reserve(nalloc);
+    if(d) SDF.reserve(nalloc);
+    if(e) EoF.reserve(nalloc);
+    if(c) C.reserve(nalloc);
+    if(a) SA.reserve(nalloc);
+    if(u) UD.reserve(nalloc);
+    if(p) PSI.reserve(nalloc);
+    if(rgb)
+    {
+      R.reserve(nalloc);
+      G.reserve(nalloc);
+      B.reserve(nalloc);
+    }
+
+    // Find if extra bytes are 32 of 64 bytes types
+    for(int j = 0; j < eb.size(); j++)
+    {
+      int type = header->attributes[eb[j]].data_type;
+      bool has_scale = header->attributes[eb[j]].has_scale();
+      bool has_offset = header->attributes[eb[j]].has_offset();
+
+      if (type <= 6 && !(has_scale || has_offset))    // unsigned char | char | unsigned shor | short | unsigned long | long
+        eb32.push_back(eb[j]);
+      else if (type <= 10)      // unsigned long long | long long | unsigned double | double
+        eb64.push_back(eb[j]);
+      else
+        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", type, j);
+    }
+
+    ExtraBytes32.resize(eb32.size());
+    ExtraBytes64.resize(eb64.size());
+
+    for(int j = 0; j < eb32.size(); j++)
+      ExtraBytes32[j].reserve(nalloc);
+
+    for(int j = 0; j < eb64.size(); j++)
+      ExtraBytes64[j].reserve(nalloc);
   }
-
-  // Find if extra bytes are 32 of 64 bytes types
-  for(int j = 0; j < eb.size(); j++)
-  {
-    int type = header->attributes[eb[j]].data_type;
-    bool has_scale = header->attributes[eb[j]].has_scale();
-    bool has_offset = header->attributes[eb[j]].has_offset();
-
-    if (type <= 6 && !(has_scale || has_offset))    // unsigned char | char | unsigned shor | short | unsigned long | long
-      eb32.push_back(eb[j]);
-    else if (type <= 10)      // unsigned long long | long long | unsigned double | double
-      eb64.push_back(eb[j]);
-    else
-      Rprintf("WARNING: data type %d of attribute %d not implemented.\n", type, j);
-  }
-
-  ExtraBytes32.resize(eb32.size());
-  ExtraBytes64.resize(eb64.size());
-
-  for(int j = 0; j < eb32.size(); j++)
-    ExtraBytes32[j].reserve(nalloc);
-
-  for(int j = 0; j < eb64.size(); j++)
-    ExtraBytes64[j].reserve(nalloc);
 }
 
 bool RLASstreamer::read_point()

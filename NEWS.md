@@ -1,3 +1,9 @@
+### rlas v1.1.10 (in developpement)
+
+#### BUG FIXES:
+
+* Fix [[#9](https://github.com/Jean-Romain/rlas/issues/9)] with valgrind: uninitialized value(s)
+
 ### rlas v1.1.9 (Release date: 2018-01-17)
 
 #### BUG FIXES:
