@@ -92,8 +92,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // laswriter
-void laswriter(CharacterVector file, List LASheader, NumericVector X, NumericVector Y, NumericVector Z, IntegerVector I, IntegerVector RN, IntegerVector NoR, IntegerVector SDF, IntegerVector EoF, IntegerVector C, IntegerVector SA, IntegerVector UD, IntegerVector PSI, NumericVector T, IntegerVector R, IntegerVector G, IntegerVector B);
-RcppExport SEXP _rlas_laswriter(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP XSEXP, SEXP YSEXP, SEXP ZSEXP, SEXP ISEXP, SEXP RNSEXP, SEXP NoRSEXP, SEXP SDFSEXP, SEXP EoFSEXP, SEXP CSEXP, SEXP SASEXP, SEXP UDSEXP, SEXP PSISEXP, SEXP TSEXP, SEXP RSEXP, SEXP GSEXP, SEXP BSEXP) {
+void laswriter(CharacterVector file, List LASheader, NumericVector X, NumericVector Y, NumericVector Z, DataFrame ExtraBytes, IntegerVector I, IntegerVector RN, IntegerVector NoR, IntegerVector SDF, IntegerVector EoF, IntegerVector C, IntegerVector SA, IntegerVector UD, IntegerVector PSI, NumericVector T, IntegerVector R, IntegerVector G, IntegerVector B);
+RcppExport SEXP _rlas_laswriter(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP XSEXP, SEXP YSEXP, SEXP ZSEXP, SEXP ExtraBytesSEXP, SEXP ISEXP, SEXP RNSEXP, SEXP NoRSEXP, SEXP SDFSEXP, SEXP EoFSEXP, SEXP CSEXP, SEXP SASEXP, SEXP UDSEXP, SEXP PSISEXP, SEXP TSEXP, SEXP RSEXP, SEXP GSEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
@@ -101,6 +101,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type ExtraBytes(ExtraBytesSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type I(ISEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type RN(RNSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type NoR(NoRSEXP);
@@ -114,7 +115,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type R(RSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type G(GSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type B(BSEXP);
-    laswriter(file, LASheader, X, Y, Z, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B);
+    laswriter(file, LASheader, X, Y, Z, ExtraBytes, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B);
     return R_NilValue;
 END_RCPP
 }
