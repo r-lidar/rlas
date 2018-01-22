@@ -62,6 +62,7 @@
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).
 #' @importFrom Rcpp sourceCpp
+#' @import data.table
 #' @family rlas
 #' @return A \code{data.table}
 #' @export
