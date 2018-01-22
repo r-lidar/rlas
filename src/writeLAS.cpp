@@ -197,7 +197,7 @@ void laswriter(CharacterVector file,
           dim = 1; // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
           options = (int)ebparam["options"];
           // std::string name = as<std::string>(ebparam["name"]);
-          std::string description = as<std::string>(ebparam["description"]);
+          description = as<std::string>(ebparam["description"]);
         }
         else
         {
