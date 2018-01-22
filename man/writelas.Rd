@@ -20,6 +20,8 @@ writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
 
 \item{Z}{numeric array Z data}
 
+\item{ExtraBytes}{data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.}
+
 \item{gpstime}{numeric array gpstime data}
 
 \item{Intensity}{integer array intensity data}
@@ -45,8 +47,6 @@ writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
 \item{G}{integer array green data}
 
 \item{B}{integer array blue data}
-
-\item{ExtratBytes}{data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.}
 }
 \value{
 void

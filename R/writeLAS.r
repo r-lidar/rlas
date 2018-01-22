@@ -40,7 +40,7 @@
 #' @param X numeric array X data
 #' @param Y numeric array Y data
 #' @param Z numeric array Z data
-#' @param ExtratBytes data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.
+#' @param ExtraBytes data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.
 #' @param Intensity integer array intensity data
 #' @param ReturnNumber integer array return number data
 #' @param NumberOfReturns integer array number of returns data
