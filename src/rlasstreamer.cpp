@@ -325,6 +325,7 @@ I32 RLASstreamer::get_attribute_int(LASpoint* point, I32 index)
     default:
       throw std::runtime_error("LAS Extra Byte data type not supported in I32.");
     }
+    return casted_value;
   }
   return 0;
 }
