@@ -301,6 +301,11 @@ void laswriter(CharacterVector file,
       throw std::runtime_error("LASlib internal error. See message above.");
 
     double scaled_value;
+    NumericVector EB[ExtraBytes.length()];
+    for(int i = 0; i < ExtraBytes.length(); i++)
+      EB[i]=ExtraBytes[i];
+
+
     for(int i = 0 ; i < X.length() ; i++)
     {
       p.set_x(X[i]);
@@ -328,7 +333,7 @@ void laswriter(CharacterVector file,
       for(int j = 0; j < number_attributes; j++)
       {
 
-        scaled_value=((double)(as<List>(ExtraBytes[j])[i]) - offset[j])/scale[j];
+        scaled_value=(EB[j][i] - offset[j])/scale[j];
 
         switch(type[j])
         {
