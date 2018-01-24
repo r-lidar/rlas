@@ -159,7 +159,7 @@ void laswriter(CharacterVector file,
 
     StringVector ebnames = ExtraBytes.names();
     int number_attributes = ExtraBytes.length();
-    NumericVector EB[ExtraBytes.length()];
+    NumericVector EB[number_attributes];
 
     // add attributes
 
