@@ -159,6 +159,7 @@ void laswriter(CharacterVector file,
 
     StringVector ebnames = ExtraBytes.names();
     int number_attributes = ExtraBytes.length();
+    NumericVector EB[ExtraBytes.length()];
 
     // add attributes
 
@@ -174,7 +175,7 @@ void laswriter(CharacterVector file,
     // type = 9 : double (try not to use)
     std::vector<int> attribute_index, attribute_starts, type;
     std::vector<double> scale(number_attributes, 1.0), offset(number_attributes, 0.0);
-
+    double scaled_value;
     if(number_attributes > 0)
     {
       attribute_index.reserve(number_attributes);
@@ -215,51 +216,6 @@ void laswriter(CharacterVector file,
           attribute.set_no_data(as<double>(Rcpp::as<Rcpp::List>(ebparam["no_data"])[0]), 0);
 
 
-        switch (type[i])
-        {
-        case 0:
-        case 2:
-        case 4:
-        case 6:
-          if(has_min)
-          {
-            I64 min=(I64)((double)(as<List>(ebparam["min"])[0]));
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            I64 max=(I64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
-            attribute.set_max((U8*)(&max), 0);
-          }
-          break;
-        case 1:
-        case 3:
-        case 5:
-        case 7:
-          if(has_min)
-          {
-            U64 min=(U64)((double)(as<List>(ebparam["min"])[0]));
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            U64 max=(U64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
-            attribute.set_max((U8*)(&max), 0);
-          }
-          break;
-        default:
-          if(has_min)
-          {
-            double min=(double)(as<List>(ebparam["min"])[0]);
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            double max=(double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]);
-            attribute.set_max((U8*)(&max), 0);
-          }
-        }
-
         if(has_scale)
         {
           scale[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["scale"])[0]);
@@ -269,6 +225,83 @@ void laswriter(CharacterVector file,
         {
           offset[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["offset"])[0]);
           attribute.set_offset(offset[i], 0);
+        }
+
+        if(has_min)
+        {
+          scaled_value=((double)(as<List>(ebparam["min"])[0]) - offset[i])/scale[i];
+
+          switch(type[i])
+          {
+          case 0:
+            attribute.set_min(U8_CLAMP(U8_QUANTIZE(scaled_value)));
+            break;
+          case 1:
+            attribute.set_min(I8_CLAMP(I8_QUANTIZE(scaled_value)));
+            break;
+          case 2:
+            attribute.set_min(U16_CLAMP(U16_QUANTIZE(scaled_value)));
+            break;
+          case 3:
+            attribute.set_min(I16_CLAMP(I16_QUANTIZE(scaled_value)));
+            break;
+          case 4:
+            attribute.set_min(U32_CLAMP(U32_QUANTIZE(scaled_value)));
+            break;
+          case 5:
+            attribute.set_min(I32_CLAMP(I32_QUANTIZE(scaled_value)));
+            break;
+          case 6:
+            attribute.set_min(U64_QUANTIZE(scaled_value));
+            break;
+          case 7:
+            attribute.set_min(I64_QUANTIZE(scaled_value));
+            break;
+          case 8:
+            attribute.set_min((float)(scaled_value));
+            break;
+          case 9:
+            attribute.set_min(scaled_value);
+            break;
+          }
+        }
+
+        if(has_max)
+        {
+          scaled_value=((double)(as<List>(ebparam["max"])[0]) - offset[i])/scale[i];
+          switch(type[i])
+          {
+          case 0:
+            attribute.set_max(U8_CLAMP(U8_QUANTIZE(scaled_value)));
+            break;
+          case 1:
+            attribute.set_max(I8_CLAMP(I8_QUANTIZE(scaled_value)));
+            break;
+          case 2:
+            attribute.set_max(U16_CLAMP(U16_QUANTIZE(scaled_value)));
+            break;
+          case 3:
+            attribute.set_max(I16_CLAMP(I16_QUANTIZE(scaled_value)));
+            break;
+          case 4:
+            attribute.set_max(U32_CLAMP(U32_QUANTIZE(scaled_value)));
+            break;
+          case 5:
+            attribute.set_max(I32_CLAMP(I32_QUANTIZE(scaled_value)));
+            break;
+          case 6:
+            attribute.set_max(U64_QUANTIZE(scaled_value));
+            break;
+          case 7:
+            attribute.set_max(I64_QUANTIZE(scaled_value));
+            break;
+          case 8:
+            attribute.set_max((float)(scaled_value));
+            break;
+          case 9:
+            attribute.set_max(scaled_value);
+            break;
+          }
         }
 
         attribute_index.push_back(header.add_attribute(attribute));
@@ -300,8 +333,7 @@ void laswriter(CharacterVector file,
     if(0 == laswriter || NULL == laswriter)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    double scaled_value;
-    NumericVector EB[ExtraBytes.length()];
+
     for(int i = 0; i < ExtraBytes.length(); i++)
       EB[i]=ExtraBytes[i];
 
