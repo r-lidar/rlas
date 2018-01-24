@@ -40,6 +40,7 @@
 #' @param X numeric array X data
 #' @param Y numeric array Y data
 #' @param Z numeric array Z data
+#' @param ExtraBytes data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.
 #' @param Intensity integer array intensity data
 #' @param ReturnNumber integer array return number data
 #' @param NumberOfReturns integer array number of returns data
@@ -57,7 +58,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @family rlas
 #' @return void
-writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
+writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
                     NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline,
                     Classification, ScanAngle, UserData, PointSourceID,
                     R, G, B)
@@ -101,7 +102,10 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 
   I <- RN <- NoR <- SDF <- EoF <- C <- SA <- UD <- PSI <- red <- green <- blue <- integer(0)
   time <- numeric(0)
+  EB <- data.frame()
 
+  if(!missing(ExtraBytes))
+    EB <- ExtraBytes
   if(!missing(Intensity))
     I <- Intensity
   if(!missing(ReturnNumber))
@@ -129,5 +133,5 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
     blue <- B
   }
 
-  laswriter(file,header,X,Y,Z,I,RN,NoR,SDF,EoF,C,SA,UD, PSI,time,red,green,blue)
+  laswriter(file,header,X,Y,Z,EB,I,RN,NoR,SDF,EoF,C,SA,UD, PSI,time,red,green,blue)
 }

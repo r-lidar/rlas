@@ -4,7 +4,7 @@
 \alias{writelas}
 \title{Write a .las or .laz file}
 \usage{
-writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
+writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
   NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification,
   ScanAngle, UserData, PointSourceID, R, G, B)
 }
@@ -19,6 +19,8 @@ writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
 \item{Y}{numeric array Y data}
 
 \item{Z}{numeric array Z data}
+
+\item{ExtraBytes}{data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.}
 
 \item{gpstime}{numeric array gpstime data}
 
