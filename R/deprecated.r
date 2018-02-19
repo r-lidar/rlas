@@ -35,7 +35,7 @@
 readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", eb = 0)
 {
   ofile = ""
-  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb)
+  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb)
   return(data)
 }
 
@@ -53,4 +53,15 @@ readlasheader = function(file)
   data = lasheaderreader(file)
 
   return(data)
+}
+
+
+streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = 0)
+{
+  stream.las(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb = 0)
+}
+
+streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
+{
+  stream.las_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb = 0)
 }

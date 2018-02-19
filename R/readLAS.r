@@ -87,7 +87,7 @@ read.las = function(files, select = "*", filter = "")
   if ("N" %is_in% select) nir <- TRUE
   eb <- as.numeric(unlist(regmatches(select, gregexpr("[[:digit:]]", select))))
 
-  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data  = stream.las(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 
   return(data)
 }
@@ -120,7 +120,7 @@ read.lasheader = function(file)
   return(data)
 }
 
-streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, nir = TRUE, t = TRUE, eb = 0)
+stream.las = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, nir = TRUE, t = TRUE, eb = 0)
 {
   check_file(ifiles)
   check_filter(filter)
@@ -144,7 +144,7 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   return(data)
 }
 
-streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
+stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, nir = TRUE, t = TRUE, eb = 0)
 {
   check_file(ifiles)
   check_filter(filter)
@@ -171,7 +171,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
   # converts eb to zero-based numbering
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb-1)
 
   if (ofile != "")
     return(invisible())
