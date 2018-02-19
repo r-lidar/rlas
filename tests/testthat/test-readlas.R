@@ -4,7 +4,7 @@ lazfile <- system.file("extdata", "example.laz", package="rlas")
 
 test_that("read returns good values", {
 
-  las = readlasdata(lazfile)
+  las = read.las(lazfile)
 
   expect_true(data.table::is.data.table(las))
   expect_equal(dim(las), c(30, 13))
@@ -12,7 +12,7 @@ test_that("read returns good values", {
 
 test_that("filter returns good values", {
 
-  las = readlasdata(lazfile, filter = "-keep_first")
+  las = read.las(lazfile, filter = "-keep_first")
 
   expect_true(data.table::is.data.table(las))
   expect_equal(dim(las), c(26, 13))
@@ -20,7 +20,7 @@ test_that("filter returns good values", {
 
 test_that("colunm selection works", {
 
-  las = readlasdata(lazfile, t = F, i = F)
+  las = read.las(lazfile, select = "xyzrndecaupRGBN0")
 
   expect_true(data.table::is.data.table(las))
   expect_equal(dim(las), c(30, 11))
@@ -28,7 +28,7 @@ test_that("colunm selection works", {
   expect_true(!"Intensity" %in% names(las))
   expect_true("Classification" %in% names(las))
 
-  las = readlasdata(lazfile, p = F, c = F)
+  las = read.las(lazfile, select = "xyztirndeauRGBN0")
 
   expect_true(data.table::is.data.table(las))
   expect_equal(dim(las), c(30, 11))
@@ -40,9 +40,9 @@ test_that("colunm selection works", {
 test_that("streaming works", {
   ofile = paste0(tempfile(), ".las")
 
-  las1 = readlasdata(lazfile, filter = "-keep_first")
+  las1 = read.las(lazfile, filter = "-keep_first")
   rlas:::streamlasdata(lazfile, ofile, "-keep_first")
-  las2 = readlasdata(ofile)
+  las2 = read.las(ofile)
 
   expect_equal(las1, las2)
 })
@@ -51,9 +51,9 @@ test_that("streaming works with extra bytes", {
   lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
   ofile = paste0(tempfile(), ".las")
 
-  las1 = readlasdata(lazfile, filter = "-keep_first")
+  las1 = read.las(lazfile, filter = "-keep_first")
   rlas:::streamlasdata(lazfile, ofile, "-keep_first")
-  las2 = readlasdata(ofile)
+  las2 = read.las(ofile)
 
   expect_equal(las1, las2)
 })
@@ -61,7 +61,7 @@ test_that("streaming works with extra bytes", {
 test_that("streaming reads if no ofile", {
   ofile = ""
 
-  las1 = readlasdata(lazfile, filter = "-keep_first")
+  las1 = read.las(lazfile, filter = "-keep_first")
   las2 = rlas:::streamlasdata(lazfile, ofile, "-keep_first")
 
   expect_equal(las1, las2)
@@ -93,7 +93,7 @@ test_that("read in poly works with filter and select", {
 test_that("extra byte selection works", {
   lazfile <- system.file("extdata", "extra_byte.laz", package="rlas")
 
-  las = readlasdata(lazfile, eb = 0)
+  las = read.las(lazfile)
 
   expect_true("Pulse width" %in% names(las))
   expect_true("Amplitude" %in% names(las))
@@ -101,7 +101,7 @@ test_that("extra byte selection works", {
 
   pw1 = las$`Pulse width`
 
-  las = readlasdata(lazfile, eb = c(2,5))
+  las = read.las(lazfile, select = "xyztirndecaupRGBN25")
 
   expect_true("Pulse width" %in% names(las))
   expect_false("Amplitude" %in% names(las))
@@ -111,13 +111,7 @@ test_that("extra byte selection works", {
 
   expect_equal(pw1, pw2)
 
-  las = readlasdata(lazfile, eb = numeric(0))
-
-  expect_false("Pulse width" %in% names(las))
-  expect_false("Amplitude" %in% names(las))
-  expect_equal(ncol(las), 13)
-
-  las = readlasdata(lazfile, eb = NULL)
+  las = read.las(lazfile, select = "xyztirndecaupRGBN")
 
   expect_false("Pulse width" %in% names(las))
   expect_false("Amplitude" %in% names(las))
