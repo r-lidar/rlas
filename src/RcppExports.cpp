@@ -40,8 +40,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // lasdatareader
-List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb);
-RcppExport SEXP _rlas_lasdatareader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP tSEXP, SEXP ebSEXP) {
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
+RcppExport SEXP _rlas_lasdatareader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,15 +58,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
     Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
+    Rcpp::traits::input_parameter< bool >::type nir(nirSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type eb(ebSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb));
     return rcpp_result_gen;
 END_RCPP
 }
 // lasdatareader_inpoly
-List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb);
-RcppExport SEXP _rlas_lasdatareader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP tSEXP, SEXP ebSEXP) {
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
+RcppExport SEXP _rlas_lasdatareader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -85,9 +86,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
     Rcpp::traits::input_parameter< bool >::type rgb(rgbSEXP);
+    Rcpp::traits::input_parameter< bool >::type nir(nirSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type eb(ebSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasdatareader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb));
+    rcpp_result_gen = Rcpp::wrap(lasdatareader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -127,4 +129,20 @@ BEGIN_RCPP
     laxwriter(file);
     return R_NilValue;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
+    {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
+    {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
+    {"_rlas_lasdatareader", (DL_FUNC) &_rlas_lasdatareader, 16},
+    {"_rlas_lasdatareader_inpoly", (DL_FUNC) &_rlas_lasdatareader_inpoly, 18},
+    {"_rlas_laswriter", (DL_FUNC) &_rlas_laswriter, 18},
+    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rlas(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

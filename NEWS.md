@@ -1,5 +1,9 @@
 ### rlas v1.1.10 (in developpement)
 
+#### NEW FEATURES
+
+* Enable the support in read mode of files with a point data format 8 (with near infrared).
+
 #### BUG FIXES:
 
 * Fix [[#9](https://github.com/Jean-Romain/rlas/issues/9)] with valgrind: uninitialized value(s)

@@ -93,7 +93,7 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
     eb = numeric(0)
 
   # converts eb to zero-based numbering
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
 
   if (ofile != "")
     return(invisible())
@@ -130,7 +130,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
   # converts eb to zero-based numbering
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
 
   if (ofile != "")
     return(invisible())

@@ -49,8 +49,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					./point_in_polygon.cpp \
 					./writeLAS.cpp \
 					./writeLAX.cpp \
-					./RcppExports.cpp \
-					./init.c
+					./RcppExports.cpp
 
 TEMP1   =  $(SOURCES:.cpp=.o)
 OBJECTS =  $(TEMP1:.c=.o)

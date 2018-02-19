@@ -35,6 +35,7 @@ class RLASstreamer
     void read_u(bool);
     void read_p(bool);
     void read_rgb(bool);
+    void read_nir(bool);
     void read_eb(IntegerVector); // extra byte numbers
     F64 get_attribute_double(LASpoint*, I32);
     I32 get_attribute_int(LASpoint*, I32);
@@ -61,6 +62,7 @@ class RLASstreamer
     std::vector<unsigned short> R;
     std::vector<unsigned short> G;
     std::vector<unsigned short> B;
+    std::vector<unsigned short> NIR;
     std::vector<std::vector<int> > ExtraBytes32;     // extra_byte attributes for less than 32 bits types
     std::vector<std::vector<double> > ExtraBytes64;  // extra_byte attributes for 32 to 64 bits types
 
@@ -89,6 +91,7 @@ class RLASstreamer
     bool u;
     bool p;
     bool rgb;
+    bool nir;
     std::vector<int> eb; // extra_byte attribute numbers
     std::vector<int> eb32;
     std::vector<int> eb64;
