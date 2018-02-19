@@ -253,7 +253,7 @@ List vlrsreader(LASheader* lasheader)
               ExtraByte.push_back(attemp.name);
               ExtraBytenames.push_back("name");
               if (type < 8)
-              { I64* temp; // as R does not support ong long int it is converted to double
+              { I64* temp; // as R does not support long long int it is converted to double
                 if (attemp.has_no_data())
                 {
                   temp = ((I64*)(attemp.no_data));
