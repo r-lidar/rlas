@@ -66,7 +66,7 @@ writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, Retur
   islas = tools::file_ext(file) %in% c("las", "laz")
 
   if(length(file) > 1)
-    stop("Please write only one file at a time.", call. = F)
+    stop("Write only one file at a time.", call. = F)
 
   if(!islas)
     stop("File not supported. Extension should be 'las' or 'laz'", call. = F)

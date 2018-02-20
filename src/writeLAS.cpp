@@ -38,32 +38,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 using namespace Rcpp;
 
-// Write a las file with LASlib
-//
-// Methods to write las files using LASlib
-//
-// This function musn't be used as is. It is an internal function. Please use \link[lidR:writeLAS]{writeLAS} abstraction.
-//
-// @param file character. filename of .las file
-// @param LASheader list a header from a LAS object
-// @param X numeric array X data
-// @param Y numeric array Y data
-// @param Z numeric array Z data
-// @param ExtraBytes numeric data frame Extra Bytes data
-// @param I integer array intensity data
-// @param RN integer array return number data
-// @param NoR integer array number of returns data
-// @param SDF integer array scan direction flag data
-// @param EoF integer array edge of flightline data
-// @param C integer array classification data
-// @param SA integer array scan angle data
-// @param UD integer array user data data
-// @param PSI integer array point source id data
-// @param T numeric array gpstime data
-// @param R integer array red data
-// @param G integer array green data
-// @param B integer array blue data
-// @return void
+int get_point_data_record_length(int x);
+
 // [[Rcpp::export]]
 void laswriter(CharacterVector file,
              List LASheader,
@@ -89,13 +65,14 @@ void laswriter(CharacterVector file,
 {
   try
   {
-    class LASheader header;
+    // 1. Make a standard header
 
+    class LASheader header;
     header.file_source_ID = (int)LASheader["File Source ID"];
     header.version_major = (int)LASheader["Version Major"];
     header.version_minor = (int)LASheader["Version Minor"];
     header.header_size = (int)LASheader["Header Size"];
-    header.offset_to_point_data = header.header_size; // (int)LASheader["Offset to point data"]; // No extra offset since I don't know how to deal with the data in the offset.
+    header.offset_to_point_data = header.header_size;
     header.file_creation_year = (int)LASheader["File Creation Year"];
     header.point_data_format = (int)LASheader["Point Data Format ID"];
     header.x_scale_factor = (double)LASheader["X scale factor"];
@@ -104,48 +81,22 @@ void laswriter(CharacterVector file,
     header.x_offset =  (double)LASheader["X offset"];
     header.y_offset =  (double)LASheader["Y offset"];
     header.z_offset =  (double)LASheader["Z offset"];
-
-    switch (header.point_data_format)
-    {
-    case 0:
-      header.point_data_record_length = 20;
-      break;
-    case 1:
-      header.point_data_record_length = 28;
-      break;
-    case 2:
-      header.point_data_record_length = 26;
-      break;
-    case 3:
-      header.point_data_record_length = 34;
-      break;
-    case 4:
-      header.point_data_record_length = 57;
-      break;
-    case 5:
-      header.point_data_record_length = 63;
-      break;
-    case 6:
-      header.point_data_record_length = 30;
-      break;
-    case 7:
-      header.point_data_record_length = 36;
-      break;
-    case 8:
-      header.point_data_record_length = 38;
-      break;
-    case 9:
-      header.point_data_record_length = 59;
-      break;
-    case 10:
-      header.point_data_record_length = 67;
-      break;
-    }
-
+    header.point_data_record_length = get_point_data_record_length(header.point_data_format);
     strcpy(header.generating_software, "rlas R package");
 
-    //Check if Extra Bytes description exists
-    List headereb_description(0);
+
+    // 2. Deal with extra bytes attributes
+
+    StringVector ebnames = ExtraBytes.names();       // Get the name of the extra bytes based on column name of the data.frame
+    int num_eb = ExtraBytes.length();                // Get the number of extra byte
+    std::vector<int> attribute_index;                // ????
+    std::vector<int> attribute_starts;               // ????
+    std::vector<double> scale(num_eb, 1.0);          // ????
+    std::vector<double> offset(num_eb, 0.0);         // ????
+    std::vector<int> type(num_eb);                   // Attribute type (see comment at the very end of this file)
+    List description_eb(0);                          // Create an empty description for extra bytes
+
+    // If extra bytes description exists use it as description
     if(LASheader.containsElementNamed("Variable Length Records"))
     {
       List headervlr = LASheader["Variable Length Records"];
@@ -153,141 +104,126 @@ void laswriter(CharacterVector file,
       {
         List headereb = headervlr["Extra_Bytes"];
         if(headereb.containsElementNamed("Extra Bytes Description"))
-          headereb_description = headereb["Extra Bytes Description"];
+        {
+          description_eb = headereb["Extra Bytes Description"];
+        }
       }
     }
 
-    StringVector ebnames = ExtraBytes.names();
-    int number_attributes = ExtraBytes.length();
 
-    // add attributes
-
-    // type = 0 : unsigned char
-    // type = 1 : char
-    // type = 2 : unsigned short
-    // type = 3 : short
-    // type = 4 : unsigned int
-    // type = 5 : int
-    // type = 6 : unsigned int64
-    // type = 7 : int64
-    // type = 8 : float  (try not to use)
-    // type = 9 : double (try not to use)
-    std::vector<int> attribute_index, attribute_starts, type;
-    std::vector<double> scale(number_attributes, 1.0), offset(number_attributes, 0.0);
-
-    if(number_attributes > 0)
+    // Loop over the extra bytes attributes
+    for(int i = 0; i < num_eb; i++)
     {
-      attribute_index.reserve(number_attributes);
-      type.reserve(number_attributes);
-      for(int i = 0; i < number_attributes; i++)
+      // set default values for description
+      List ebparam(0);
+      type[i] = 9;
+      int options = 0;
+      std::string name = as<std::string>(ebnames[i]);
+      std::string description = as<std::string>(ebnames[i]);
+
+      // set header values for description if exist
+      if(description_eb.containsElementNamed(name.c_str()))
       {
-        // Default values for description
-        List ebparam(0);
-        type[i] = 9;
-        int dim = 1; // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-        int options = 0;
-        std::string name = as<std::string>(ebnames[i]);
-        std::string description = as<std::string>(ebnames[i]);
-
-        // if(i < headereb_description.length())
-        if(headereb_description.containsElementNamed(name.c_str()))
-        {
-          ebparam = headereb_description[name];
-          type[i] = ((int)(ebparam["data_type"])-1)%10; // see data_type definition in LAS1.4
-          dim = 1; // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-          options = (int)ebparam["options"];
-          // std::string name = as<std::string>(ebparam["name"]);
-          description = as<std::string>(ebparam["description"]);
-        }
-        else
-        {
-          Rcout << "Default header set to Extra Byte field '" << name << "'" << std::endl;
-        }
-        LASattribute attribute(type[i], name.c_str(), description.c_str(), dim);
-
-        BOOL has_no_data = options & 0x01;
-        BOOL has_min = options & 0x02;
-        BOOL has_max = options & 0x04;
-        BOOL has_scale = options & 0x08;
-        BOOL has_offset = options & 0x10;
-
-        if(has_no_data)
-          attribute.set_no_data(as<double>(Rcpp::as<Rcpp::List>(ebparam["no_data"])[0]), 0);
-
-
-        switch (type[i])
-        {
-        case 0:
-        case 2:
-        case 4:
-        case 6:
-          if(has_min)
-          {
-            I64 min=(I64)((double)(as<List>(ebparam["min"])[0]));
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            I64 max=(I64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
-            attribute.set_max((U8*)(&max), 0);
-          }
-          break;
-        case 1:
-        case 3:
-        case 5:
-        case 7:
-          if(has_min)
-          {
-            U64 min=(U64)((double)(as<List>(ebparam["min"])[0]));
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            U64 max=(U64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
-            attribute.set_max((U8*)(&max), 0);
-          }
-          break;
-        default:
-          if(has_min)
-          {
-            double min=(double)(as<List>(ebparam["min"])[0]);
-            attribute.set_min((U8*)(&min), 0);
-          }
-          if(has_max)
-          {
-            double max=(double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]);
-            attribute.set_max((U8*)(&max), 0);
-          }
-        }
-
-        if(has_scale)
-        {
-          scale[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["scale"])[0]);
-          attribute.set_scale(scale[i], 0);
-        }
-        if(has_offset)
-        {
-          offset[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["offset"])[0]);
-          attribute.set_offset(offset[i], 0);
-        }
-
-        attribute_index.push_back(header.add_attribute(attribute));
+        ebparam = description_eb[name];
+        type[i] = ((int)(ebparam["data_type"])-1) % 10; // see data_type definition in LAS1.4
+        options = (int) ebparam["options"];
+        description = as<std::string>(ebparam["description"]);
       }
+
+      // Create a LASattribute object
+      // dim = 1 because 2 and 3 dimensional arrays are deprecated in LASlib
+      // see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp
+      LASattribute attribute(type[i], name.c_str(), description.c_str(), 1);
+
+      // ????
+      bool has_no_data = options & 0x01;
+      bool has_min = options & 0x02;
+      bool has_max = options & 0x04;
+      bool has_scale = options & 0x08;
+      bool has_offset = options & 0x10;
+
+      // ????
+      if(has_no_data)
+        attribute.set_no_data(as<double>(Rcpp::as<Rcpp::List>(ebparam["no_data"])[0]), 0);
+
+      // ????
+      switch (type[i])
+      {
+      case 0:
+      case 2:
+      case 4:
+      case 6:
+        if(has_min)
+        {
+          I64 min = (I64)((double)(as<List>(ebparam["min"])[0]));
+          attribute.set_min((U8*)(&min), 0);
+        }
+        if(has_max)
+        {
+          I64 max = (I64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
+          attribute.set_max((U8*)(&max), 0);
+        }
+        break;
+      case 1:
+      case 3:
+      case 5:
+      case 7:
+        if(has_min)
+        {
+          U64 min = (U64)((double)(as<List>(ebparam["min"])[0]));
+          attribute.set_min((U8*)(&min), 0);
+        }
+        if(has_max)
+        {
+          U64 max = (U64)((double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]));
+          attribute.set_max((U8*)(&max), 0);
+        }
+        break;
+      default:
+        if(has_min)
+        {
+          double min = (double)(as<List>(ebparam["min"])[0]);
+          attribute.set_min((U8*)(&min), 0);
+        }
+        if(has_max)
+        {
+          double max = (double)(Rcpp::as<Rcpp::List>(ebparam["max"])[0]);
+          attribute.set_max((U8*)(&max), 0);
+        }
+      }
+
+      if(has_scale)
+      {
+        scale[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["scale"])[0]);
+        attribute.set_scale(scale[i], 0);
+      }
+
+      if(has_offset)
+      {
+        offset[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["offset"])[0]);
+        attribute.set_offset(offset[i], 0);
+      }
+
+      // Finally add the attribute to the header
+      int index = header.add_attribute(attribute);
+      attribute_index.push_back(index);
     }
+
     header.update_extra_bytes_vlr();
 
+    // ????
     LASattribute attribute = header.attributes[0];
 
     // add number of extra bytes to the point size
     header.point_data_record_length += header.get_attributes_size();
 
-    attribute_starts.reserve(attribute_index.size());
+    // ????
     for(int i = 0; i < attribute_index.size(); i++)
-    {
       attribute_starts.push_back(header.get_attribute_start(attribute_index[i]));
-    }
 
     std::string filestd = as<std::string>(file);
+
+    // 3. write the data to the file
 
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(filestd.c_str());
@@ -300,9 +236,9 @@ void laswriter(CharacterVector file,
     if(0 == laswriter || NULL == laswriter)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    double scaled_value;
     for(int i = 0 ; i < X.length() ; i++)
     {
+      // Add regular data
       p.set_x(X[i]);
       p.set_y(Y[i]);
       p.set_z(Z[i]);
@@ -324,12 +260,12 @@ void laswriter(CharacterVector file,
         p.set_B((U16)B[i]);
       }
 
-      // add extra bytes
-      for(int j = 0; j < number_attributes; j++)
+      // Add extra bytes
+      for(int j = 0; j < num_eb; j++)
       {
+        double scaled_value = ((double)(as<List>(ExtraBytes[j])[i]) - offset[j])/scale[j];
 
-        scaled_value=((double)(as<List>(ExtraBytes[j])[i]) - offset[j])/scale[j];
-
+        // ????
         switch(type[j])
         {
         case 0:
@@ -378,3 +314,57 @@ void laswriter(CharacterVector file,
     Rcerr << e.what() << std::endl;
   }
 }
+
+
+int get_point_data_record_length(int x)
+{
+  switch (x)
+  {
+  case 0:
+    return 20;
+    break;
+  case 1:
+    return 28;
+    break;
+  case 2:
+    return 26;
+    break;
+  case 3:
+    return 34;
+    break;
+  case 4:
+    return 57;
+    break;
+  case 5:
+    return 63;
+    break;
+  case 6:
+    return 30;
+    break;
+  case 7:
+    return 36;
+    break;
+  case 8:
+    return 38;
+    break;
+  case 9:
+    return 59;
+    break;
+  case 10:
+    return 67;
+    break;
+  }
+}
+
+/* attributes type:
+ * type = 0 : unsigned char
+ * type = 1 : char
+ * type = 2 : unsigned short
+ * type = 3 : short
+ * type = 4 : unsigned int
+ * type = 5 : int
+ * type = 6 : unsigned int64
+ * type = 7 : int64
+ * type = 8 : float  (try not to use)
+ * type = 9 : double (try not to use)
+ */
