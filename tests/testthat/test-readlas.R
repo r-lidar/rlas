@@ -55,7 +55,7 @@ test_that("streaming works", {
   ofile = paste0(tempfile(), ".las")
 
   las1 = read.las(lazfile, filter = "-keep_first")
-  rlas:::streamlasdata(lazfile, ofile, "-keep_first")
+  rlas:::stream.las(lazfile, ofile, filter = "-keep_first")
   las2 = read.las(ofile)
 
   expect_equal(las1, las2)
@@ -66,7 +66,7 @@ test_that("streaming works with extra bytes", {
   ofile = paste0(tempfile(), ".las")
 
   las1 = read.las(lazfile, filter = "-keep_first")
-  rlas:::streamlasdata(lazfile, ofile, "-keep_first")
+  rlas:::stream.las(lazfile, ofile, filter = "-keep_first")
   las2 = read.las(ofile)
 
   expect_equal(las1, las2)
@@ -74,9 +74,8 @@ test_that("streaming works with extra bytes", {
 
 test_that("streaming reads if no ofile", {
   ofile = ""
-
   las1 = read.las(lazfile, filter = "-keep_first")
-  las2 = rlas:::streamlasdata(lazfile, ofile, "-keep_first")
+  las2 = rlas:::stream.las(lazfile, ofile, filter = "-keep_first")
 
   expect_equal(las1, las2)
 })
@@ -87,7 +86,7 @@ test_that("read in poly works", {
   xpoly = c(8, 10, 11, 7, 8) + 339000
   ypoly = c(0, 0, 1, 1, 0) + 5248000
 
-  las = rlas:::streamlasdata_inpoly(lazfile, xpoly, ypoly, ofile, filter = "")
+  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, filter = "")
 
   expect_equal(dim(las), c(14, 13))
 })
@@ -99,7 +98,7 @@ test_that("read in poly works with filter and select", {
   xpoly = c(8, 10, 11, 7, 8) + 339000
   ypoly = c(0, 0, 1, 1, 0) + 5248000
 
-  las = rlas:::streamlasdata_inpoly(lazfile, xpoly, ypoly, ofile, filter = "-drop_z_above 977.5", i = FALSE, t = FALSE)
+  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, select = "* -t -i", filter = "-drop_z_above 977.5")
 
   expect_equal(dim(las), c(8, 11))
 })

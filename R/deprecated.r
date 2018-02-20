@@ -58,10 +58,61 @@ readlasheader = function(file)
 
 streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = 0)
 {
-  stream.las(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb = 0)
+  check_file(ifiles)
+  check_filter(filter)
+
+  ifiles = normalizePath(ifiles)
+
+  if (ofile != "")
+    ofile = suppressWarnings(normalizePath(ofile))
+
+  if (is.null(eb))
+    eb = numeric(0)
+
+  # converts eb to zero-based numbering
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
+
+  if (ofile != "")
+    return(invisible())
+
+  data.table::setDT(data)
+
+  return(data)
 }
 
 streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
 {
-  stream.las_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb = 0)
+  check_file(ifiles)
+  check_filter(filter)
+
+  ifiles = normalizePath(ifiles)
+
+  if (ofile != "")
+    ofile = suppressWarnings(normalizePath(ofile))
+
+  if (is.null(eb))
+    eb = numeric(0)
+
+  if (length(xpoly) != length(ypoly))
+    stop("Invalide polygon", call. = FALSE)
+
+  if (xpoly[1] != xpoly[length(xpoly)] | xpoly[1] != xpoly[length(xpoly)])
+    stop("The polygon is not closed", call. = FALSE)
+
+  xmin <- min(xpoly)-0.1
+  xmax <- max(xpoly)+0.1
+  ymin <- min(ypoly)-0.1
+  ymax <- max(ypoly)+0.1
+
+  filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
+
+  # converts eb to zero-based numbering
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
+
+  if (ofile != "")
+    return(invisible())
+
+  data.table::setDT(data)
+
+  return(data)
 }
