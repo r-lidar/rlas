@@ -57,6 +57,6 @@ For more informations, see the ASPRS documentation for the
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 }
 \seealso{
-Other rlas: \code{\link{readlasdata}},
-  \code{\link{readlasheader}}
+Other rlas: \code{\link{read.lasheader}},
+  \code{\link{readlasdata}}
 }
