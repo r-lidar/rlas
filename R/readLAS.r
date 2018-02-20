@@ -6,7 +6,7 @@
 #
 # COPYRIGHT:
 #
-# Copyright 2016 Jean-Romain Roussel
+# Copyright 2016-2018 Jean-Romain Roussel
 #
 # This file is part of rlas R package.
 #
@@ -69,23 +69,43 @@ read.las = function(files, select = "*", filter = "")
 {
   t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
   ofile <- ""
+  options <- select
 
-  if ("\\*" %is_in% select) select <- "xyztirndecaupRGBN0"
-  if ("i" %is_in% select) i <- TRUE
-  if ("t" %is_in% select) t <- TRUE
-  if ("r" %is_in% select) r <- TRUE
-  if ("n" %is_in% select) n <- TRUE
-  if ("d" %is_in% select) d <- TRUE
-  if ("e" %is_in% select) e <- TRUE
-  if ("c" %is_in% select) c <- TRUE
-  if ("a" %is_in% select) a <- TRUE
-  if ("u" %is_in% select) u <- TRUE
-  if ("p" %is_in% select) p <- TRUE
-  if ("R" %is_in% select) rgb <- TRUE
-  if ("G" %is_in% select) rgb <- TRUE
-  if ("B" %is_in% select) rgb <- TRUE
-  if ("N" %is_in% select) nir <- TRUE
-  eb <- as.numeric(unlist(regmatches(select, gregexpr("[[:digit:]]", select))))
+  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
+  if ("i" %is_in% options) i <- TRUE
+  if ("t" %is_in% options) t <- TRUE
+  if ("r" %is_in% options) r <- TRUE
+  if ("n" %is_in% options) n <- TRUE
+  if ("d" %is_in% options) d <- TRUE
+  if ("e" %is_in% options) e <- TRUE
+  if ("c" %is_in% options) c <- TRUE
+  if ("a" %is_in% options) a <- TRUE
+  if ("u" %is_in% options) u <- TRUE
+  if ("p" %is_in% options) p <- TRUE
+  if ("R" %is_in% options) rgb <- TRUE
+  if ("G" %is_in% options) rgb <- TRUE
+  if ("B" %is_in% options) rgb <- TRUE
+  if ("N" %is_in% options) nir <- TRUE
+  eb <- as.numeric(unlist(regmatches(options, gregexpr("[[:digit:]]", options))))
+  if (any(eb == 0)) eb = 1:9
+
+  if ("-i" %is_in% select) i <- FALSE
+  if ("-t" %is_in% select) t <- FALSE
+  if ("-r" %is_in% select) r <- FALSE
+  if ("-n" %is_in% select) n <- FALSE
+  if ("-d" %is_in% select) d <- FALSE
+  if ("-e" %is_in% select) e <- FALSE
+  if ("-c" %is_in% select) c <- FALSE
+  if ("-a" %is_in% select) a <- FALSE
+  if ("-u" %is_in% select) u <- FALSE
+  if ("-p" %is_in% select) p <- FALSE
+  if ("-R" %is_in% select) rgb <- FALSE
+  if ("-G" %is_in% select) rgb <- FALSE
+  if ("-B" %is_in% select) rgb <- FALSE
+  if ("-N" %is_in% select) nir <- FALSE
+  rmeb <- abs(as.numeric(unlist(regmatches(select, gregexpr("-[[:digit:]]", select)))))
+  if (any(rmeb == 0)) rmeb = 1:9
+  eb = eb[is.na(match(eb, rmeb))]
 
   data  = stream.las(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 

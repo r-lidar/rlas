@@ -37,6 +37,20 @@ test_that("colunm selection works", {
   expect_true(!"Classification" %in% names(las))
 })
 
+test_that("colunm unselection works", {
+
+  las1 = read.las(lazfile, select = "xyzrndecaupRGBN0")
+  las2 = read.las(lazfile, select = "* -i -t")
+
+  expect_equal(las1, las2)
+
+  las1 = read.las(lazfile, select = "xyztirndeauRGBN0")
+  las2 = read.las(lazfile, select = "* -c -p")
+
+  expect_equal(las1, las2)
+})
+
+
 test_that("streaming works", {
   ofile = paste0(tempfile(), ".las")
 
@@ -112,6 +126,12 @@ test_that("extra byte selection works", {
   expect_equal(pw1, pw2)
 
   las = read.las(lazfile, select = "xyztirndecaupRGBN")
+
+  expect_false("Pulse width" %in% names(las))
+  expect_false("Amplitude" %in% names(las))
+  expect_equal(ncol(las), 13)
+
+  las = read.las(lazfile, select = "* -0")
 
   expect_false("Pulse width" %in% names(las))
   expect_false("Amplitude" %in% names(las))

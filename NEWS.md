@@ -5,6 +5,8 @@
 * Enable the support in read mode of files with a point data format 8 (with near infrared).
 * New function `read.las` in replacement of `readlasdata` which is now deprecated. The selection of 
 the field to load is now easier using a syntax with a string instead of multiple logical parameters.
+`select = "xyzia"` allows for loading only points coordinates plus intensity and scan angle. 
+`select = "* -i -a" allows for loading everything but intensity and scan angle.
 * New function `read.lasheader` in replacement of `readlasheader` which is now deprecated. This, only 
 for naming consistency.
 
