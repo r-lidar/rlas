@@ -2,7 +2,7 @@
 % Please edit documentation in R/writeLAS.r
 \name{writelas}
 \alias{writelas}
-\title{Write a .las or .laz file}
+\title{(deprecated) Write a .las or .laz file}
 \usage{
 writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
   NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification,
@@ -52,7 +52,8 @@ writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
 void
 }
 \description{
-Write a .las or .laz file. All the fields are optional except X, Y and Z coordinates. If
+This function is deprecated. Use \link{write.las} instead. Write a .las or .laz file. All the
+fields are optional except X, Y and Z coordinates. If
 the user does not provide a field such as \code{Intensity}, for example, but this field is required
 according to the version of the file specified in the \code{header}, 0 will be written in this field.
 For more informations, see the ASPRS documentation for the
@@ -60,5 +61,5 @@ For more informations, see the ASPRS documentation for the
 }
 \seealso{
 Other rlas: \code{\link{readlasdata}},
-  \code{\link{readlasheader}}
+  \code{\link{readlasheader}}, \code{\link{write.las}}
 }

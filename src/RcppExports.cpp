@@ -91,6 +91,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_writer
+void C_writer(CharacterVector file, List LASheader, DataFrame data);
+RcppExport SEXP _rlas_C_writer(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< List >::type LASheader(LASheaderSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
+    C_writer(file, LASheader, data);
+    return R_NilValue;
+END_RCPP
+}
 // laswriter
 void laswriter(CharacterVector file, List LASheader, NumericVector X, NumericVector Y, NumericVector Z, DataFrame ExtraBytes, IntegerVector I, IntegerVector RN, IntegerVector NoR, IntegerVector SDF, IntegerVector EoF, IntegerVector C, IntegerVector SA, IntegerVector UD, IntegerVector PSI, NumericVector T, IntegerVector R, IntegerVector G, IntegerVector B);
 RcppExport SEXP _rlas_laswriter(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP XSEXP, SEXP YSEXP, SEXP ZSEXP, SEXP ExtraBytesSEXP, SEXP ISEXP, SEXP RNSEXP, SEXP NoRSEXP, SEXP SDFSEXP, SEXP EoFSEXP, SEXP CSEXP, SEXP SASEXP, SEXP UDSEXP, SEXP PSISEXP, SEXP TSEXP, SEXP RSEXP, SEXP GSEXP, SEXP BSEXP) {
@@ -128,4 +140,21 @@ BEGIN_RCPP
     laxwriter(file);
     return R_NilValue;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
+    {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
+    {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
+    {"_rlas_lasdatareader", (DL_FUNC) &_rlas_lasdatareader, 15},
+    {"_rlas_lasdatareader_inpoly", (DL_FUNC) &_rlas_lasdatareader_inpoly, 17},
+    {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
+    {"_rlas_laswriter", (DL_FUNC) &_rlas_laswriter, 19},
+    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rlas(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

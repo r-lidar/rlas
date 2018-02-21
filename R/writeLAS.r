@@ -6,7 +6,7 @@
 #
 # COPYRIGHT:
 #
-# Copyright 2016 Jean-Romain Roussel
+# Copyright 2016-2018 Jean-Romain Roussel
 #
 # This file is part of rlas R package.
 #
@@ -29,7 +29,60 @@
 
 #' Write a .las or .laz file
 #'
-#' Write a .las or .laz file. All the fields are optional except X, Y and Z coordinates. If
+#' Write a .las or .laz file. The user provides a table with the data in column. Column names must
+#' respect specific allowed names (see details). A correct and complete header must also be provided.
+#' This header can optionnally be generated with \link{make_header}.
+#'
+#' Allowed names are "X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
+#' "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID",
+#' "R", "G", "B", "NIR". All other extra columns will be written in extra bytes attributes only if the
+#' header specifically states to save these data into extra bytes attributes. To use the full potential
+#' of the function \code{write.las} it is recommended to read the whole specifications of the
+#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' Otherwise user can rely on automated procedures that are expected to be sufficient for most usages.
+#'
+#' @param file character. file path to .las or .laz file
+#' @param header list. It can be partially recycled from another file (see \link{readlasheader}) and
+#' updated with \link{update_header} or generated with \link{make_header}.
+#' @param data data.frame or data.table that contains the data to write in the file. Colunm names must
+#' respect the imposed nomenclature (see details)
+#' @export
+#' @importFrom Rcpp sourceCpp
+#' @family rlas
+#' @return void
+#' @examples
+#' lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
+#'                      Y = c(5248000.515, 5248000.478, 5248000.318),
+#'                      Z = c(975.589, 974.778, 974.471),
+#'                      gpstime = c(269347.281418006, 269347.281428006, 269347.281438006),
+#'                      Intensity = c(82L, 54L, 27L),
+#'                      ReturnNumber = c(1L, 1L, 2L),
+#'                      NumberOfReturns = c(1L, 1L, 2L),
+#'                      ScanDirectionFlag = c(1L, 1L, 1L),
+#'                      EdgeOfFlightline = c(1L, 0L, 0L),
+#'                      Classification = c(1L, 1L, 1L),
+#'                      ScanAngle = c(-21L, -21L, -21L),
+#'                      UserData = c(32L, 32L, 32L),
+#'                      PointSourceID = c(17L, 17L, 17L))
+#'
+#' lasheader = make_header(lasdata)
+#' file = file.path(tempdir(), "temp.laz")
+#'
+#' write.las(file, lasheader, lasdata)
+write.las = function(file, header, data)
+{
+  file = path.expand(file)
+  check_output_file(file)
+  check_header(header)
+  check_data(data)
+  check_data_header(header, data)
+  C_writer(file, header, data)
+}
+
+#' (deprecated) Write a .las or .laz file
+#'
+#' This function is deprecated. Use \link{write.las} instead. Write a .las or .laz file. All the
+#' fields are optional except X, Y and Z coordinates. If
 #' the user does not provide a field such as \code{Intensity}, for example, but this field is required
 #' according to the version of the file specified in the \code{header}, 0 will be written in this field.
 #' For more informations, see the ASPRS documentation for the
