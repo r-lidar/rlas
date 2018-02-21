@@ -23,5 +23,5 @@ lasheader <- readlasheader(lazfile)
 }
 \seealso{
 Other rlas: \code{\link{readlasdata}},
-  \code{\link{writelas}}
+  \code{\link{write.las}}, \code{\link{writelas}}
 }
