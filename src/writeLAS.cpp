@@ -754,9 +754,9 @@ void laswriter(CharacterVector file,
 }
 
 
-int get_point_data_record_length(int x)
+int get_point_data_record_length(int point_data_format)
 {
-  switch (x)
+  switch (point_data_format)
   {
   case 0:
     return 20;
@@ -790,6 +790,9 @@ int get_point_data_record_length(int x)
     break;
   case 10:
     return 67;
+    break;
+  default:
+    throw std::runtime_error("point_data_format out of range.");
     break;
   }
 }
