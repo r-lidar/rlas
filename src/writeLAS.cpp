@@ -84,7 +84,6 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     }
 
     int num_eb = description_eb.size();              // Get the number of extra byte
-    NumericVector EB[num_eb];                        // For fast access to data.frame elements
     std::vector<std::string> ebnames(num_eb);        // Get the name of the extra bytes based on column name of the data.frame
     std::vector<int> attribute_index(num_eb);        // Index of attribute in the header
     std::vector<int> attribute_starts(num_eb);       // Attribute starting byte number
@@ -323,6 +322,8 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       NIR = data["NIR"];
 
     // convert data.frame to Numeric vector to reduce access time
+    std::vector< NumericVector > EB(num_eb);                        // For fast access to data.frame elements
+
     for(int i = 0; i < num_eb; i++)
       EB[i]=data[ebnames[i]];
 
@@ -452,7 +453,7 @@ void laswriter(CharacterVector file,
 
     StringVector ebnames = ExtraBytes.names();       // Get the name of the extra bytes based on column name of the data.frame
     int num_eb = ExtraBytes.length();                // Get the number of extra byte
-    NumericVector EB[num_eb];                        // For fast access to data.frame elements
+    std::vector<NumericVector> EB(num_eb);           // For fast access to data.frame elements
     std::vector<int> attribute_index(num_eb);        // Index of attribute in the header
     std::vector<int> attribute_starts(num_eb);       // Attribute starting byte number
     std::vector<double> scale(num_eb, 1.0);          // Default scale factor
