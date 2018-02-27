@@ -1,4 +1,4 @@
-![CRAN](https://img.shields.io/badge/CRAN-1.1.9-brightgreen.svg)  ![Github](https://img.shields.io/badge/Github-1.1.10-green.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
+![CRAN](https://img.shields.io/badge/CRAN-1.1.9-brightgreen.svg)  ![Github](https://img.shields.io/badge/Github-1.2.0-green.svg)  ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
@@ -30,8 +30,8 @@ To install the package from github make sure you have a working development envi
 ### At the R level
 
 ```r
-lasdata   = readlasdata("<myfile.las>")
-lasheader = readlasheader("<myfile.las>")
+lasdata   = read.las("<myfile.las>")
+lasheader = read.lasheader("<myfile.las>")
 ```
 
 ### At the C++ level
