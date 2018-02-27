@@ -141,3 +141,22 @@ check_output_file = function(file)
   if(!islas)
     stop("File not supported. Extension should be 'las' or 'laz'", call. = F)
 }
+
+check_file = function(file)
+{
+  valid = file.exists(file)
+  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+  file = normalizePath(file)
+
+  if (!all(valid))
+    stop("File not found", call. = F)
+
+  if (!all(islas))
+    stop("File not supported", call. = F)
+}
+
+check_filter = function(filter)
+{
+  if (!is.character(filter))
+    stop("Incorrect argument 'filter'", call. = F)
+}

@@ -1,32 +1,3 @@
-/*
-===============================================================================
-
-PROGRAMMERS:
-
-jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
-
-COPYRIGHT:
-
-Copyright 2016 Jean-Romain Roussel
-
-This file is part of rlas R package.
-
-rlas is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-===============================================================================
-*/
-
 #include <Rcpp.h>
 
 #include <time.h>
@@ -41,7 +12,27 @@ using namespace Rcpp;
 int get_point_data_record_length(int x);
 
 // [[Rcpp::export]]
-void C_writer(CharacterVector file, List LASheader, DataFrame data)
+void laswriter(CharacterVector file,
+               List LASheader,
+               NumericVector X,
+               NumericVector Y,
+               NumericVector Z,
+               DataFrame ExtraBytes, // Did not find how set empty DataFrame as default...
+               IntegerVector I = IntegerVector(0),
+               IntegerVector RN = IntegerVector(0),
+               IntegerVector NoR = IntegerVector(0),
+               IntegerVector SDF = IntegerVector(0),
+               IntegerVector EoF = IntegerVector(0),
+               IntegerVector C = IntegerVector(0),
+               IntegerVector SA = IntegerVector(0),
+               IntegerVector UD = IntegerVector(0),
+               IntegerVector PSI = IntegerVector(0),
+               NumericVector T = NumericVector(0),
+               IntegerVector R  = IntegerVector(0),
+               IntegerVector G = IntegerVector(0),
+               IntegerVector B = IntegerVector(0))
+
+
 {
   try
   {
@@ -64,52 +55,61 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     header.point_data_record_length = get_point_data_record_length(header.point_data_format);
     strcpy(header.generating_software, "rlas R package");
 
+
     // 2. Deal with extra bytes attributes
 
-    // Get the extra bytes description
-    List description_eb(0);                         // Create an empty description for extra bytes
-    if(LASheader.containsElementNamed("Variable Length Records"))
-    {
-      List vlr = LASheader["Variable Length Records"];
-
-      if(vlr.containsElementNamed("Extra_Bytes"))
-      {
-        List extra_bytes = vlr["Extra_Bytes"];
-
-        if(extra_bytes.containsElementNamed("Extra Bytes Description"))
-        {
-          description_eb = extra_bytes["Extra Bytes Description"];
-        }
-      }
-    }
-
-    int num_eb = description_eb.size();              // Get the number of extra byte
-    std::vector<std::string> ebnames(num_eb);        // Get the name of the extra bytes based on column name of the data.frame
+    StringVector ebnames = ExtraBytes.names();       // Get the name of the extra bytes based on column name of the data.frame
+    int num_eb = ExtraBytes.length();                // Get the number of extra byte
+    std::vector<NumericVector> EB(num_eb);           // For fast access to data.frame elements
     std::vector<int> attribute_index(num_eb);        // Index of attribute in the header
     std::vector<int> attribute_starts(num_eb);       // Attribute starting byte number
     std::vector<double> scale(num_eb, 1.0);          // Default scale factor
     std::vector<double> offset(num_eb, 0.0);         // Default offset factor
     std::vector<int> type(num_eb);                   // Attribute type (see comment at the very end of this file)
+    List description_eb(0);                          // Create an empty description for extra bytes
     double scaled_value;                             // Temporary variable
 
 
-    // Update the header
+    // If extra bytes description exists use it as description
+    if(LASheader.containsElementNamed("Variable Length Records"))
+    {
+      List headervlr = LASheader["Variable Length Records"];
+      if(headervlr.containsElementNamed("Extra_Bytes"))
+      {
+        List headereb = headervlr["Extra_Bytes"];
+        if(headereb.containsElementNamed("Extra Bytes Description"))
+        {
+          description_eb = headereb["Extra Bytes Description"];
+        }
+      }
+    }
+
+    // Loop over the extra bytes attributes
     for(int i = 0; i < num_eb; i++)
     {
-      List description = description_eb[i];
+      // set default values for description
+      List ebparam(0);
+      type[i] = 9;
+      int dim = 1; // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
+      int options = 0;
+      std::string name = as<std::string>(ebnames[i]); // Default name is the one of data.frame
+      std::string description = as<std::string>(ebnames[i]);
 
-      type[i] = ((int)(description["data_type"])-1) % 10;
-      int options = description["options"];
-      ebnames[i] = as< std::string >(description["name"]);
-      std::string desc = description["description"];
+      // set header values for description if exist
+      if(description_eb.containsElementNamed(name.c_str()))
+      {
+        ebparam = description_eb[name];
+        type[i] = ((int)(ebparam["data_type"])-1) % 10; // see data_type definition in LAS1.4
+        options = (int) ebparam["options"];
+        description = as<std::string>(ebparam["description"]);
+      }
 
-      //  checks if name exist in data
-      if(!data.containsElementNamed(ebnames[i].c_str()))
-        throw std::runtime_error("Extra Byte described but not present in data.");
+      // Create a LASattribute object
+      // dim = 1 because 2 and 3 dimensional arrays are deprecated in LASlib
+      // see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp
+      LASattribute attribute(type[i], name.c_str(), description.c_str(), 1);
 
-      LASattribute attribute(type[i], ebnames[i].c_str(), desc.c_str(), 1);
-
-      // see extra byte option definition in LAS 1.4
+      // Check options
       bool has_no_data = options & 0x01;
       bool has_min = options & 0x02;
       bool has_max = options & 0x04;
@@ -120,21 +120,21 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       // set scale value if option set
       if(has_scale)
       {
-        scale[i] = (double)(Rcpp::as<Rcpp::List>(description["scale"])[0]);
+        scale[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["scale"])[0]);
         attribute.set_scale(scale[i], 0);
       }
 
       // set offset value if option set
       if(has_offset)
       {
-        offset[i] = (double)(Rcpp::as<Rcpp::List>(description["offset"])[0]);
+        offset[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["offset"])[0]);
         attribute.set_offset(offset[i], 0);
       }
 
       // set no data value if option set
       if(has_no_data)
       {
-        scaled_value=((double)(as<List>(description["no_data"])[0]) - offset[i])/scale[i];
+        scaled_value=((double)(as<List>(ebparam["no_data"])[0]) - offset[i])/scale[i];
 
         switch(type[i])
         {
@@ -174,7 +174,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       // set min value if option set
       if(has_min)
       {
-        scaled_value=((double)(as<List>(description["min"])[0]) - offset[i])/scale[i];
+        scaled_value=((double)(as<List>(ebparam["min"])[0]) - offset[i])/scale[i];
 
         switch(type[i])
         {
@@ -214,7 +214,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       // set max value if option set
       if(has_max)
       {
-        scaled_value=((double)(as<List>(description["max"])[0]) - offset[i])/scale[i];
+        scaled_value=((double)(as<List>(ebparam["max"])[0]) - offset[i])/scale[i];
         switch(type[i])
         {
         case 0:
@@ -255,16 +255,20 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     }
 
     header.update_extra_bytes_vlr();
+
+    // add number of extra bytes to the point size
     header.point_data_record_length += header.get_attributes_size();
 
-    // starting byte in point format of extra byte j
-    for(int i = 0; i < num_eb; i++)
-      attribute_starts[i]=header.get_attribute_start(attribute_index[i]);
+    // get starting byte corresponding to attribute
+    for(int i = 0; i < attribute_index.size(); i++)
+      attribute_starts[i] = header.get_attribute_start(attribute_index[i]);
+
+    std::string filestd = as<std::string>(file);
 
     // 3. write the data to the file
 
     LASwriteOpener laswriteopener;
-    laswriteopener.set_file_name(as<std::string>(file).c_str());
+    laswriteopener.set_file_name(filestd.c_str());
 
     LASpoint p;
     p.init(&header, header.point_data_format, header.point_data_record_length, 0);
@@ -274,58 +278,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     if(0 == laswriter || NULL == laswriter)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    NumericVector X = data["X"];
-    NumericVector Y = data["Y"];
-    NumericVector Z = data["Z"];
-    IntegerVector I = IntegerVector(0);
-    IntegerVector RN = IntegerVector(0);
-    IntegerVector NoR = IntegerVector(0);
-    IntegerVector SDF = IntegerVector(0);
-    IntegerVector EoF = IntegerVector(0);
-    IntegerVector C = IntegerVector(0);
-    IntegerVector SA = IntegerVector(0);
-    IntegerVector UD = IntegerVector(0);
-    IntegerVector PSI = IntegerVector(0);
-    NumericVector T = NumericVector(0);
-    IntegerVector R  = IntegerVector(0);
-    IntegerVector G = IntegerVector(0);
-    IntegerVector B = IntegerVector(0);
-    IntegerVector NIR = IntegerVector(0);
-
-    if (data.containsElementNamed("Intensity"))
-      I = data["Intensity"];
-    if (data.containsElementNamed("ReturnNumber"))
-      RN = data["ReturnNumber"];
-    if (data.containsElementNamed("NumberOfReturns"))
-      NoR = data["NumberOfReturns"];
-    if (data.containsElementNamed("ScanDirectionFlag"))
-      SDF = data["ScanDirectionFlag"];
-    if (data.containsElementNamed("EdgeOfFlightline"))
-      EoF = data["EdgeOfFlightline"];
-    if (data.containsElementNamed("Classification"))
-      C = data["Classification"];
-    if (data.containsElementNamed("ScanAngle"))
-      SA = data["ScanAngle"];
-    if (data.containsElementNamed("UserData"))
-      UD = data["UserData"];
-    if (data.containsElementNamed("PointSourceID"))
-      PSI = data["PointSourceID"];
-    if (data.containsElementNamed("gpstime"))
-      T = data["gpstime"];
-    if (data.containsElementNamed("R"))
-      R = data["R"];
-    if (data.containsElementNamed("G"))
-      G = data["G"];
-    if (data.containsElementNamed("B"))
-      B = data["B"];
-    if (data.containsElementNamed("NIR"))
-      NIR = data["NIR"];
-
     // convert data.frame to Numeric vector to reduce access time
-    std::vector< NumericVector > EB(num_eb);                        // For fast access to data.frame elements
-
     for(int i = 0; i < num_eb; i++)
-      EB[i]=data[ebnames[i]];
+      EB[i]=ExtraBytes[i];
 
     for(int i = 0 ; i < X.length() ; i++)
     {
@@ -344,16 +299,17 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       if(UD.length() > 0){ p.set_user_data((U8)UD[i]); }
       if(PSI.length() > 0){ p.set_point_source_ID((U16)PSI[i]); }
       if(T.length() > 0){ p.set_gps_time((F64)T[i]); }
-      if(R.length() > 0) { p.set_R((U16)R[i]); }
-      if(G.length() > 0) { p.set_G((U16)G[i]); }
-      if(B.length() > 0) { p.set_B((U16)B[i]); }
-      if(NIR.length() > 0) { p.set_NIR((U16)NIR[i]); }
+      if(R.length() > 0)
+      {
+        p.set_R((U16)R[i]);
+        p.set_G((U16)G[i]);
+        p.set_B((U16)B[i]);
+      }
 
       // Add extra bytes
-      for(int j = 0 ; j < num_eb ; j++)
+      for(int j = 0; j < num_eb; j++)
       {
-        // value is scaled, quantized and clamped to fit chosen datatype
-        scaled_value = (EB[j][i] - offset[j])/scale[j];
+        scaled_value=(EB[j][i] - offset[j])/scale[j];
 
         switch(type[j])
         {
@@ -403,60 +359,3 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     Rcerr << e.what() << std::endl;
   }
 }
-
-
-int get_point_data_record_length(int point_data_format)
-{
-  switch (point_data_format)
-  {
-  case 0:
-    return 20;
-    break;
-  case 1:
-    return 28;
-    break;
-  case 2:
-    return 26;
-    break;
-  case 3:
-    return 34;
-    break;
-  case 4:
-    return 57;
-    break;
-  case 5:
-    return 63;
-    break;
-  case 6:
-    return 30;
-    break;
-  case 7:
-    return 36;
-    break;
-  case 8:
-    return 38;
-    break;
-  case 9:
-    return 59;
-    break;
-  case 10:
-    return 67;
-    break;
-  default:
-    throw std::runtime_error("point_data_format out of range.");
-    break;
-  }
-}
-
-/* attributes type:
- * type = 0 : unsigned char
- * type = 1 : char
- * type = 2 : unsigned short
- * type = 3 : short
- * type = 4 : unsigned int
- * type = 5 : int
- * type = 6 : unsigned int64
- * type = 7 : int64
- * type = 8 : float  (try not to use)
- * type = 9 : double (try not to use)
- */

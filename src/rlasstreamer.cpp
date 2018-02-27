@@ -174,6 +174,7 @@ void RLASstreamer::allocation()
       G.reserve(nalloc);
       B.reserve(nalloc);
     }
+    if(nir) NIR.reserve(nalloc);
 
     // Find if extra bytes are 32 of 64 bytes types
     for(int j = 0; j < eb.size(); j++)
@@ -235,6 +236,7 @@ void RLASstreamer::write_point()
       G.push_back(lasreader->point.get_G());
       B.push_back(lasreader->point.get_B());
     }
+    if(nir) NIR.push_back(lasreader->point.get_NIR());
 
     for(int j = 0; j < eb32.size(); j++)
     {
@@ -480,6 +482,14 @@ List RLASstreamer::terminate()
       B.shrink_to_fit();
     }
 
+    if(nir)
+    {
+      lasdata.push_back(NIR);
+      field.push_back("NIR");
+      NIR.clear();
+      NIR.shrink_to_fit();
+    }
+
     for(int j = 0; j < eb32.size(); j++)
     {
       lasdata.push_back(ExtraBytes32[j]);
@@ -511,6 +521,7 @@ void RLASstreamer::initialize_bool()
   u = true;
   p = true;
   rgb = true;
+  nir = true;
 
   inR = true;
   useFilter = false;
@@ -576,6 +587,11 @@ void RLASstreamer::read_rgb(bool b)
   rgb = b && (format == 2 || format == 3);
 }
 
+void RLASstreamer::read_nir(bool b)
+{
+  nir = b && (format == 8);
+}
+
 void RLASstreamer::read_eb(IntegerVector x)
 {
   std::sort(x.begin(), x.end());
@@ -618,29 +634,28 @@ int RLASstreamer::get_format(U8 point_type)
     format = 2;
     break;
   case 3:
-
     format = 3;
     break;
   case 4:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 4 not yet supported");
     break;
   case 5:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 5 not yet supported");
     break;
   case 6:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 6 not yet supported. Contact the maintainer to enable it.");
     break;
   case 7:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 7 not yet supported. Contact the maintainer to enable it.");
     break;
   case 8:
-    throw std::runtime_error("LAS format not yet supported");
+    format = 8;
     break;
   case 9:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 9 not yet supported");
     break;
   case 10:
-    throw std::runtime_error("LAS format not yet supported");
+    throw std::runtime_error("Point data record type 10 not yet supported");
     break;
   default:
     throw std::runtime_error("LAS format not valid");

@@ -6,7 +6,7 @@
 #
 # COPYRIGHT:
 #
-# Copyright 2016 Jean-Romain Roussel
+# Copyright 2016-2018 Jean-Romain Roussel
 #
 # This file is part of rlas R package.
 #
@@ -32,58 +32,117 @@
 #' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-#' The optional logical parameters enables the user to save memory by choosing to load only the
-#' fields they need. Indeed, data is loaded into the computer's memory (RAM) suboptimally because
-#' R does not accommodate many different data types. Moreover, the function provides a streaming filter
-#' to load only the points of interest into the memory without allocating any superfluous memory.
+#' The optional parameters enables the user to save memory by choosing to load only the
+#' fields they need. Moreover, the function provides a streaming filter to load only the points of
+#' interest into the memory without allocating any superfluous memory.
 #'
-#' Because \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
-#' to read the binary files, the package also inherits the filter commands available in
+#' \strong{Select:} the 'select' argument specifies which data will actually be loaded. For example,
+#' 'xyzia' means that the x, y, and z coordinates, the intensity and the scan angle will be loaded.
+#' The supported entries are t - gpstime, a - scan angle, i - intensity, n - number of returns,
+#' r - return number, c - classification, u - user data, p - point source ID, e - edge of
+#' flight line flag, d - direction of scan flag, R - red channel of RGB color, G - green
+#' channel of RGB color, B - blue channel of RGB color, N - near infrared channel. Also number from
+#' 1 to 9 for the extra bytes data number 1 to 9. 0 enable to load all extra bytes and '*' is the
+#' wildcard and enables to load everything from the LAS file. \cr
+#' Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.\cr\cr
+#' \strong{Filter:} the 'filter' argument allows filtering of the point cloud while reading files.
+#' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
+#' to read the binary files. Thus the package inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to
-#' display the \code{LASlib} documentation and the available filters.
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
+#' to display the \code{LASlib} documentation and the available filters.
 #'
-#' @param files filepath character string to the .las or .laz files
-#' @param i logical. do you want to load the Intensity field? default: TRUE
-#' @param r logical. do you want to load the ReturnNumber field? default: TRUE
-#' @param n logical. do you want to load the NumberOfReturns field? default: TRUE
-#' @param d logical. do you want to load the ScanDirectionFlag field? default: TRUE
-#' @param e logical. do you want to load the EdgeOfFlightline field? default: TRUE
-#' @param c logical. do you want to load the Classification field? default: TRUE
-#' @param a logical. do you want to load the ScanAngle field? default: TRUE
-#' @param u logical. do you want to load the UserData field? default: TRUE
-#' @param p logical. do you want to load the PointSourceID field? default: TRUE
-#' @param rgb logical. do you want to load R,G and B fields? default: TRUE
-#' @param t logical. do you want to load gpstime fields? default: TRUE
-#' @param eb integer vector. which extra byte attributes to load (see
-#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format specs}).
-#' default is 0 meaning that all extra fields will be loaded. \code{c(1,3,7)} to load the first, the
-#' third and the seventh extra byte attributes. None is \code{numeric(0)} or \code{NULL}.
-#' @param filter character. filter data while reading the file (streaming filter) without
-#' allocating any useless memory. (see Details).
-#' @importFrom Rcpp sourceCpp
-#' @import data.table
-#' @family rlas
+#' @param files array of characters
+#' @param select character. select only columns of interest to save memory (see details)
+#' @param filter character. streaming filters - filter data while reading the file (see details)
 #' @return A \code{data.table}
 #' @export
 #' @examples
 #' lazfile <- system.file("extdata", "example.laz", package="rlas")
 #'
-#' lasdata <- readlasdata(lazfile)
-#' lasdata <- readlasdata(lazfile, filter = "-keep_first")
-#' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
+#' lasdata <- read.las(lazfile)
+#' lasdata <- read.las(lazfile, filter = "-keep_first")
+#' lasdata <- read.las(lazfile, filter = "-drop_intensity_below 80")
+#' lasdata <- read.las(lazfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
-readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", eb = 0)
+read.las = function(files, select = "*", filter = "")
 {
-  ofile = ""
-  data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb)
+  stream.las(files, select = select, filter = filter)
+}
+
+#' Read header from a .las or .laz file
+#'
+#' Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
+#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#'
+#' @param file filepath character string to the .las or .laz file
+#' @family rlas
+#' @return A \code{list}
+#' @importFrom Rcpp sourceCpp
+#' @export
+#' @examples
+#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
+#' lasheader <- read.lasheader(lazfile)
+read.lasheader = function(file)
+{
+  valid = file.exists(file)
+  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+  file = normalizePath(file)
+
+  if(!valid)  stop("File not found", call. = F)
+  if(!islas)  stop("File not supported", call. = F)
+
+  data = lasheaderreader(file)
+
   return(data)
 }
 
-streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = 0)
+stream.las = function(ifiles, ofile = "", select = "*", filter = "")
 {
   check_file(ifiles)
   check_filter(filter)
+
+  t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
+  options <- select
+
+  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
+  if ("i" %is_in% options) i <- TRUE
+  if ("t" %is_in% options) t <- TRUE
+  if ("r" %is_in% options) r <- TRUE
+  if ("n" %is_in% options) n <- TRUE
+  if ("d" %is_in% options) d <- TRUE
+  if ("e" %is_in% options) e <- TRUE
+  if ("c" %is_in% options) c <- TRUE
+  if ("a" %is_in% options) a <- TRUE
+  if ("u" %is_in% options) u <- TRUE
+  if ("p" %is_in% options) p <- TRUE
+  if ("R" %is_in% options) rgb <- TRUE
+  if ("G" %is_in% options) rgb <- TRUE
+  if ("B" %is_in% options) rgb <- TRUE
+  if ("N" %is_in% options) nir <- TRUE
+  eb <- as.numeric(unlist(regmatches(options, gregexpr("[[:digit:]]", options))))
+  if (any(eb == 0)) eb = 1:9
+
+  if ("-i" %is_in% select) i <- FALSE
+  if ("-t" %is_in% select) t <- FALSE
+  if ("-r" %is_in% select) r <- FALSE
+  if ("-n" %is_in% select) n <- FALSE
+  if ("-d" %is_in% select) d <- FALSE
+  if ("-e" %is_in% select) e <- FALSE
+  if ("-c" %is_in% select) c <- FALSE
+  if ("-a" %is_in% select) a <- FALSE
+  if ("-u" %is_in% select) u <- FALSE
+  if ("-p" %is_in% select) p <- FALSE
+  if ("-R" %is_in% select) rgb <- FALSE
+  if ("-G" %is_in% select) rgb <- FALSE
+  if ("-B" %is_in% select) rgb <- FALSE
+  if ("-N" %is_in% select) nir <- FALSE
+  rmeb <- abs(as.numeric(unlist(regmatches(select, gregexpr("-[[:digit:]]", select)))))
+  if (any(rmeb == 0)) rmeb = 1:9
+  eb = eb[is.na(match(eb, rmeb))]
+
+  eb = eb - 1 # converts eb to zero-based numbering
 
   ifiles = normalizePath(ifiles)
 
@@ -93,8 +152,7 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   if (is.null(eb))
     eb = numeric(0)
 
-  # converts eb to zero-based numbering
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 
   if (ofile != "")
     return(invisible())
@@ -104,10 +162,51 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
   return(data)
 }
 
-streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = c(1:9))
+stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", filter = "")
 {
   check_file(ifiles)
   check_filter(filter)
+
+  t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
+  options <- select
+
+  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
+  if ("i" %is_in% options) i <- TRUE
+  if ("t" %is_in% options) t <- TRUE
+  if ("r" %is_in% options) r <- TRUE
+  if ("n" %is_in% options) n <- TRUE
+  if ("d" %is_in% options) d <- TRUE
+  if ("e" %is_in% options) e <- TRUE
+  if ("c" %is_in% options) c <- TRUE
+  if ("a" %is_in% options) a <- TRUE
+  if ("u" %is_in% options) u <- TRUE
+  if ("p" %is_in% options) p <- TRUE
+  if ("R" %is_in% options) rgb <- TRUE
+  if ("G" %is_in% options) rgb <- TRUE
+  if ("B" %is_in% options) rgb <- TRUE
+  if ("N" %is_in% options) nir <- TRUE
+  eb <- as.numeric(unlist(regmatches(options, gregexpr("[[:digit:]]", options))))
+  if (any(eb == 0)) eb = 1:9
+
+  if ("-i" %is_in% select) i <- FALSE
+  if ("-t" %is_in% select) t <- FALSE
+  if ("-r" %is_in% select) r <- FALSE
+  if ("-n" %is_in% select) n <- FALSE
+  if ("-d" %is_in% select) d <- FALSE
+  if ("-e" %is_in% select) e <- FALSE
+  if ("-c" %is_in% select) c <- FALSE
+  if ("-a" %is_in% select) a <- FALSE
+  if ("-u" %is_in% select) u <- FALSE
+  if ("-p" %is_in% select) p <- FALSE
+  if ("-R" %is_in% select) rgb <- FALSE
+  if ("-G" %is_in% select) rgb <- FALSE
+  if ("-B" %is_in% select) rgb <- FALSE
+  if ("-N" %is_in% select) nir <- FALSE
+  rmeb <- abs(as.numeric(unlist(regmatches(select, gregexpr("-[[:digit:]]", select)))))
+  if (any(rmeb == 0)) rmeb = 1:9
+  eb = eb[is.na(match(eb, rmeb))]
+
+  eb = eb - 1 # converts eb to zero-based numbering
 
   ifiles = normalizePath(ifiles)
 
@@ -130,8 +229,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-  # converts eb to zero-based numbering
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 
   if (ofile != "")
     return(invisible())
@@ -141,49 +239,4 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
   return(data)
 }
 
-#' Read header from a .las or .laz file
-#'
-#' Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
-#' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
-#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-#'
-#' @param file filepath character string to the .las or .laz file
-#' @family rlas
-#' @return A \code{list}
-#' @importFrom Rcpp sourceCpp
-#' @export
-#' @examples
-#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
-#' lasheader <- readlasheader(lazfile)
-readlasheader = function(file)
-{
-  valid = file.exists(file)
-  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
-  file = normalizePath(file)
-
-  if(!valid)  stop("File not found", call. = F)
-  if(!islas)  stop("File not supported", call. = F)
-
-  data = lasheaderreader(file)
-
-  return(data)
-}
-
-check_file = function(file)
-{
-  valid = file.exists(file)
-  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
-  file = normalizePath(file)
-
-  if (!all(valid))
-    stop("File not found", call. = F)
-
-  if (!all(islas))
-    stop("File not supported", call. = F)
-}
-
-check_filter = function(filter)
-{
-  if (!is.character(filter))
-    stop("Incorrect argument 'filter'", call. = F)
-}
+`%is_in%` <- function(char, str) !is.na(stringr::str_match(str, char)[1,1])
