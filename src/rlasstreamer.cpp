@@ -584,7 +584,7 @@ void RLASstreamer::read_p(bool b)
 
 void RLASstreamer::read_rgb(bool b)
 {
-  rgb = b && (format == 2 || format == 3 || format == 7 || fomrat == 8);
+  rgb = b && (format == 2 || format == 3 || format == 7 || format == 8);
 }
 
 void RLASstreamer::read_nir(bool b)
