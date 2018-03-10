@@ -643,10 +643,10 @@ int RLASstreamer::get_format(U8 point_type)
     throw std::runtime_error("Point data record type 5 not yet supported");
     break;
   case 6:
-    throw std::runtime_error("Point data record type 6 not yet supported. Contact the maintainer to enable it.");
+    format = 6;
     break;
   case 7:
-    throw std::runtime_error("Point data record type 7 not yet supported. Contact the maintainer to enable it.");
+    format = 7;
     break;
   case 8:
     format = 8;
