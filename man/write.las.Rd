@@ -9,8 +9,8 @@ write.las(file, header, data)
 \arguments{
 \item{file}{character. file path to .las or .laz file}
 
-\item{header}{list. It can be partially recycled from another file (see \link{readlasheader}) and
-updated with \link{update_header} or generated with \link{make_header}.}
+\item{header}{list. It can be partially recycled from another file (see \link{read.lasheader}) and
+updated with \link{header_update} or generated with \link{header_create}.}
 
 \item{data}{data.frame or data.table that contains the data to write in the file. Colunm names must
 respect the imposed nomenclature (see details)}
@@ -21,7 +21,7 @@ void
 \description{
 Write a .las or .laz file. The user provides a table with the data in column. Column names must
 respect specific allowed names (see details). A correct and complete header must also be provided.
-This header can optionnally be generated with \link{make_header}.
+This header can optionnally be generated with \link{header_create}.
 }
 \details{
 Allowed names are "X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
@@ -47,7 +47,7 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
                      UserData = c(32L, 32L, 32L),
                      PointSourceID = c(17L, 17L, 17L))
 
-lasheader = make_header(lasdata)
+lasheader = header_create(lasdata)
 file = file.path(tempdir(), "temp.laz")
 
 write.las(file, lasheader, lasdata)

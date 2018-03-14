@@ -31,7 +31,7 @@
 #'
 #' Write a .las or .laz file. The user provides a table with the data in column. Column names must
 #' respect specific allowed names (see details). A correct and complete header must also be provided.
-#' This header can optionnally be generated with \link{make_header}.
+#' This header can optionnally be generated with \link{header_create}.
 #'
 #' Allowed names are "X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
 #' "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID",
@@ -42,8 +42,8 @@
 #' Otherwise user can rely on automated procedures that are expected to be sufficient for most usages.
 #'
 #' @param file character. file path to .las or .laz file
-#' @param header list. It can be partially recycled from another file (see \link{readlasheader}) and
-#' updated with \link{update_header} or generated with \link{make_header}.
+#' @param header list. It can be partially recycled from another file (see \link{read.lasheader}) and
+#' updated with \link{header_update} or generated with \link{header_create}.
 #' @param data data.frame or data.table that contains the data to write in the file. Colunm names must
 #' respect the imposed nomenclature (see details)
 #' @export
@@ -65,7 +65,7 @@
 #'                      UserData = c(32L, 32L, 32L),
 #'                      PointSourceID = c(17L, 17L, 17L))
 #'
-#' lasheader = make_header(lasdata)
+#' lasheader = header_create(lasdata)
 #' file = file.path(tempdir(), "temp.laz")
 #'
 #' write.las(file, lasheader, lasdata)

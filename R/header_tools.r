@@ -1,13 +1,17 @@
-#' Create a header from data
+#' Public header block tools
 #'
-#' Create a header for a las file from data. The header is not necessarily entierely correct regarding
-#' specification but is expected to be enought to be passed in \link{write.las} since many redoundant
-#' information are computed at writing time anyway.
+#' Create or update a header for a las file from a dataset. A las file is constitued of two parts. A header
+#' that describes the data and the data itself. These functions make valid headers (public header block only)
+#' that can be used in \link{write.las}.
+#'
+#' \code{header_create} make a full header from data. \code{header_update} modify the informations that
+#' need to be updated. But most of original informations are not modified such as point data format is
+#' kept as is.
 #'
 #' @param data data.frame or data.table
-#' @param extra_bytes Labelled list. Specify which column must be saved as extra bytes attribute and
-#' provide a description to this data. The
+#' @param header list. A header
 #'
+#' @return A list containing the metadata required to write a las file.
 #' @export
 #' @examples
 #' lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
@@ -25,132 +29,217 @@
 #'                      PointSourceID = c(17L, 17L, 17L),
 #'                      treeID = c(1L, 1L, 1L))
 #'
-#' extra = list(treeID = "Unique ID for segmented trees")
-#'
-#' lasheader = make_header(lasdata, extra)
-make_header = function(data, extra_bytes = NULL)
+#' lasheader = header_create(lasdata)
+header_create = function(data)
 {
   fields = names(data)
 
-  if(!is.null(extra_bytes))
-  {
-    if(!all(names(extra_bytes) %in% fields))
-      stop("extra bytes names do not match with the data", call. = FALSE)
-  }
-
   header = list()
-  header$`File Signature` = "LASF"
-  header$`File Source ID` = 0L
-  header$`Global Encoding` = 0L
-  header$`Project ID - GUID` = 0
-  header$`Version Major` = 1L
-  header$`Version Minor` = 2L
-  header$`System Identifier` = "rlas R package"
-  header$`Generating Software` = "rlas R package"
-  header$`File Creation Day of Year` = as.numeric(strftime(Sys.time(), format = "%j"))
-  header$`File Creation Year` = as.numeric(strftime(Sys.time(), format = "%Y"))
-  header$`Header Size` = 227
-  header$`Offset to point data` = 227
-  header$`Number of point records` = dim(data)[1]
-  header$`Min X` = min(data$X)
-  header$`Min Y` = min(data$Y)
-  header$`Min Z` = min(data$Z)
-  header$`Max X` = max(data$X)
-  header$`Max Y` = max(data$Y)
-  header$`Max Z` = max(data$Z)
-  header$`X offset` = header$`Min X`
-  header$`Y offset` = header$`Min Y`
-  header$`Z offset` = header$`Min Z`
-  header$`X scale factor` = 0.01
-  header$`Y scale factor` = 0.01
-  header$`Z scale factor` = 0.01
+  header[["File Signature"]] = "LASF"
+  header[["File Source ID"]] = 0L
+  header[["Global Encoding"]] = 0L
+  header[["Project ID - GUID"]] = 0
+  header[["Version Major"]] = 1L
+  header[["Version Minor"]] = 2L
+  header[["System Identifier"]] = "rlas R package"
+  header[["Generating Software"]] = "rlas R package"
+  header[["File Creation Day of Year"]] = as.numeric(strftime(Sys.time(), format = "%j"))
+  header[["File Creation Year"]] = as.numeric(strftime(Sys.time(), format = "%Y"))
+  header[["Header Size"]] = 227
+  header[["Offset to point data"]] = 227
+  header[["Number of point records"]] = dim(data)[1]
+  header[["Min X"]] = min(data$X)
+  header[["Min Y"]] = min(data$Y)
+  header[["Min Z"]] = min(data$Z)
+  header[["Max X"]] = max(data$X)
+  header[["Max Y"]] = max(data$Y)
+  header[["Max Z"]] = max(data$Z)
+  header[["X offset"]] = header[["Min X"]]
+  header[["Y offset"]] = header[["Min Y"]]
+  header[["Z offset"]] = header[["Min Z"]]
+  header[["X scale factor"]] = 0.01
+  header[["Y scale factor"]] = 0.01
+  header[["Z scale factor"]] = 0.01
 
   if("ReturnNumber" %in% fields) {
     number_of <- as.list(table(data$ReturnNumber))
-    header$`Number of 1st return` <- number_of$`1`
-    header$`Number of 2nd return` <- number_of$`2`
-    header$`Number of 3rd return` <- number_of$`3`
-    header$`Number of 4th return` <- number_of$`4`
-    header$`Number of 5th return` <- number_of$`5`
+    header[["Number of 1st return"]] <- number_of[["1"]]
+    header[["Number of 2nd return"]] <- number_of[["2"]]
+    header[["Number of 3rd return"]] <- number_of[["3"]]
+    header[["Number of 4th return"]] <- number_of[["4"]]
+    header[["Number of 5th return"]] <- number_of[["5"]]
   }
 
   if("NIR" %in% fields) { # format 8
-    header$`Point Data Format ID` = 8
-    header$`Point Data Record Length` = 38
+    header[["Point Data Format ID"]] = 8
+    header[["Point Data Record Length"]] = 38
   }
   else if("gpstime" %in% fields) { # format 1, 3, 6, 7
     if(all(c("R", "G", "B") %in% fields)) { # format 3 (6 not supported)
-      header$`Point Data Format ID` = 3
-      header$`Point Data Record Length` = 34
+      header[["Point Data Format ID"]] = 3
+      header[["Point Data Record Length"]] = 34
     }
     else { # format 1 (7 not supported)
-      header$`Point Data Format ID` = 1
-      header$`Point Data Record Length` = 28
+      header[["Point Data Format ID"]] = 1
+      header[["Point Data Record Length"]] = 28
     }
   }
   else { # format 0 or 2
     if(all(c("R", "G", "B") %in% fields)) {
-      header$`Point Data Format ID` = 2
-      header$`Point Data Record Length` = 26
+      header[["Point Data Format ID"]] = 2
+      header[["Point Data Record Length"]] = 26
     }
     else {
-      header$`Point Data Format ID` = 0
-      header$`Point Data Record Length` = 20
+      header[["Point Data Format ID"]] = 0
+      header[["Point Data Record Length"]] = 20
     }
   }
 
-  header$`Variable Length Records` = list()
-
-  if (length(extra_bytes) > 0)
-  {
-    for(i in seq_along(extra_bytes))
-    {
-      name = names(extra_bytes[i])
-      desc = extra_bytes[[i]]
-      extra_byte = data[[name]]
-
-      header = add_extra_bytes(header, extra_byte, name, desc)
-    }
-  }
+  header[["Variable Length Records"]] = list()
 
   return(header)
 }
 
-add_extra_bytes = function(header, data, name, description)
+#' @export
+#' @rdname header_create
+header_update = function(header, data)
 {
- type = class(data)
- dmin = min(data)
- dmax = max(data)
- offset = dmin
+  fields = names(data)
 
- if (type == "integer")
- {
-   type = 7
-   scale = NULL
-   options = strtoi("10110", base = 2L)
- }
- else if (type == "numeric")
- {
-   type = 7
-   scale = 0.01
-   options = strtoi("11110", base = 2L)
- }
- else
-   stop("Internal error. Process aborded")
+  if("ReturnNumber" %in% fields)
+  {
+    number_of <- as.list(table(data$ReturnNumber))
+    header[["Number of 1st return"]] <- number_of[["1"]]
+    header[["Number of 2nd return"]] <- number_of[["2"]]
+    header[["Number of 3rd return"]] <- number_of[["3"]]
+    header[["Number of 4th return"]] <- number_of[["4"]]
+    header[["Number of 5th return"]] <- number_of[["5"]]
+  }
 
- description = list(reserved = 0,
-                    data_type = type,
-                    options = options,
-                    name = name,
-                    min = dmin,
-                    max = dmax,
-                    scale = scale,
-                    offset = offset,
-                    description = description)
+  header[["Number of point records"]] <- dim(data)[1]
+  header["Min X"] <- min(data$X)
+  header["Min Y"] <- min(data$Y)
+  header["Min Z"] <- min(data$Z)
+  header["Max X"] <- max(data$X)
+  header["Max Y"] <- max(data$Y)
+  header["Max Z"] <- max(data$Z)
+}
 
- header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[name]] = description
+#' Variable lenght records tools
+#'
+#' Functions that update a header to describe variable lenght records according to the
+#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#'
+#' @param header list
+#' @param name character. The name of the extrabytes attributes to add in the file.
+#' @param desc character. The description of the extrabytes attributes to add in the file.
+#' @param type integer. The data type of the extrabytes attributes.
+#' @param min,max numeric. The minimum and maximum value of the data. NULL if not relevant.
+#' @param scale,offset numeric. The scale and offset of the data. NULL if not relevant.
+#' @param has_na logical. TRUE if data contains NA values. FALSE otherwise
+#' @param data vector. Data that must be added in the extrabytes attributes
+#'
+#' @examples
+#' data = data.frame(X = c(339002.889, 339002.983, 339002.918),
+#'                   Y = c(5248000.515, 5248000.478, 5248000.318),
+#'                   Z = c(975.589, 974.778, 974.471),
+#'                   gpstime = c(269347.281418006, 269347.281428006, 269347.281438006),
+#'                   Intensity = c(82L, 54L, 27L),
+#'                   ReturnNumber = c(1L, 1L, 2L),
+#'                   NumberOfReturns = c(1L, 1L, 2L),
+#'                   ScanDirectionFlag = c(1L, 1L, 1L),
+#'                   EdgeOfFlightline = c(1L, 0L, 0L),
+#'                   Classification = c(1L, 1L, 1L),
+#'                   ScanAngle = c(-21L, -21L, -21L),
+#'                   UserData = c(32L, 32L, 32L),
+#'                   PointSourceID = c(17L, 17L, 17L),
+#'                   treeID = c(1L, 1L, 1L))
+#'
+#' lasheader = header_create(data)
+#' lasheader[["Variable Length Records"]]
+#'
+#' lasheader = header_add_extrabytes(lasheader, data$treeID, "treeID", "An id for each tree")
+#' lasheader[["Variable Length Records"]]
+#' @export
+header_add_extrabytes = function(header, data, name, desc)
+{
+  type = class(data)
+  dmin = min(data, na.rm = TRUE)
+  dmax = max(data, na.rm = TRUE)
+  has_na = any(is.na(data))
+  offset = dmin
+  scale = NULL
+  offset = NULL
 
- return(header)
+  if (type == "integer")
+  {
+    type = 6
+  }
+  else if (type == "numeric")
+  {
+    type = 10
+    scale = 0.01
+  }
+  else if (type == "interger64")
+  {
+    type = 7
+  }
+  else
+    stop("Internal error. Process aborded")
+
+  header = header_add_extrabytes_manual(header, name, desc, type, offset, scale, dmax, dmin, has_na)
+
+  return(header)
+}
+
+#' @export
+#' @rdname header_add_extrabytes
+header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = NULL, scale = NULL, max = NULL, min = NULL, has_na = FALSE)
+{
+  options = ""
+
+  if (is.null(offset))
+    options = paste0(options, "0")
+  else
+    options = paste0(options, "1")
+
+  if (is.null(scale))
+    options = paste0(options, "0")
+  else
+    options = paste0(options, "1")
+
+  if (is.null(max))
+    options = paste0(options, "0")
+  else
+    options = paste0(options, "1")
+
+  if (is.null(min))
+    options = paste0(options, "0")
+  else
+    options = paste0(options, "1")
+
+  if (!has_na)
+    options = paste0(options, "0")
+  else
+    options = paste0(options, "1")
+
+  options = strtoi(options, base = 2L)
+
+  description = list(reserved = 0,
+                     data_type = type,
+                     options = options,
+                     name = name,
+                     min = min,
+                     max = max,
+                     scale = scale,
+                     offset = offset,
+                     description = desc)
+
+  description = description[!sapply(description, is.null)]
+
+  header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[name]] = description
+
+  return(header)
 }
 
 #allowed_fields = c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns", "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID", "R", "G", "B", "NIR")
