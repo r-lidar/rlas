@@ -2,7 +2,7 @@
 
 #### NEW FEATURES
 
-* Enable the support in read mode of files with a point data format 8 (with near infrared).
+* Enable the support in read mode of files with a point data format 6, 7 and 8.
 * New function `read.las` in replacement of `readlasdata` which is now deprecated. The selection of 
 the field to load is now easier using a syntax with a string instead of multiple logical parameters.
 `select = "xyzia"` allows for loading only points coordinates plus intensity and scan angle. 

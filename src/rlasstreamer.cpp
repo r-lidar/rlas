@@ -533,7 +533,7 @@ void RLASstreamer::initialize_bool()
 
 void RLASstreamer::read_t(bool b)
 {
-  t = b && (format == 1 || format == 3);
+  t = b && (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
 }
 
 void RLASstreamer::read_i(bool b)
@@ -584,7 +584,7 @@ void RLASstreamer::read_p(bool b)
 
 void RLASstreamer::read_rgb(bool b)
 {
-  rgb = b && (format == 2 || format == 3);
+  rgb = b && (format == 2 || format == 3 || format == 7 || format == 8);
 }
 
 void RLASstreamer::read_nir(bool b)
@@ -643,10 +643,10 @@ int RLASstreamer::get_format(U8 point_type)
     throw std::runtime_error("Point data record type 5 not yet supported");
     break;
   case 6:
-    throw std::runtime_error("Point data record type 6 not yet supported. Contact the maintainer to enable it.");
+    format = 6;
     break;
   case 7:
-    throw std::runtime_error("Point data record type 7 not yet supported. Contact the maintainer to enable it.");
+    format = 7;
     break;
   case 8:
     format = 8;
