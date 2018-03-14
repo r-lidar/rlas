@@ -120,14 +120,14 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       // set scale value if option set
       if(has_scale)
       {
-        scale[i] = (double)(Rcpp::as<Rcpp::List>(description["scale"])[0]);
+        scale[i] = (double)(as<List>(description["scale"])[0]);
         attribute.set_scale(scale[i], 0);
       }
 
       // set offset value if option set
       if(has_offset)
       {
-        offset[i] = (double)(Rcpp::as<Rcpp::List>(description["offset"])[0]);
+        offset[i] = (double)(as<List>(description["offset"])[0]);
         attribute.set_offset(offset[i], 0);
       }
 
