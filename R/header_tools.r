@@ -123,6 +123,8 @@ header_update = function(header, data)
   header["Max X"] <- max(data$X)
   header["Max Y"] <- max(data$Y)
   header["Max Z"] <- max(data$Z)
+
+  return(header)
 }
 
 #' Variable lenght records tools
