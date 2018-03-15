@@ -8,7 +8,7 @@
 header_add_extrabytes(header, data, name, desc)
 
 header_add_extrabytes_manual(header, name, desc, type = 10, offset = NULL,
-  scale = NULL, max = NULL, min = NULL, has_na = FALSE)
+  scale = NULL, max = NULL, min = NULL, na = NULL)
 }
 \arguments{
 \item{header}{list}
@@ -23,9 +23,10 @@ header_add_extrabytes_manual(header, name, desc, type = 10, offset = NULL,
 
 \item{scale, offset}{numeric. The scale and offset of the data. NULL if not relevant.}
 
-\item{min, max}{numeric. The minimum and maximum value of the data. NULL if not relevant.}
+\item{min, max}{numeric or integer. The minimum and maximum value of the data. NULL if not relevant.}
 
-\item{has_na}{logical. TRUE if data contains NA values. FALSE otherwise}
+\item{na}{numeric or integer. NA is not a valid value. At writting time it will be replace by this value
+that will be considered as NA. NULL if not relevant.}
 }
 \description{
 Functions that update a header to describe variable lenght records according to the
