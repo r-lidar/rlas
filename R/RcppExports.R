@@ -5,6 +5,22 @@ laswriter <- function(file, LASheader, X, Y, Z, ExtraBytes, I = integer(0), RN =
     invisible(.Call(`_rlas_laswriter`, file, LASheader, X, Y, Z, ExtraBytes, I, RN, NoR, SDF, EoF, C, SA, UD, PSI, T, R, G, B))
 }
 
+fast_table <- function(x, size = 5L) {
+    .Call(`_rlas_fast_table`, x, size)
+}
+
+fast_countequal <- function(x, t) {
+    .Call(`_rlas_fast_countequal`, x, t)
+}
+
+fast_countbelow <- function(x, t) {
+    .Call(`_rlas_fast_countbelow`, x, t)
+}
+
+fast_countover <- function(x, t) {
+    .Call(`_rlas_fast_countover`, x, t)
+}
+
 point_in_polygon <- function(vertx, verty, pointx, pointy) {
     .Call(`_rlas_point_in_polygon`, vertx, verty, pointx, pointy)
 }

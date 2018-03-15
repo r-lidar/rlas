@@ -33,6 +33,54 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// fast_table
+IntegerVector fast_table(IntegerVector x, int size);
+RcppExport SEXP _rlas_fast_table(SEXP xSEXP, SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_table(x, size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_countequal
+int fast_countequal(NumericVector x, double t);
+RcppExport SEXP _rlas_fast_countequal(SEXP xSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_countequal(x, t));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_countbelow
+int fast_countbelow(NumericVector x, double t);
+RcppExport SEXP _rlas_fast_countbelow(SEXP xSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_countbelow(x, t));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_countover
+int fast_countover(NumericVector x, double t);
+RcppExport SEXP _rlas_fast_countover(SEXP xSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_countover(x, t));
+    return rcpp_result_gen;
+END_RCPP
+}
 // point_in_polygon
 bool point_in_polygon(NumericVector vertx, NumericVector verty, double pointx, double pointy);
 RcppExport SEXP _rlas_point_in_polygon(SEXP vertxSEXP, SEXP vertySEXP, SEXP pointxSEXP, SEXP pointySEXP) {
@@ -146,6 +194,10 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rlas_laswriter", (DL_FUNC) &_rlas_laswriter, 19},
+    {"_rlas_fast_table", (DL_FUNC) &_rlas_fast_table, 2},
+    {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
+    {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
+    {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
     {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},

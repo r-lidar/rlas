@@ -75,6 +75,6 @@ write.las = function(file, header, data)
   check_output_file(file)
   check_header(header)
   check_data(data)
-  check_data_header(header, data)
+  check_data_vs_header(header, data)
   C_writer(file, header, data)
 }
