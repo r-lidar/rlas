@@ -189,7 +189,7 @@ header_add_extrabytes = function(header, data, name, desc)
     if (has_na)
       na = .Machine$double.xmax
   }
-  else if (type == "interger64")
+  else if (type == "integer64")
   {
     type = 7
 
