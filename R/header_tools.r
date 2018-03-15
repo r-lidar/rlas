@@ -134,9 +134,10 @@ header_update = function(header, data)
 #' @param name character. The name of the extrabytes attributes to add in the file.
 #' @param desc character. The description of the extrabytes attributes to add in the file.
 #' @param type integer. The data type of the extrabytes attributes.
-#' @param min,max numeric. The minimum and maximum value of the data. NULL if not relevant.
+#' @param min,max numeric or integer. The minimum and maximum value of the data. NULL if not relevant.
 #' @param scale,offset numeric. The scale and offset of the data. NULL if not relevant.
-#' @param has_na logical. TRUE if data contains NA values. FALSE otherwise
+#' @param na numeric or integer. NA is not a valid value. At writting time it will be replace by this value
+#' that will be considered as NA. NULL if not relevant.
 #' @param data vector. Data that must be added in the extrabytes attributes
 #'
 #' @examples
@@ -168,62 +169,56 @@ header_add_extrabytes = function(header, data, name, desc)
   dmax = max(data, na.rm = TRUE)
   has_na = any(is.na(data))
   offset = dmin
+  na = NULL
   scale = NULL
   offset = NULL
+
 
   if (type == "integer")
   {
     type = 6
+
+    if (has_na)
+      na = .Machine$integer.max
   }
   else if (type == "numeric")
   {
     type = 10
     scale = 0.01
+
+    if (has_na)
+      na = .Machine$double.xmax
   }
   else if (type == "interger64")
   {
     type = 7
+
+    if (has_na)
+      stop("NAs are not supported yet for integer64.")
   }
   else
     stop("Internal error. Process aborded")
 
-  header = header_add_extrabytes_manual(header, name, desc, type, offset, scale, dmax, dmin, has_na)
+  header = header_add_extrabytes_manual(header, name, desc, type, offset, scale, dmax, dmin, na)
 
   return(header)
 }
 
 #' @export
 #' @rdname header_add_extrabytes
-header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = NULL, scale = NULL, max = NULL, min = NULL, has_na = FALSE)
+header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = NULL, scale = NULL, max = NULL, min = NULL, na = NULL)
 {
-  options = ""
-
-  if (is.null(offset))
-    options = paste0(options, "0")
-  else
-    options = paste0(options, "1")
-
-  if (is.null(scale))
-    options = paste0(options, "0")
-  else
-    options = paste0(options, "1")
-
-  if (is.null(max))
-    options = paste0(options, "0")
-  else
-    options = paste0(options, "1")
-
-  if (is.null(min))
-    options = paste0(options, "0")
-  else
-    options = paste0(options, "1")
-
-  if (!has_na)
-    options = paste0(options, "0")
-  else
-    options = paste0(options, "1")
-
-  options = strtoi(options, base = 2L)
+  options = 0
+  if(!is.null(na))
+    options = options + 2^0
+  if(!is.null(min))
+    options = options + 2^1
+  if(!is.null(max))
+    options = options + 2^2
+  if(!is.null(scale))
+    options = options + 2^3
+  if(!is.null(offset))
+    options = options + 2^4
 
   description = list(reserved = 0,
                      data_type = type,
@@ -231,6 +226,7 @@ header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = 
                      name = name,
                      min = min,
                      max = max,
+                     no_data = na,
                      scale = scale,
                      offset = offset,
                      description = desc)
