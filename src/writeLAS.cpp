@@ -39,6 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 using namespace Rcpp;
 
 int get_point_data_record_length(int x);
+void set_guid(LASheader&, const char*);
 
 // [[Rcpp::export]]
 void C_writer(CharacterVector file, List LASheader, DataFrame data)
@@ -63,6 +64,12 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     header.z_offset =  (double)LASheader["Z offset"];
     header.point_data_record_length = get_point_data_record_length(header.point_data_format);
     strcpy(header.generating_software, "rlas R package");
+
+    // uuid
+    CharacterVector guid = LASheader["Project ID - GUID"];
+    std::string stdguid  = as<std::string>(guid);
+    const char* cguid = stdguid.c_str();
+    set_guid(header, cguid);
 
     // 2. Deal with extra bytes attributes
 
@@ -402,6 +409,40 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
   {
     Rcerr << e.what() << std::endl;
   }
+}
+
+void set_guid(LASheader &header, const char* guid)
+{
+  // uuid
+  I64 set_GUID_data_1 = 0;
+  I32 set_GUID_data_2 = 0;
+  I32 set_GUID_data_3 = 0;
+  I32 set_GUID_data_4a = 0;
+  I64 set_GUID_data_4b = 0;
+
+  sscanf(guid, "%llx-%x-%x-%x-%llx", &set_GUID_data_1, &set_GUID_data_2, &set_GUID_data_3, &set_GUID_data_4a, &set_GUID_data_4b);
+
+  U32 GUID_data_1 = U32_CLAMP(set_GUID_data_1);
+  U16 GUID_data_2 = U16_CLAMP(set_GUID_data_2);
+  U16 GUID_data_3 = U16_CLAMP(set_GUID_data_3);
+  U16 GUID_data_4a = U16_CLAMP(set_GUID_data_4a);
+  U16 GUID_data_4b_a = U16_CLAMP(set_GUID_data_4b >> 32);
+  U32 GUID_data_4b_b = U32_CLAMP(set_GUID_data_4b & 0xFFFFFFFF);
+
+  U8 byte1 = * ((U8 *)&GUID_data_4a);
+  U8 byte2 = * ((U8 *)&GUID_data_4a+1);
+  U8 byte3 = * ((U8 *)&GUID_data_4b_a);
+  U8 byte4 = * ((U8 *)&GUID_data_4b_a+1);
+  U8 byte5 = * ((U8 *)&GUID_data_4b_b);
+  U8 byte6 = * ((U8 *)&GUID_data_4b_b+1);
+  U8 byte7 = * ((U8 *)&GUID_data_4b_b+2);
+  U8 byte8 = * ((U8 *)&GUID_data_4b_b+3);
+  U8 GUID_data_4[8] = {byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8};
+
+  header.project_ID_GUID_data_1 = GUID_data_1;
+  header.project_ID_GUID_data_2 = GUID_data_2;
+  header.project_ID_GUID_data_3 = GUID_data_3;
+  memcpy(header.project_ID_GUID_data_4, GUID_data_4, sizeof(U8)*8);
 }
 
 

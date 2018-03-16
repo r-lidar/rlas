@@ -14,6 +14,16 @@ test_that("write.las writes a correct file",{
   expect_equal(header$`Point Data Format ID`, wheader$`Point Data Format ID`)
 })
 
+test_that("UUID is properly written",{
+  new_header = header
+  new_header$`Project ID - GUID` = uuid::UUIDgenerate()
+
+  write.las(write_path, new_header, las)
+  wheader <- read.lasheader(write_path)
+
+  expect_equal(wheader$`Project ID - GUID`, new_header$`Project ID - GUID`)
+})
+
 test_that("write.las does not write time if point format enforced to 0",{
   new_header = header
   new_header$`Point Data Format ID` = 0
@@ -82,17 +92,4 @@ test_that("write.las skiped selectively extra byte if missing VLR",{
   expect_equal(wlas, las[, -c(14)])
 })
 
-test_that("Modifying Extra Byte format works",{
-  new_header = header
-  new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$data_type = 1
-  new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$scale = NULL
-  new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$options = 0
-  new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$scale = NULL
 
-  write.las(write_path, new_header, las)
-  wlas <- read.las(write_path)
-  wheader <- read.lasheader(write_path)
-
-  expect_true(all(wlas$Amplitude == floor(las$Amplitude+.5)))
-  expect_true(wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$data_type==1)
-})

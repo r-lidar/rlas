@@ -66,7 +66,7 @@ List lasheaderreader(CharacterVector file)
       throw std::runtime_error("LASlib internal error. See message above.");
 
     char cguid[38];
-    sprintf(cguid, "%08X-%04X-%04X-%04X-%04X%08X",
+    sprintf(cguid, "%08x-%04x-%04x-%04x-%04x%08x",
             lasheader->project_ID_GUID_data_1,
             lasheader->project_ID_GUID_data_2,
             lasheader->project_ID_GUID_data_3,
