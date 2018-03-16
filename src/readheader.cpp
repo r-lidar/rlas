@@ -65,11 +65,22 @@ List lasheaderreader(CharacterVector file)
     if(0 == lasreader | NULL == lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
 
+    char cguid[38];
+    sprintf(cguid, "%08X-%04X-%04X-%04X-%04X%08X",
+            lasheader->project_ID_GUID_data_1,
+            lasheader->project_ID_GUID_data_2,
+            lasheader->project_ID_GUID_data_3,
+            *((U16*)(lasheader->project_ID_GUID_data_4)),
+            *((U16*)(lasheader->project_ID_GUID_data_4+2)),
+            *((U32*)(lasheader->project_ID_GUID_data_4+4)));
+
+    CharacterVector guid(cguid);
+
     List head(0);
     head.push_back(lasheader->file_signature);
     head.push_back(lasheader->file_source_ID);
     head.push_back(lasheader->global_encoding);
-    head.push_back(0);
+    head.push_back(guid);
     head.push_back((int)lasheader->version_major);
     head.push_back((int)lasheader->version_minor);
     head.push_back(lasheader->system_identifier);
