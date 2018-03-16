@@ -152,7 +152,7 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
   if (is.null(eb))
     eb = numeric(0)
 
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data = C_reader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 
   if (ofile != "")
     return(invisible())
@@ -229,7 +229,7 @@ stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", fil
 
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data = C_reader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
 
   if (ofile != "")
     return(invisible())

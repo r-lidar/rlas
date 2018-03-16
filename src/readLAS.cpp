@@ -59,7 +59,7 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 // @return Rcpp::List
 
 // [[Rcpp::export]]
-List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
 {
   try
   {
@@ -97,7 +97,7 @@ List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVecto
 
 
 // [[Rcpp::export]]
-List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
 {
   try
   {
