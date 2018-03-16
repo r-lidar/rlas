@@ -239,4 +239,4 @@ stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", fil
   return(data)
 }
 
-`%is_in%` <- function(char, str) !is.na(stringr::str_match(str, char)[1,1])
+`%is_in%` <- function(char, str) grepl(char, str)
