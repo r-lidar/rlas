@@ -13,6 +13,11 @@ check_data = function(data)
 {
   if(is.null(data$X) | is.null(data$Y) | is.null(data$Z))
     stop("Missing coordinates in the data")
+
+  stopifnot(is.double(data$X))
+  stopifnot(is.double(data$Y))
+  stopifnot(is.double(data$X))
+
   if(!is.null(data$Intensity))
     stopifnot(is.integer(data$Intensity))
   if(!is.null(data$ReturnNumber))
