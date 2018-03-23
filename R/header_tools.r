@@ -135,10 +135,10 @@ header_update = function(header, data)
 #' @param header list
 #' @param name character. The name of the extrabytes attributes to add in the file.
 #' @param desc character. The description of the extrabytes attributes to add in the file.
-#' @param type integer. The data type of the extrabytes attributes.
+#' @param type integer. The data type of the extrabytes attributes (page 25 of the spec).
 #' @param min,max numeric or integer. The minimum and maximum value of the data. NULL if not relevant.
 #' @param scale,offset numeric. The scale and offset of the data. NULL if not relevant.
-#' @param na numeric or integer. NA is not a valid value. At writting time it will be replace by this value
+#' @param NA_value numeric or integer. NA is not a valid value. At writting time it will be replace by this value
 #' that will be considered as NA. NULL if not relevant.
 #' @param data vector. Data that must be added in the extrabytes attributes
 #'
@@ -166,52 +166,50 @@ header_update = function(header, data)
 #' @export
 header_add_extrabytes = function(header, data, name, desc)
 {
+  stopifnot(is.list(header), is.vector(data), is.character(name), is.character(desc))
+
   type = class(data)
   dmin = min(data, na.rm = TRUE)
   dmax = max(data, na.rm = TRUE)
-  has_na = any(is.na(data))
+  has_na = anyNA(data)
   offset = dmin
-  na = NULL
+  NA_value = NULL
   scale = NULL
   offset = NULL
 
-
   if (type == "integer")
   {
-    type = 6
+    type = 6L
 
     if (has_na)
-      na = .Machine$integer.max
+      NA_value = .Machine$integer.max
   }
   else if (type == "numeric")
   {
-    type = 10
-    scale = 0.01
+    type = 10L
 
     if (has_na)
-      na = .Machine$double.xmax
+      NA_value = .Machine$double.xmax
   }
   else if (type == "integer64")
   {
-    type = 7
-
-    if (has_na)
-      stop("NAs are not supported yet for integer64.")
+    type = 7L
+    stop("integer64 not supported yet.")
   }
   else
     stop("Internal error. Process aborded")
 
-  header = header_add_extrabytes_manual(header, name, desc, type, offset, scale, dmax, dmin, na)
+  header = header_add_extrabytes_manual(header, name, desc, type, offset, scale, dmax, dmin, NA_value)
 
   return(header)
 }
 
 #' @export
 #' @rdname header_add_extrabytes
-header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = NULL, scale = NULL, max = NULL, min = NULL, na = NULL)
+header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL, scale = NULL, max = NULL, min = NULL, NA_value = NULL)
 {
   options = 0
-  if(!is.null(na))
+  if(!is.null(NA_value))
     options = options + 2^0
   if(!is.null(min))
     options = options + 2^1
@@ -228,7 +226,7 @@ header_add_extrabytes_manual = function(header, name, desc, type = 10, offset = 
                      name = name,
                      min = min,
                      max = max,
-                     no_data = na,
+                     no_data = NA_value,
                      scale = scale,
                      offset = offset,
                      description = desc)

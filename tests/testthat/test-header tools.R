@@ -33,7 +33,7 @@ test_that("Add extra byte creates a correct VLR with no NA", {
   wheader = read.lasheader(write_path)
 
   expect_equal(las, wlas)
-  expect_equal(wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Exdata$options, 14)
+  expect_equal(wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Exdata$options, 6)
   expect_true(is.numeric(wlas$Exdata))
 })
 
@@ -68,6 +68,6 @@ test_that("Add extra byte creates a correct VLR with NAs", {
   wheader = read.lasheader(write_path)
 
   expect_equal(las, wlas)
-  expect_equal(wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Exdata$options, 15)
+  expect_equal(wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Exdata$options, 7)
   expect_true(is.numeric(wlas$Exdata))
 })

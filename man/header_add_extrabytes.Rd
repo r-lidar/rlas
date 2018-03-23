@@ -7,8 +7,8 @@
 \usage{
 header_add_extrabytes(header, data, name, desc)
 
-header_add_extrabytes_manual(header, name, desc, type = 10, offset = NULL,
-  scale = NULL, max = NULL, min = NULL, na = NULL)
+header_add_extrabytes_manual(header, name, desc, type, offset = NULL,
+  scale = NULL, max = NULL, min = NULL, NA_value = NULL)
 }
 \arguments{
 \item{header}{list}
@@ -19,13 +19,13 @@ header_add_extrabytes_manual(header, name, desc, type = 10, offset = NULL,
 
 \item{desc}{character. The description of the extrabytes attributes to add in the file.}
 
-\item{type}{integer. The data type of the extrabytes attributes.}
+\item{type}{integer. The data type of the extrabytes attributes (page 25 of the spec).}
 
 \item{scale, offset}{numeric. The scale and offset of the data. NULL if not relevant.}
 
 \item{min, max}{numeric or integer. The minimum and maximum value of the data. NULL if not relevant.}
 
-\item{na}{numeric or integer. NA is not a valid value. At writting time it will be replace by this value
+\item{NA_value}{numeric or integer. NA is not a valid value. At writting time it will be replace by this value
 that will be considered as NA. NULL if not relevant.}
 }
 \description{
