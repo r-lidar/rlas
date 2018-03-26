@@ -2,14 +2,11 @@
 % Please edit documentation in R/deprecated.r
 \name{readlasdata}
 \alias{readlasdata}
-\alias{readlasheader}
-\title{(Deprecated) Read data from a .las or .laz file}
+\title{Read data from a .las or .laz file}
 \usage{
 readlasdata(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE,
   c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE,
   filter = "", eb = 0)
-
-readlasheader(file)
 }
 \arguments{
 \item{files}{filepath character string to the .las or .laz files}
@@ -43,14 +40,12 @@ allocating any useless memory. (see Details).}
 \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format specs}).
 default is 0 meaning that all extra fields will be loaded. \code{c(1,3,7)} to load the first, the
 third and the seventh extra byte attributes. None is \code{numeric(0)} or \code{NULL}.}
-
-\item{file}{filepath character string to the .las or .laz file}
 }
 \value{
 A \code{data.table}
 }
 \description{
-This is a deprecated function to read las files. Use \link{read.las} or \link{read.lasheader} instead.
+(deprecated) Use \link{read.las}
 }
 \examples{
 lazfile <- system.file("extdata", "example.laz", package="rlas")
@@ -58,8 +53,4 @@ lazfile <- system.file("extdata", "example.laz", package="rlas")
 lasdata <- readlasdata(lazfile)
 lasdata <- readlasdata(lazfile, filter = "-keep_first")
 lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
-}
-\seealso{
-Other rlas: \code{\link{read.lasheader}},
-  \code{\link{write.las}}, \code{\link{writelas}}
 }

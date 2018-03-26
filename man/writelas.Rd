@@ -4,7 +4,7 @@
 \alias{writelas}
 \title{(deprecated) Write a .las or .laz file}
 \usage{
-writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
+writelas(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
   NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline, Classification,
   ScanAngle, UserData, PointSourceID, R, G, B)
 }
@@ -19,8 +19,6 @@ writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
 \item{Y}{numeric array Y data}
 
 \item{Z}{numeric array Z data}
-
-\item{ExtraBytes}{data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.}
 
 \item{gpstime}{numeric array gpstime data}
 
@@ -52,14 +50,5 @@ writelas(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
 void
 }
 \description{
-This function is deprecated. Use \link{write.las} instead. Write a .las or .laz file. All the
-fields are optional except X, Y and Z coordinates. If
-the user does not provide a field such as \code{Intensity}, for example, but this field is required
-according to the version of the file specified in the \code{header}, 0 will be written in this field.
-For more informations, see the ASPRS documentation for the
-\href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-}
-\seealso{
-Other rlas: \code{\link{read.lasheader}},
-  \code{\link{readlasdata}}, \code{\link{write.las}}
+(deprecated) Use \link{write.las}
 }

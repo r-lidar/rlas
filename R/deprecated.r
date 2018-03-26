@@ -1,9 +1,8 @@
-#' (Deprecated) Read data from a .las or .laz file
+#' Read data from a .las or .laz file
 #'
-#' This is a deprecated function to read las files. Use \link{read.las} or \link{read.lasheader} instead.
+#' (deprecated) Use \link{read.las}
 #'
 #' @param files filepath character string to the .las or .laz files
-#' @param file filepath character string to the .las or .laz file
 #' @param i logical. do you want to load the Intensity field? default: TRUE
 #' @param r logical. do you want to load the ReturnNumber field? default: TRUE
 #' @param n logical. do you want to load the NumberOfReturns field? default: TRUE
@@ -22,7 +21,6 @@
 #' @param filter character. filter data while reading the file (streaming filter) without
 #' allocating any useless memory. (see Details).
 #' @importFrom Rcpp sourceCpp
-#' @family rlas
 #' @return A \code{data.table}
 #' @export
 #' @examples
@@ -39,23 +37,6 @@ readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, 
   return(data)
 }
 
-#' @rdname readlasdata
-#' @export
-readlasheader = function(file)
-{
-  valid = file.exists(file)
-  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
-  file = normalizePath(file)
-
-  if(!valid)  stop("File not found", call. = F)
-  if(!islas)  stop("File not supported", call. = F)
-
-  data = lasheaderreader(file)
-
-  return(data)
-}
-
-
 streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, eb = 0)
 {
   check_file(ifiles)
@@ -70,7 +51,7 @@ streamlasdata = function(ifiles, ofile = "", filter = "", i = TRUE, r = TRUE, n 
     eb = numeric(0)
 
   # converts eb to zero-based numbering
-  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
+  data = lasdatareader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
 
   if (ofile != "")
     return(invisible())
@@ -107,7 +88,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
   # converts eb to zero-based numbering
-  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, TRUE, t, eb-1)
+  data = lasdatareader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb-1)
 
   if (ofile != "")
     return(invisible())
@@ -117,21 +98,41 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
   return(data)
 }
 
+#' (deprecated) Read header from a .las or .laz file
+#'
+#' (deprecated) Use \link{read.lasheader}
+#'
+#' @param file filepath character string to the .las or .laz file
+#' @return A \code{list}
+#' @importFrom Rcpp sourceCpp
+#' @export
+#' @examples
+#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
+#' lasheader <- readlasheader(lazfile)
+readlasheader = function(file)
+{
+  valid = file.exists(file)
+  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+  file = normalizePath(file)
+
+  if(!valid)  stop("File not found", call. = F)
+  if(!islas)  stop("File not supported", call. = F)
+
+  data = lasheaderreader(file)
+
+  return(data)
+}
+
 #' (deprecated) Write a .las or .laz file
 #'
-#' This function is deprecated. Use \link{write.las} instead. Write a .las or .laz file. All the
-#' fields are optional except X, Y and Z coordinates. If
-#' the user does not provide a field such as \code{Intensity}, for example, but this field is required
-#' according to the version of the file specified in the \code{header}, 0 will be written in this field.
-#' For more informations, see the ASPRS documentation for the
-#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' (deprecated) Use \link{write.las}
+#'
 #' @param file character. filename of .las or .laz file
 #' @param header list of character. The data for the file header properly labelled
 #' (see \link[rlas:readlasheader]{readlasheader})
 #' @param X numeric array X data
 #' @param Y numeric array Y data
 #' @param Z numeric array Z data
-#' @param ExtraBytes data.table or data.frame of Extra Bytes numeric vectors. Must correspond to header Extra Bytes Description content.
 #' @param Intensity integer array intensity data
 #' @param ReturnNumber integer array return number data
 #' @param NumberOfReturns integer array number of returns data
@@ -147,9 +148,8 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 #' @param B integer array blue data
 #' @export
 #' @importFrom Rcpp sourceCpp
-#' @family rlas
 #' @return void
-writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, ReturnNumber,
+writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
                     NumberOfReturns, ScanDirectionFlag, EdgeOfFlightline,
                     Classification, ScanAngle, UserData, PointSourceID,
                     R, G, B)
@@ -157,7 +157,7 @@ writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, Retur
   islas = tools::file_ext(file) %in% c("las", "laz")
 
   if(length(file) > 1)
-    stop("Write only one file at a time.", call. = F)
+    stop("Please write only one file at a time.", call. = F)
 
   if(!islas)
     stop("File not supported. Extension should be 'las' or 'laz'", call. = F)
@@ -193,10 +193,7 @@ writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, Retur
 
   I <- RN <- NoR <- SDF <- EoF <- C <- SA <- UD <- PSI <- red <- green <- blue <- integer(0)
   time <- numeric(0)
-  EB <- data.frame()
 
-  if(!missing(ExtraBytes))
-    EB <- ExtraBytes
   if(!missing(Intensity))
     I <- Intensity
   if(!missing(ReturnNumber))
@@ -224,5 +221,5 @@ writelas = function(file, header, X, Y, Z, ExtraBytes, gpstime, Intensity, Retur
     blue <- B
   }
 
-  laswriter(file,header,X,Y,Z,EB,I,RN,NoR,SDF,EoF,C,SA,UD, PSI,time,red,green,blue)
+  laswriter(file,header,X,Y,Z,I,RN,NoR,SDF,EoF,C,SA,UD, PSI,time,red,green,blue)
 }

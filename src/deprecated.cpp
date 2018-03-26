@@ -4,8 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "laswriter.hpp"
+#include "rlasstreamer.h"
+#include "lasreader.hpp"
+#include "laswriter.hpp"
+#include "lasfilter.hpp"
+
+bool point_in_polygon(NumericVector, NumericVector, double, double);
 
 using namespace Rcpp;
 
@@ -17,7 +22,6 @@ void laswriter(CharacterVector file,
                NumericVector X,
                NumericVector Y,
                NumericVector Z,
-               DataFrame ExtraBytes, // Did not find how set empty DataFrame as default...
                IntegerVector I = IntegerVector(0),
                IntegerVector RN = IntegerVector(0),
                IntegerVector NoR = IntegerVector(0),
@@ -31,19 +35,16 @@ void laswriter(CharacterVector file,
                IntegerVector R  = IntegerVector(0),
                IntegerVector G = IntegerVector(0),
                IntegerVector B = IntegerVector(0))
-
-
 {
   try
   {
-    // 1. Make a standard header
-
     class LASheader header;
+
     header.file_source_ID = (int)LASheader["File Source ID"];
     header.version_major = (int)LASheader["Version Major"];
     header.version_minor = (int)LASheader["Version Minor"];
     header.header_size = (int)LASheader["Header Size"];
-    header.offset_to_point_data = header.header_size;
+    header.offset_to_point_data = header.header_size; // No extra offset since I don't know how to deal with the data in the offset.
     header.file_creation_year = (int)LASheader["File Creation Year"];
     header.point_data_format = (int)LASheader["Point Data Format ID"];
     header.x_scale_factor = (double)LASheader["X scale factor"];
@@ -52,220 +53,10 @@ void laswriter(CharacterVector file,
     header.x_offset =  (double)LASheader["X offset"];
     header.y_offset =  (double)LASheader["Y offset"];
     header.z_offset =  (double)LASheader["Z offset"];
-    header.point_data_record_length = get_point_data_record_length(header.point_data_format);
+    header.point_data_record_length = (int)LASheader["Point Data Record Length"];
     strcpy(header.generating_software, "rlas R package");
 
-
-    // 2. Deal with extra bytes attributes
-
-    StringVector ebnames = ExtraBytes.names();       // Get the name of the extra bytes based on column name of the data.frame
-    int num_eb = ExtraBytes.length();                // Get the number of extra byte
-    std::vector<NumericVector> EB(num_eb);           // For fast access to data.frame elements
-    std::vector<int> attribute_index(num_eb);        // Index of attribute in the header
-    std::vector<int> attribute_starts(num_eb);       // Attribute starting byte number
-    std::vector<double> scale(num_eb, 1.0);          // Default scale factor
-    std::vector<double> offset(num_eb, 0.0);         // Default offset factor
-    std::vector<int> type(num_eb);                   // Attribute type (see comment at the very end of this file)
-    List description_eb(0);                          // Create an empty description for extra bytes
-    double scaled_value;                             // Temporary variable
-
-
-    // If extra bytes description exists use it as description
-    if(LASheader.containsElementNamed("Variable Length Records"))
-    {
-      List headervlr = LASheader["Variable Length Records"];
-      if(headervlr.containsElementNamed("Extra_Bytes"))
-      {
-        List headereb = headervlr["Extra_Bytes"];
-        if(headereb.containsElementNamed("Extra Bytes Description"))
-        {
-          description_eb = headereb["Extra Bytes Description"];
-        }
-      }
-    }
-
-    // Loop over the extra bytes attributes
-    for(int i = 0; i < num_eb; i++)
-    {
-      // set default values for description
-      List ebparam(0);
-      type[i] = 9;
-      int dim = 1; // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-      int options = 0;
-      std::string name = as<std::string>(ebnames[i]); // Default name is the one of data.frame
-      std::string description = as<std::string>(ebnames[i]);
-
-      // set header values for description if exist
-      if(description_eb.containsElementNamed(name.c_str()))
-      {
-        ebparam = description_eb[name];
-        type[i] = ((int)(ebparam["data_type"])-1) % 10; // see data_type definition in LAS1.4
-        options = (int) ebparam["options"];
-        description = as<std::string>(ebparam["description"]);
-      }
-
-      // Create a LASattribute object
-      // dim = 1 because 2 and 3 dimensional arrays are deprecated in LASlib
-      // see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp
-      LASattribute attribute(type[i], name.c_str(), description.c_str(), 1);
-
-      // Check options
-      bool has_no_data = options & 0x01;
-      bool has_min = options & 0x02;
-      bool has_max = options & 0x04;
-      bool has_scale = options & 0x08;
-      bool has_offset = options & 0x10;
-
-
-      // set scale value if option set
-      if(has_scale)
-      {
-        scale[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["scale"])[0]);
-        attribute.set_scale(scale[i], 0);
-      }
-
-      // set offset value if option set
-      if(has_offset)
-      {
-        offset[i] = (double)(Rcpp::as<Rcpp::List>(ebparam["offset"])[0]);
-        attribute.set_offset(offset[i], 0);
-      }
-
-      // set no data value if option set
-      if(has_no_data)
-      {
-        scaled_value=((double)(as<List>(ebparam["no_data"])[0]) - offset[i])/scale[i];
-
-        switch(type[i])
-        {
-        case 0:
-          attribute.set_no_data(U8_CLAMP(U8_QUANTIZE(scaled_value)));
-          break;
-        case 1:
-          attribute.set_no_data(I8_CLAMP(I8_QUANTIZE(scaled_value)));
-          break;
-        case 2:
-          attribute.set_no_data(U16_CLAMP(U16_QUANTIZE(scaled_value)));
-          break;
-        case 3:
-          attribute.set_no_data(I16_CLAMP(I16_QUANTIZE(scaled_value)));
-          break;
-        case 4:
-          attribute.set_no_data(U32_CLAMP(U32_QUANTIZE(scaled_value)));
-          break;
-        case 5:
-          attribute.set_no_data(I32_CLAMP(I32_QUANTIZE(scaled_value)));
-          break;
-        case 6:
-          attribute.set_no_data(U64_QUANTIZE(scaled_value));
-          break;
-        case 7:
-          attribute.set_no_data(I64_QUANTIZE(scaled_value));
-          break;
-        case 8:
-          attribute.set_no_data((float)(scaled_value));
-          break;
-        case 9:
-          attribute.set_no_data(scaled_value);
-          break;
-        }
-      }
-
-      // set min value if option set
-      if(has_min)
-      {
-        scaled_value=((double)(as<List>(ebparam["min"])[0]) - offset[i])/scale[i];
-
-        switch(type[i])
-        {
-        case 0:
-          attribute.set_min(U8_CLAMP(U8_QUANTIZE(scaled_value)));
-          break;
-        case 1:
-          attribute.set_min(I8_CLAMP(I8_QUANTIZE(scaled_value)));
-          break;
-        case 2:
-          attribute.set_min(U16_CLAMP(U16_QUANTIZE(scaled_value)));
-          break;
-        case 3:
-          attribute.set_min(I16_CLAMP(I16_QUANTIZE(scaled_value)));
-          break;
-        case 4:
-          attribute.set_min(U32_CLAMP(U32_QUANTIZE(scaled_value)));
-          break;
-        case 5:
-          attribute.set_min(I32_CLAMP(I32_QUANTIZE(scaled_value)));
-          break;
-        case 6:
-          attribute.set_min(U64_QUANTIZE(scaled_value));
-          break;
-        case 7:
-          attribute.set_min(I64_QUANTIZE(scaled_value));
-          break;
-        case 8:
-          attribute.set_min((float)(scaled_value));
-          break;
-        case 9:
-          attribute.set_min(scaled_value);
-          break;
-        }
-      }
-
-      // set max value if option set
-      if(has_max)
-      {
-        scaled_value=((double)(as<List>(ebparam["max"])[0]) - offset[i])/scale[i];
-        switch(type[i])
-        {
-        case 0:
-          attribute.set_max(U8_CLAMP(U8_QUANTIZE(scaled_value)));
-          break;
-        case 1:
-          attribute.set_max(I8_CLAMP(I8_QUANTIZE(scaled_value)));
-          break;
-        case 2:
-          attribute.set_max(U16_CLAMP(U16_QUANTIZE(scaled_value)));
-          break;
-        case 3:
-          attribute.set_max(I16_CLAMP(I16_QUANTIZE(scaled_value)));
-          break;
-        case 4:
-          attribute.set_max(U32_CLAMP(U32_QUANTIZE(scaled_value)));
-          break;
-        case 5:
-          attribute.set_max(I32_CLAMP(I32_QUANTIZE(scaled_value)));
-          break;
-        case 6:
-          attribute.set_max(U64_QUANTIZE(scaled_value));
-          break;
-        case 7:
-          attribute.set_max(I64_QUANTIZE(scaled_value));
-          break;
-        case 8:
-          attribute.set_max((float)(scaled_value));
-          break;
-        case 9:
-          attribute.set_max(scaled_value);
-          break;
-        }
-      }
-
-      // Finally add the attribute to the header
-      attribute_index[i] = header.add_attribute(attribute);
-    }
-
-    header.update_extra_bytes_vlr();
-
-    // add number of extra bytes to the point size
-    header.point_data_record_length += header.get_attributes_size();
-
-    // get starting byte corresponding to attribute
-    for(int i = 0; i < attribute_index.size(); i++)
-      attribute_starts[i] = header.get_attribute_start(attribute_index[i]);
-
     std::string filestd = as<std::string>(file);
-
-    // 3. write the data to the file
 
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(filestd.c_str());
@@ -278,13 +69,8 @@ void laswriter(CharacterVector file,
     if(0 == laswriter || NULL == laswriter)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    // convert data.frame to Numeric vector to reduce access time
-    for(int i = 0; i < num_eb; i++)
-      EB[i]=ExtraBytes[i];
-
     for(int i = 0 ; i < X.length() ; i++)
     {
-      // Add regular data
       p.set_x(X[i]);
       p.set_y(Y[i]);
       p.set_z(Z[i]);
@@ -306,46 +92,6 @@ void laswriter(CharacterVector file,
         p.set_B((U16)B[i]);
       }
 
-      // Add extra bytes
-      for(int j = 0; j < num_eb; j++)
-      {
-        scaled_value=(EB[j][i] - offset[j])/scale[j];
-
-        switch(type[j])
-        {
-        case 0:
-          p.set_attribute(attribute_starts[j], U8_CLAMP(U8_QUANTIZE(scaled_value)));
-          break;
-        case 1:
-          p.set_attribute(attribute_starts[j], I8_CLAMP(I8_QUANTIZE(scaled_value)));
-          break;
-        case 2:
-          p.set_attribute(attribute_starts[j], U16_CLAMP(U16_QUANTIZE(scaled_value)));
-          break;
-        case 3:
-          p.set_attribute(attribute_starts[j], I16_CLAMP(I16_QUANTIZE(scaled_value)));
-          break;
-        case 4:
-          p.set_attribute(attribute_starts[j], U32_CLAMP(U32_QUANTIZE(scaled_value)));
-          break;
-        case 5:
-          p.set_attribute(attribute_starts[j], I32_CLAMP(I32_QUANTIZE(scaled_value)));
-          break;
-        case 6:
-          p.set_attribute(attribute_starts[j], U64_QUANTIZE(scaled_value));
-          break;
-        case 7:
-          p.set_attribute(attribute_starts[j], I64_QUANTIZE(scaled_value));
-          break;
-        case 8:
-          p.set_attribute(attribute_starts[j], (float)(scaled_value));
-          break;
-        case 9:
-          p.set_attribute(attribute_starts[j], scaled_value);
-          break;
-        }
-      }
-
       laswriter->write_point(&p);
       laswriter->update_inventory(&p);
     }
@@ -353,9 +99,91 @@ void laswriter(CharacterVector file,
     laswriter->update_header(&header, true);
     I64 total_bytes = laswriter->close();
     delete laswriter;
+
+    //Rcout << total_bytes << " bytes written" << std::endl;
   }
   catch (std::exception const& e)
   {
     Rcerr << e.what() << std::endl;
+  }
+}
+
+// [[Rcpp::export]]
+List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb)
+{
+  try
+  {
+    RLASstreamer streamer(ifiles, ofile, filter);
+
+    streamer.read_t(t);
+    streamer.read_i(i);
+    streamer.read_r(r);
+    streamer.read_n(n);
+    streamer.read_d(d);
+    streamer.read_e(e);
+    streamer.read_c(c);
+    streamer.read_a(a);
+    streamer.read_u(u);
+    streamer.read_p(p);
+    streamer.read_rgb(rgb);
+    streamer.read_nir(false);
+    streamer.read_eb(eb);
+
+    streamer.allocation();
+
+    while(streamer.read_point())
+    {
+      streamer.write_point();
+    }
+
+    return streamer.terminate();
+  }
+  catch (std::exception const& ex)
+  {
+    Rcerr << "Error: " << ex.what() << std::endl;
+    return(List(0));
+  }
+}
+
+
+// [[Rcpp::export]]
+List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool t, IntegerVector eb)
+{
+  try
+  {
+    RLASstreamer streamer(ifiles, ofile, filter);
+
+    streamer.read_t(t);
+    streamer.read_i(i);
+    streamer.read_r(r);
+    streamer.read_n(n);
+    streamer.read_d(d);
+    streamer.read_e(e);
+    streamer.read_c(c);
+    streamer.read_a(a);
+    streamer.read_u(u);
+    streamer.read_p(p);
+    streamer.read_rgb(rgb);
+    streamer.read_eb(eb);
+
+    streamer.allocation();
+
+    while(streamer.read_point())
+    {
+      double xi = streamer.point()->get_x();
+      double yi = streamer.point()->get_y();
+
+      if (point_in_polygon(x, y, xi, yi))
+      {
+        streamer.write_point();
+      }
+    }
+
+    return streamer.terminate();
+  }
+  catch (std::exception const& ex)
+  {
+    Rcerr << "Error: " << ex.what() << std::endl;
+    return(List(0));
   }
 }
