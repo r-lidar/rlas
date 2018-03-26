@@ -62,7 +62,7 @@ List lasheaderreader(CharacterVector file)
     LASreader* lasreader = lasreadopener.open();
     LASheader* lasheader = &lasreader->header;
 
-    if(0 == lasreader | NULL == lasreader)
+    if((0 == lasreader) || (NULL == lasreader))
       throw std::runtime_error("LASlib internal error. See message above.");
 
     char cguid[38];
