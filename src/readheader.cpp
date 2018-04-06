@@ -233,10 +233,7 @@ List vlrsreader(LASheader* lasheader)
     {
         if (vlr.record_id == 4) // ExtraBytes
         {
-
           lvlrsnames.push_back("Extra_Bytes");
-          const char* name_table[10] = { "unsigned char", "char", "unsigned short", "short", "unsigned long", "long", "unsigned long long", "long long", "float", "double" };
-
           lvlrnames.push_back("Extra Bytes Description");
 
           List ExtraBytes(0);
@@ -251,8 +248,6 @@ List vlrsreader(LASheader* lasheader)
               int type = ((I32)(attemp.data_type)-1)%10;
               int dim = ((I32)(attemp.data_type)-1)/10+1;
 
-
-
               List ExtraByte(0);
               List ExtraBytenames(0);
               ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
@@ -264,71 +259,74 @@ List vlrsreader(LASheader* lasheader)
               ExtraByte.push_back(attemp.name);
               ExtraBytenames.push_back("name");
 
-              // 2 and 3 dimensional arrays are deprecated in LASlib (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
+              // 2 and 3 dimensional arrays are deprecated in LASlib
+              // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
               double scale = 1.0;
-              if(attemp.has_scale()){
+              if(attemp.has_scale())
+              {
                 scale = attemp.scale[0];
                 ExtraByte.push_back(scale);
                 ExtraBytenames.push_back("scale");
               }
 
               double offset = 0.0;
-              if(attemp.has_offset()){
+              if(attemp.has_offset())
+              {
                 offset = attemp.offset[0];
                 ExtraByte.push_back(offset);
                 ExtraBytenames.push_back("offset");
               }
 
               if (type < 8)
-              { I64* temp; // as R does not support long long int it is converted to double
+              {
+                I64* temp; // as R does not support long long int it is converted to double
+
                 if (attemp.has_no_data())
                 {
                   temp = ((I64*)(attemp.no_data));
-                  std::vector<double> no_data(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(no_data[0]*scale+offset);
+                  ExtraByte.push_back(*temp);
                   ExtraBytenames.push_back("no_data");
                 }
+
                 if (attemp.has_min())
                 {
                   temp = ((I64*)(attemp.min));
-                  std::vector<double> min(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(min[0]*scale+offset);
+                  ExtraByte.push_back(*temp*scale+offset);
                   ExtraBytenames.push_back("min");
                 }
+
                 if (attemp.has_max())
                 {
                   temp = ((I64*)(attemp.max));
-                  std::vector<double> max(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(max[0]*scale+offset);
+                  ExtraByte.push_back(*temp*scale+offset);
                   ExtraBytenames.push_back("max");
                 }
               }
               else
               {
                 F64* temp;
+
                 if (attemp.has_no_data())
                 {
                   temp = ((F64*)(attemp.no_data));
-                  std::vector<double> no_data(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(no_data[0]*scale+offset);
+                  ExtraByte.push_back(*temp*scale+offset);
                   ExtraBytenames.push_back("no_data");
                 }
+
                 if (attemp.has_min())
                 {
                   temp = ((F64*)(attemp.min));
-                  std::vector<double> min(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(min[0]*scale+offset);
+                  ExtraByte.push_back(*temp*scale+offset);
                   ExtraBytenames.push_back("min");
                 }
+
                 if (attemp.has_max())
                 {
                   temp = ((F64*)(attemp.max));
-                  std::vector<double> max(temp, temp + sizeof temp / sizeof temp[0]);
-                  ExtraByte.push_back(max[0]*scale+offset);
+                  ExtraByte.push_back(*temp*scale+offset);
                   ExtraBytenames.push_back("max");
                 }
               }
-
 
               ExtraByte.push_back(attemp.description);
               ExtraBytenames.push_back("description");
@@ -342,10 +340,12 @@ List vlrsreader(LASheader* lasheader)
               Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
             }
           }
+
           ExtraBytes.names() = ExtraBytesnames;
           lvlr.push_back(ExtraBytes);
         }
-        else{
+        else
+        {
           // not supported yet
           lvlrsnames.push_back(vlr.user_id);
         }
