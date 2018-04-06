@@ -1,4 +1,4 @@
-### rlas v1.2.0 (in developpement)
+### rlas v1.2.0 (Release date: 2018-04-10)
 
 #### NEW FEATURES
 
@@ -7,6 +7,7 @@
 * New function `read.las` in replacement of `readlasdata` which is now deprecated. The selection of the field to load is now easier using a syntax with a string instead of multiple logical parameters.
 * New function `read.lasheader` in replacement of `readlasheader` which is now deprecated. This, only for naming consistency.
 * New functions `header_*` that allow the user to make valid headers and thus write properly the las files.
+* New functions `check_*` that check data integrity.
 
 #### BUG FIXES:
 
