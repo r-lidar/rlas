@@ -1,12 +1,12 @@
 #' Public header block tools
 #'
-#' Create or update a header for a las file from a dataset. A las file is constitued of two parts. A header
-#' that describes the data and the data itself. These functions make valid headers (public header block only)
-#' that can be used in \link{write.las}.
+#' Create or update a header for a las file from a dataset. A las file consists of two parts. A
+#' header that describes the data and the data itself. These functions make valid headers (public
+#' header block only) that can be used in \link{write.las}.
 #'
-#' \code{header_create} make a full header from data. \code{header_update} modify the informations that
-#' need to be updated. But most of original informations are not modified such as point data format is
-#' kept as is.
+#' \code{header_create} makes a full header from data. \code{header_update} modifies the information that
+#' needs to be updated. But most of the original information is not modified, for example point data
+#' format is kept 'as is'.
 #'
 #' @param data data.frame or data.table
 #' @param header list. A header
@@ -127,9 +127,9 @@ header_update = function(header, data)
   return(header)
 }
 
-#' Variable lenght records tools
+#' Variable length records tools
 #'
-#' Functions that update a header to describe variable lenght records according to the
+#' Functions that update a header to describe variable length records according to the
 #' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
 #'
 #' @param header list
@@ -138,9 +138,9 @@ header_update = function(header, data)
 #' @param type integer. The data type of the extrabytes attributes (page 25 of the spec).
 #' @param min,max numeric or integer. The minimum and maximum value of the data. NULL if not relevant.
 #' @param scale,offset numeric. The scale and offset of the data. NULL if not relevant.
-#' @param NA_value numeric or integer. NA is not a valid value. At writting time it will be replace by this value
-#' that will be considered as NA. NULL if not relevant.
-#' @param data vector. Data that must be added in the extrabytes attributes
+#' @param NA_value numeric or integer. NA is not a valid value. At writing time it will be replaced by
+#' this value that will be considered as NA. NULL if not relevant.
+#' @param data vector. Data that must be added in the extrabytes attributes.
 #'
 #' @examples
 #' data = data.frame(X = c(339002.889, 339002.983, 339002.918),

@@ -1,11 +1,10 @@
 #' Check if data and headers are correct
 #'
-#' las files are normalized files. The \code{check_*} functions test either if the dataset is valid,
-#' the header is valid or if the header is in accordance with the data.
+#' las files are normalized files. The \code{check_*} functions test whether either the dataset is valid, the header is valid, or if the header is in accordance with the data.
 #'
 #' @param data a data.frame or a data.table containing a point cloud
 #' @param header a list containing the header of a las file
-#' @param ... internal used only
+#' @param ... internal use only
 #'
 #' @export
 #' @rdname check

@@ -32,25 +32,24 @@
 #' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-#' The optional parameters enables the user to save memory by choosing to load only the
+#' The optional parameters enable the user to save memory by choosing to load only the
 #' fields they need. Moreover, the function provides a streaming filter to load only the points of
-#' interest into the memory without allocating any superfluous memory.
+#' interest into the memory and hence avoids allocating any superfluous memory.
 #'
-#' \strong{Select:} the 'select' argument specifies which data will actually be loaded. For example,
+#' \strong{Select:} the 'select' argument specifies the data that will actually be loaded. For example,
 #' 'xyzia' means that the x, y, and z coordinates, the intensity and the scan angle will be loaded.
 #' The supported entries are t - gpstime, a - scan angle, i - intensity, n - number of returns,
 #' r - return number, c - classification, u - user data, p - point source ID, e - edge of
 #' flight line flag, d - direction of scan flag, R - red channel of RGB color, G - green
-#' channel of RGB color, B - blue channel of RGB color, N - near infrared channel. Also number from
-#' 1 to 9 for the extra bytes data number 1 to 9. 0 enable to load all extra bytes and '*' is the
-#' wildcard and enables to load everything from the LAS file. \cr
+#' channel of RGB color, B - blue channel of RGB color, N - near-infrared channel. Also numbers from
+#' 1 to 9 for the extra bytes data numbers 1 to 9. 0 enables all extra bytes to be loaded and '*' is the
+#' wildcard that enables everything to be loaded from the LAS file. \cr
 #' Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.\cr\cr
 #' \strong{Filter:} the 'filter' argument allows filtering of the point cloud while reading files.
 #' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 #' to read the binary files. Thus the package inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
-#' to display the \code{LASlib} documentation and the available filters.
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to display the \code{LASlib} documentation and the available filters.
 #'
 #' @param files array of characters
 #' @param select character. select only columns of interest to save memory (see details)
