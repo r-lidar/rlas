@@ -146,6 +146,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lasheaderreader
+List lasheaderreader(CharacterVector file);
+RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
+    rcpp_result_gen = Rcpp::wrap(lasheaderreader(file));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lasfilterusage
+void lasfilterusage();
+RcppExport SEXP _rlas_lasfilterusage() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    lasfilterusage();
+    return R_NilValue;
+END_RCPP
+}
 // C_reader
 List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
 RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
@@ -200,26 +220,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// lasheaderreader
-List lasheaderreader(CharacterVector file);
-RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    rcpp_result_gen = Rcpp::wrap(lasheaderreader(file));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lasfilterusage
-void lasfilterusage();
-RcppExport SEXP _rlas_lasfilterusage() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    lasfilterusage();
-    return R_NilValue;
-END_RCPP
-}
 // C_writer
 void C_writer(CharacterVector file, List LASheader, DataFrame data);
 RcppExport SEXP _rlas_C_writer(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP dataSEXP) {
@@ -252,10 +252,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
     {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
-    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 16},
-    {"_rlas_C_reader_inpoly", (DL_FUNC) &_rlas_C_reader_inpoly, 18},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
+    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 16},
+    {"_rlas_C_reader_inpoly", (DL_FUNC) &_rlas_C_reader_inpoly, 18},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
     {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
     {NULL, NULL, 0}

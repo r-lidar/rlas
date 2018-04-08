@@ -3,7 +3,7 @@
 \name{header_add_extrabytes}
 \alias{header_add_extrabytes}
 \alias{header_add_extrabytes_manual}
-\title{Variable lenght records tools}
+\title{Variable length records tools}
 \usage{
 header_add_extrabytes(header, data, name, desc)
 
@@ -13,7 +13,7 @@ header_add_extrabytes_manual(header, name, desc, type, offset = NULL,
 \arguments{
 \item{header}{list}
 
-\item{data}{vector. Data that must be added in the extrabytes attributes}
+\item{data}{vector. Data that must be added in the extrabytes attributes.}
 
 \item{name}{character. The name of the extrabytes attributes to add in the file.}
 
@@ -25,11 +25,11 @@ header_add_extrabytes_manual(header, name, desc, type, offset = NULL,
 
 \item{min, max}{numeric or integer. The minimum and maximum value of the data. NULL if not relevant.}
 
-\item{NA_value}{numeric or integer. NA is not a valid value. At writting time it will be replace by this value
-that will be considered as NA. NULL if not relevant.}
+\item{NA_value}{numeric or integer. NA is not a valid value. At writing time it will be replaced by
+this value that will be considered as NA. NULL if not relevant.}
 }
 \description{
-Functions that update a header to describe variable lenght records according to the
+Functions that update a header to describe variable length records according to the
 \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
 }
 \examples{

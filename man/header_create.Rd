@@ -18,14 +18,14 @@ header_update(header, data)
 A list containing the metadata required to write a las file.
 }
 \description{
-Create or update a header for a las file from a dataset. A las file is constitued of two parts. A header
-that describes the data and the data itself. These functions make valid headers (public header block only)
-that can be used in \link{write.las}.
+Create or update a header for a las file from a dataset. A las file consists of two parts. A
+header that describes the data and the data itself. These functions make valid headers (public
+header block only) that can be used in \link{write.las}.
 }
 \details{
-\code{header_create} make a full header from data. \code{header_update} modify the informations that
-need to be updated. But most of original informations are not modified such as point data format is
-kept as is.
+\code{header_create} makes a full header from data. \code{header_update} modifies the information that
+needs to be updated. But most of the original information is not modified, for example point data
+format is kept 'as is'.
 }
 \examples{
 lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),

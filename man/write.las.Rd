@@ -9,28 +9,28 @@ write.las(file, header, data)
 \arguments{
 \item{file}{character. file path to .las or .laz file}
 
-\item{header}{list. It can be partially recycled from another file (see \link{read.lasheader}) and
+\item{header}{list. Can be partially recycled from another file (see \link{read.lasheader}) and
 updated with \link{header_update} or generated with \link{header_create}.}
 
-\item{data}{data.frame or data.table that contains the data to write in the file. Colunm names must
+\item{data}{data.frame or data.table that contains the data to write in the file. Column names must
 respect the imposed nomenclature (see details)}
 }
 \value{
 void
 }
 \description{
-Write a .las or .laz file. The user provides a table with the data in column. Column names must
-respect specific allowed names (see details). A correct and complete header must also be provided.
-This header can optionnally be generated with \link{header_create}.
+Write a .las or .laz file. The user provides a table with the data in columns. Column names must
+respect the specified allowed names (see details). A correct and complete header must also be provided.
+This header can optionally be generated with \link{header_create}.
 }
 \details{
 Allowed names are "X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
 "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID",
 "R", "G", "B", "NIR". All other extra columns will be written in extra bytes attributes only if the
-header specifically states to save these data into extra bytes attributes. To use the full potential
-of the function \code{write.las} it is recommended to read the whole specifications of the
-\href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
-Otherwise user can rely on automated procedures that are expected to be sufficient for most usages.
+header specifically states these data should be saved into extra bytes attributes. To use the full
+potential of the function \code{write.las} it is recommended users read the complete specifications of
+the \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+Otherwise users can rely on automated procedures that are expected to be sufficient for most usages.
 }
 \examples{
 lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
