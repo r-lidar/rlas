@@ -13,11 +13,8 @@ The package should be compiled on solaris and osx first to figure out if everyth
 on those two platforms.
 
 ## Test environments
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, g++ -std=gnu++11
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, g++-7 -std=gnu++11
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, clang++ -stdlib=libc++
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, clang++-4.0 -stdlib=libc++
-* Linux Mint 18 (Ubuntu 16.04), R 3.4.3, clang++-4.0 -std-gnu++11
+* Linux Mint 18 (Ubuntu 16.04), R 3.4.4, g++ -std=gnu++11
+* Linux Mint 18 (Ubuntu 16.04), R 3.4.4, g++-7 -std=gnu++11
 * osx release via r-hub.io builder
 * windows via CRAN builder
 
