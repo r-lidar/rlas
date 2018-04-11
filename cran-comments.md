@@ -1,3 +1,12 @@
+This is an early release because ASAN and USBAN raised additionnal error.
+
+* clang ASAN/USBAN: the code now ensures that NAs will no be casted to int
+* gcc ASAN: I disable minor features because I was not able to fix this error
+
+To be honnest I can't swear that these additional errors are fixed because I was not able 
+to reproduce. I try to reproduce with `rhub::check_with_sanitizer()` but tests were ok.
+I have not been able to compile with sanitizer myself. Thus I only guess the error are fixed.
+
 ## Test environments
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.4, g++ -std=gnu++11
 * Linux Mint 18 (Ubuntu 16.04), R 3.4.4, g++-7 -std=gnu++11
