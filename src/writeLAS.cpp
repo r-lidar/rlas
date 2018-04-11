@@ -359,8 +359,17 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       // Add extra bytes
       for(int j = 0 ; j < num_eb ; j++)
       {
+        List description = description_eb[j];
+        int options = description["options"];
+        bool has_no_data = options & 0x01;
+        double no_data;
+        double scaled_value;
+
         // value is scaled, quantized and clamped to fit chosen datatype
-        scaled_value = (EB[j][i] - offset[j])/scale[j];
+        if (has_no_data && NumericVector::is_na(EB[j][i]))
+          scaled_value = as<List>(description["no_data"])[0];
+        else
+          scaled_value = (EB[j][i] - offset[j])/scale[j];
 
         switch(type[j])
         {

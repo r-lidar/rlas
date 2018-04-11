@@ -131,8 +131,8 @@ void RLASstreamer::initialize()
     format = get_format(point_type);
     int npoints = lasreader->header.number_of_point_records;
 
-    bool has_rgb = format == 2 || format == 3;
-    bool has_t  = format == 1 || format == 3;
+    bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8);
+    bool has_t  = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
 
     t = t && has_t;
     rgb = rgb && has_rgb;
@@ -179,26 +179,52 @@ void RLASstreamer::allocation()
     // Find if extra bytes are 32 of 64 bytes types
     for(int j = 0; j < eb.size(); j++)
     {
-      int type = header->attributes[eb[j]].data_type;
-      bool has_scale = header->attributes[eb[j]].has_scale();
-      bool has_offset = header->attributes[eb[j]].has_offset();
+      RLASExtrabyteAttributes extrabyte;
+      extrabyte.id = eb[j];
+      extrabyte.start = header->get_attribute_start(eb[j]);
+      extrabyte.name = std::string(header->attributes[eb[j]].name);
+      extrabyte.type = header->attributes[eb[j]].data_type;
 
-      if (type <= 6 && !(has_scale || has_offset))    // unsigned char | char | unsigned shor | short | unsigned long | long
-        eb32.push_back(eb[j]);
-      else if (type <= 10)      // unsigned long long | long long | unsigned double | double
-        eb64.push_back(eb[j]);
+      if(header->attributes[eb[j]].has_no_data())
+      {
+        extrabyte.has_no_data = true;
+
+        if (extrabyte.is_32bits())
+        {
+          I64* temp = ((I64*)header->attributes[eb[j]].no_data);
+          extrabyte.no_data = *temp;
+        }
+        else
+        {
+          F64* temp = ((F64*)header->attributes[eb[j]].no_data);
+          extrabyte.no_data = *temp;
+        }
+      }
+
+      if (header->attributes[eb[j]].has_offset())
+      {
+        extrabyte.has_offset = true;
+        extrabyte.offset = header->attributes[eb[j]].offset[0];
+      }
+
+      if (header->attributes[eb[j]].has_scale())
+      {
+        extrabyte.has_scale = true;
+        extrabyte.scale = header->attributes[eb[j]].scale[0];
+      }
+
+      if(extrabyte.is_supported())
+      {
+        if (extrabyte.is_32bits())
+          extrabyte.eb32.reserve(nalloc);
+        else
+          extrabyte.eb64.reserve(nalloc);
+
+        eba.push_back(extrabyte);
+      }
       else
-        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", type, j);
+        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", extrabyte.type, j);
     }
-
-    ExtraBytes32.resize(eb32.size());
-    ExtraBytes64.resize(eb64.size());
-
-    for(int j = 0; j < eb32.size(); j++)
-      ExtraBytes32[j].reserve(nalloc);
-
-    for(int j = 0; j < eb64.size(); j++)
-      ExtraBytes64[j].reserve(nalloc);
   }
 }
 
@@ -238,102 +264,13 @@ void RLASstreamer::write_point()
     }
     if(nir) NIR.push_back(lasreader->point.get_NIR());
 
-    for(int j = 0; j < eb32.size(); j++)
+    for(int j = 0; j < eba.size(); j++)
     {
-      ExtraBytes32[j].push_back(get_attribute_int(&lasreader->point, eb32[j]));
-    }
-
-    for(int j = 0; j < eb64.size(); j++)
-    {
-      ExtraBytes64[j].push_back(get_attribute_double(&lasreader->point, eb64[j]));
+      eba[j].push_back(&lasreader->point);
     }
   }
 }
 
-F64 RLASstreamer::get_attribute_double(LASpoint* point, I32 index)
-{
-  F64 casted_value;
-  U8* value = point->extra_bytes + header->get_attribute_start(index);
-
-  if (index < header->number_attributes)
-  {
-    switch (header->attributes[index].data_type)
-    {
-    case 1:
-      casted_value = (F64)*((U8*)value);
-      break;
-    case 2:
-      casted_value = (F64)*((I8*)value);
-      break;
-    case 3:
-      casted_value = (F64)*((U16*)value);
-      break;
-    case 4:
-      casted_value = (F64)*((I16*)value);
-      break;
-    case 5:
-      casted_value = (F64)*((U32*)value);
-      break;
-    case 6:
-      casted_value = (F64)*((I32*)value);
-      break;
-    case 7:
-      casted_value = (F64)(I64)*((U64*)value);
-      break;
-    case 8:
-      casted_value = (F64)*((I64*)value);
-      break;
-    case 9:
-      casted_value = (F64)*((F32*)value);
-      break;
-    case 10:
-      casted_value = *((F64*)value);
-      break;
-    default:
-      throw std::runtime_error("LAS Extra Byte data type not supported.");
-    }
-    if(header->attributes[index].has_scale() || header->attributes[index].has_offset())
-      return header->attributes[index].scale[0]*casted_value + header->attributes[index].offset[0];
-    else
-      return casted_value;
-  }
-  return 0.0;
-}
-
-I32 RLASstreamer::get_attribute_int(LASpoint* point, I32 index)
-{
-  I32 casted_value;
-  U8* value = point->extra_bytes + header->get_attribute_start(index);
-
-  if (index < header->number_attributes)
-  {
-    switch (header->attributes[index].data_type)
-    {
-    case 1:
-      casted_value = (I32)*((U8*)value);
-      break;
-    case 2:
-      casted_value = (I32)*((I8*)value);
-      break;
-    case 3:
-      casted_value = (I32)*((U16*)value);
-      break;
-    case 4:
-      casted_value = (I32)*((I16*)value);
-      break;
-    case 5:
-      casted_value = (I32)*((U32*)value);
-      break;
-    case 6:
-      casted_value = (I32)*((I32*)value);
-      break;
-    default:
-      throw std::runtime_error("LAS Extra Byte data type not supported in I32.");
-    }
-    return casted_value;
-  }
-  return 0;
-}
 
 LASpoint* RLASstreamer::point()
 {
@@ -360,12 +297,6 @@ List RLASstreamer::terminate()
   }
   else
   {
-    CharacterVector attribute_names;
-    for(int j = 0; j < header->number_attributes; j++)
-    {
-      attribute_names.push_back(header->attributes[j].name);
-    }
-
     lasreader->close();
     delete lasreader;
     lasreader = 0;
@@ -490,16 +421,28 @@ List RLASstreamer::terminate()
       NIR.shrink_to_fit();
     }
 
-    for(int j = 0; j < eb32.size(); j++)
+    for(int j = 0; j < eba.size(); j++)
     {
-      lasdata.push_back(ExtraBytes32[j]);
-      field.push_back(attribute_names[eb32[j]]);
-    }
+      if (eba[j].is_32bits())
+      {
+        IntegerVector X = wrap(eba[j].eb32);
 
-    for(int j = 0; j < eb64.size(); j++)
-    {
-      lasdata.push_back(ExtraBytes64[j]);
-      field.push_back(attribute_names[eb64[j]]);
+        if (eba[j].has_no_data)
+          X[X == (int)eba[j].no_data] = NA_INTEGER;
+
+        lasdata.push_back(X);
+        field.push_back(eba[j].name);
+      }
+      else
+      {
+        NumericVector X = wrap(eba[j].eb64);
+
+        if (eba[j].has_no_data)
+          X[X == eba[j].no_data] = NA_REAL;
+
+        lasdata.push_back(X);
+        field.push_back(eba[j].name);
+      }
     }
 
     lasdata.names() = field;
@@ -616,8 +559,6 @@ void RLASstreamer::read_eb(IntegerVector x)
   }
 }
 
-
-
 int RLASstreamer::get_format(U8 point_type)
 {
   int format;
@@ -662,4 +603,110 @@ int RLASstreamer::get_format(U8 point_type)
   }
 
   return(format);
+}
+
+RLASExtrabyteAttributes::RLASExtrabyteAttributes()
+{
+  has_scale = false;
+  has_min = false;
+  has_offset = false;
+  has_no_data = false;
+}
+
+bool RLASExtrabyteAttributes::is_supported()
+{
+  return(type <= 10);
+}
+
+bool RLASExtrabyteAttributes::is_32bits()
+{
+  // 32 bits: unsigned char | char | unsigned shor | short | unsigned long | long
+  // 64 bits: unsigned long long | long long | unsigned double | double
+  return(type <= 6 && !(has_scale || has_offset));
+}
+
+void RLASExtrabyteAttributes::push_back(LASpoint* point)
+{
+  if (is_32bits())
+    eb32.push_back(get_attribute_int(point));
+  else
+    eb64.push_back(get_attribute_double(point));
+}
+
+F64 RLASExtrabyteAttributes::get_attribute_double(LASpoint* point)
+{
+  F64 casted_value;
+  U8* value = point->extra_bytes + start;
+
+  switch (type)
+  {
+  case 1:
+    casted_value = (F64)*((U8*)value);
+    break;
+  case 2:
+    casted_value = (F64)*((I8*)value);
+    break;
+  case 3:
+    casted_value = (F64)*((U16*)value);
+    break;
+  case 4:
+    casted_value = (F64)*((I16*)value);
+    break;
+  case 5:
+    casted_value = (F64)*((U32*)value);
+    break;
+  case 6:
+    casted_value = (F64)*((I32*)value);
+    break;
+  case 7:
+    casted_value = (F64)(I64)*((U64*)value);
+    break;
+  case 8:
+    casted_value = (F64)*((I64*)value);
+    break;
+  case 9:
+    casted_value = (F64)*((F32*)value);
+    break;
+  case 10:
+    casted_value = *((F64*)value);
+    break;
+  default:
+    throw std::runtime_error("LAS Extra Byte data type not supported.");
+  }
+
+  if(has_scale || has_offset)
+    return scale*casted_value + offset;
+  else
+    return casted_value;
+}
+
+I32 RLASExtrabyteAttributes::get_attribute_int(LASpoint* point)
+{
+  I32 casted_value;
+  U8* value = point->extra_bytes + start;
+
+  switch (type)
+  {
+  case 1:
+    casted_value = (I32)*((U8*)value);
+    break;
+  case 2:
+    casted_value = (I32)*((I8*)value);
+    break;
+  case 3:
+    casted_value = (I32)*((U16*)value);
+    break;
+  case 4:
+    casted_value = (I32)*((I16*)value);
+    break;
+  case 5:
+    casted_value = (I32)*((U32*)value);
+    break;
+  case 6:
+    casted_value = (I32)*((I32*)value);
+    break;
+  default:
+    throw std::runtime_error("LAS Extra Byte data type not supported in I32.");
+  }
+  return casted_value;
 }
