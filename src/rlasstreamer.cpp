@@ -141,11 +141,6 @@ void RLASstreamer::initialize()
       nalloc = ceil((float)npoints/8);
     else
       nalloc = npoints;
-
-    // Allocate the required amount of data for mandatory variables
-    X.reserve(nalloc);
-    Y.reserve(nalloc);
-    Z.reserve(nalloc);
   }
 
   initialized = true;
@@ -158,6 +153,10 @@ void RLASstreamer::allocation()
   // Allocate the required amount of data for activated options
   if(inR)
   {
+    // Allocate the required amount of data for mandatory variables
+    X.reserve(nalloc);
+    Y.reserve(nalloc);
+    Z.reserve(nalloc);
     if(t) T.reserve(nalloc);
     if(i) I.reserve(nalloc);
     if(r) RN.reserve(nalloc);
@@ -220,10 +219,10 @@ void RLASstreamer::allocation()
         else
           extrabyte.eb64.reserve(nalloc);
 
-        eba.push_back(extrabyte);
+        extra_bytes_attr.push_back(extrabyte);
       }
       else
-        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", extrabyte.type, j);
+        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", extrabyte.type, extrabyte.id);
     }
   }
 }
@@ -264,9 +263,9 @@ void RLASstreamer::write_point()
     }
     if(nir) NIR.push_back(lasreader->point.get_NIR());
 
-    for(int j = 0; j < eba.size(); j++)
+    for(int j = 0; j < extra_bytes_attr.size(); j++)
     {
-      eba[j].push_back(&lasreader->point);
+      extra_bytes_attr[j].push_back(&lasreader->point);
     }
   }
 }
@@ -421,27 +420,19 @@ List RLASstreamer::terminate()
       NIR.shrink_to_fit();
     }
 
-    for(int j = 0; j < eba.size(); j++)
+    for(int j = 0; j < extra_bytes_attr.size(); j++)
     {
-      if (eba[j].is_32bits())
+      if (extra_bytes_attr[j].is_32bits())
       {
-        IntegerVector X = wrap(eba[j].eb32);
-
-        if (eba[j].has_no_data)
-          X[X == (int)eba[j].no_data] = NA_INTEGER;
-
+        IntegerVector X = wrap(extra_bytes_attr[j].eb32);
         lasdata.push_back(X);
-        field.push_back(eba[j].name);
+        field.push_back(extra_bytes_attr[j].name);
       }
       else
       {
-        NumericVector X = wrap(eba[j].eb64);
-
-        if (eba[j].has_no_data)
-          X[X == eba[j].no_data] = NA_REAL;
-
+        NumericVector X = wrap(extra_bytes_attr[j].eb64);
         lasdata.push_back(X);
-        field.push_back(eba[j].name);
+        field.push_back(extra_bytes_attr[j].name);
       }
     }
 
@@ -474,67 +465,18 @@ void RLASstreamer::initialize_bool()
   laswriter = 0;
 }
 
-void RLASstreamer::read_t(bool b)
-{
-  t = b && (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
-}
-
-void RLASstreamer::read_i(bool b)
-{
-  i = b;
-}
-
-void RLASstreamer::read_r(bool b)
-{
-  r = b;
-}
-
-void RLASstreamer::read_n(bool b)
-{
-  n = b;
-}
-
-
-void RLASstreamer::read_d(bool b)
-{
-  d= b;
-}
-
-void RLASstreamer::read_e(bool b)
-{
-  e = b;
-}
-
-void RLASstreamer::read_c(bool b)
-{
-  c = b;
-}
-
-void RLASstreamer::read_a(bool b)
-{
-  a = b;
-}
-
-void RLASstreamer::read_u(bool b)
-{
-  u = b;
-}
-
-void RLASstreamer::read_p(bool b)
-{
-  p = b;
-}
-
-void RLASstreamer::read_rgb(bool b)
-{
-  rgb = b && (format == 2 || format == 3 || format == 7 || format == 8);
-}
-
-void RLASstreamer::read_nir(bool b)
-{
-  nir = b && (format == 8);
-}
-
+void RLASstreamer::read_t(bool b){ t = b && (format == 1 || format == 3 || format == 6 || format == 7 || format == 8); }
+void RLASstreamer::read_i(bool b){ i = b; }
+void RLASstreamer::read_r(bool b){ r = b; }
+void RLASstreamer::read_n(bool b){ n = b; }
+void RLASstreamer::read_d(bool b){ d = b; }
+void RLASstreamer::read_e(bool b){ e = b; }
+void RLASstreamer::read_c(bool b){ c = b; }
+void RLASstreamer::read_a(bool b){ a = b; }
+void RLASstreamer::read_u(bool b){ u = b; }
+void RLASstreamer::read_p(bool b){ p = b; }
+void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 7 || format == 8); }
+void RLASstreamer::read_nir(bool b){ nir = b && (format == 8); }
 void RLASstreamer::read_eb(IntegerVector x)
 {
   std::sort(x.begin(), x.end());
@@ -609,21 +551,13 @@ RLASExtrabyteAttributes::RLASExtrabyteAttributes()
 {
   has_scale = false;
   has_min = false;
+  has_max = false;
   has_offset = false;
   has_no_data = false;
 }
 
-bool RLASExtrabyteAttributes::is_supported()
-{
-  return(type <= 10);
-}
-
-bool RLASExtrabyteAttributes::is_32bits()
-{
-  // 32 bits: unsigned char | char | unsigned shor | short | unsigned long | long
-  // 64 bits: unsigned long long | long long | unsigned double | double
-  return(type <= 6 && !(has_scale || has_offset));
-}
+bool RLASExtrabyteAttributes::is_supported(){ return(type <= 10); }
+bool RLASExtrabyteAttributes::is_32bits() { return(type <= 6 && !(has_scale || has_offset)); }
 
 void RLASExtrabyteAttributes::push_back(LASpoint* point)
 {
@@ -675,9 +609,15 @@ F64 RLASExtrabyteAttributes::get_attribute_double(LASpoint* point)
   }
 
   if(has_scale || has_offset)
-    return scale*casted_value + offset;
-  else
-    return casted_value;
+    casted_value = scale*casted_value + offset;
+
+  if (has_no_data)
+  {
+    if (casted_value == no_data)
+      casted_value = NA_REAL;
+  }
+
+  return casted_value;
 }
 
 I32 RLASExtrabyteAttributes::get_attribute_int(LASpoint* point)
@@ -708,5 +648,12 @@ I32 RLASExtrabyteAttributes::get_attribute_int(LASpoint* point)
   default:
     throw std::runtime_error("LAS Extra Byte data type not supported in I32.");
   }
+
+  if (has_no_data)
+  {
+    if (casted_value == no_data)
+      casted_value = NA_INTEGER;
+  }
+
   return casted_value;
 }

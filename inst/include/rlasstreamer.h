@@ -120,10 +120,8 @@ class RLASstreamer
     bool p;
     bool rgb;
     bool nir;
-    std::vector<RLASExtrabyteAttributes> eba;
-    std::vector<int> eb; // extra_byte attribute numbers
-    /*std::vector<int> eb32;
-    std::vector<int> eb64;*/
+    std::vector<RLASExtrabyteAttributes> extra_bytes_attr;
+    std::vector<int> eb;
 };
 
 #endif //LASSTREAMER_H
