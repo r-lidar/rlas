@@ -2,7 +2,7 @@
 
 #### BUG FIXES:
 
-* Fix: [[#18](https://github.com/Jean-Romain/rlas/issues/18)] additional issue on CRAN with ASAN and USBAN
+* Fix: [[#18](https://github.com/Jean-Romain/rlas/issues/18)] additional errors on CRAN with ASAN and USBAN
 
 ### rlas v1.2.0 (Release date: 2018-04-10)
 
