@@ -554,6 +554,8 @@ RLASExtrabyteAttributes::RLASExtrabyteAttributes()
   has_max = false;
   has_offset = false;
   has_no_data = false;
+  scale = 1.0;
+  offset = 0.0;
 }
 
 bool RLASExtrabyteAttributes::is_supported(){ return(type <= 10); }

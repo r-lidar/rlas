@@ -362,7 +362,6 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
         List description = description_eb[j];
         int options = description["options"];
         bool has_no_data = options & 0x01;
-        double no_data;
         double scaled_value;
 
         // value is scaled, quantized and clamped to fit chosen datatype
