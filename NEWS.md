@@ -1,4 +1,10 @@
-### rlas v1.2.0 (Release date: 2018-04-13)
+### rlas v1.2.2 (Release date: 2018-04-13)
+
+#### BUG FIXES:
+
+* Fix: [[#19](https://github.com/Jean-Romain/rlas/issues/19)] additional errors on CRAN with valgrind
+
+### rlas v1.2.1 (Release date: 2018-04-13)
 
 #### BUG FIXES:
 
