@@ -3,7 +3,7 @@ context("writelas")
 lazfile <- system.file("extdata", "example.laz", package="rlas")
 las = read.las(lazfile)
 header = read.lasheader(lazfile)
-write_path = file.path(tempdir(), "temp.laz")
+write_path = file.path(tempdir(), "temp.las")
 
 test_that("write.las writes a correct file",{
   write.las(write_path, header, las)

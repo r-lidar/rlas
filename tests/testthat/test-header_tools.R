@@ -3,7 +3,7 @@ context("header tools")
 lazfile <- system.file("extdata", "example.laz", package="rlas")
 las = read.las(lazfile)
 header = read.lasheader(lazfile)
-write_path = file.path(tempdir(), "temp.laz")
+write_path = file.path(tempdir(), "temp.las")
 
 test_that("Add extra byte creates a correct VLR with no NA", {
 
