@@ -84,6 +84,9 @@ class RLASstreamer
     std::vector<unsigned short> SDF;
     std::vector<unsigned short> EoF;
     std::vector<unsigned short> C;
+    std::vector<bool> Synthetic;
+    std::vector<bool> Keypoint;
+    std::vector<bool> Withheld;
     std::vector<short> SA;
     std::vector<unsigned short> UD;
     std::vector<unsigned short> PSI;
