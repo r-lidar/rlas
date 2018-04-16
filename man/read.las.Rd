@@ -28,11 +28,12 @@ interest into the memory and hence avoids allocating any superfluous memory.
 \strong{Select:} the 'select' argument specifies the data that will actually be loaded. For example,
 'xyzia' means that the x, y, and z coordinates, the intensity and the scan angle will be loaded.
 The supported entries are t - gpstime, a - scan angle, i - intensity, n - number of returns,
-r - return number, c - classification, u - user data, p - point source ID, e - edge of
-flight line flag, d - direction of scan flag, R - red channel of RGB color, G - green
-channel of RGB color, B - blue channel of RGB color, N - near-infrared channel. Also numbers from
-1 to 9 for the extra bytes data numbers 1 to 9. 0 enables all extra bytes to be loaded and '*' is the
-wildcard that enables everything to be loaded from the LAS file. \cr
+r - return number, c - classification, s - synthetic flag, k - key-point flag, w - withheld flag,
+u - user data, p - point source ID, e - edge of flight line flag, d - direction of scan flag,
+R - red channel of RGB color, G - green channel of RGB color, B - blue channel of RGB color,
+N - near-infrared channel. Also numbers from 1 to 9 for the extra bytes data numbers 1 to 9.
+0 enables all extra bytes to be loaded and '*' is the wildcard that enables everything to be
+loaded from the LAS file. \cr
 Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.\cr\cr
 \strong{Filter:} the 'filter' argument allows filtering of the point cloud while reading files.
 \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg

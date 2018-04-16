@@ -41,12 +41,12 @@ lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
 }
 
-C_reader <- function(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb) {
-    .Call(`_rlas_C_reader`, ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+C_reader <- function(ifiles, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb) {
+    .Call(`_rlas_C_reader`, ifiles, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb)
 }
 
-C_reader_inpoly <- function(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb) {
-    .Call(`_rlas_C_reader_inpoly`, ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+C_reader_inpoly <- function(ifiles, x, y, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb) {
+    .Call(`_rlas_C_reader_inpoly`, ifiles, x, y, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb)
 }
 
 C_writer <- function(file, LASheader, data) {

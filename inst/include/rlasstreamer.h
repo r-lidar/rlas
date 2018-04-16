@@ -61,6 +61,9 @@ class RLASstreamer
     void read_d(bool);
     void read_e(bool);
     void read_c(bool);
+    void read_s(bool);
+    void read_k(bool);
+    void read_w(bool);
     void read_a(bool);
     void read_u(bool);
     void read_p(bool);
@@ -116,6 +119,9 @@ class RLASstreamer
     bool d;
     bool e;
     bool c;
+    bool s;
+    bool k;
+    bool w;
     bool a;
     bool u;
     bool p;

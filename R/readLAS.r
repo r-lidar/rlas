@@ -39,11 +39,12 @@
 #' \strong{Select:} the 'select' argument specifies the data that will actually be loaded. For example,
 #' 'xyzia' means that the x, y, and z coordinates, the intensity and the scan angle will be loaded.
 #' The supported entries are t - gpstime, a - scan angle, i - intensity, n - number of returns,
-#' r - return number, c - classification, u - user data, p - point source ID, e - edge of
-#' flight line flag, d - direction of scan flag, R - red channel of RGB color, G - green
-#' channel of RGB color, B - blue channel of RGB color, N - near-infrared channel. Also numbers from
-#' 1 to 9 for the extra bytes data numbers 1 to 9. 0 enables all extra bytes to be loaded and '*' is the
-#' wildcard that enables everything to be loaded from the LAS file. \cr
+#' r - return number, c - classification, s - synthetic flag, k - key-point flag, w - withheld flag,
+#' u - user data, p - point source ID, e - edge of flight line flag, d - direction of scan flag,
+#' R - red channel of RGB color, G - green channel of RGB color, B - blue channel of RGB color,
+#' N - near-infrared channel. Also numbers from 1 to 9 for the extra bytes data numbers 1 to 9.
+#' 0 enables all extra bytes to be loaded and '*' is the wildcard that enables everything to be
+#' loaded from the LAS file. \cr
 #' Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.\cr\cr
 #' \strong{Filter:} the 'filter' argument allows filtering of the point cloud while reading files.
 #' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
@@ -102,10 +103,10 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
   check_file(ifiles)
   check_filter(filter)
 
-  t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
+  t <- i <- r <- n <- s <- d <- e <- c <- s <- k <- w <- a <- u <- p <- rgb <- nir <- FALSE
   options <- select
 
-  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
+  if ("\\*" %is_in% options) options <- "xyztirndecskwaupRGBN0"
   if ("i" %is_in% options) i <- TRUE
   if ("t" %is_in% options) t <- TRUE
   if ("r" %is_in% options) r <- TRUE
@@ -113,6 +114,9 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
   if ("d" %is_in% options) d <- TRUE
   if ("e" %is_in% options) e <- TRUE
   if ("c" %is_in% options) c <- TRUE
+  if ("s" %is_in% options) s <- TRUE
+  if ("k" %is_in% options) k <- TRUE
+  if ("w" %is_in% options) w <- TRUE
   if ("a" %is_in% options) a <- TRUE
   if ("u" %is_in% options) u <- TRUE
   if ("p" %is_in% options) p <- TRUE
@@ -130,6 +134,9 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
   if ("-d" %is_in% select) d <- FALSE
   if ("-e" %is_in% select) e <- FALSE
   if ("-c" %is_in% select) c <- FALSE
+  if ("-s" %is_in% select) s <- FALSE
+  if ("-k" %is_in% select) k <- FALSE
+  if ("-w" %is_in% select) w <- FALSE
   if ("-a" %is_in% select) a <- FALSE
   if ("-u" %is_in% select) u <- FALSE
   if ("-p" %is_in% select) p <- FALSE
@@ -151,7 +158,7 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
   if (is.null(eb))
     eb = numeric(0)
 
-  data = C_reader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data = C_reader(ifiles, ofile, filter, i, r, n, d, e, c, s, k , w, a, u, p, rgb, nir, t, eb)
 
   if (ofile != "")
     return(invisible())

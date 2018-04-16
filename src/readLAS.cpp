@@ -59,7 +59,7 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 // @return Rcpp::List
 
 // [[Rcpp::export]]
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
 {
   try
   {
@@ -72,6 +72,9 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector fil
     streamer.read_d(d);
     streamer.read_e(e);
     streamer.read_c(c);
+    streamer.read_s(s);
+    streamer.read_k(k);
+    streamer.read_w(w);
     streamer.read_a(a);
     streamer.read_u(u);
     streamer.read_p(p);
@@ -97,7 +100,7 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector fil
 
 
 // [[Rcpp::export]]
-List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
 {
   try
   {
@@ -110,6 +113,9 @@ List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, C
     streamer.read_d(d);
     streamer.read_e(e);
     streamer.read_c(c);
+    streamer.read_s(s);
+    streamer.read_w(k);
+    streamer.read_w(w);
     streamer.read_a(a);
     streamer.read_u(u);
     streamer.read_p(p);

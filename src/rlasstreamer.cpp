@@ -163,13 +163,10 @@ void RLASstreamer::allocation()
     if(n) NoR.reserve(nalloc);
     if(d) SDF.reserve(nalloc);
     if(e) EoF.reserve(nalloc);
-    if(c)
-    {
-      C.reserve(nalloc);
-      Synthetic.reserve(nalloc);
-      Keypoint.reserve(nalloc);
-      Withheld.reserve(nalloc);
-    }
+    if(c) C.reserve(nalloc);
+    if(s) Synthetic.reserve(nalloc);
+    if(k) Keypoint.reserve(nalloc);
+    if(w) Withheld.reserve(nalloc);
     if(a) SA.reserve(nalloc);
     if(u) UD.reserve(nalloc);
     if(p) PSI.reserve(nalloc);
@@ -257,13 +254,10 @@ void RLASstreamer::write_point()
     if(n) NoR.push_back(lasreader->point.get_number_of_returns());
     if(d) SDF.push_back(lasreader->point.get_scan_direction_flag());
     if(e) EoF.push_back(lasreader->point.get_edge_of_flight_line());
-    if(c)
-    {
-      C.push_back(lasreader->point.get_classification());
-      Synthetic.push_back(lasreader->point.get_synthetic_flag());
-      Keypoint.push_back(lasreader->point.get_keypoint_flag());
-      Withheld.push_back(lasreader->point.get_withheld_flag());
-    }
+    if(c) C.push_back(lasreader->point.get_classification());
+    if(s) Synthetic.push_back(lasreader->point.get_synthetic_flag());
+    if(k) Keypoint.push_back(lasreader->point.get_keypoint_flag());
+    if(w) Withheld.push_back(lasreader->point.get_withheld_flag());
     if(a) SA.push_back(lasreader->point.get_scan_angle_rank());
     if(u) UD.push_back(lasreader->point.get_user_data());
     if(p) PSI.push_back(lasreader->point.get_point_source_ID());
@@ -380,17 +374,26 @@ List RLASstreamer::terminate()
       field.push_back("Classification");
       C.clear();
       C.shrink_to_fit();
+    }
 
+    if(s)
+    {
       lasdata.push_back(Synthetic);
       field.push_back("Synthetic_flag");
       Synthetic.clear();
       Synthetic.shrink_to_fit();
+    }
 
+    if(k)
+    {
       lasdata.push_back(Keypoint);
       field.push_back("Keypoint_flag");
       Keypoint.clear();
       Keypoint.shrink_to_fit();
+    }
 
+    if(w)
+    {
       lasdata.push_back(Withheld);
       field.push_back("Withheld_flag");
       Withheld.clear();
@@ -499,6 +502,9 @@ void RLASstreamer::read_n(bool b){ n = b; }
 void RLASstreamer::read_d(bool b){ d = b; }
 void RLASstreamer::read_e(bool b){ e = b; }
 void RLASstreamer::read_c(bool b){ c = b; }
+void RLASstreamer::read_s(bool b){ s = b; }
+void RLASstreamer::read_k(bool b){ k = b; }
+void RLASstreamer::read_w(bool b){ w = b; }
 void RLASstreamer::read_a(bool b){ a = b; }
 void RLASstreamer::read_u(bool b){ u = b; }
 void RLASstreamer::read_p(bool b){ p = b; }

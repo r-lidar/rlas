@@ -167,8 +167,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP sSEXP, SEXP kSEXP, SEXP wSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -181,6 +181,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type d(dSEXP);
     Rcpp::traits::input_parameter< bool >::type e(eSEXP);
     Rcpp::traits::input_parameter< bool >::type c(cSEXP);
+    Rcpp::traits::input_parameter< bool >::type s(sSEXP);
+    Rcpp::traits::input_parameter< bool >::type k(kSEXP);
+    Rcpp::traits::input_parameter< bool >::type w(wSEXP);
     Rcpp::traits::input_parameter< bool >::type a(aSEXP);
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
@@ -188,13 +191,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type nir(nirSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type eb(ebSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb));
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb));
     return rcpp_result_gen;
 END_RCPP
 }
 // C_reader_inpoly
-List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
-RcppExport SEXP _rlas_C_reader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
+List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb);
+RcppExport SEXP _rlas_C_reader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP filterSEXP, SEXP iSEXP, SEXP rSEXP, SEXP nSEXP, SEXP dSEXP, SEXP eSEXP, SEXP cSEXP, SEXP sSEXP, SEXP kSEXP, SEXP wSEXP, SEXP aSEXP, SEXP uSEXP, SEXP pSEXP, SEXP rgbSEXP, SEXP nirSEXP, SEXP tSEXP, SEXP ebSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -209,6 +212,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type d(dSEXP);
     Rcpp::traits::input_parameter< bool >::type e(eSEXP);
     Rcpp::traits::input_parameter< bool >::type c(cSEXP);
+    Rcpp::traits::input_parameter< bool >::type s(sSEXP);
+    Rcpp::traits::input_parameter< bool >::type k(kSEXP);
+    Rcpp::traits::input_parameter< bool >::type w(wSEXP);
     Rcpp::traits::input_parameter< bool >::type a(aSEXP);
     Rcpp::traits::input_parameter< bool >::type u(uSEXP);
     Rcpp::traits::input_parameter< bool >::type p(pSEXP);
@@ -216,7 +222,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type nir(nirSEXP);
     Rcpp::traits::input_parameter< bool >::type t(tSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type eb(ebSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb));
+    rcpp_result_gen = Rcpp::wrap(C_reader_inpoly(ifiles, x, y, ofile, filter, i, r, n, d, e, c, s, k, w, a, u, p, rgb, nir, t, eb));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -254,8 +260,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
-    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 16},
-    {"_rlas_C_reader_inpoly", (DL_FUNC) &_rlas_C_reader_inpoly, 18},
+    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 19},
+    {"_rlas_C_reader_inpoly", (DL_FUNC) &_rlas_C_reader_inpoly, 21},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
     {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
     {NULL, NULL, 0}
