@@ -38,7 +38,8 @@ Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.
 \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 to read the binary files. Thus the package inherits the filter commands available in
 \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to display the \code{LASlib} documentation and the available filters.
+common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
+to display the \code{LASlib} documentation and the available filters.
 }
 \examples{
 lazfile <- system.file("extdata", "example.laz", package="rlas")

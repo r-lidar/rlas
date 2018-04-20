@@ -107,6 +107,100 @@ void RLASstreamer::setfilter(CharacterVector filter)
   return;
 }
 
+void RLASstreamer::select(CharacterVector string)
+{
+  std::string select = as<std::string>(string);
+  std::string unselect = as<std::string>(string);
+
+  t = false;
+  i = false;
+  r = false;
+  n = false;
+  d = false;
+  e = false;
+  c = false;
+  a = false;
+  u = false;
+  p = false;
+  rgb = false;
+  nir = false;
+
+  if (select.find("*") != std::string::npos)
+    select = "xyztirndecaupRGBN0";
+
+  if (select.find("i") != std::string::npos) read_i(true);
+  if (select.find("t") != std::string::npos) read_t(true);
+  if (select.find("r") != std::string::npos) read_r(true);
+  if (select.find("n") != std::string::npos) read_n(true);
+  if (select.find("d") != std::string::npos) read_d(true);
+  if (select.find("e") != std::string::npos) read_e(true);
+  if (select.find("c") != std::string::npos) read_c(true);
+  if (select.find("a") != std::string::npos) read_a(true);
+  if (select.find("u") != std::string::npos) read_u(true);
+  if (select.find("p") != std::string::npos) read_p(true);
+  if (select.find("R") != std::string::npos) read_rgb(true);
+  if (select.find("G") != std::string::npos) read_rgb(true);
+  if (select.find("B") != std::string::npos) read_rgb(true);
+  if (select.find("N") != std::string::npos) read_nir(true);
+
+  if (unselect.find("-i") != std::string::npos) read_i(false);
+  if (unselect.find("-t") != std::string::npos) read_t(false);
+  if (unselect.find("-r") != std::string::npos) read_r(false);
+  if (unselect.find("-n") != std::string::npos) read_n(false);
+  if (unselect.find("-d") != std::string::npos) read_d(false);
+  if (unselect.find("-e") != std::string::npos) read_e(false);
+  if (unselect.find("-c") != std::string::npos) read_c(false);
+  if (unselect.find("-a") != std::string::npos) read_a(false);
+  if (unselect.find("-u") != std::string::npos) read_u(false);
+  if (unselect.find("-p") != std::string::npos) read_p(false);
+  if (unselect.find("-R") != std::string::npos) read_rgb(false);
+  if (unselect.find("-G") != std::string::npos) read_rgb(false);
+  if (unselect.find("-B") != std::string::npos) read_rgb(false);
+  if (unselect.find("-N") != std::string::npos) read_nir(false);
+
+  std::vector<bool> select_eb(9);
+  std::fill(select_eb.begin(), select_eb.end(), false);
+
+  if (select.find("0") != std::string::npos)
+    std::fill(select_eb.begin(), select_eb.end(), true);
+  else
+  {
+    if (select.find("1") != std::string::npos) select_eb[0] = true;
+    if (select.find("2") != std::string::npos) select_eb[1] = true;
+    if (select.find("3") != std::string::npos) select_eb[2] = true;
+    if (select.find("4") != std::string::npos) select_eb[3] = true;
+    if (select.find("5") != std::string::npos) select_eb[4] = true;
+    if (select.find("6") != std::string::npos) select_eb[5] = true;
+    if (select.find("7") != std::string::npos) select_eb[6] = true;
+    if (select.find("8") != std::string::npos) select_eb[7] = true;
+    if (select.find("9") != std::string::npos) select_eb[8] = true;
+  }
+
+  if (unselect.find("-0") != std::string::npos)
+    std::fill(select_eb.begin(), select_eb.end(), false);
+  else
+  {
+    if (unselect.find("-1") != std::string::npos) select_eb[0] = false;
+    if (unselect.find("-2") != std::string::npos) select_eb[1] = false;
+    if (unselect.find("-3") != std::string::npos) select_eb[2] = false;
+    if (unselect.find("-4") != std::string::npos) select_eb[3] = false;
+    if (unselect.find("-5") != std::string::npos) select_eb[4] = false;
+    if (unselect.find("-6") != std::string::npos) select_eb[5] = false;
+    if (unselect.find("-7") != std::string::npos) select_eb[6] = false;
+    if (unselect.find("-8") != std::string::npos) select_eb[7] = false;
+    if (unselect.find("-9") != std::string::npos) select_eb[8] = false;
+  }
+
+  IntegerVector pos_eb;
+  for (int i = 0 ; i < select_eb.size() ; i++)
+  {
+    if(select_eb[i])
+      pos_eb.push_back(i);
+  }
+
+  read_eb(pos_eb);
+}
+
 void RLASstreamer::initialize()
 {
   // Intialize the reader

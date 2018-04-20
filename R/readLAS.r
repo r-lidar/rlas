@@ -49,7 +49,8 @@
 #' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 #' to read the binary files. Thus the package inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()} to display the \code{LASlib} documentation and the available filters.
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
+#' to display the \code{LASlib} documentation and the available filters.
 #'
 #' @param files array of characters
 #' @param select character. select only columns of interest to save memory (see details)
@@ -101,57 +102,12 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "")
 {
   check_file(ifiles)
   check_filter(filter)
-
-  t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
-  options <- select
-
-  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
-  if ("i" %is_in% options) i <- TRUE
-  if ("t" %is_in% options) t <- TRUE
-  if ("r" %is_in% options) r <- TRUE
-  if ("n" %is_in% options) n <- TRUE
-  if ("d" %is_in% options) d <- TRUE
-  if ("e" %is_in% options) e <- TRUE
-  if ("c" %is_in% options) c <- TRUE
-  if ("a" %is_in% options) a <- TRUE
-  if ("u" %is_in% options) u <- TRUE
-  if ("p" %is_in% options) p <- TRUE
-  if ("R" %is_in% options) rgb <- TRUE
-  if ("G" %is_in% options) rgb <- TRUE
-  if ("B" %is_in% options) rgb <- TRUE
-  if ("N" %is_in% options) nir <- TRUE
-  eb <- as.numeric(unlist(regmatches(options, gregexpr("[[:digit:]]", options))))
-  if (any(eb == 0)) eb = 1:9
-
-  if ("-i" %is_in% select) i <- FALSE
-  if ("-t" %is_in% select) t <- FALSE
-  if ("-r" %is_in% select) r <- FALSE
-  if ("-n" %is_in% select) n <- FALSE
-  if ("-d" %is_in% select) d <- FALSE
-  if ("-e" %is_in% select) e <- FALSE
-  if ("-c" %is_in% select) c <- FALSE
-  if ("-a" %is_in% select) a <- FALSE
-  if ("-u" %is_in% select) u <- FALSE
-  if ("-p" %is_in% select) p <- FALSE
-  if ("-R" %is_in% select) rgb <- FALSE
-  if ("-G" %is_in% select) rgb <- FALSE
-  if ("-B" %is_in% select) rgb <- FALSE
-  if ("-N" %is_in% select) nir <- FALSE
-  rmeb <- abs(as.numeric(unlist(regmatches(select, gregexpr("-[[:digit:]]", select)))))
-  if (any(rmeb == 0)) rmeb = 1:9
-  eb = eb[is.na(match(eb, rmeb))]
-
-  eb = eb - 1 # converts eb to zero-based numbering
-
   ifiles = normalizePath(ifiles)
 
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
 
-  if (is.null(eb))
-    eb = numeric(0)
-
-  data = C_reader(ifiles, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data = C_reader(ifiles, ofile, select, filter)
 
   if (ofile != "")
     return(invisible())
@@ -166,54 +122,10 @@ stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", fil
   check_file(ifiles)
   check_filter(filter)
 
-  t <- i <- r <- n <- s <- d <- e <- c <- a <- u <- p <- rgb <- nir <- FALSE
-  options <- select
-
-  if ("\\*" %is_in% options) options <- "xyztirndecaupRGBN0"
-  if ("i" %is_in% options) i <- TRUE
-  if ("t" %is_in% options) t <- TRUE
-  if ("r" %is_in% options) r <- TRUE
-  if ("n" %is_in% options) n <- TRUE
-  if ("d" %is_in% options) d <- TRUE
-  if ("e" %is_in% options) e <- TRUE
-  if ("c" %is_in% options) c <- TRUE
-  if ("a" %is_in% options) a <- TRUE
-  if ("u" %is_in% options) u <- TRUE
-  if ("p" %is_in% options) p <- TRUE
-  if ("R" %is_in% options) rgb <- TRUE
-  if ("G" %is_in% options) rgb <- TRUE
-  if ("B" %is_in% options) rgb <- TRUE
-  if ("N" %is_in% options) nir <- TRUE
-  eb <- as.numeric(unlist(regmatches(options, gregexpr("[[:digit:]]", options))))
-  if (any(eb == 0)) eb = 1:9
-
-  if ("-i" %is_in% select) i <- FALSE
-  if ("-t" %is_in% select) t <- FALSE
-  if ("-r" %is_in% select) r <- FALSE
-  if ("-n" %is_in% select) n <- FALSE
-  if ("-d" %is_in% select) d <- FALSE
-  if ("-e" %is_in% select) e <- FALSE
-  if ("-c" %is_in% select) c <- FALSE
-  if ("-a" %is_in% select) a <- FALSE
-  if ("-u" %is_in% select) u <- FALSE
-  if ("-p" %is_in% select) p <- FALSE
-  if ("-R" %is_in% select) rgb <- FALSE
-  if ("-G" %is_in% select) rgb <- FALSE
-  if ("-B" %is_in% select) rgb <- FALSE
-  if ("-N" %is_in% select) nir <- FALSE
-  rmeb <- abs(as.numeric(unlist(regmatches(select, gregexpr("-[[:digit:]]", select)))))
-  if (any(rmeb == 0)) rmeb = 1:9
-  eb = eb[is.na(match(eb, rmeb))]
-
-  eb = eb - 1 # converts eb to zero-based numbering
-
   ifiles = normalizePath(ifiles)
 
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
-
-  if (is.null(eb))
-    eb = numeric(0)
 
   if (length(xpoly) != length(ypoly))
       stop("Invalide polygon", call. = FALSE)
@@ -228,7 +140,7 @@ stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", fil
 
   filter <- paste(paste("-inside", xmin, ymin, xmax, ymax), filter)
 
-  data = C_reader_inpoly(ifiles, xpoly, ypoly, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, nir, t, eb)
+  data = C_reader_inpoly(ifiles, xpoly, ypoly, ofile, select, filter)
 
   if (ofile != "")
     return(invisible())
