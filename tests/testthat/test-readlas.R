@@ -7,7 +7,7 @@ test_that("read returns good values", {
   las = read.las(lazfile)
 
   expect_true(data.table::is.data.table(las))
-  expect_equal(dim(las), c(30, 13))
+  expect_equal(dim(las), c(30, 16))
 })
 
 test_that("filter returns good values", {
@@ -15,7 +15,7 @@ test_that("filter returns good values", {
   las = read.las(lazfile, filter = "-keep_first")
 
   expect_true(data.table::is.data.table(las))
-  expect_equal(dim(las), c(26, 13))
+  expect_equal(dim(las), c(26, 16))
 })
 
 test_that("colunm selection works", {
@@ -39,13 +39,13 @@ test_that("colunm selection works", {
 
 test_that("colunm unselection works", {
 
-  las1 = read.las(lazfile, select = "xyzrndecaupRGBN0")
+  las1 = read.las(lazfile, select = "xyzrndecskwaupRGBN0")
   las2 = read.las(lazfile, select = "* -i -t")
 
   expect_equal(las1, las2)
 
   las1 = read.las(lazfile, select = "xyztirndeauRGBN0")
-  las2 = read.las(lazfile, select = "* -c -p")
+  las2 = read.las(lazfile, select = "* -c -s -k -w -p")
 
   expect_equal(las1, las2)
 })
@@ -88,7 +88,7 @@ test_that("read in poly works", {
 
   las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, filter = "")
 
-  expect_equal(dim(las), c(14, 13))
+  expect_equal(dim(las), c(14, 16))
 })
 
 
@@ -98,7 +98,7 @@ test_that("read in poly works with filter and select", {
   xpoly = c(8, 10, 11, 7, 8) + 339000
   ypoly = c(0, 0, 1, 1, 0) + 5248000
 
-  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, select = "* -t -i", filter = "-drop_z_above 977.5")
+  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, select = "* -t -i -s -k -w", filter = "-drop_z_above 977.5")
 
   expect_equal(dim(las), c(8, 11))
 })
@@ -110,7 +110,7 @@ test_that("extra byte selection works", {
 
   expect_true("Pulse width" %in% names(las))
   expect_true("Amplitude" %in% names(las))
-  expect_equal(ncol(las), 15)
+  expect_equal(ncol(las), 18)
 
   pw1 = las$`Pulse width`
 
@@ -134,5 +134,5 @@ test_that("extra byte selection works", {
 
   expect_false("Pulse width" %in% names(las))
   expect_false("Amplitude" %in% names(las))
-  expect_equal(ncol(las), 13)
+  expect_equal(ncol(las), 16)
 })

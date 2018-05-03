@@ -119,6 +119,9 @@ void RLASstreamer::select(CharacterVector string)
   d = false;
   e = false;
   c = false;
+  s = false;
+  k = false;
+  w = false;
   a = false;
   u = false;
   p = false;

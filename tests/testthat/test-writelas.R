@@ -75,7 +75,7 @@ test_that("write.las skip extra bytes if empty VLR", {
   wheader = read.lasheader(write_path)
 
   expect_true(!any(c("Amplitude", "Pulse width") %in% names(wlas)))
-  expect_equal(wlas, las[, -c(14:15)])
+  expect_equal(wlas, las[, -c(17:18)])
   expect_equal(length(wheader$`Variable Length Records`), 0)
 })
 
@@ -89,7 +89,7 @@ test_that("write.las skiped selectively extra byte if missing VLR",{
   wheader <- read.lasheader(write_path)
 
   expect_true(!"Amplitude" %in% names(wlas))
-  expect_equal(wlas, las[, -c(14)])
+  expect_equal(wlas, las[, -c(17)])
 })
 
 

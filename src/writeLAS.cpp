@@ -290,6 +290,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     IntegerVector SDF = IntegerVector(0);
     IntegerVector EoF = IntegerVector(0);
     IntegerVector C = IntegerVector(0);
+    LogicalVector S = LogicalVector(0);
+    LogicalVector K = LogicalVector(0);
+    LogicalVector W = LogicalVector(0);
     IntegerVector SA = IntegerVector(0);
     IntegerVector UD = IntegerVector(0);
     IntegerVector PSI = IntegerVector(0);
@@ -311,6 +314,12 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       EoF = data["EdgeOfFlightline"];
     if (data.containsElementNamed("Classification"))
       C = data["Classification"];
+    if (data.containsElementNamed("Synthetic_flag"))
+      S = data["Synthetic_flag"];
+    if (data.containsElementNamed("Keypoint_flag"))
+      K = data["Keypoint_flag"];
+    if (data.containsElementNamed("Withheld_flag"))
+      W = data["Withheld_flag"];
     if (data.containsElementNamed("ScanAngle"))
       SA = data["ScanAngle"];
     if (data.containsElementNamed("UserData"))
@@ -347,6 +356,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       if(SDF.length() > 0){ p.set_scan_direction_flag((U8)SDF[i]); }
       if(EoF.length() > 0){ p.set_edge_of_flight_line((U8)EoF[i]); }
       if(C.length() > 0){ p.set_classification((U8)C[i]); }
+      if(S.length() > 0){ p.set_synthetic_flag((U8)S[i]); }
+      if(K.length() > 0){ p.set_keypoint_flag((U8)K[i]); }
+      if(W.length() > 0){ p.set_withheld_flag((U8)W[i]); }
       if(SA.length() > 0){ p.set_scan_angle_rank((I8)SA[i]); }
       if(UD.length() > 0){ p.set_user_data((U8)UD[i]); }
       if(PSI.length() > 0){ p.set_point_source_ID((U16)PSI[i]); }
