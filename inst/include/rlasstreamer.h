@@ -49,6 +49,7 @@ class RLASstreamer
     void setinputfiles(CharacterVector);
     void setoutputfile(CharacterVector);
     void setfilter(CharacterVector);
+    void select(CharacterVector);
     void allocation();
     bool read_point();
     void write_point();

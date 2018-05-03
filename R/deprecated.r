@@ -32,6 +32,7 @@
 #' @useDynLib rlas, .registration = TRUE
 readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", eb = 0)
 {
+  .Deprecated("read.las")
   ofile = ""
   data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb)
   return(data)
@@ -111,6 +112,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 #' lasheader <- readlasheader(lazfile)
 readlasheader = function(file)
 {
+  .Deprecated("read.lasheader")
   valid = file.exists(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
@@ -154,6 +156,8 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
                     Classification, ScanAngle, UserData, PointSourceID,
                     R, G, B)
 {
+
+  .Deprecated("write.las")
   islas = tools::file_ext(file) %in% c("las", "laz")
 
   if(length(file) > 1)

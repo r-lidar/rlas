@@ -59,29 +59,13 @@ bool point_in_polygon(NumericVector, NumericVector, double, double);
 // @return Rcpp::List
 
 // [[Rcpp::export]]
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter)
 {
   try
   {
     RLASstreamer streamer(ifiles, ofile, filter);
 
-    streamer.read_t(t);
-    streamer.read_i(i);
-    streamer.read_r(r);
-    streamer.read_n(n);
-    streamer.read_d(d);
-    streamer.read_e(e);
-    streamer.read_c(c);
-    streamer.read_s(s);
-    streamer.read_k(k);
-    streamer.read_w(w);
-    streamer.read_a(a);
-    streamer.read_u(u);
-    streamer.read_p(p);
-    streamer.read_rgb(rgb);
-    streamer.read_nir(nir);
-    streamer.read_eb(eb);
-
+    streamer.select(select);
     streamer.allocation();
 
     while(streamer.read_point())
@@ -91,38 +75,22 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector fil
 
     return streamer.terminate();
   }
-  catch (std::exception const& ex)
+  catch (std::exception const& e)
   {
-    Rcerr << "Error: " << ex.what() << std::endl;
+    Rcerr << "Error: " << e.what() << std::endl;
     return(List(0));
   }
 }
 
 
 // [[Rcpp::export]]
-List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector filter, bool i, bool r, bool n, bool d, bool e, bool c, bool s, bool k, bool w, bool a, bool u, bool p, bool rgb, bool nir, bool t, IntegerVector eb)
+List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector select, CharacterVector filter)
 {
   try
   {
     RLASstreamer streamer(ifiles, ofile, filter);
 
-    streamer.read_t(t);
-    streamer.read_i(i);
-    streamer.read_r(r);
-    streamer.read_n(n);
-    streamer.read_d(d);
-    streamer.read_e(e);
-    streamer.read_c(c);
-    streamer.read_s(s);
-    streamer.read_w(k);
-    streamer.read_w(w);
-    streamer.read_a(a);
-    streamer.read_u(u);
-    streamer.read_p(p);
-    streamer.read_rgb(rgb);
-    streamer.read_nir(nir);
-    streamer.read_eb(eb);
-
+    streamer.select(select);
     streamer.allocation();
 
     while(streamer.read_point())
@@ -138,9 +106,9 @@ List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, C
 
     return streamer.terminate();
   }
-  catch (std::exception const& ex)
+  catch (std::exception const& e)
   {
-    Rcerr << "Error: " << ex.what() << std::endl;
+    Rcerr << "Error: " << e.what() << std::endl;
     return(List(0));
   }
 }
