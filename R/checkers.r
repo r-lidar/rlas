@@ -19,30 +19,52 @@ check_data = function(data)
 
   if(!is.null(data$Intensity))
     stopifnot(is.integer(data$Intensity))
+
   if(!is.null(data$ReturnNumber))
     stopifnot(is.integer(data$ReturnNumber))
+
   if(!is.null(data$NumberOfReturns))
     stopifnot(is.integer(data$NumberOfReturns))
+
   if(!is.null(data$ScanDirectionFlag))
     stopifnot(is.integer(data$ScanDirectionFlag))
+
   if(!is.null(data$EdgeOfFlightline))
     stopifnot(is.integer(data$EdgeOfFlightline))
+
   if(!is.null(data$Classification))
     stopifnot(is.integer(data$Classification))
+
+  if(!is.null(data$Synthetic_flag))
+    stopifnot(is.logical(data$Synthetic_flag))
+
+  if(!is.null(data$Keypoint_flag))
+    stopifnot(is.logical(data$Keypoint_flag))
+
+  if(!is.null(data$Withheld_flag))
+    stopifnot(is.logical(data$Withheld_flag))
+
   if(!is.null(data$ScanAngle))
     stopifnot(is.integer(data$ScanAngle))
+
   if(!is.null(data$UserData))
     stopifnot(is.integer(data$UserData))
+
   if(!is.null(data$gpstime))
     stopifnot(is.numeric(data$gpstime))
+
   if(!is.null(data$PointSourceID))
     stopifnot(is.integer(data$PointSourceID))
+
   if(!is.null(data$R))
     stopifnot(is.integer(data$R))
+
   if(!is.null(data$G))
     stopifnot(is.integer(data$G))
+
   if(!is.null(data$B))
     stopifnot(is.integer(data$B))
+
   if(!is.null(data$NIR))
     stopifnot(is.integer(data$NIR))
 
@@ -174,7 +196,7 @@ check_data_vs_header = function(header, data, ...)
   negvalues = fast_countbelow(data$Z, 0)
 
   if(negvalues > 0)
-    warning(paste0(negvalues, " points below 0 found."))
+    message(paste0(negvalues, " points below 0 found."))
 
   if("Classification" %in% fields)
   {
