@@ -243,6 +243,8 @@ void RLASstreamer::initialize()
       nalloc = npoints;
   }
 
+  nsynthetic = 0;
+  nwithheld = 0;
   initialized = true;
 
   return;
@@ -373,6 +375,12 @@ void RLASstreamer::write_point()
     {
       extra_bytes_attr[j].push_back(&lasreader->point);
     }
+
+    if (lasreader->point.get_synthetic_flag())
+      nsynthetic++;
+
+    if(lasreader->point.get_withheld_flag())
+      nwithheld++;
   }
 }
 
@@ -567,6 +575,12 @@ List RLASstreamer::terminate()
     }
 
     lasdata.names() = field;
+
+    if (nwithheld > 0)
+      Rcerr << "Warning: there are " << nwithheld << " points flagged 'withheld'." << std::endl;
+
+    if (nsynthetic > 0)
+      Rcerr << "Warning: there are " << nsynthetic << " points flagged 'synthetic'."  << std::endl;
 
     return(lasdata);
   }

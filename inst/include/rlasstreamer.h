@@ -108,6 +108,9 @@ class RLASstreamer
     int format;
     int nalloc;
 
+    int nsynthetic;
+    int nwithheld;
+
     bool inR;
     bool useFilter;
     bool initialized;
