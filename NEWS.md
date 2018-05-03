@@ -1,4 +1,8 @@
-### rlas v1.2.2 (Release date: 2018-04-13)
+### rlas v1.2.2 (...)
+
+#### NEW FEATURES
+
+* Read the classification flags in fields `Synthetic_flag`, `Keypoint_flag` and `Withheld_flag`.
 
 #### BUG FIXES:
 
