@@ -21,6 +21,17 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # mydefs.hpp                          #include <R.h> and #define STRICT_R_HEADERS
 # lasreaderpipeon.cpp      l96-101    comment lines
 # laswriter.cpp            l135-199   comment lines
+# laswriter.cpp            l1037      #pragma GCC diagnostic push
+#                                     #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#                                     strncpy(...)
+#                                     #pragma GCC diagnostic pop
+# lasattributer.cpp        l79-80     #pragma GCC diagnostic push
+#                                     #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#                                     strncpy(...)
+# laswriter_bin.cpp        l176       #pragma GCC diagnostic push
+#                                     #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#                                     strncpy(...)
+#                                     #pragma GCC diagnostic pop
 # bytestreamount_file.hpp  l134       return (true)
 # lastransform.cpp         l357       R::runif(0, RAND_MAX);
 # lasfilter.cpp            l1298      R::runif(0, RAND_MAX);

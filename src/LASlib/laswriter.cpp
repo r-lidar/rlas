@@ -26,6 +26,8 @@
 
     see corresponding header file
 
+    6  may  2018 -- by Jean-Romain Roussel - l1036-1040 use #prama to skip wrong -Wstringop-overflow
+
 ===============================================================================
 */
 #include "laswriter.hpp"
@@ -1033,8 +1035,16 @@ void LASwriteOpener::cut_characters(U32 cut)
 
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
+#if __GNUC__ >= 8
+#pragma GCC diagnostic push
+#pragma message( __GNUC__ )
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
       len = strlen(file_name);
       strncpy(new_file_name, file_name, len-cut);
+#if __GNUC__ >= 8
+#pragma GCC diagnostic pop
+#endif
     }
     else
     {

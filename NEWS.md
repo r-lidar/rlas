@@ -6,6 +6,7 @@
 
 #### BUG FIXES:
 
+* Fix: additional warnings on CRAN with gcc 8+
 * Fix: [[#19](https://github.com/Jean-Romain/rlas/issues/19)] additional errors on CRAN with valgrind
 
 ### rlas v1.2.1 (Release date: 2018-04-13)

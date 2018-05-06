@@ -2,10 +2,10 @@
 ===============================================================================
 
   FILE:  lasattributer.hpp
-  
+
   CONTENTS:
-  
-    This class assists with handling the "extra bytes" that allow storing 
+
+    This class assists with handling the "extra bytes" that allow storing
     additional per point attributes.
 
   PROGRAMMERS:
@@ -22,11 +22,12 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    6  may  2018 -- by Jean-Romain Roussel - l78-80 use #prama to skip wrong -Wstringop-truncation
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
-  
+
 ===============================================================================
 */
 #ifndef LAS_ATTRIBUTER_HPP
@@ -76,8 +77,15 @@ public:
     memset(this, 0, sizeof(LASattribute));
     scale[0] = scale[1] = scale[2] = 1.0;
     this->data_type = (dim-1)*10+type+1;
+#if __GNUC__ >= 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
     strncpy(this->name, name, 32);
     if (description) strncpy(this->description, description, 32);
+#if __GNUC__ >= 8
+#pragma GCC diagnostic pop
+#endif
   };
 
   inline BOOL set_no_data(U8 no_data, I32 dim=0) { if ((0 == get_type()) && (dim < get_dim())) { this->no_data[dim].u64 = no_data; options |= 0x01; return TRUE; } return FALSE; };
@@ -463,7 +471,7 @@ public:
   {
     I32 index = get_attribute_index(name);
     if (index != -1)
-    { 
+    {
       return remove_attribute(index);
     }
     return FALSE;
