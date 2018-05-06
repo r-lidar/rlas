@@ -26,7 +26,7 @@
 
     see corresponding header file
 
-     6  may  2018 -- by Jean-Romain Roussel - l173-176 use #prama to skip wrong -Wstringop-truncation
+     6  may  2018 -- by Jean-Romain Roussel - l173-176 use memcpy instead of strncpy
 
 ===============================================================================
 */
@@ -172,14 +172,7 @@ BOOL LASwriterBIN::open(ByteStreamOut* stream, const LASheader* header, const ch
   tsheader.size = sizeof(TSheader);
   tsheader.version = this->version;
   tsheader.recog_val = 970401;
-#if __GNUC__ >= 8
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-  strncpy(tsheader.recog_str, "CXYZ", 4);
-#if __GNUC__ >= 8
-#pragma GCC diagnostic pop
-#endif
+  memcpy(tsheader.recog_str, "CXYZ", 4);
   tsheader.npoints = (header->number_of_point_records ? header->number_of_point_records : (U32)header->extended_number_of_point_records);
   double scale = header->x_scale_factor;
   if (header->y_scale_factor < scale) scale = header->y_scale_factor;
