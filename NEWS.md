@@ -6,6 +6,7 @@
 
 #### BUG FIXES:
 
+* Fix: point in polygon test includes the points that are the polygon.
 * Fix: [[#21](https://github.com/Jean-Romain/rlas/issues/21)] writing NAs only extra bytes
 * Fix: additional warnings on CRAN with gcc 8+
 * Fix: [[#19](https://github.com/Jean-Romain/rlas/issues/19)] additional errors on CRAN with valgrind
