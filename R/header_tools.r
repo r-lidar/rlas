@@ -169,13 +169,22 @@ header_add_extrabytes = function(header, data, name, desc)
   stopifnot(is.list(header), is.vector(data), is.character(name), is.character(desc))
 
   type = class(data)
-  dmin = min(data, na.rm = TRUE)
-  dmax = max(data, na.rm = TRUE)
   has_na = anyNA(data)
-  offset = dmin
+  all_na = all(is.na(data))
+  offset = NULL
+  dmin = NULL
+  dmax = NULL
+
+  if (!all_na)
+  {
+    dmin = min(data, na.rm = TRUE)
+    dmax = max(data, na.rm = TRUE)
+    offset = dmin
+  }
+
   NA_value = NULL
   scale = NULL
-  offset = NULL
+  #offset = NULL
 
   if (type == "integer")
   {
