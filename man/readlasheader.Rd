@@ -15,7 +15,3 @@ A \code{list}
 \description{
 (deprecated) Use \link{read.lasheader}
 }
-\examples{
-lazfile   <- system.file("extdata", "example.laz", package="rlas")
-lasheader <- readlasheader(lazfile)
-}

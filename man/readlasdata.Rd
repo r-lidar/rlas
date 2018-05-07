@@ -47,10 +47,3 @@ A \code{data.table}
 \description{
 (deprecated) Use \link{read.las}
 }
-\examples{
-lazfile <- system.file("extdata", "example.laz", package="rlas")
-
-lasdata <- readlasdata(lazfile)
-lasdata <- readlasdata(lazfile, filter = "-keep_first")
-lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
-}

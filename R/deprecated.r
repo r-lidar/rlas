@@ -23,12 +23,6 @@
 #' @importFrom Rcpp sourceCpp
 #' @return A \code{data.table}
 #' @export
-#' @examples
-#' lazfile <- system.file("extdata", "example.laz", package="rlas")
-#'
-#' lasdata <- readlasdata(lazfile)
-#' lasdata <- readlasdata(lazfile, filter = "-keep_first")
-#' lasdata <- readlasdata(lazfile, filter = "-drop_intensity_below 80")
 #' @useDynLib rlas, .registration = TRUE
 readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", eb = 0)
 {
@@ -107,9 +101,6 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 #' @return A \code{list}
 #' @importFrom Rcpp sourceCpp
 #' @export
-#' @examples
-#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
-#' lasheader <- readlasheader(lazfile)
 readlasheader = function(file)
 {
   .Deprecated("read.lasheader")
