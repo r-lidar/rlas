@@ -261,7 +261,7 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
   header$`Variable Length Records`$Extra_Bytes$`user ID` = "LASF_spec"
   header$`Variable Length Records`$Extra_Bytes$`record ID` = 4L
   header$`Variable Length Records`$Extra_Bytes$reserved = 0L
-  header$`Variable Length Records`$Extra_Bytes$description = "lidR extra bytes"
+  header$`Variable Length Records`$Extra_Bytes$description = "rlas extra bytes"
   header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[name]] = description
 
   return(header)

@@ -26,7 +26,7 @@
 #' @useDynLib rlas, .registration = TRUE
 readlasdata = function(files, i = TRUE, r = TRUE, n = TRUE, d = TRUE, e = TRUE, c = TRUE, a = TRUE, u = TRUE, p = TRUE, rgb = TRUE, t = TRUE, filter = "", eb = 0)
 {
-  .Deprecated("read.las")
+  #.Deprecated("read.las")
   ofile = ""
   data  = streamlasdata(files, ofile, filter, i, r, n, d, e, c, a, u, p, rgb, t, eb)
   return(data)
@@ -103,7 +103,7 @@ streamlasdata_inpoly = function(ifiles, xpoly, ypoly, ofile = "", filter = "", i
 #' @export
 readlasheader = function(file)
 {
-  .Deprecated("read.lasheader")
+  #.Deprecated("read.lasheader")
   valid = file.exists(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
@@ -148,7 +148,7 @@ writelas = function(file, header, X, Y, Z, gpstime, Intensity, ReturnNumber,
                     R, G, B)
 {
 
-  .Deprecated("write.las")
+  #.Deprecated("write.las")
   islas = tools::file_ext(file) %in% c("las", "laz")
 
   if(length(file) > 1)
