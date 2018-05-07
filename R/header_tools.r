@@ -170,21 +170,27 @@ header_add_extrabytes = function(header, data, name, desc)
 
   type = class(data)
   has_na = anyNA(data)
-  all_na = all(is.na(data))
   offset = NULL
   dmin = NULL
   dmax = NULL
-
-  if (!all_na)
-  {
-    dmin = min(data, na.rm = TRUE)
-    dmax = max(data, na.rm = TRUE)
-    offset = dmin
-  }
-
   NA_value = NULL
   scale = NULL
-  #offset = NULL
+
+  if (has_na)
+  {
+    all_na = all(is.na(data))
+
+    if (!all_na)
+    {
+      dmin = min(data, na.rm = TRUE)
+      dmax = max(data, na.rm = TRUE)
+    }
+  }
+  else
+  {
+    dmin = min(data)
+    dmax = max(data)
+  }
 
   if (type == "integer")
   {
@@ -217,6 +223,15 @@ header_add_extrabytes = function(header, data, name, desc)
 #' @rdname header_add_extrabytes
 header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL, scale = NULL, max = NULL, min = NULL, NA_value = NULL)
 {
+  if (type > 10 | type <= 0)
+    stop(paste0("Type ", type, " not supported."))
+
+  if(nchar(name) > 32)
+    message("Extrabytes name is longer than the 32 characters allowed and will be truncated at writing time.")
+
+  if(nchar(desc) > 32)
+    message("Extrabytes description is longer than the 32 characters allowed and will be truncated at writing time.")
+
   options = 0
   if(!is.null(NA_value))
     options = options + 2^0
