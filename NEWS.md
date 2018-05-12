@@ -1,4 +1,4 @@
-### rlas v1.2.2 (...)
+### rlas v1.2.2 (Release date: 2018-05-12)
 
 #### NEW FEATURES
 
@@ -6,8 +6,8 @@
 
 #### BUG FIXES:
 
-* Fix: point in polygon test includes the points that are the polygon.
-* Fix: [[#21](https://github.com/Jean-Romain/rlas/issues/21)] writing NAs only extra bytes
+* Fix: point in polygon includes the points that define the polygon.
+* Fix: [[#21](https://github.com/Jean-Romain/rlas/issues/21)] writing a vector that contains only NAs in extra bytes
 * Fix: additional warnings on CRAN with gcc 8+
 * Fix: [[#19](https://github.com/Jean-Romain/rlas/issues/19)] additional errors on CRAN with valgrind
 
