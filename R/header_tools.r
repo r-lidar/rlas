@@ -227,10 +227,16 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
     stop(paste0("Type ", type, " not supported."))
 
   if(nchar(name) > 32)
-    message("Extrabytes name is longer than the 32 characters allowed and will be truncated at writing time.")
+  {
+    name = substr(name, 1, 31)
+    message("Extrabytes name is longer than the 32 characters allowed and has been truncated.")
+  }
 
   if(nchar(desc) > 32)
-    message("Extrabytes description is longer than the 32 characters allowed and will be truncated at writing time.")
+  {
+    desc = substr(desc, 1, 31)
+    message("Extrabytes description is longer than the 32 characters allowed and has been truncated.")
+  }
 
   options = 0
   if(!is.null(NA_value))
