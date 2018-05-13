@@ -122,6 +122,9 @@ List lasdatareader(CharacterVector ifiles, CharacterVector ofile, CharacterVecto
     streamer.read_d(d);
     streamer.read_e(e);
     streamer.read_c(c);
+    streamer.read_s(false);
+    streamer.read_k(false);
+    streamer.read_w(false);
     streamer.read_a(a);
     streamer.read_u(u);
     streamer.read_p(p);
@@ -160,10 +163,14 @@ List lasdatareader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector
     streamer.read_d(d);
     streamer.read_e(e);
     streamer.read_c(c);
+    streamer.read_s(false);
+    streamer.read_k(false);
+    streamer.read_w(false);
     streamer.read_a(a);
     streamer.read_u(u);
     streamer.read_p(p);
     streamer.read_rgb(rgb);
+    streamer.read_nir(false);
     streamer.read_eb(eb);
 
     streamer.allocation();

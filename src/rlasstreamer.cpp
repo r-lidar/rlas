@@ -598,6 +598,9 @@ void RLASstreamer::initialize_bool()
   d = true;
   e = true;
   c = true;
+  s = true;
+  k = true;
+  w = true;
   a = true;
   u = true;
   p = true;
