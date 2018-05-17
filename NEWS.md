@@ -1,4 +1,4 @@
-### rlas v1.2.2 (Release date: 2018-05-12)
+### rlas v1.2.3 (Release date: 2018-05-17)
 
 #### NEW FEATURES
 
