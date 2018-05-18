@@ -27,43 +27,9 @@ To install the package from github make sure you have a working development envi
 
 ## Read las and laz files
 
-### At the R level
-
 ```r
 lasdata   = read.las("<myfile.las>")
 lasheader = read.lasheader("<myfile.las>")
-```
-
-### At the C++ level
-
-Linking `rlas` into your c++ code.
-
-```cpp
-// [[Rcpp::depends(rlas)]]
-
-#include <rlasstreamer.h>
-
-// [[Rcpp::export]]
-List readlasdata(CharacterVector ifiles, CharacterVector filter)
-{
-  try
-  {
-    RLASstreamer lasstreamer(ifiles, filter);
-    lasstreamer.allocation();
-  
-    while(lasstreamer.read_point())
-    {
-      lasstreamer.write_point();
-    }
-  
-    return lasstreamer.terminate();
-  }
-  catch (std::exception const& ex)
-  {
-    Rcerr << "Error: " << ex.what() << std::endl;
-    return(List(0));
-  }
-}
 ```
 
 ## Changelog
