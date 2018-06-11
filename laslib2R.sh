@@ -19,12 +19,8 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # mydefs.hpp                          #include <R.h> and #define STRICT_R_HEADERS
 # lasreaderpipeon.cpp      l96-101    comment lines
 # laswriter.cpp            l135-199   comment lines
-# laswriter.cpp            l1037      for gcc 8+ replace strncpy(x,y,32) by:
-#                                     size_t s = strnlen(y, 32 - 1);
-#                                     memcpy(x, y, s + 1);
-# lasattributer.cpp        l79-80     for gcc 8+ replace strncpy(x,y,32) by:
-#                                     size_t s = strnlen(y, 32 - 1);
-#                                     memcpy(x, y, s + 1);
+# laswriter.cpp            l1037      for gcc 8+ replace strncpy(x,y,32) by 31
+# lasattributer.hpp        l79-80     for gcc 8+ replace strncpy(x,y,32) by: 31
 # laswriter_bin.cpp        l176       for gcc 8+ replace strncpy(new_file_name, file_name, len-cut) by:
 #                                     size_t s = len-cut;
 #                                     strncpy(new_file_name, file_name, s);

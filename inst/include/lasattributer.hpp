@@ -25,7 +25,7 @@
 
   CHANGE HISTORY:
 
-    6  may  2018 -- by Jean-Romain Roussel - l81-87 use strnlen and memcpy instead of strncpy
+    10June  2018 -- by Jean-Romain Roussel - l81-87 use strncpy 31 instead of 32
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
 
 ===============================================================================
@@ -77,15 +77,8 @@ public:
     memset(this, 0, sizeof(LASattribute));
     scale[0] = scale[1] = scale[2] = 1.0;
     this->data_type = (dim-1)*10+type+1;
-    size_t size_name = strnlen(name, 32 - 1);
-    memcpy(this->name, name, size_name + 1);
-    //strncpy(this->name, name, 32);
-    if (description)
-    {
-      size_t size_desc = strnlen(description, 32 - 1);
-      memcpy(this->description, description, size_desc + 1);
-      //strncpy(this->description, description, 32);
-    }
+    strncpy(this->name, name, 31);
+    if (description) strncpy(this->description, description, 31);
   };
 
   inline BOOL set_no_data(U8 no_data, I32 dim=0) { if ((0 == get_type()) && (dim < get_dim())) { this->no_data[dim].u64 = no_data; options |= 0x01; return TRUE; } return FALSE; };

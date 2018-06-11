@@ -1,3 +1,7 @@
+### rlas v1.2.4 (Release date: 2018-06-10)
+
+* Reupload on CRAN after being removed.
+
 ### rlas v1.2.3 (Release date: 2018-05-17)
 
 #### NEW FEATURES
