@@ -56,13 +56,13 @@ check_data = function(data)
   if (!is.null(data$PointSourceID))
     stopifnot(is.integer(data$PointSourceID))
 
-  if (!is.null(data$R))
+  if ("R" %in% names(data))
     stopifnot(is.integer(data$R))
 
-  if (!is.null(data$G))
+  if ("G" %in% names(data))
     stopifnot(is.integer(data$G))
 
-  if (!is.null(data$B))
+  if ("B" %in% names(data))
     stopifnot(is.integer(data$B))
 
   if (!is.null(data$NIR))
@@ -75,6 +75,14 @@ check_data = function(data)
     if (s > 0)
       warning(paste0("Invalid data: ", s, " points with a 'return number' greater than the 'number of returns'."), call. = FALSE)
   }
+
+  maxR <- maxG <- maxB <- 2^16
+  if ("R" %in% names(data)) maxR = max(data$R)
+  if ("G" %in% names(data)) maxG = max(data$G)
+  if ("B" %in% names(data)) maxB = max(data$B)
+
+  if (maxR <= 255 | maxG <= 255 | maxB <= 255)
+    warning("Potentially invalid data: RGB seems to be recorded on 8 bits instead of 16 bits.", call. = FALSE)
 
   return(invisible())
 }
@@ -178,7 +186,7 @@ check_data_vs_header = function(header, data, ...)
   if (max(data$X) > header$`Max X` | max(data$Y) > header$`Max Y` | min(data$X) < header$`Min X` | min(data$Y) < header$`Min Y`)
     warning("Invalid data: some points are outside the bounding box defined by the header", call. = FALSE)
 
-  if (max(data$z) > header$`Max Z` |  min(data$Z) < header$`Min Z`)
+  if (max(data$Z) > header$`Max Z` |  min(data$Z) < header$`Min Z`)
     warning("Invalid data: some points are outside the elevation range defined by the header", call. = FALSE)
 
   if(hard)
@@ -225,7 +233,7 @@ check_data_vs_header = function(header, data, ...)
     class0 = fast_countequal(data$ReturnNumber, 0L)
 
     if(class0 > 0)
-      warning(paste0("Dataset is invalid: ", class0, " points with a return number of 0 found."), call. = FALSE)
+      warning(paste0("Invalid data: ", class0, " points with a return number of 0 found."), call. = FALSE)
   }
 
   if (!is.null(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
