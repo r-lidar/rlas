@@ -182,7 +182,7 @@ check_data_vs_header = function(header, data, ...)
     warning("Invalid data: some points are outside the elevation range defined by the header", call. = FALSE)
 
   if(hard)
-
+  {
     if(dim(data)[1] != h["Number of point records"])
       warning(paste0("Invalid file: header states the file contains ", h["Number of point records"], " points but ", nrow(data), " were found."), call. = FALSE)
 
