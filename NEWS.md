@@ -1,5 +1,9 @@
 ### rlas v1.2.5 (in development)
 
+### ENHANCEMENTS
+
+* `check_data` now check the adequation between the `ReturnNumber`and the `NumberOfReturns`
+
 #### BUG FIXES:
 
 `las` format 7 was supported at the C++ level when reading a file but an old test still throw an error at the R level stating that this format was not supported.
