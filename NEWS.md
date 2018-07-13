@@ -1,3 +1,9 @@
+### rlas v1.2.5 (in development)
+
+#### BUG FIXES:
+
+`las` format 7 was supported at the C++ level when reading a file but an old test still throw an error at the R level stating that this format was not supported.
+
 ### rlas v1.2.4 (Release date: 2018-06-10)
 
 * Reupload on CRAN after being removed.

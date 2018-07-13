@@ -99,7 +99,7 @@ check_header = function(header)
   if (is.null(header[["Point Data Format ID"]]))
     stop("Point Data Format ID not defined in the header")
 
-  if (header[["Point Data Format ID"]] %in% c(4,5,6,7,9))
+  if (header[["Point Data Format ID"]] %in% c(4,5,9,10))
     stop(paste0("The point data format ", header[["Point Data Format ID"]], " is not supported yet."))
 
   if (!is.null(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
