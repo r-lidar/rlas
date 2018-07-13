@@ -175,8 +175,14 @@ check_data_vs_header = function(header, data, ...)
   if(any(c("R", "G", "B") %in% fields) & !format %in% c(2,3,8))
     warning("The data contains a 'RGB' field but point data format is not set to 2, 3 or 8.", call. = FALSE)
 
+  if (max(data$X) > header$`Max X` | max(data$Y) > header$`Max Y` | min(data$X) < header$`Min X` | min(data$Y) < header$`Min Y`)
+    warning("Invalid data: some points are outside the bounding box defined by the header", call. = FALSE)
+
+  if (max(data$z) > header$`Max Z` |  min(data$Z) < header$`Min Z`)
+    warning("Invalid data: some points are outside the elevation range defined by the header", call. = FALSE)
+
   if(hard)
-  {
+
     if(dim(data)[1] != h["Number of point records"])
       warning(paste0("Invalid file: header states the file contains ", h["Number of point records"], " points but ", nrow(data), " were found."), call. = FALSE)
 
