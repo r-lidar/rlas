@@ -20,5 +20,6 @@ check_data_vs_header(header, data, ...)
 \item{...}{internal use only}
 }
 \description{
-las files are normalized files. The \code{check_*} functions test whether either the dataset is valid, the header is valid, or if the header is in accordance with the data.
+las files are normalized files. The \code{check_*} functions test if the data is valid,
+if the header is valid or if the header is in accordance with the data.
 }
