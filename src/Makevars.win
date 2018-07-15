@@ -49,7 +49,6 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					./point_in_polygon.cpp \
 					./writeLAS.cpp \
 					./writeLAX.cpp \
-					./deprecated.cpp \
 					./fast.cpp \
 					./RcppExports.cpp
 
