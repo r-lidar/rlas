@@ -146,6 +146,23 @@ check_header = function(header)
   if (is.null(header[["Point Data Format ID"]]))
     stop("Invalid header: Point Data Format ID not defined in the header", call. = FALSE)
 
+  if (!is.null(header[["X scale factor"]]) & !is.null(header[["Y scale factor"]]) & !is.null(header[["Z scale factor"]]))
+  {
+    s = c(1,10,100,1000,10000)
+    valid = c(1/s, 0.5/s, 0.25/s)
+
+    if (!header[["X scale factor"]] %in% valid)
+      warning(paste0("Invalid header: X scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["X scale factor"]], call. = FALSE))
+
+     if (!header[["Y scale factor"]] %in% valid)
+      warning(paste0("Invalid header: Y scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["Y scale factor"]], call. = FALSE))
+
+    if (!header[["Z scale factor"]] %in% valid)
+      warning(paste0("Invalid header: Z scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["Z scale factor"]], call. = FALSE))
+  }
+  else
+    stop("Invalid header: scale factors not defined in the header", call. = FALSE)
+
   if (header[["Point Data Format ID"]] %in% c(4,5,9,10))
     stop(paste0("Invalid header: The point data format ", header[["Point Data Format ID"]], " is not supported yet."))
 
