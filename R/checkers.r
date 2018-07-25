@@ -112,7 +112,7 @@ check_data = function(data)
   if ("G" %in% names(data)) maxG = max(data$G)
   if ("B" %in% names(data)) maxB = max(data$B)
 
-  if (maxR <= 255 | maxG <= 255 | maxB <= 255)
+  if ((maxR > 0 & maxR <= 255) | (maxG > 0 & maxG <= 255) | (maxB > 0 & maxB <= 255))
     warning("Invalid data: RGB colors are recorded on 8 bits instead of 16 bits.", call. = FALSE)
 
   return(invisible())
@@ -152,13 +152,13 @@ check_header = function(header)
     valid = c(1/s, 0.5/s, 0.25/s)
 
     if (!header[["X scale factor"]] %in% valid)
-      warning(paste0("Invalid header: X scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["X scale factor"]], call. = FALSE))
+      warning(paste0("Invalid header: X scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not ", header[["X scale factor"]]), call. = FALSE)
 
      if (!header[["Y scale factor"]] %in% valid)
-      warning(paste0("Invalid header: Y scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["Y scale factor"]], call. = FALSE))
+      warning(paste0("Invalid header: Y scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not ", header[["Y scale factor"]]), call. = FALSE)
 
     if (!header[["Z scale factor"]] %in% valid)
-      warning(paste0("Invalid header: Z scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not", header[["Z scale factor"]], call. = FALSE))
+      warning(paste0("Invalid header: Z scale factor should be factor ten of 0.1 or 0.5 or 0.25 and not ", header[["Z scale factor"]]), call. = FALSE)
   }
   else
     stop("Invalid header: scale factors not defined in the header", call. = FALSE)
