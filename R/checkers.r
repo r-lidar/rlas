@@ -12,69 +12,125 @@
 check_data = function(data)
 {
   if(is.null(data$X) | is.null(data$Y) | is.null(data$Z))
-    stop("Invalid data: missing coordinates in the data")
+    stop("Invalid data: missing coordinates X Y Z", call. = FALSE)
 
-  stopifnot(is.double(data$X))
-  stopifnot(is.double(data$Y))
-  stopifnot(is.double(data$X))
+  if(!is.double(data$X))
+    stop("Invalid data: X is not a double.", call. = FALSE)
+
+  if(!is.double(data$Y))
+    stop("Invalid data: Y is not a double.", call. = FALSE)
+
+  if(!is.double(data$Z))
+    stop("Invalid data: Z is not a double.", call. = FALSE)
 
   if (!is.null(data$Intensity))
-    stopifnot(is.integer(data$Intensity))
+  {
+    if(!is.integer(data$Intensity))
+      stop("Invalid data: Intensity is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$ReturnNumber))
-    stopifnot(is.integer(data$ReturnNumber))
+  {
+    if(!is.integer(data$ReturnNumber))
+      stop("Invalid data: ReturnNumber is not an integer", call. = FALSE)
+  }
 
   if(!is.null(data$NumberOfReturns))
-    stopifnot(is.integer(data$NumberOfReturns))
+  {
+    if(!is.integer(data$NumberOfReturns))
+      stop("Invalid data: NumberOfReturns is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$ScanDirectionFlag))
-    stopifnot(is.integer(data$ScanDirectionFlag))
+  {
+    if(!is.integer(data$ScanDirectionFlag))
+      stop("Invalid data: ScanDirectionFlag is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$EdgeOfFlightline))
-    stopifnot(is.integer(data$EdgeOfFlightline))
+  {
+    if(!is.integer(data$EdgeOfFlightline))
+      stop("Invalid data: EdgeOfFlightline is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$Classification))
-    stopifnot(is.integer(data$Classification))
+  {
+    if(!is.integer(data$Classification))
+      stop("Invalid data: Classification is not an integer", call. = FALSE)
+  }
 
   if(!is.null(data$Synthetic_flag))
-    stopifnot(is.logical(data$Synthetic_flag))
+  {
+    if(!is.logical(data$Synthetic_flag))
+      stop("Invalid data: Synthetic_flag is not a logical", call. = FALSE)
+  }
 
   if (!is.null(data$Keypoint_flag))
-    stopifnot(is.logical(data$Keypoint_flag))
+  {
+    if(!is.logical(data$Keypoint_flag))
+      stop("Invalid data: Keypoint_flag is not a logical", call. = FALSE)
+  }
 
   if (!is.null(data$Withheld_flag))
-    stopifnot(is.logical(data$Withheld_flag))
+  {
+    if(!is.logical(data$Withheld_flag))
+      stop("Invalid data: Withheld_flag is not a logical", call. = FALSE)
+  }
 
   if (!is.null(data$ScanAngle))
-    stopifnot(is.integer(data$ScanAngle))
+  {
+    if(!is.integer(data$ScanAngle))
+      stop("Invalid data: ScanAngle is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$UserData))
-    stopifnot(is.integer(data$UserData))
+  {
+    if(!is.integer(data$UserData))
+      stop("Invalid data: UserData is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$gpstime))
-    stopifnot(is.numeric(data$gpstime))
+  {
+    if(!is.numeric(data$gpstime))
+      stop("Invalid data: gpstime is not a double", call. = FALSE)
+  }
 
   if (!is.null(data$PointSourceID))
-    stopifnot(is.integer(data$PointSourceID))
+  {
+    if(!is.integer(data$PointSourceID))
+      stop("Invalid data: PointSourceID is not an integer", call. = FALSE)
+  }
 
   if ("R" %in% names(data))
-    stopifnot(is.integer(data$R))
+  {
+    if(!is.integer(data$R))
+      stop("Invalid data: R is not an integer", call. = FALSE)
+  }
 
   if ("G" %in% names(data))
-    stopifnot(is.integer(data$G))
+  {
+    if(!is.integer(data$G))
+      stop("Invalid data: G is not an integer", call. = FALSE)
+  }
 
   if ("B" %in% names(data))
-    stopifnot(is.integer(data$B))
+  {
+    if(!is.integer(data$B))
+      stop("Invalid data: B is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$NIR))
-    stopifnot(is.integer(data$NIR))
+  {
+    if(!is.integer(data$NIR))
+      stop("Invalid data: NIR is not an integer", call. = FALSE)
+  }
 
   if (!is.null(data$ReturnNumber) & !is.null(data$NumberOfReturns))
   {
     s = sum(data$ReturnNumber > data$NumberOfReturns)
 
     if (s > 0)
-      warning(paste0("Invalid data:, ", s, " points with a 'return number' greater than the 'number of returns'."), call. = FALSE)
+      warning(paste0("Invalid data: ", s, " points with a 'return number' greater than the 'number of returns'."), call. = FALSE)
   }
 
   if(!is.null(data$ReturnNumber))
