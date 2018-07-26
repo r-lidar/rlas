@@ -27,88 +27,69 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 ===============================================================================
 */
 
+// [[Rcpp::depends(BH)]]
+
 #include <Rcpp.h>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/geometries.hpp>
 #include "rlasstreamer.h"
+#include "laspoint.hpp"
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
-bool point_in_polygon(NumericVector, NumericVector, double, double);
-
-// Read data from a las and laz file with LASlib
-//
-// Read data from a las or laz file in format 1 to 4 according to LAS specification and return a list.
-//
-// This function musn't be used as is. It is an internal function. Please use \link[lidR:readLAS]{readLAS} abstraction.
-//
-// @param ifiles character. The name of the files to be read
-// @param ofile character. The name of the output file. If ofile = "" then it is loaded into R.
-// @param filter character. LASlib filters
-// @param i bool. do you want to load Intensity field?
-// @param r bool. do you want to load ReturnNumber field?
-// @param n bool. do you want to load NumberOfReturns field?
-// @param s bool. do you want to load ScanDirectionFlag field?
-// @param e bool. do you want to load EdgeofFlightline field?
-// @param c bool. do you want to load Classification field?
-// @param a bool. do you want to load intensity field?
-// @param u bool. do you want to load UserData field?
-// @param p bool. do you want to load PointSourceID field?
-// @param rgb bool. do you want to load intensity R,G and B?
-// @param eb IntegerVector. which extra byte attributes to load (see LAS v1.4)? zero-based numering. -1 means all extra bytes.
-//
-// @return Rcpp::List
+typedef boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian> Point;
+typedef boost::geometry::model::polygon<Point> Polygon;
+typedef boost::geometry::model::multi_polygon<Polygon> MultiPolygon;
 
 // [[Rcpp::export]]
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt)
 {
-  try
+  RLASstreamer streamer(ifiles, ofile, filter);
+
+  streamer.select(select);
+  streamer.allocation();
+
+  // Regular reading with LASlib filters
+  if (filter_wkt == "")
   {
-    RLASstreamer streamer(ifiles, ofile, filter);
-
-    streamer.select(select);
-    streamer.allocation();
-
     while(streamer.read_point())
-    {
       streamer.write_point();
-    }
-
-    return streamer.terminate();
   }
-  catch (std::exception const& e)
+  // Extra filter within a MULTIPOLYGON
+  else if (filter_wkt.find("MULTIPOLYGON") != std::string::npos)
   {
-    Rcerr << "Error: " << e.what() << std::endl;
-    return(List(0));
-  }
-}
-
-
-// [[Rcpp::export]]
-List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector select, CharacterVector filter)
-{
-  try
-  {
-    RLASstreamer streamer(ifiles, ofile, filter);
-
-    streamer.select(select);
-    streamer.allocation();
+    Point p;
+    MultiPolygon polygons;
+    boost::geometry::read_wkt(filter_wkt, polygons);
 
     while(streamer.read_point())
     {
-      double xi = streamer.point()->get_x();
-      double yi = streamer.point()->get_y();
+      p.set<0>(streamer.point()->get_x());
+      p.set<1>(streamer.point()->get_y());
 
-      if (point_in_polygon(x, y, xi, yi))
-      {
+      if (boost::geometry::covered_by(p, polygons))
         streamer.write_point();
-      }
     }
-
-    return streamer.terminate();
   }
-  catch (std::exception const& e)
+  // Extra filter within a POLYGON
+  else if (filter_wkt.find("POLYGON") != std::string::npos)
   {
-    Rcerr << "Error: " << e.what() << std::endl;
-    return(List(0));
+    Point p;
+    Polygon polygon;
+    boost::geometry::read_wkt(filter_wkt, polygon);
+
+    while(streamer.read_point())
+    {
+      p.set<0>(streamer.point()->get_x());
+      p.set<1>(streamer.point()->get_y());
+
+      if (boost::geometry::covered_by(p, polygon))
+        streamer.write_point();
+    }
   }
+  else
+    throw std::runtime_error("WKT not supported. Should be a POLYGON or MULTIPOLYGON");
+
+  return streamer.terminate();
 }

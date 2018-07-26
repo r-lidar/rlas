@@ -17,10 +17,6 @@ fast_countover <- function(x, t) {
     .Call(`_rlas_fast_countover`, x, t)
 }
 
-point_in_polygon <- function(vertx, verty, pointx, pointy) {
-    .Call(`_rlas_point_in_polygon`, vertx, verty, pointx, pointy)
-}
-
 lasheaderreader <- function(file) {
     .Call(`_rlas_lasheaderreader`, file)
 }
@@ -29,12 +25,8 @@ lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
 }
 
-C_reader <- function(ifiles, ofile, select, filter) {
-    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter)
-}
-
-C_reader_inpoly <- function(ifiles, x, y, ofile, select, filter) {
-    .Call(`_rlas_C_reader_inpoly`, ifiles, x, y, ofile, select, filter)
+C_reader <- function(ifiles, ofile, select, filter, filter_wkt) {
+    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, filter_wkt)
 }
 
 C_writer <- function(file, LASheader, data) {

@@ -53,20 +53,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// point_in_polygon
-bool point_in_polygon(NumericVector vertx, NumericVector verty, double pointx, double pointy);
-RcppExport SEXP _rlas_point_in_polygon(SEXP vertxSEXP, SEXP vertySEXP, SEXP pointxSEXP, SEXP pointySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type vertx(vertxSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type verty(vertySEXP);
-    Rcpp::traits::input_parameter< double >::type pointx(pointxSEXP);
-    Rcpp::traits::input_parameter< double >::type pointy(pointySEXP);
-    rcpp_result_gen = Rcpp::wrap(point_in_polygon(vertx, verty, pointx, pointy));
-    return rcpp_result_gen;
-END_RCPP
-}
 // lasheaderreader
 List lasheaderreader(CharacterVector file);
 RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
@@ -88,8 +74,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP) {
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP filter_wktSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,23 +83,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_reader_inpoly
-List C_reader_inpoly(CharacterVector ifiles, NumericVector x, NumericVector y, CharacterVector ofile, CharacterVector select, CharacterVector filter);
-RcppExport SEXP _rlas_C_reader_inpoly(SEXP ifilesSEXP, SEXP xSEXP, SEXP ySEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type ifiles(ifilesSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader_inpoly(ifiles, x, y, ofile, select, filter));
+    Rcpp::traits::input_parameter< std::string >::type filter_wkt(filter_wktSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, filter_wkt));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -145,11 +116,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
-    {"_rlas_point_in_polygon", (DL_FUNC) &_rlas_point_in_polygon, 4},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
-    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 4},
-    {"_rlas_C_reader_inpoly", (DL_FUNC) &_rlas_C_reader_inpoly, 6},
+    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
     {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
     {NULL, NULL, 0}
