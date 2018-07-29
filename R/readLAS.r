@@ -99,7 +99,7 @@ read.lasheader = function(file)
   return(data)
 }
 
-stream.las = function(ifiles, ofile = "", select = "*", filter = "", in_polygon = NULL)
+stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
 {
   check_file(ifiles)
   check_filter(filter)
@@ -109,53 +109,7 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", in_polygon 
   if (ofile != "")
     ofile = suppressWarnings(normalizePath(ofile))
 
-  wkt = ""
-  if (!is.null(in_polygon))
-  {
-    # WKT
-    if (is.character(in_polygon))
-    {
-      spgeom <- rgeos::readWKT(in_polygon, id = NULL, p4s = NULL)
-      bbox   <- spgeom@bbox
-      buffer <- 0.1
-      filter <- paste(paste("-inside", bbox[1]-buffer, bbox[2]-buffer, bbox[3]+buffer, bbox[4]+buffer), filter)
-      wkt    <- in_polygon
-    }
-    else if (is(in_polygon, "Polygon"))
-    {
-      spgeom <- sp::Polygons(list(in_polygon), ID = "1")
-      spgeom <- sp::SpatialPolygons(list(spgeom))
-      sfgeom <- sf::st_as_sf(spgeom)
-      bbox   <- spgeom@bbox
-      buffer <- 0.1
-
-      filter <- paste(paste("-inside", bbox[1]-buffer, bbox[2]-buffer, bbox[3]+buffer, bbox[4]+buffer), filter)
-      wkt = sf::st_as_text(sfgeom$geometry)
-    }
-    else if (is(in_polygon, "Polygons"))
-    {
-      spgeom <- sp::SpatialPolygons(list(in_polygon))
-      sfgeom <- sf::st_as_sf(spgeom)
-      bbox   <- spgeom@bbox
-      buffer <- 0.1
-
-      filter <- paste(paste("-inside", bbox[1]-buffer, bbox[2]-buffer, bbox[3]+buffer, bbox[4]+buffer), filter)
-      wkt = sf::st_as_text(sfgeom$geometry)
-    }
-    else if (is(in_polygon, "SpatialPolygons"))
-    {
-      sfgeom <- sf::st_as_sf(in_polygon)
-      bbox   <- in_polygon@bbox
-      buffer <- 0.1
-
-      filter <- paste(paste("-inside", bbox[1]-buffer, bbox[2]-buffer, bbox[3]+buffer, bbox[4]+buffer), filter)
-      wkt = sf::st_as_text(sfgeom$geometry)
-    }
-    else
-      stop(paste0("Geometry ", class(in_polygon), " not supported when filtering a las file."), call. = FALSE)
-  }
-
-  data = C_reader(ifiles, ofile, select, filter, wkt)
+  data = C_reader(ifiles, ofile, select, filter, filter_wkt)
 
   if (ofile != "")
     return(invisible())
@@ -168,7 +122,11 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", in_polygon 
 stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", filter = "")
 {
   p = sp::Polygon(cbind(xpoly,ypoly))
-  data = stream.las(ifiles, ofile, select, filter, p)
+  p = sp::Polygons(list(p), ID = "1")
+  p = sp::SpatialPolygons(list(p))
+  p = sf::st_as_sf(p)
+  wkt = sf::st_as_text(p$geometry)
+  data = stream.las(ifiles, ofile, select, filter, wkt)
   return(data)
 }
 

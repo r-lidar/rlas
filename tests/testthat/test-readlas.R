@@ -102,14 +102,14 @@ test_that("read in poly works with filter and select", {
 test_that("filter wkt works with a POLYGON", {
   ofile = ""
   wkt = "POLYGON ((339008 5248000, 339007 5248001, 339011 5248001, 339010 5248000, 339008 5248000))"
-  las = rlas:::stream.las(lazfile, ofile, select = "* -t -i -s -k -w", in_polygon = wkt)
+  las = rlas:::stream.las(lazfile, ofile, select = "* -t -i -s -k -w", filter_wkt = wkt)
   expect_equal(dim(las), c(14, 11))
 })
 
 test_that("filter wkt works with a POLYGON with hole", {
   ofile = ""
   wkt = "POLYGON ((339008 5248000, 339007 5248001, 339011 5248001, 339010 5248000, 339008 5248000), (339008.3 5248000.5, 339008.2 5248000.1, 339008.8 5248000.1, 339009.7 5248000.2, 339009.1 5248000.5, 339008.3 5248000.5))"
-  las = rlas:::stream.las(lazfile, ofile, in_polygon = wkt)
+  las = rlas:::stream.las(lazfile, ofile, filter_wkt = wkt)
   expect_equal(dim(las), c(10, 16))
 })
 
@@ -117,7 +117,7 @@ test_that("filter wkt works with a POLYGON with hole", {
 test_that("filter wkt works with a MULTIPOLYGON", {
   ofile = ""
   wkt = "MULTIPOLYGON (((339008 5248000, 339008.1 5248001, 339009.2 5248001, 339010 5248000, 339008 5248000), (339008.3 5248000.5, 339008.2 5248000.1, 339008.8 5248000.1, 339009.7 5248000.2, 339009.1 5248000.6, 339008.3 5248000.5)), ((339003 5248001, 339003 5248000, 339007.3 5248001, 339003 5248001)))"
-  las = rlas:::stream.las(lazfile, ofile, in_polygon = wkt)
+  las = rlas:::stream.las(lazfile, ofile, filter_wkt = wkt)
   expect_equal(dim(las), c(11, 16))
 })
 
