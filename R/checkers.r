@@ -319,14 +319,6 @@ check_data_vs_header = function(header, data, ...)
     }
   }
 
-  if (!is.null(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
-  {
-    extrabytes = names(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`)
-
-    if (!all(extrabytes %in% names(data)))
-      stop("Invalid file: the header describes extra bytes attributes that are not in the data.")
-  }
-
   return(invisible())
 }
 
