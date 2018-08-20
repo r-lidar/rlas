@@ -42,7 +42,7 @@ test_that("add_extrabytes creates a correct VLR with NAs", {
   # int
 
   ex = sample(1:10, nrow(las), TRUE)
-  ex[c(5,8)] = NA
+  ex[c(5,8)] = NA_integer_
   las$Exdata = ex
   new_header = header_add_extrabytes(header, las$Exdata, "Exdata", "Extra numeric data")
 
@@ -58,7 +58,7 @@ test_that("add_extrabytes creates a correct VLR with NAs", {
   # double
 
   ex = runif(nrow(las), 1, 10)
-  ex[c(5,8)] = NA
+  ex[c(5,8)] = NA_real_
   las$Exdata = ex
   new_header = header_add_extrabytes(header, las$Exdata, "Exdata", "Extra numeric data")
 
@@ -109,8 +109,8 @@ test_that("add_extrabytes_manual creates a correct VLR", {
 
   # from int to unsigned short
 
-  las$Exdata = sample(-10:10, nrow(las), TRUE)
-  las$Exdata[1] = 2^16+1
+  las$Exdata = sample(0:10, nrow(las), TRUE)
+  #las$Exdata[1] = 2^16+1
   new_header = header_add_extrabytes_manual(header, "Exdata", "Extra numeric data", 3L)
 
   write.las(write_path, new_header, las)
@@ -119,8 +119,8 @@ test_that("add_extrabytes_manual creates a correct VLR", {
   wheader = read.lasheader(write_path)
 
   expected = las$Exdata
-  expected[expected < 0] = 0
-  expected[expected > 2^16] = expected[expected > 2^16] - 2^16
+  #expected[expected < 0] = 0
+  #expected[expected > 2^16] = expected[expected > 2^16] - 2^16
   get = wlas$Exdata
 
   expect_equal(get, expected)

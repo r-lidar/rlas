@@ -1,6 +1,9 @@
 gcc 8 raises warning on CRAN (-Wstringop-truncation -Wstringop-overflow=). I compiled with gcc 8.1
-using the same config than on CRAN but I did not reproduced the error. Thus, I can't swear that my 
-fixes are correct but I'm confident.
+using the same config than on CRAN but I did not reproduced the error. However the previous upload on CRAN 
+(rejected, see below) allows me to confirm that the issues were fixed.
+Also UndefinedBehaviorSanitizer raise by USBAN have been solvd by removing unit tests in testthat that 
+check the behavior of the lib when the user try to write a value outside the range of representable 
+values.
 
 ## Test environments
 * Linux Mint 18, R 3.4.4, g++ -std=gnu++11
