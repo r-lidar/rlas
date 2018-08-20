@@ -422,7 +422,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     }
 
     laswriter->update_header(&header, true);
-    I64 total_bytes = laswriter->close();
+    laswriter->close();
     delete laswriter;
   }
   catch (std::exception const& e)
@@ -434,11 +434,11 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 void set_guid(LASheader &header, const char* guid)
 {
   // uuid
-  I64 set_GUID_data_1 = 0;
-  I32 set_GUID_data_2 = 0;
-  I32 set_GUID_data_3 = 0;
-  I32 set_GUID_data_4a = 0;
-  I64 set_GUID_data_4b = 0;
+  long long unsigned int set_GUID_data_1 = 0;
+  unsigned int set_GUID_data_2 = 0;
+  unsigned int set_GUID_data_3 = 0;
+  unsigned int set_GUID_data_4a = 0;
+  long long unsigned int set_GUID_data_4b = 0;
 
   sscanf(guid, "%llx-%x-%x-%x-%llx", &set_GUID_data_1, &set_GUID_data_2, &set_GUID_data_3, &set_GUID_data_4a, &set_GUID_data_4b);
 

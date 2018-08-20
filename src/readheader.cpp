@@ -249,7 +249,7 @@ List vlrsreader(LASheader* lasheader)
             if (attemp.data_type)
             {
               int type = ((I32)(attemp.data_type)-1)%10;
-              int dim = ((I32)(attemp.data_type)-1)/10+1;
+              //int dim = ((I32)(attemp.data_type)-1)/10+1;
 
               List ExtraByte(0);
               List ExtraBytenames(0);

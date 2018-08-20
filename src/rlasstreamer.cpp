@@ -201,7 +201,7 @@ void RLASstreamer::select(CharacterVector string)
   }
 
   IntegerVector pos_eb;
-  for (int i = 0 ; i < select_eb.size() ; i++)
+  for (size_t i = 0 ; i < select_eb.size() ; i++)
   {
     if(select_eb[i])
       pos_eb.push_back(i);
@@ -284,7 +284,7 @@ void RLASstreamer::allocation()
     if(nir) NIR.reserve(nalloc);
 
     // Find if extra bytes are 32 of 64 bytes types
-    for(int j = 0; j < eb.size(); j++)
+    for(size_t j = 0; j < eb.size(); j++)
     {
       RLASExtrabyteAttributes extrabyte;
       extrabyte.id = eb[j];
@@ -374,7 +374,7 @@ void RLASstreamer::write_point()
     }
     if(nir) NIR.push_back(lasreader->point.get_NIR());
 
-    for(int j = 0; j < extra_bytes_attr.size(); j++)
+    for(size_t j = 0; j < extra_bytes_attr.size(); j++)
     {
       extra_bytes_attr[j].push_back(&lasreader->point);
     }
@@ -561,7 +561,7 @@ List RLASstreamer::terminate()
       NIR.shrink_to_fit();
     }
 
-    for(int j = 0; j < extra_bytes_attr.size(); j++)
+    for(size_t j = 0; j < extra_bytes_attr.size(); j++)
     {
       if (extra_bytes_attr[j].is_32bits())
       {
