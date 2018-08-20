@@ -6,7 +6,8 @@
 
 #### BUG FIXES:
 
-`las` format 7 was supported at the C++ level when reading a file but an old test still throw an error at the R level stating that this format was not supported.
+* `las` format 7 was supported at the C++ level when reading a file but an old test still throw an error at the R level stating that this format was not supported.
+* fix several compilation warnings on CRAN
 
 #### OTHERS
 
