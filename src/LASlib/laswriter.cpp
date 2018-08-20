@@ -1015,7 +1015,7 @@ void LASwriteOpener::add_appendix(const CHAR* appendix)
     }
     else
     {
-      strncpy(new_file_name, file_name, len);
+      memcpy(new_file_name, file_name, len*sizeof(CHAR));
       sprintf(&(new_file_name[len]), "%s%s", appendix, &(file_name[len]));
     }
     free(file_name);
@@ -1036,8 +1036,7 @@ void LASwriteOpener::cut_characters(U32 cut)
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
       len = strlen(file_name);
-      size_t s = len-cut;
-      strncpy(new_file_name, file_name, s);
+      strncpy(new_file_name, file_name, len-cut);
     }
     else
     {
