@@ -1036,11 +1036,11 @@ void LASwriteOpener::cut_characters(U32 cut)
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
       len = strlen(file_name);
-      strncpy(new_file_name, file_name, len-cut);
+      memcpy(new_file_name, file_name, (len-cut)*sizeof(CHAR));
     }
     else
     {
-      strncpy(new_file_name, file_name, len-cut);
+      memcpy(new_file_name, file_name, (len-cut)*sizeof(CHAR));
       sprintf(&(new_file_name[len-cut]), "%s", &(file_name[len]));
     }
     free(file_name);
