@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  lasreader_qfit.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
-  
+
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
 
   COPYRIGHT:
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_qfit.hpp"
@@ -83,7 +83,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
   geo_keys[1].key_id = 2048; // GeographicTypeGeoKey
   geo_keys[1].tiff_tag_location = 0;
   geo_keys[1].count = 1;
-  geo_keys[1].value_offset = 4326; // GCS_WGS_84 
+  geo_keys[1].value_offset = 4326; // GCS_WGS_84
 
   // vertical units
   geo_keys[2].key_id = 4099; // VerticalUnitsGeoKey
@@ -204,7 +204,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
   header.y_offset = 0;
   header.z_offset = 0;
 
-  try { 
+  try {
     LASattribute scan_azimuth(LAS_ATTRIBUTE_I32, "scan azimuth", "Scan Azimuth (degrees X 1,000)");
     scan_azimuth.set_scale(0.001);
     scan_azimuth.set_min(0);
@@ -217,7 +217,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
   }
 
 
-  try { 
+  try {
     LASattribute pitch(LAS_ATTRIBUTE_I32, "pitch", "Pitch (degrees X 1,000)");
     pitch.set_scale(0.001);
     pitch.set_min(-90000);
@@ -230,7 +230,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
   }
 
 
-  try { 
+  try {
     LASattribute roll(LAS_ATTRIBUTE_I32, "roll", "Roll (degrees X 1,000)");
     roll.set_scale(0.001);
     roll.set_min(-90000);
@@ -244,8 +244,8 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   if (version == 48)
   {
-    try { 
-      LASattribute pulse_width(LAS_ATTRIBUTE_U8, "pulse width", "Pulse Width (digitizer samples)");
+    try {
+      LASattribute pulse_width(LAS_ATTRIBUTE_U8, "pulse width", "Pulse Width (digitizer sample)");
       header.add_attribute(pulse_width);
     }
     catch(...) {
@@ -368,7 +368,7 @@ BOOL LASreaderQFIT::read_point_default()
       if (point.coordinates[2] < header.min_z) header.min_z = point.coordinates[2];
       else if (point.coordinates[2] > header.max_z) header.max_z = point.coordinates[2];
     }
-    
+
     p_count++;
     return TRUE;
   }
