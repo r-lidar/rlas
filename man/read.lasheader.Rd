@@ -24,3 +24,4 @@ lasheader <- read.lasheader(lazfile)
 \seealso{
 Other rlas: \code{\link{write.las}}
 }
+\concept{rlas}

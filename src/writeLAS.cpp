@@ -46,7 +46,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 {
   try
   {
-    // 1. Make a standard header
+    // 1. Public Header Block
 
     class LASheader header;
     header.file_source_ID = (int)LASheader["File Source ID"];
@@ -71,10 +71,12 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     const char* cguid = stdguid.c_str();
     set_guid(header, cguid);
 
-    // 2. Deal with extra bytes attributes
+    // 2. Variable lenght records
 
-    // Get the extra bytes description
-    List description_eb(0);                         // Create an empty description for extra bytes
+    // 2.1 retrive what the list contains
+
+    List description_eb(0);
+    U16 epsg = 0;
     if(LASheader.containsElementNamed("Variable Length Records"))
     {
       List vlr = LASheader["Variable Length Records"];
@@ -88,6 +90,35 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
           description_eb = extra_bytes["Extra Bytes Description"];
         }
       }
+
+      if(vlr.containsElementNamed("GeoKeyDirectoryTag"))
+      {
+        List gktd = vlr["GeoKeyDirectoryTag"];
+        List tags = gktd["tags"];
+
+        for (int i = 0 ; i < tags.size() ; i ++)
+        {
+          List tag = tags[i];
+          int key = tag["key"];
+
+          if (key == 3072)
+            epsg = tag["value offset"];
+        }
+      }
+    }
+
+    // 2.2 Update the header
+
+    if (epsg != 0)
+    {
+      LASvlr_key_entry* epsg = new LASvlr_key_entry();
+      epsg->key_id = 3072;
+      epsg->tiff_tag_location = 0;
+      epsg->count = 1;
+      epsg->value_offset = 26917;
+
+      header.set_geo_keys(1, epsg);
+      delete epsg;
     }
 
     int num_eb = description_eb.size();              // Get the number of extra byte
@@ -266,7 +297,8 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
     // starting byte in point format of extra byte j
     for(int i = 0; i < num_eb; i++)
-      attribute_starts[i]=header.get_attribute_start(attribute_index[i]);
+      attribute_starts[i] = header.get_attribute_start(attribute_index[i]);
+
 
     // 3. write the data to the file
 
@@ -341,7 +373,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     std::vector< NumericVector > EB(num_eb);                        // For fast access to data.frame elements
 
     for(int i = 0; i < num_eb; i++)
-      EB[i]=data[ebnames[i]];
+      EB[i] = data[ebnames[i]];
 
     for(int i = 0 ; i < X.length() ; i++)
     {

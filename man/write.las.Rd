@@ -55,3 +55,4 @@ write.las(file, lasheader, lasdata)
 \seealso{
 Other rlas: \code{\link{read.lasheader}}
 }
+\concept{rlas}

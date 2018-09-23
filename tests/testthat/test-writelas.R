@@ -11,7 +11,21 @@ test_that("write.las writes a correct file",{
   wheader = read.lasheader(write_path)
 
   expect_equal(las, wlas)
-  expect_equal(header$`Point Data Format ID`, wheader$`Point Data Format ID`)
+  expect_equal(header[-c(7:10, 12)], wheader[-c(7:10, 12)])
+})
+
+
+test_that("write.las epsg code",{
+  new_header = header
+  new_header$`Variable Length Records`$GeoKeyDirectoryTag$tags = list()
+  new_header$`Variable Length Records`$GeoKeyDirectoryTag$tags[[1]] = list( key = 3072,`value offset` = 26917)
+
+  write.las(write_path, new_header, las)
+  wlas = read.las(write_path)
+  wheader = read.lasheader(write_path)
+
+  expect_equal(las, wlas)
+  expect_equal(wheader$`Variable Length Records`$GeoKeyDirectoryTag$tags[[1]]$`value offset`, 26917)
 })
 
 test_that("UUID is properly written",{
