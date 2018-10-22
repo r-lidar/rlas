@@ -111,14 +111,14 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
     if (epsg != 0)
     {
-      LASvlr_key_entry* epsg = new LASvlr_key_entry();
-      epsg->key_id = 3072;
-      epsg->tiff_tag_location = 0;
-      epsg->count = 1;
-      epsg->value_offset = 26917;
+      LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
+      vlr_epsg->key_id = 3072;
+      vlr_epsg->tiff_tag_location = 0;
+      vlr_epsg->count = 1;
+      vlr_epsg->value_offset = epsg;
 
-      header.set_geo_keys(1, epsg);
-      delete epsg;
+      header.set_geo_keys(1, vlr_epsg);
+      delete vlr_epsg;
     }
 
     int num_eb = description_eb.size();              // Get the number of extra byte
