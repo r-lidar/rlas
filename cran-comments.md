@@ -6,7 +6,7 @@ I fixed this issue by replacing strncpy by an equivalent code that uses memcpy.
 * Linux Mint 18, R 3.4.4, g++ -std=gnu++11
 * Linux Mint 18, R 3.4.4, g++-8 -std=gnu++11
 * Linux Mint 18, R 3.4.4, clang++-4.0 -std=gnu++11
-* Windows via CRAN builder, R 3.5.1
+* Windows via CRAN builder, R 3.5.1, R 3.6
 
 ## R CMD check results
 There were no ERRORs or WARNINGs or NOTEs.

@@ -1,4 +1,4 @@
-### rlas v1.2.8 (Release date: 2018-10-26)
+### rlas v1.2.9 (Release date: 2018-10-26)
 
 * `write.las` writes the epsg code in the header.
 
