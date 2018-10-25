@@ -553,7 +553,7 @@ public:
       offset_to_point_data += 54;
       vlrs = (LASvlr*)malloc(sizeof(LASvlr));
     }
-    memset(&(vlrs[i]), 0, sizeof(LASvlr));
+    memset((void*)(&(vlrs[i])), 0, sizeof(LASvlr));
     vlrs[i].reserved = 0; // used to be 0xAABB
     strncpy(vlrs[i].user_id, user_id, 16);
     vlrs[i].record_id = record_id;
