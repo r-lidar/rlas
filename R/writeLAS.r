@@ -71,18 +71,28 @@
 #' write.las(file, lasheader, lasdata)
 write.las = function(file, header, data)
 {
-  file = path.expand(file)
+  file <- path.expand(file)
   check_output_file(file)
   check_header(header)
   check_data(data)
   check_data_vs_header(header, data)
 
+  # Check for extra bytes validity
   if (!is.null(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
   {
-    extrabytes = names(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`)
+    extrabytes <- names(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`)
 
     if (!all(extrabytes %in% names(data)))
       stop("Invalid file: the header describes extra bytes attributes that are not in the data.")
+
+    for (i in seq_along(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
+    {
+      name <- header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[i]]$name
+      desc <- header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[i]]$description
+
+      if (nchar(name) > 31) header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[i]]$name <- substr(name, 1, 31)
+      if (nchar(desc) > 31) header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[i]]$description <- substr(desc, 1, 31)
+    }
   }
 
   C_writer(file, header, data)

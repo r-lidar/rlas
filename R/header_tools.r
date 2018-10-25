@@ -223,32 +223,36 @@ header_add_extrabytes = function(header, data, name, desc)
 #' @rdname header_add_extrabytes
 header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL, scale = NULL, max = NULL, min = NULL, NA_value = NULL)
 {
-  if (type > 10 | type <= 0)
+  type = as.integer(type)
+
+  if (type > 10L | type <= 0L)
     stop(paste0("Type ", type, " not supported."))
 
-  if(nchar(name) > 32)
+  if (nchar(name) > 32)
   {
     name = substr(name, 1, 31)
     message("Extrabytes name is longer than the 32 characters allowed and has been truncated.")
   }
 
-  if(nchar(desc) > 32)
+  if (nchar(desc) > 32)
   {
     desc = substr(desc, 1, 31)
     message("Extrabytes description is longer than the 32 characters allowed and has been truncated.")
   }
 
   options = 0
-  if(!is.null(NA_value))
+  if (!is.null(NA_value))
     options = options + 2^0
-  if(!is.null(min))
+  if (!is.null(min))
     options = options + 2^1
-  if(!is.null(max))
+  if (!is.null(max))
     options = options + 2^2
-  if(!is.null(scale))
+  if (!is.null(scale))
     options = options + 2^3
-  if(!is.null(offset))
+  if (!is.null(offset))
     options = options + 2^4
+
+  options = as.integer(options)
 
   description = list(reserved = 0,
                      data_type = type,

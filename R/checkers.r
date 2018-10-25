@@ -229,14 +229,32 @@ check_header = function(header)
       if (is.null(extra_byte[["options"]]))
         stop("Invalid header: 'options' is missing in extra bytes description")
 
+      if (!is.integer(extra_byte[["options"]]))
+        stop("Invalid header: 'options' must be an integer in extra bytes description")
+
       if (is.null(extra_byte[["data_type"]]))
         stop("Invalid header: 'data_type' is missing in extra bytes description")
+
+      if (extra_byte[["data_type"]] < 1L & extra_byte[["data_type"]] > 10L)
+        stop("Invalid header: 'data_type' must be between 1 and 10 in extra bytes description")
 
       if (is.null(extra_byte[["name"]]))
         stop("Invalid header: 'name' is missing in extra bytes description")
 
+      if (!is.character(extra_byte[["name"]]) | length(extra_byte[["name"]]) > 1L)
+        stop("Invalid header: 'name' must be a string in extra bytes description")
+
+      if (nchar(extra_byte[["name"]]) > 32L)
+        warning("Invalid header: 'name' must be a string of length < 32 in extra bytes description")
+
       if (is.null(extra_byte[["description"]]))
         stop("Invalid header: 'description' is missing in extra bytes description")
+
+      if (!is.character(extra_byte[["description"]]) | length(extra_byte[["description"]]) > 1L)
+        stop("Invalid header: 'description' must be a string in extra bytes description")
+
+      if (nchar(extra_byte[["description"]]) > 32L)
+        warning("Invalid header: 'description' must be a string of length < 32 in extra bytes description")
 
       options = extra_byte[["options"]]
       options = as.integer(intToBits(options))[1:5]
