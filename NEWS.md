@@ -1,3 +1,7 @@
+### rlas v1.2.10 (...)
+
+* Fix: segfault in `read.las` when using an inappropriated filter such as -keep_class 123 (see [#26](https://github.com/Jean-Romain/rlas/issues/26). Error is properly handled now.
+
 ### rlas v1.2.9 (Release date: 2018-10-26)
 
 * `write.las` writes the epsg code in the header.
