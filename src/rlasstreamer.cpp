@@ -100,7 +100,11 @@ void RLASstreamer::setfilter(CharacterVector filter)
 
   char* filterchar = const_cast<char*>(filterstd.c_str());
 
-  lasreadopener.parse_str(filterchar);
+  if (!lasreadopener.parse_str(filterchar))
+  {
+    lasreadopener.set_filter(0);
+    throw std::runtime_error("Filter error see message above.");
+  }
 
   useFilter = true;
 
