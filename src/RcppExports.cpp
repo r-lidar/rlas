@@ -53,6 +53,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_reader
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP filter_wktSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ifiles(ifilesSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filter_wkt(filter_wktSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, filter_wkt));
+    return rcpp_result_gen;
+END_RCPP
+}
 // lasheaderreader
 List lasheaderreader(CharacterVector file);
 RcppExport SEXP _rlas_lasheaderreader(SEXP fileSEXP) {
@@ -71,21 +86,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     lasfilterusage();
     return R_NilValue;
-END_RCPP
-}
-// C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP filter_wktSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type ifiles(ifilesSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    Rcpp::traits::input_parameter< std::string >::type filter_wkt(filter_wktSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, filter_wkt));
-    return rcpp_result_gen;
 END_RCPP
 }
 // C_writer
@@ -116,9 +116,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
+    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
-    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
     {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
     {NULL, NULL, 0}

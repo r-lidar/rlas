@@ -1,3 +1,8 @@
+### rlas v1.3.0 (Release date: )
+
+* Improved support of LAS 1.4.
+* New set of function to test compliance with LAS specification
+
 ### rlas v1.2.9 (Release date: 2018-10-26)
 
 * `write.las` writes the epsg code in the header.

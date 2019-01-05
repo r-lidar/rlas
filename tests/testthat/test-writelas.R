@@ -1,6 +1,6 @@
 context("writelas")
 
-lazfile <- system.file("extdata", "example.laz", package="rlas")
+lazfile <- system.file("extdata", "example.laz", package = "rlas")
 las = read.las(lazfile)
 header = read.lasheader(lazfile)
 write_path = file.path(tempdir(), "temp.las")
@@ -82,7 +82,7 @@ test_that("write.las writes Extra Bytes correctly",{
 })
 
 
-test_that("write.las skip extra bytes if empty VLR", {
+test_that("write.las skips extra bytes if empty VLR", {
   new_header = header
   new_header$`Variable Length Records` = list()
   write.las(write_path, new_header, las)
@@ -94,7 +94,7 @@ test_that("write.las skip extra bytes if empty VLR", {
   expect_equal(length(wheader$`Variable Length Records`), 0)
 })
 
-test_that("write.las skiped selectively extra bytes if missing VLR",{
+test_that("write.las skips selectively extra bytes if missing VLR",{
   new_header = header
   new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude = NULL
 
@@ -107,17 +107,19 @@ test_that("write.las skiped selectively extra bytes if missing VLR",{
   expect_equal(wlas, las[, -c(17)])
 })
 
-test_that("write.las write correctly too long extra byte descriptions and name",{
+test_that("write.las writes LAS 1.4",{
   new_header = header
-  new_header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$description = "A too long description according to las specification"
+  new_header$`Version Minor` = 4
+  new_header$`Header Size`   = 375
 
-  suppressWarnings(write.las(write_path, new_header, las))
+  write.las(write_path, new_header, las)
 
+  wlas    <- read.las(write_path)
   wheader <- read.lasheader(write_path)
 
-  desc = wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Amplitude$description
-
-  expect_equal(desc, "A too long description accordin")
+  expect_true(new_header$`Version Minor` == 4L)
+  expect_equal(length(wheader$`Number of points by return`), 15)
+  expect_equal(las, wlas)
 })
 
 

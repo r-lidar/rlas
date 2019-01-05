@@ -17,16 +17,16 @@ fast_countover <- function(x, t) {
     .Call(`_rlas_fast_countover`, x, t)
 }
 
+C_reader <- function(ifiles, ofile, select, filter, filter_wkt) {
+    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, filter_wkt)
+}
+
 lasheaderreader <- function(file) {
     .Call(`_rlas_lasheaderreader`, file)
 }
 
 lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
-}
-
-C_reader <- function(ifiles, ofile, select, filter, filter_wkt) {
-    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, filter_wkt)
 }
 
 C_writer <- function(file, LASheader, data) {
