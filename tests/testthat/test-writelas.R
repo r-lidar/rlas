@@ -28,6 +28,21 @@ test_that("write.las writes epsg code",{
   expect_equal(wheader$`Variable Length Records`$GeoKeyDirectoryTag$tags[[1]]$`value offset`, 26917)
 })
 
+test_that("write.las writes WKT string",{
+  new_header = header
+  new_header$`Global Encoding`$WKT = TRUE
+  new_header$`Variable Length Records`$GeoKeyDirectoryTag <- NULL
+  new_header$`Variable Length Records`$`WKT OGC CS`$`WKT OGC COORDINATE SYSTEM` = "STRING \"STRING"
+
+  write.las(write_path, new_header, las)
+  wlas = read.las(write_path)
+  wheader = read.lasheader(write_path)
+
+  expect_equal(las, wlas)
+  expect_equal(wheader$`Global Encoding`$WKT, TRUE)
+  expect_equal(wheader$`Variable Length Records`$`WKT OGC CS`$`WKT OGC COORDINATE SYSTEM`, "STRING \"STRING")
+})
+
 test_that("UUID is properly written",{
   new_header = header
   new_header$`Project ID - GUID` = uuid::UUIDgenerate()

@@ -47,9 +47,13 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 {
   try
   {
-    // 1. Public Header Block
-
     class LASheader header;
+
+    // 1. Public Header Block
+    // ===========================
+
+    // 1.1. These ones are easy
+
     header.file_source_ID = (int)LASheader["File Source ID"];
     header.version_major = (int)LASheader["Version Major"];
     header.version_minor = (int)LASheader["Version Minor"];
@@ -63,22 +67,83 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     header.x_offset =  (double)LASheader["X offset"];
     header.y_offset =  (double)LASheader["Y offset"];
     header.z_offset =  (double)LASheader["Z offset"];
+
+    // 1.2. These one need special intepretation
+
     header.point_data_record_length = get_point_data_record_length(header.point_data_format);
     strcpy(header.generating_software, "rlas R package");
 
-    // uuid
     CharacterVector guid = LASheader["Project ID - GUID"];
     std::string stdguid  = as<std::string>(guid);
-    const char* cguid = stdguid.c_str();
+    const char* cguid    = stdguid.c_str();
     set_guid(header, cguid);
+
     set_global_enconding(header, LASheader["Global Encoding"]);
 
-    // 2. Variable lenght records
+    // 2. Variable Lenght Records
+    // ===========================
 
-    // 2.1 retrive what the list contains
+    // 2.1 ESPG code
 
+    if(LASheader.containsElementNamed("Variable Length Records"))
+    {
+      List vlr = LASheader["Variable Length Records"];
+
+      if(vlr.containsElementNamed("GeoKeyDirectoryTag"))
+      {
+        List GKDT = vlr["GeoKeyDirectoryTag"];
+        List tags = GKDT["tags"];
+
+        for (int i = 0 ; i < tags.size() ; i ++)
+        {
+          List tag = tags[i];
+          int key  = tag["key"];
+
+          if (key == 3072)
+          {
+            LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
+            vlr_epsg->key_id = 3072;
+            vlr_epsg->tiff_tag_location = 0;
+            vlr_epsg->count = 1;
+            vlr_epsg->value_offset = (U16)tag["value offset"];
+
+            header.set_geo_keys(1, vlr_epsg);
+            delete vlr_epsg;
+
+            break;
+          }
+        }
+      }
+    }
+
+    // 2.2 WKT OGC MATH TRANSFORM
+
+    // 2.3 WKT OGC COORDINATE
+
+    if (LASheader.containsElementNamed("Variable Length Records"))
+    {
+      List vlr = LASheader["Variable Length Records"];
+
+      if (vlr.containsElementNamed("WKT OGC CS"))
+      {
+        List WKTOGCCS = vlr["WKT OGC CS"];
+
+        if (WKTOGCCS.containsElementNamed("WKT OGC COORDINATE SYSTEM"))
+        {
+          CharacterVector WKT = WKTOGCCS["WKT OGC COORDINATE SYSTEM"];
+          std::string sWKT    = as<std::string>(WKT);
+          const char* cWKT    = sWKT.c_str();
+
+          header.set_geo_ogc_wkt(sWKT.size(), cWKT);
+        }
+      }
+    }
+
+    // 2.4 Extrabytes attributes: very complex suff >_<
+    // TODO Must be rewritten
+
+    // Retrieve the decription of the extrabytes at the R level
     List description_eb(0);
-    U16 epsg = 0;
     if(LASheader.containsElementNamed("Variable Length Records"))
     {
       List vlr = LASheader["Variable Length Records"];
@@ -92,59 +157,30 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
           description_eb = extra_bytes["Extra Bytes Description"];
         }
       }
-
-      if(vlr.containsElementNamed("GeoKeyDirectoryTag"))
-      {
-        List gktd = vlr["GeoKeyDirectoryTag"];
-        List tags = gktd["tags"];
-
-        for (int i = 0 ; i < tags.size() ; i ++)
-        {
-          List tag = tags[i];
-          int key = tag["key"];
-
-          if (key == 3072)
-            epsg = tag["value offset"];
-        }
-      }
     }
 
-    // 2.2 Update the header
-
-    if (epsg != 0)
-    {
-      LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
-      vlr_epsg->key_id = 3072;
-      vlr_epsg->tiff_tag_location = 0;
-      vlr_epsg->count = 1;
-      vlr_epsg->value_offset = epsg;
-
-      header.set_geo_keys(1, vlr_epsg);
-      delete vlr_epsg;
-    }
-
-    int num_eb = description_eb.size();              // Get the number of extra byte
-    std::vector<std::string> ebnames(num_eb);        // Get the name of the extra bytes based on column name of the data.frame
-    std::vector<int> attribute_index(num_eb);        // Index of attribute in the header
-    std::vector<int> attribute_starts(num_eb);       // Attribute starting byte number
+    int num_eb = description_eb.size();              // Store the number of extra byte
+    std::vector<std::string> ebnames(num_eb);        // Store the name of the extra bytes
+    std::vector<int> attribute_index(num_eb);        // Store the index of attribute in the header
+    std::vector<int> attribute_starts(num_eb);       // Store attribute starting byte number
     std::vector<double> scale(num_eb, 1.0);          // Default scale factor
     std::vector<double> offset(num_eb, 0.0);         // Default offset factor
-    std::vector<int> type(num_eb);                   // Attribute type (see comment at the very end of this file)
+    std::vector<int> type(num_eb);                   // Store attribute type (see comment at the very end of this file)
     double scaled_value;                             // Temporary variable
 
 
-    // Update the header
+    // For each extrabyte attribute update the header
     for(int i = 0; i < num_eb; i++)
     {
       List description = description_eb[i];
 
-      type[i] = ((int)(description["data_type"])-1) % 10;
-      int options = description["options"];
-      ebnames[i] = as< std::string >(description["name"]);
+      type[i]          = ((int)(description["data_type"])-1) % 10;
+      int options      = description["options"];
+      ebnames[i]       = as< std::string >(description["name"]);
       std::string desc = description["description"];
 
       //  checks if name exist in data
-      if(!data.containsElementNamed(ebnames[i].c_str()))
+      if (!data.containsElementNamed(ebnames[i].c_str()))
         throw std::runtime_error("Extra Byte described but not present in data.");
 
       LASattribute attribute(type[i], ebnames[i].c_str(), desc.c_str(), 1);
@@ -302,7 +338,8 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       attribute_starts[i] = header.get_attribute_start(attribute_index[i]);
 
 
-    // 3. write the data to the file
+    // 3. write the data into the file
+    // ===============================
 
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(as<std::string>(file).c_str());
