@@ -8,6 +8,8 @@
 \alias{is_valid_scalefactors}
 \alias{is_defined_filesourceid}
 \alias{is_valid_filesourceid}
+\alias{is_defined_globalencoding}
+\alias{is_valid_globalencoding}
 \alias{is_defined_version}
 \alias{is_valid_version}
 \alias{is_defined_date}
@@ -55,6 +57,10 @@ is_valid_scalefactors(header, behavior = "bool")
 is_defined_filesourceid(header, behavior = "bool")
 
 is_valid_filesourceid(header)
+
+is_defined_globalencoding(header, behavior = "bool")
+
+is_valid_globalencoding(header, behavior = "bool")
 
 is_defined_version(header, behavior = "bool")
 

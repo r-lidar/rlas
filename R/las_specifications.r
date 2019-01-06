@@ -112,12 +112,73 @@ is_defined_filesourceid = function(header, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+
 #' @export
 #' @rdname las_specification_tools
 is_valid_filesourceid = function(header)
 {
 
 }
+
+#' @export
+#' @rdname las_specification_tools
+is_defined_globalencoding = function(header, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(header[["Global Encoding"]]))
+    errors = append(errors, "Invalid header: Global Encoding not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["GPS Time Type"]]))
+    errors = append(errors, "Invalid header: Global Encoding GPS Time Type bit not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["Waveform Data Packets Internal"]]))
+    errors = append(errors, "Invalid header: Global Encoding Waveform Data Packets Internal bit not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["Waveform Data Packets External"]]))
+    errors = append(errors, "Invalid header: Global Encoding Waveform Data Packets External bit not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["Synthetic Return Numbers"]]))
+    errors = append(errors, "Invalid header: Global Encoding Synthetic Return Numbers bit not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["WKT"]]))
+    errors = append(errors, "Invalid header: Global Encoding WKT bit not defined in the header")
+
+  if (is.null(header[["Global Encoding"]][["Aggregate Model"]]))
+    errors = append(errors, "Invalid header: Global Encoding Aggregate Model bit not defined in the header")
+
+  return(error_handling_engine(errors, behavior))
+}
+
+#' @export
+#' @rdname las_specification_tools
+is_valid_globalencoding = function(header, behavior = "bool")
+{
+  errors <- character(0)
+
+  is.bool = function(x) return(is.logical(x) & length(x) == 1L)
+
+  if (!is.bool(header[["Global Encoding"]][["GPS Time Type"]]))
+    errors = append(errors, "Invalid header: Global Encoding GPS Time Type bit is not a boolean")
+
+  if (!is.bool(header[["Global Encoding"]][["Waveform Data Packets Internal"]]))
+    errors = append(errors, "Invalid header: Global Encoding Waveform Data Packets Internal bit is not a boolean")
+
+  if (!is.bool(header[["Global Encoding"]][["Waveform Data Packets External"]]))
+    errors = append(errors, "Invalid header: Global Encoding Waveform Data Packets External bit is not a boolean")
+
+  if (!is.bool(header[["Global Encoding"]][["Synthetic Return Numbers"]]))
+    errors = append(errors, "Invalid header: Global Encoding Synthetic Return Numbers bit is not a boolean")
+
+  if (!is.bool(header[["Global Encoding"]][["WKT"]]))
+    errors = append(errors, "Invalid header: Global Encoding WKT bit is not a boolean")
+
+  if (!is.bool(header[["Global Encoding"]][["Aggregate Model"]]))
+    errors = append(errors, "Invalid header: Global Encoding Aggregate Model bit is not a boolean")
+
+  return(error_handling_engine(errors, behavior))
+}
+
 
 #' @export
 #' @rdname las_specification_tools
