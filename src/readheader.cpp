@@ -7,7 +7,7 @@
 
  COPYRIGHT:
 
- Copyright 2017 Jean-Romain Roussel
+ Copyright 2017-2019 Jean-Romain Roussel
 
  This file is part of rlas R package.
 
@@ -40,6 +40,7 @@
 using namespace Rcpp;
 
 List vlrsreader(LASheader*);
+List globalencodingreader(LASheader*);
 
 // Read header in a las or laz file
 //
@@ -79,7 +80,7 @@ List lasheaderreader(CharacterVector file)
     List head(0);
     head.push_back(lasheader->file_signature);
     head.push_back(lasheader->file_source_ID);
-    head.push_back(lasheader->global_encoding);
+    head.push_back(globalencodingreader(lasheader));
     head.push_back(guid);
     head.push_back((int)lasheader->version_major);
     head.push_back((int)lasheader->version_minor);
@@ -174,6 +175,23 @@ List lasheaderreader(CharacterVector file)
     Rcerr << "Error: " << e.what() << std::endl;
     return(List(0));
   }
+}
+
+List globalencodingreader(LASheader* lasheader)
+{
+  bool GPSTimeType = lasheader->get_global_encoding_bit(0);
+  bool WaveformDataPacketsInternal = lasheader->get_global_encoding_bit(1);
+  bool WaveformDataPacketsExternal = lasheader->get_global_encoding_bit(2);
+  bool SyntheticReturnNumbers = lasheader->get_global_encoding_bit(3);
+  bool WKT = lasheader->get_global_encoding_bit(4);
+  bool AggregateModel = lasheader->get_global_encoding_bit(5);
+
+  return List::create(Named("GPS Time Type") = GPSTimeType,
+                      Named("Waveform Data Packets Internal") = WaveformDataPacketsInternal,
+                      Named("Waveform Data Packets External") = WaveformDataPacketsExternal,
+                      Named("Synthetic Return Numbers") = SyntheticReturnNumbers,
+                      Named("WKT") = WKT,
+                      Named("Aggregate Model") = AggregateModel);
 }
 
 List vlrsreader(LASheader* lasheader)

@@ -37,7 +37,12 @@ header_create = function(data)
   header = list()
   header[["File Signature"]] = "LASF"
   header[["File Source ID"]] = 0L
-  header[["Global Encoding"]] = 0L
+  header[["Global Encoding"]] = list(`GPS Time Type` = TRUE,
+                                     `Waveform Data Packets Internal` = FALSE,
+                                     `Waveform Data Packets External` = FALSE,
+                                     `Synthetic Return Numbers` = FALSE,
+                                      WKT = FALSE,
+                                     `Aggregate Model` = FALSE)
   header[["Project ID - GUID"]] = uuid::UUIDgenerate()
   header[["Version Major"]] = 1L
   header[["Version Minor"]] = 2L
@@ -61,31 +66,31 @@ header_create = function(data)
   header[["Y scale factor"]] = 0.01
   header[["Z scale factor"]] = 0.01
 
-  if("ReturnNumber" %in% fields) {
-    number_of <- fast_table(data$ReturnNumber, 5L)
-    header[["Number of 1st return"]] <- number_of[1]
-    header[["Number of 2nd return"]] <- number_of[2]
-    header[["Number of 3rd return"]] <- number_of[3]
-    header[["Number of 4th return"]] <- number_of[4]
-    header[["Number of 5th return"]] <- number_of[5]
-  }
+  if ("ReturnNumber" %in% fields)
+    header[["Number of points by return"]] <- fast_table(data$ReturnNumber, 5L)
 
-  if("NIR" %in% fields) { # format 8
+  if ("NIR" %in% fields) # format 8
+  {
     header[["Point Data Format ID"]] = 8
     header[["Point Data Record Length"]] = 38
   }
-  else if("gpstime" %in% fields) { # format 1, 3, 6, 7
-    if(all(c("R", "G", "B") %in% fields)) { # format 3 (6 not supported)
+  else if ("gpstime" %in% fields) # format 1, 3, 6, 7
+  {
+    if (all(c("R", "G", "B") %in% fields))  # format 3 (6 not supported)
+    {
       header[["Point Data Format ID"]] = 3
       header[["Point Data Record Length"]] = 34
     }
-    else { # format 1 (7 not supported)
+    else # format 1 (7 not supported)
+    {
       header[["Point Data Format ID"]] = 1
       header[["Point Data Record Length"]] = 28
     }
   }
-  else { # format 0 or 2
-    if(all(c("R", "G", "B") %in% fields)) {
+  else # format 0 or 2
+  {
+    if (all(c("R", "G", "B") %in% fields))
+    {
       header[["Point Data Format ID"]] = 2
       header[["Point Data Record Length"]] = 26
     }
@@ -106,23 +111,19 @@ header_update = function(header, data)
 {
   fields = names(data)
 
-  if("ReturnNumber" %in% fields)
+  if ("ReturnNumber" %in% fields)
   {
-    number_of <- fast_table(data$ReturnNumber, 5L)
-    header[["Number of 1st return"]] <- number_of[1]
-    header[["Number of 2nd return"]] <- number_of[2]
-    header[["Number of 3rd return"]] <- number_of[3]
-    header[["Number of 4th return"]] <- number_of[4]
-    header[["Number of 5th return"]] <- number_of[5]
+    n <- if (header[["Version Minor"]] < 4) 5L else 15L
+    header[["Number of points by return"]] <- fast_table(data$ReturnNumber, n)
   }
 
   header[["Number of point records"]] <- nrow(data)
-  header["Min X"] <- min(data$X)
-  header["Min Y"] <- min(data$Y)
-  header["Min Z"] <- min(data$Z)
-  header["Max X"] <- max(data$X)
-  header["Max Y"] <- max(data$Y)
-  header["Max Z"] <- max(data$Z)
+  header[["Min X"]] <- min(data$X)
+  header[["Min Y"]] <- min(data$Y)
+  header[["Min Z"]] <- min(data$Z)
+  header[["Max X"]] <- max(data$X)
+  header[["Max Y"]] <- max(data$Y)
+  header[["Max Z"]] <- max(data$Z)
 
   return(header)
 }

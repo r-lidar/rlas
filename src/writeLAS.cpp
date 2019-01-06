@@ -7,7 +7,7 @@ jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
 
 COPYRIGHT:
 
-Copyright 2016 Jean-Romain Roussel
+Copyright 2016-2019 Jean-Romain Roussel
 
 This file is part of rlas R package.
 
@@ -38,8 +38,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 using namespace Rcpp;
 
-int get_point_data_record_length(int x);
+int  get_point_data_record_length(int x);
 void set_guid(LASheader&, const char*);
+void set_global_enconding(LASheader&, List);
 
 // [[Rcpp::export]]
 void C_writer(CharacterVector file, List LASheader, DataFrame data)
@@ -70,6 +71,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     std::string stdguid  = as<std::string>(guid);
     const char* cguid = stdguid.c_str();
     set_guid(header, cguid);
+    set_global_enconding(header, LASheader["Global Encoding"]);
 
     // 2. Variable lenght records
 
@@ -461,6 +463,27 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
   {
     Rcerr << e.what() << std::endl;
   }
+}
+
+void set_global_enconding(LASheader &header, List encoding)
+{
+  if (encoding["GPS Time Type"])
+    header.set_global_encoding_bit(0);
+
+  if (encoding["Waveform Data Packets Internal"])
+    header.set_global_encoding_bit(1);
+
+  if (encoding["Waveform Data Packets External"])
+    header.set_global_encoding_bit(2);
+
+  if (encoding["Synthetic Return Numbers"])
+    header.set_global_encoding_bit(3);
+
+  if (encoding["WKT"])
+    header.set_global_encoding_bit(4);
+
+  if (encoding["Aggregate Model"])
+    header.set_global_encoding_bit(5);
 }
 
 void set_guid(LASheader &header, const char* guid)
