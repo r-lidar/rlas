@@ -65,10 +65,18 @@ check_las_validity = function(header, data)
   return(invisible())
 }
 
-check_las_compliance = function(header, data, ...)
+#' @export
+#' @rdname check
+check_las_compliance = function(header, data)
 {
-  p = list(...)
-  hard = if (!is.null(p$hard)) TRUE else p$hard
+  is_defined_offsets(header, "stop")
+  is_defined_scalefactors(header, "stop")
+  is_defined_filesourceid(header, "stop")
+  is_defined_version(header, "stop")
+  is_defined_globalencoding(header, "stop")
+  is_defined_date(header, "stop")
+
+  is_defined_coordinates(data, "stop")
 
   is_compliant_ReturnNumber(data, "warning")
   is_compliant_NumberOfReturns(data, "warning")
@@ -76,15 +84,13 @@ check_las_compliance = function(header, data, ...)
   is_compliant_ReturnNumber_vs_NumberOfReturns(data, "warning")
   is_XY_larger_than_bbox(header, data, "warning")
   is_valid_scalefactors(header, behavior = "warning")
-
-
-  if (hard)
-  {
-    is_number_of_points_in_accordance_with_header(header, data, "warning")
-    is_number_of_points_by_return_in_accordance_with_header(header, data, "warning")
-    is_XY_smaller_than_bbox(header, data, "warning")
-    is_Z_in_bbox(header, data, "warning")
-  }
+  is_number_of_points_in_accordance_with_header(header, data, "warning")
+  is_number_of_points_by_return_in_accordance_with_header(header, data, "warning")
+  is_XY_smaller_than_bbox(header, data, "warning")
+  is_Z_in_bbox(header, data, "warning")
+  is_RGB_in_valid_format(header, data, "warning")
+  is_NIR_in_valid_format(header, data, "warning")
+  is_gpstime_in_valid_format(header, data, "warning")
 
   return(invisible())
 }

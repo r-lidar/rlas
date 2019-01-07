@@ -2,12 +2,15 @@
 % Please edit documentation in R/check_content.r, R/deprecated.r
 \name{check_las_validity}
 \alias{check_las_validity}
+\alias{check_las_compliance}
 \alias{check_data}
 \alias{check_header}
 \alias{check_data_vs_header}
 \title{Check if data and headers respect the LAS specification}
 \usage{
 check_las_validity(header, data)
+
+check_las_compliance(header, data, ...)
 
 check_data(data)
 
