@@ -279,7 +279,7 @@ List vlrsreader(LASheader* lasheader)
 
             if (attemp.data_type)
             {
-              int type = ((I32)(attemp.data_type)-1)%10;
+              int data_type = ((I32)(attemp.data_type)-1)%10;
               //int dim = ((I32)(attemp.data_type)-1)/10+1;
 
               List ExtraByte(0);
@@ -311,7 +311,7 @@ List vlrsreader(LASheader* lasheader)
                 ExtraBytenames.push_back("offset");
               }
 
-              if (type < 8)
+              if (data_type < 8)
               {
                 I64* temp; // as R does not support long long int it is converted to double
 

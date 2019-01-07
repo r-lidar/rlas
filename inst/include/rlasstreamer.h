@@ -5,38 +5,9 @@
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
+#include "rlasextrabytesattributes.h"
 
 using namespace Rcpp;
-
-class RLASExtrabyteAttributes
-{
-  public:
-    RLASExtrabyteAttributes();
-    int id;
-    int start;
-    std::string name;
-    int type;
-    bool has_scale;
-    bool has_offset;
-    bool has_no_data;
-    bool has_min;
-    bool has_max;
-    double scale;
-    double offset;
-    double no_data;
-    double min;
-    double max;
-    std::vector<int> eb32;
-    std::vector<double> eb64;
-
-    bool is_supported();
-    bool is_32bits();
-    void push_back(LASpoint*);
-
-  private:
-    F64 get_attribute_double(LASpoint*);
-    I32 get_attribute_int(LASpoint*);
-};
 
 class RLASstreamer
 {
