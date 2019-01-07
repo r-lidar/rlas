@@ -36,6 +36,10 @@
 \alias{is_valid_PointSourceID}
 \alias{is_valid_RGB}
 \alias{is_valid_NIR}
+\alias{is_compliant_ReturnNumber}
+\alias{is_compliant_NumberOfReturns}
+\alias{is_compliant_ReturnNumber_vs_NumberOfReturns}
+\alias{is_compliant_RGB}
 \alias{is_NIR_in_valid_format}
 \alias{is_gpstime_in_valid_format}
 \alias{is_RGB_in_valid_format}
@@ -44,6 +48,7 @@
 \alias{is_Z_in_bbox}
 \alias{is_number_of_points_in_accordance_with_header}
 \alias{is_number_of_points_by_return_in_accordance_with_header}
+\alias{is_extrabytes_in_accordance_with_data}
 \title{A set of function to test conformance with LAS specifications}
 \usage{
 is_defined_offsets(header, behavior = "bool")
@@ -102,7 +107,7 @@ is_valid_KeypointFlag(data, behavior = "bool")
 
 is_valid_WithheldFlag(data, behavior = "bool")
 
-is_valid_ScanAngle(data)
+is_valid_ScanAngle(data, behavior = "bool")
 
 is_valid_UserData(data, behavior = "bool")
 
@@ -113,6 +118,14 @@ is_valid_PointSourceID(data, behavior = "bool")
 is_valid_RGB(data, behavior = "bool")
 
 is_valid_NIR(data, behavior = "bool")
+
+is_compliant_ReturnNumber(data, behavior = "bool")
+
+is_compliant_NumberOfReturns(data, behavior = "bool")
+
+is_compliant_ReturnNumber_vs_NumberOfReturns(data, behavior = "bool")
+
+is_compliant_RGB(data, behavior = "bool")
 
 is_NIR_in_valid_format(header, data, behavior = "bool")
 
@@ -131,6 +144,8 @@ is_number_of_points_in_accordance_with_header(header, data,
 
 is_number_of_points_by_return_in_accordance_with_header(header, data,
   behavior = "bool")
+
+is_extrabytes_in_accordance_with_data(header, data, behavior = "bool")
 }
 \arguments{
 \item{header}{a list containing the header of a las file}

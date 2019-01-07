@@ -10,7 +10,7 @@
 \usage{
 check_las_validity(header, data)
 
-check_las_compliance(header, data, ...)
+check_las_compliance(header, data)
 
 check_data(data)
 

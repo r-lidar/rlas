@@ -115,9 +115,10 @@ is_defined_filesourceid = function(header, behavior = "bool")
 
 #' @export
 #' @rdname las_specification_tools
-is_valid_filesourceid = function(header)
+is_valid_filesourceid = function(header, behavior)
 {
-
+  errors = character(0)
+  return(error_handling_engine(errors, behavior))
 }
 
 #' @export
@@ -194,15 +195,17 @@ is_defined_version = function(header, behavior = "bool")
 
 #' @export
 #' @rdname las_specification_tools
-is_valid_version = function(header)
+is_valid_version = function(header, behavior = "bool")
 {
+  errors = character(0)
+
   if (header[["Version Major"]] != 1)
-    return(FALSE)
+    errors = append(errors, "Invalid header: Version Major must be 1")
 
   if (!header[["Version Minor"]] %in% 1:4)
-    return(FALSE)
+    errors = append(errors, "Invalid header: Version Minor must be 1,2,3 or 4")
 
-  return(TRUE)
+  return(error_handling_engine(errors, behavior))
 }
 
 #' @export
@@ -562,15 +565,20 @@ is_valid_WithheldFlag = function(data, behavior = "bool")
 
 #' @export
 #' @rdname las_specification_tools
-is_valid_ScanAngle = function(data)
+is_valid_ScanAngle = function(data, behavior = "bool")
 {
+  errors = character(0)
+
   if (is.null(data[["ScanAngle"]]))
-    return(TRUE)
+    return(error_handling_engine(errors, behavior))
 
-  if (!is.integer(data[["ScanAngle"]]))
-    return(FALSE)
+  if (min(data[["ScanAngle"]]) < -90)
+    errors = append(errors, "Invalid data: ScanAngle greater than -90.")
 
-  return(TRUE)
+  if (max(data[["ScanAngle"]]) > 90)
+    errors = append(errors, "Invalid data: ScanAngle greater than 90")
+
+  return(error_handling_engine(errors, behavior))
 }
 
 #' @export
@@ -691,6 +699,8 @@ is_valid_NIR = function(data, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
 is_compliant_ReturnNumber = function(data, behavior = "bool")
 {
   errors = character(0)
@@ -706,6 +716,8 @@ is_compliant_ReturnNumber = function(data, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
 is_compliant_NumberOfReturns = function(data, behavior = "bool")
 {
   errors = character(0)
@@ -721,6 +733,8 @@ is_compliant_NumberOfReturns = function(data, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
 is_compliant_ReturnNumber_vs_NumberOfReturns = function(data, behavior = "bool")
 {
   errors = character(0)
@@ -736,6 +750,8 @@ is_compliant_ReturnNumber_vs_NumberOfReturns = function(data, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
 is_compliant_RGB = function(data, behavior = "bool")
 {
   errors = character(0)
@@ -871,6 +887,8 @@ is_number_of_points_by_return_in_accordance_with_header = function(header, data,
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
 is_extrabytes_in_accordance_with_data = function(header, data, behavior = "bool")
 {
   errors = character(0)
