@@ -37,6 +37,27 @@ header_create = function(data)
 {
   fields = names(data)
 
+  if (nrow(data) > 0L)
+  {
+    npts = nrow(data)
+    minx = min(data$X)
+    miny = min(data$Y)
+    minz = min(data$Z)
+    maxx = max(data$X)
+    maxy = max(data$Y)
+    maxz = max(data$Z)
+  }
+  else
+  {
+    npts = 0L
+    minx = 0
+    miny = 0
+    minz = 0
+    maxx = 0
+    maxy = 0
+    maxz = 0
+  }
+
   header = list()
   header[["File Signature"]] = "LASF"
   header[["File Source ID"]] = 0L
@@ -55,13 +76,13 @@ header_create = function(data)
   header[["File Creation Year"]] = as.numeric(strftime(Sys.time(), format = "%Y"))
   header[["Header Size"]] = 227
   header[["Offset to point data"]] = 227
-  header[["Number of point records"]] = dim(data)[1]
-  header[["Min X"]] = min(data$X)
-  header[["Min Y"]] = min(data$Y)
-  header[["Min Z"]] = min(data$Z)
-  header[["Max X"]] = max(data$X)
-  header[["Max Y"]] = max(data$Y)
-  header[["Max Z"]] = max(data$Z)
+  header[["Number of point records"]] = npts
+  header[["Min X"]] = minx
+  header[["Min Y"]] = miny
+  header[["Min Z"]] = minz
+  header[["Max X"]] = maxx
+  header[["Max Y"]] = maxy
+  header[["Max Z"]] = maxz
   header[["X offset"]] = header[["Min X"]]
   header[["Y offset"]] = header[["Min Y"]]
   header[["Z offset"]] = header[["Min Z"]]
@@ -71,6 +92,8 @@ header_create = function(data)
 
   if ("ReturnNumber" %in% fields)
     header[["Number of points by return"]] <- fast_table(data$ReturnNumber, 5L)
+  else
+    header[["Number of points by return"]] <- rep(0L,5)
 
   if ("NIR" %in% fields) # format 8
   {
@@ -114,19 +137,40 @@ header_update = function(header, data)
 {
   fields = names(data)
 
+  if (nrow(data) > 0L)
+  {
+    npts = nrow(data)
+    minx = min(data$X)
+    miny = min(data$Y)
+    minz = min(data$Z)
+    maxx = max(data$X)
+    maxy = max(data$Y)
+    maxz = max(data$Z)
+  }
+  else
+  {
+    npts = 0L
+    minx = 0
+    miny = 0
+    minz = 0
+    maxx = 0
+    maxy = 0
+    maxz = 0
+  }
+
   if ("ReturnNumber" %in% fields)
   {
     n <- if (header[["Version Minor"]] < 4) 5L else 15L
     header[["Number of points by return"]] <- fast_table(data$ReturnNumber, n)
   }
 
-  header[["Number of point records"]] <- nrow(data)
-  header[["Min X"]] <- min(data$X)
-  header[["Min Y"]] <- min(data$Y)
-  header[["Min Z"]] <- min(data$Z)
-  header[["Max X"]] <- max(data$X)
-  header[["Max Y"]] <- max(data$Y)
-  header[["Max Z"]] <- max(data$Z)
+  header[["Number of point records"]] = npts
+  header[["Min X"]] = minx
+  header[["Min Y"]] = miny
+  header[["Min Z"]] = minz
+  header[["Max X"]] = maxx
+  header[["Max Y"]] = maxy
+  header[["Max Z"]] = maxz
 
   return(header)
 }
