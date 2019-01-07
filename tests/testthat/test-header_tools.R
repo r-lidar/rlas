@@ -1,6 +1,6 @@
 context("header tools")
 
-lazfile <- system.file("extdata", "example.laz", package="rlas")
+lazfile <- system.file("extdata", "example.laz", package = "rlas")
 las = read.las(lazfile)
 header = read.lasheader(lazfile)
 write_path = file.path(tempdir(), "temp.las")
@@ -181,4 +181,23 @@ test_that("add_extrabytes raise error for unproper request", {
   wheader = read.lasheader(write_path)
 
   desc = wheader$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`$Exdata$description
+})
+
+test_that("set_epsg updates the header", {
+
+  new_header = header_set_epsg(header, 123)
+
+  expect_equal(header_get_epsg(new_header), 123)
+
+  new_header = header_set_epsg(new_header, 1234)
+
+  expect_equal(header_get_epsg(new_header), 1234)
+})
+
+test_that("set_wkt updates the header", {
+
+  new_header = header_set_wktcs(header, "STRING")
+
+  expect_equal(header_get_wktcs(new_header), "STRING")
+  expect_true(new_header[["Global Encoding"]][["WKT"]])
 })

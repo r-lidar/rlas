@@ -1,4 +1,4 @@
-#' Public header block tools
+#' Public Header Block Tools
 #'
 #' Create or update a header for a las file from a dataset. A las file consists of two parts. A
 #' header that describes the data and the data itself. These functions make valid headers (public
@@ -10,9 +10,10 @@
 #'
 #' @param data data.frame or data.table
 #' @param header list. A header
-#'
+#' @family header_tools
 #' @return A list containing the metadata required to write a las file.
 #' @export
+#'
 #' @examples
 #' lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
 #'                      Y = c(5248000.515, 5248000.478, 5248000.318),
@@ -30,6 +31,8 @@
 #'                      treeID = c(1L, 1L, 1L))
 #'
 #' lasheader = header_create(lasdata)
+#' @name public_header_block_tools
+#' @rdname public_header_block_tools
 header_create = function(data)
 {
   fields = names(data)
@@ -106,7 +109,7 @@ header_create = function(data)
 }
 
 #' @export
-#' @rdname header_create
+#' @rdname public_header_block_tools
 header_update = function(header, data)
 {
   fields = names(data)
@@ -128,9 +131,9 @@ header_update = function(header, data)
   return(header)
 }
 
-#' Variable length records tools
+#' Extra Bytes Attributes Tools
 #'
-#' Functions that update a header to describe variable length records according to the
+#' Functions that update a header to describe Extra Bytes Attributes according to the
 #' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
 #'
 #' @param header list
@@ -143,6 +146,7 @@ header_update = function(header, data)
 #' this value that will be considered as NA. NULL if not relevant.
 #' @param data vector. Data that must be added in the extrabytes attributes.
 #'
+#' @family header_tools
 #' @examples
 #' data = data.frame(X = c(339002.889, 339002.983, 339002.918),
 #'                   Y = c(5248000.515, 5248000.478, 5248000.318),
@@ -165,6 +169,8 @@ header_update = function(header, data)
 #' lasheader = header_add_extrabytes(lasheader, data$treeID, "treeID", "An id for each tree")
 #' lasheader[["Variable Length Records"]]
 #' @export
+#' @name extra_bytes_attribute_tools
+#' @rdname extra_bytes_attribute_tools
 header_add_extrabytes = function(header, data, name, desc)
 {
   stopifnot(is.list(header), is.vector(data), is.character(name), is.character(desc))
@@ -221,7 +227,7 @@ header_add_extrabytes = function(header, data, name, desc)
 }
 
 #' @export
-#' @rdname header_add_extrabytes
+#' @rdname extra_bytes_attribute_tools
 header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL, scale = NULL, max = NULL, min = NULL, NA_value = NULL)
 {
   type = as.integer(type)
@@ -276,6 +282,94 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
   header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`[[name]] = description
 
   return(header)
+}
+
+#' Coordinate Reference System Tools
+#'
+#' Functions that update a header to describe coordinates reference system according to the
+#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#'
+#' @param header list
+#' @param epsg integer. An EPSG code
+#' @param WKT string. A string of an WKT OGC CS
+#' @family header_tools
+#' @export
+#' @name crs_tools
+#' @rdname crs_tools
+header_get_epsg = function(header)
+{
+  pos <- where_is_epsg(header)
+
+  if (pos == 0)
+    return(0)
+  else
+    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]][["value offset"]])
+}
+
+#' @export
+#' @rdname crs_tools
+header_set_epsg = function(header, epsg)
+{
+  pos <- where_is_epsg(header)
+
+  if (pos == 0)
+  {
+    if (is.null(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]))
+    {
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["reserved"]]            <- 0
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["user ID"]]             <- "LASF_Projection"
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["record ID"]]           <- 34735
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["length after header"]] <- 40
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["description"]]         <- "Geo Key Directory Tag"
+      header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]                <- vector("list", 1)
+      pos <- 1
+    }
+    else
+    {
+      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]) + 1
+    }
+  }
+
+  header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
+  return(header)
+}
+
+#' @export
+#' @rdname crs_tools
+header_get_wktcs = function(header)
+{
+  wkt = header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]]
+
+  if (is.null(wkt))
+    return("")
+  else
+    return(wkt)
+}
+
+#' @export
+#' @rdname crs_tools
+header_set_wktcs = function(header, WKT)
+{
+  header[["Variable Length Records"]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
+  header[["Variable Length Records"]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
+  header[["Variable Length Records"]][["WKT OGC CS"]][["record ID"]]                 <- 2112
+  header[["Variable Length Records"]][["WKT OGC CS"]][["description"]]               <- "WKT Information"
+  header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]] <- WKT
+  header[["Global Encoding"]][["WKT"]] <- TRUE
+  return(header)
+}
+
+where_is_epsg = function(header)
+{
+  tags = header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]
+
+  for (i in seq_along(tags))
+  {
+    if (tags[[i]]$key == 3072)
+      return(i)
+  }
+
+  return(0)
 }
 
 #allowed_fields = c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns", "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID", "R", "G", "B", "NIR")

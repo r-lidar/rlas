@@ -1,8 +1,9 @@
 ### rlas v1.3.0 (Release date: )
 
-* New: improved support of LAS 1.4.
-* New: introduction of set of functions to test compliance with LAS specifications
-* Fix: segfault in `read.las` when using an inappropriated filter such as -keep_class 123 (see [#26](https://github.com/Jean-Romain/rlas/issues/26). Error is properly handled now.
+* New: improved support of LAS specications including LAS 1.4.
+* New: introduction of a set of 50+ functions to test compliance with LAS specifications
+* New: introduction of a set of 5+ function to modifiy a header easily repecting LAS specifications
+* Fix:  [#26](https://github.com/Jean-Romain/rlas/issues/26) segfault in `read.las` when using an inappropriated filter such as -keep_class 123.
 
 ### rlas v1.2.9 (Release date: 2018-10-26)
 
