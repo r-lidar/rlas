@@ -35,7 +35,7 @@
 #include <string.h>
 
 #include "laswriter.hpp"
-#include "rlasstreamer.h"
+#include "rlasextrabytesattributes.h"
 
 using namespace Rcpp;
 
