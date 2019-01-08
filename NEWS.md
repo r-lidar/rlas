@@ -1,5 +1,6 @@
 ### rlas v1.3.0 (Release date: )
 
+* New: write.las is 25% faster
 * New: improved support of LAS specications including LAS 1.4.
 * New: introduction of a set of 50+ functions to test compliance with LAS specifications
 * New: introduction of a set of 5+ function to modifiy a header easily repecting LAS specifications

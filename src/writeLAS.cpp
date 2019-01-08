@@ -39,6 +39,8 @@
 
 using namespace Rcpp;
 
+#define ISSET(NAME) data.containsElementNamed(NAME)
+
 int  get_point_data_record_length(int x);
 void set_guid(LASheader&, const char*);
 void set_global_enconding(LASheader&, List);
@@ -211,103 +213,84 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(as<std::string>(file).c_str());
 
-    LASpoint p;
-    p.init(&header, header.point_data_format, header.point_data_record_length, 0);
+    LASpoint point;
+    point.init(&header, header.point_data_format, header.point_data_record_length, 0);
 
     LASwriter* laswriter = laswriteopener.open(&header);
 
     if(0 == laswriter || NULL == laswriter)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    double scaled_value;
+    bool i = ISSET("Intensity");
+    bool r = ISSET("ReturnNumber");
+    bool n = ISSET("NumberOfReturns");
+    bool d = ISSET("ScanDirectionFlag");
+    bool e = ISSET("EdgeOfFlightline");
+    bool c = ISSET("Classification");
+    bool s = ISSET("Synthetic_flag");
+    bool k = ISSET("Keypoint_flag");
+    bool w = ISSET("Withheld_flag");
+    bool a = ISSET("ScanAngle");
+    bool u = ISSET("UserData");
+    bool p = ISSET("PointSourceID");
+    bool t = ISSET("gpstime");
+    bool R = ISSET("R");
+    bool G = ISSET("G");
+    bool B = ISSET("B");
+    bool N = ISSET("NIR");
 
-    NumericVector X = data["X"];
-    NumericVector Y = data["Y"];
-    NumericVector Z = data["Z"];
-    IntegerVector I = IntegerVector(0);
-    IntegerVector RN = IntegerVector(0);
-    IntegerVector NoR = IntegerVector(0);
-    IntegerVector SDF = IntegerVector(0);
-    IntegerVector EoF = IntegerVector(0);
-    IntegerVector C = IntegerVector(0);
-    LogicalVector S = LogicalVector(0);
-    LogicalVector K = LogicalVector(0);
-    LogicalVector W = LogicalVector(0);
-    IntegerVector SA = IntegerVector(0);
-    IntegerVector UD = IntegerVector(0);
-    IntegerVector PSI = IntegerVector(0);
-    NumericVector T = NumericVector(0);
-    IntegerVector R  = IntegerVector(0);
-    IntegerVector G = IntegerVector(0);
-    IntegerVector B = IntegerVector(0);
-    IntegerVector NIR = IntegerVector(0);
+    NumericVector X   = data["X"];
+    NumericVector Y   = data["Y"];
+    NumericVector Z   = data["Z"];
+    IntegerVector I   = (i) ? data["Intensity"] : IntegerVector(0);
+    IntegerVector RN  = (r) ? data["ReturnNumber"] : IntegerVector(0);
+    IntegerVector NR  = (n) ? data["NumberOfReturns"] : IntegerVector(0);
+    IntegerVector D   = (d) ? data["ScanDirectionFlag"] : IntegerVector(0);
+    IntegerVector E   = (e) ? data["EdgeOfFlightline"] : IntegerVector(0);
+    IntegerVector C   = (c) ? data["Classification"] : IntegerVector(0);
+    LogicalVector S   = (s) ? data["Synthetic_flag"] : LogicalVector(0);
+    LogicalVector K   = (k) ? data["Keypoint_flag"] : LogicalVector(0);
+    LogicalVector W   = (w) ? data["Withheld_flag"] : LogicalVector(0);
+    IntegerVector A   = (a) ? data["ScanAngle"] : IntegerVector(0);
+    IntegerVector U   = (u) ? data["UserData"] : IntegerVector(0);
+    IntegerVector P   = (p) ? data["PointSourceID"] : IntegerVector(0);
+    NumericVector T   = (t) ? data["gpstime"] : NumericVector(0);
+    IntegerVector Red = (R) ? data["R"] : IntegerVector(0);
+    IntegerVector Gre = (G) ? data["G"] : IntegerVector(0);
+    IntegerVector Blu = (B) ? data["B"] : IntegerVector(0);
+    IntegerVector NIR = (N) ? data["NIR"] : IntegerVector(0);
 
-    if (data.containsElementNamed("Intensity"))
-      I   = data["Intensity"];
-    if (data.containsElementNamed("ReturnNumber"))
-      RN  = data["ReturnNumber"];
-    if (data.containsElementNamed("NumberOfReturns"))
-      NoR = data["NumberOfReturns"];
-    if (data.containsElementNamed("ScanDirectionFlag"))
-      SDF = data["ScanDirectionFlag"];
-    if (data.containsElementNamed("EdgeOfFlightline"))
-      EoF = data["EdgeOfFlightline"];
-    if (data.containsElementNamed("Classification"))
-      C   = data["Classification"];
-    if (data.containsElementNamed("Synthetic_flag"))
-      S   = data["Synthetic_flag"];
-    if (data.containsElementNamed("Keypoint_flag"))
-      K   = data["Keypoint_flag"];
-    if (data.containsElementNamed("Withheld_flag"))
-      W   = data["Withheld_flag"];
-    if (data.containsElementNamed("ScanAngle"))
-      SA  = data["ScanAngle"];
-    if (data.containsElementNamed("UserData"))
-      UD  = data["UserData"];
-    if (data.containsElementNamed("PointSourceID"))
-      PSI = data["PointSourceID"];
-    if (data.containsElementNamed("gpstime"))
-      T   = data["gpstime"];
-    if (data.containsElementNamed("R"))
-      R   = data["R"];
-    if (data.containsElementNamed("G"))
-      G   = data["G"];
-    if (data.containsElementNamed("B"))
-      B   = data["B"];
-    if (data.containsElementNamed("NIR"))
-      NIR = data["NIR"];
-
-    for(int i = 0 ; i < X.length() ; i++)
+    for(int j = 0 ; j < X.length() ; j++)
     {
       // Add regular data
-      p.set_x(X[i]);
-      p.set_y(Y[i]);
-      p.set_z(Z[i]);
+      point.set_x(X[j]);
+      point.set_y(Y[j]);
+      point.set_z(Z[j]);
 
-      if(I.length() > 0)   { p.set_intensity((U16)I[i]); }
-      if(RN.length() > 0)  { p.set_return_number((U8)RN[i]); }
-      if(NoR.length() > 0) { p.set_number_of_returns((U8)NoR[i]); }
-      if(SDF.length() > 0) { p.set_scan_direction_flag((U8)SDF[i]); }
-      if(EoF.length() > 0) { p.set_edge_of_flight_line((U8)EoF[i]); }
-      if(C.length() > 0)   { p.set_classification((U8)C[i]); }
-      if(S.length() > 0)   { p.set_synthetic_flag((U8)S[i]); }
-      if(K.length() > 0)   { p.set_keypoint_flag((U8)K[i]); }
-      if(W.length() > 0)   { p.set_withheld_flag((U8)W[i]); }
-      if(SA.length() > 0)  { p.set_scan_angle_rank((I8)SA[i]); }
-      if(UD.length() > 0)  { p.set_user_data((U8)UD[i]); }
-      if(PSI.length() > 0) { p.set_point_source_ID((U16)PSI[i]); }
-      if(T.length() > 0)   { p.set_gps_time((F64)T[i]); }
-      if(R.length() > 0)   { p.set_R((U16)R[i]); }
-      if(G.length() > 0)   { p.set_G((U16)G[i]); }
-      if(B.length() > 0)   { p.set_B((U16)B[i]); }
-      if(NIR.length() > 0) { p.set_NIR((U16)NIR[i]); }
+      if(i) { point.set_intensity((U16)I[j]); }
+      if(r) { point.set_return_number((U8)RN[j]); }
+      if(n) { point.set_number_of_returns((U8)NR[j]); }
+      if(d) { point.set_scan_direction_flag((U8)D[j]); }
+      if(e) { point.set_edge_of_flight_line((U8)E[j]); }
+      if(c) { point.set_classification((U8)C[j]); }
+      if(c) { point.set_synthetic_flag((U8)S[j]); }
+      if(k) { point.set_keypoint_flag((U8)K[j]); }
+      if(w) { point.set_withheld_flag((U8)W[j]); }
+      if(a) { point.set_scan_angle_rank((I8)A[j]); }
+      if(u) { point.set_user_data((U8)U[j]); }
+      if(p) { point.set_point_source_ID((U16)P[j]); }
+      if(t) { point.set_gps_time((F64)T[j]); }
+      if(R) { point.set_R((U16)Red[j]); }
+      if(G) { point.set_G((U16)Gre[j]); }
+      if(B) { point.set_B((U16)Blu[j]); }
+      if(N) { point.set_NIR((U16)NIR[j]); }
 
       // Add extra bytes
       for(auto& ExtraByte : ExtraBytesAttr)
-        ExtraByte.set_attribute(i, &p);
+        ExtraByte.set_attribute(j, &point);
 
-      laswriter->write_point(&p);
-      laswriter->update_inventory(&p);
+      laswriter->write_point(&point);
+      laswriter->update_inventory(&point);
     }
 
     laswriter->update_header(&header, true);
@@ -322,23 +305,12 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
 void set_global_enconding(LASheader &header, List encoding)
 {
-  if (encoding["GPS Time Type"])
-    header.set_global_encoding_bit(0);
-
-  if (encoding["Waveform Data Packets Internal"])
-    header.set_global_encoding_bit(1);
-
-  if (encoding["Waveform Data Packets External"])
-    header.set_global_encoding_bit(2);
-
-  if (encoding["Synthetic Return Numbers"])
-    header.set_global_encoding_bit(3);
-
-  if (encoding["WKT"])
-    header.set_global_encoding_bit(4);
-
-  if (encoding["Aggregate Model"])
-    header.set_global_encoding_bit(5);
+  if (encoding["GPS Time Type"]) header.set_global_encoding_bit(0);
+  if (encoding["Waveform Data Packets Internal"]) header.set_global_encoding_bit(1);
+  if (encoding["Waveform Data Packets External"]) header.set_global_encoding_bit(2);
+  if (encoding["Synthetic Return Numbers"]) header.set_global_encoding_bit(3);
+  if (encoding["WKT"]) header.set_global_encoding_bit(4);
+  if (encoding["Aggregate Model"]) header.set_global_encoding_bit(5);
 }
 
 void set_guid(LASheader &header, const char* guid)
@@ -380,42 +352,18 @@ int get_point_data_record_length(int point_data_format)
 {
   switch (point_data_format)
   {
-  case 0:
-    return 20;
-    break;
-  case 1:
-    return 28;
-    break;
-  case 2:
-    return 26;
-    break;
-  case 3:
-    return 34;
-    break;
-  case 4:
-    return 57;
-    break;
-  case 5:
-    return 63;
-    break;
-  case 6:
-    return 30;
-    break;
-  case 7:
-    return 36;
-    break;
-  case 8:
-    return 38;
-    break;
-  case 9:
-    return 59;
-    break;
-  case 10:
-    return 67;
-    break;
-  default:
-    throw std::runtime_error("point_data_format out of range.");
-  break;
+    case 0: return 20; break;
+    case 1: return 28; break;
+    case 2: return 26; break;
+    case 3: return 34; break;
+    case 4: return 57; break;
+    case 5: return 63; break;
+    case 6: return 30; break;
+    case 7: return 36; break;
+    case 8: return 38; break;
+    case 9: return 59; break;
+    case 10: return 67; break;
+    default: throw std::runtime_error("point_data_format out of range."); break;
   }
 }
 
