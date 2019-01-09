@@ -28,18 +28,12 @@
  */
 
 #include <Rcpp.h>
-
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "laswriter.hpp"
 #include "rlasextrabytesattributes.h"
 
 using namespace Rcpp;
-
-#define ISSET(NAME) data.containsElementNamed(NAME)
 
 int  get_point_data_record_length(int x);
 void set_guid(LASheader&, const char*);
@@ -48,9 +42,8 @@ void set_global_enconding(LASheader&, List);
 // [[Rcpp::export]]
 void C_writer(CharacterVector file, List LASheader, DataFrame data)
 {
-  try
-  {
-    class LASheader header;
+
+   class LASheader header;
 
     // ===========================
     // Public Header Block
@@ -58,19 +51,19 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
     // 1.1. These ones are easy
 
-    header.file_source_ID = (int)LASheader["File Source ID"];
-    header.version_major = (int)LASheader["Version Major"];
-    header.version_minor = (int)LASheader["Version Minor"];
-    header.header_size = (int)LASheader["Header Size"];
+    header.file_source_ID       = (int)LASheader["File Source ID"];
+    header.version_major        = (int)LASheader["Version Major"];
+    header.version_minor        = (int)LASheader["Version Minor"];
+    header.header_size          = (int)LASheader["Header Size"];
     header.offset_to_point_data = header.header_size;
-    header.file_creation_year = (int)LASheader["File Creation Year"];
-    header.point_data_format = (int)LASheader["Point Data Format ID"];
-    header.x_scale_factor = (double)LASheader["X scale factor"];
-    header.y_scale_factor = (double)LASheader["Y scale factor"];
-    header.z_scale_factor = (double)LASheader["Z scale factor"];
-    header.x_offset =  (double)LASheader["X offset"];
-    header.y_offset =  (double)LASheader["Y offset"];
-    header.z_offset =  (double)LASheader["Z offset"];
+    header.file_creation_year   = (int)LASheader["File Creation Year"];
+    header.point_data_format    = (int)LASheader["Point Data Format ID"];
+    header.x_scale_factor       = (double)LASheader["X scale factor"];
+    header.y_scale_factor       = (double)LASheader["Y scale factor"];
+    header.z_scale_factor       = (double)LASheader["Z scale factor"];
+    header.x_offset             = (double)LASheader["X offset"];
+    header.y_offset             = (double)LASheader["Y offset"];
+    header.z_offset             = (double)LASheader["Z offset"];
 
     // 1.2. These one need special interpretation
 
@@ -87,35 +80,33 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     // 2. Variable Lenght Records
     // ===========================
 
+    bool isset_vlr = LASheader.containsElementNamed("Variable Length Records");
+    List vlr = (isset_vlr) ? LASheader["Variable Length Records"] : List(0);
+
     // 2.1 ESPG code
 
-    if(LASheader.containsElementNamed("Variable Length Records"))
+    if(isset_vlr && vlr.containsElementNamed("GeoKeyDirectoryTag"))
     {
-      List vlr = LASheader["Variable Length Records"];
+      List GKDT = vlr["GeoKeyDirectoryTag"];
+      List tags = GKDT["tags"];
 
-      if(vlr.containsElementNamed("GeoKeyDirectoryTag"))
+      for (int i = 0 ; i < tags.size() ; i ++)
       {
-        List GKDT = vlr["GeoKeyDirectoryTag"];
-        List tags = GKDT["tags"];
+        List tag = tags[i];
+        int key  = tag["key"];
 
-        for (int i = 0 ; i < tags.size() ; i ++)
+        if (key == 3072)
         {
-          List tag = tags[i];
-          int key  = tag["key"];
+          LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
+          vlr_epsg->key_id = 3072;
+          vlr_epsg->tiff_tag_location = 0;
+          vlr_epsg->count = 1;
+          vlr_epsg->value_offset = (U16)tag["value offset"];
 
-          if (key == 3072)
-          {
-            LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
-            vlr_epsg->key_id = 3072;
-            vlr_epsg->tiff_tag_location = 0;
-            vlr_epsg->count = 1;
-            vlr_epsg->value_offset = (U16)tag["value offset"];
+          header.set_geo_keys(1, vlr_epsg);
+          delete vlr_epsg;
 
-            header.set_geo_keys(1, vlr_epsg);
-            delete vlr_epsg;
-
-            break;
-          }
+          break;
         }
       }
     }
@@ -124,87 +115,78 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
     // 2.3 WKT OGC COORDINATE
 
-    if (LASheader.containsElementNamed("Variable Length Records"))
+    if (isset_vlr && vlr.containsElementNamed("WKT OGC CS"))
     {
-      List vlr = LASheader["Variable Length Records"];
+      List WKTOGCCS = vlr["WKT OGC CS"];
 
-      if (vlr.containsElementNamed("WKT OGC CS"))
+      if (WKTOGCCS.containsElementNamed("WKT OGC COORDINATE SYSTEM"))
       {
-        List WKTOGCCS = vlr["WKT OGC CS"];
-
-        if (WKTOGCCS.containsElementNamed("WKT OGC COORDINATE SYSTEM"))
-        {
-          CharacterVector WKT = WKTOGCCS["WKT OGC COORDINATE SYSTEM"];
-          std::string sWKT    = as<std::string>(WKT);
-          const char* cWKT    = sWKT.c_str();
-
-          header.set_geo_ogc_wkt(sWKT.size(), cWKT);
-        }
+        CharacterVector WKT = WKTOGCCS["WKT OGC COORDINATE SYSTEM"];
+        std::string sWKT    = as<std::string>(WKT);
+        header.set_geo_ogc_wkt(sWKT.size(), sWKT.c_str());
       }
     }
 
     // 2.4 Extrabytes attributes
 
     std::vector<RLASExtrabyteAttributes> ExtraBytesAttr;
-    if(LASheader.containsElementNamed("Variable Length Records"))
+    if(isset_vlr && vlr.containsElementNamed("Extra_Bytes"))
     {
-      List vlr = LASheader["Variable Length Records"];
+      List extra_bytes = vlr["Extra_Bytes"];
 
-      if(vlr.containsElementNamed("Extra_Bytes"))
+      if(extra_bytes.containsElementNamed("Extra Bytes Description"))
       {
-        List extra_bytes = vlr["Extra_Bytes"];
+        List description_eb = extra_bytes["Extra Bytes Description"];
 
-        if(extra_bytes.containsElementNamed("Extra Bytes Description"))
+        for(int i = 0 ; i < description_eb.size() ; i++)
         {
-          List description_eb = extra_bytes["Extra Bytes Description"];
+          List description = description_eb[i];
+          RLASExtrabyteAttributes ExtraByte;
 
-          for(int i = 0 ; i < description_eb.size() ; i++)
-          {
-            List description = description_eb[i];
-            RLASExtrabyteAttributes ExtraByte;
+          ExtraByte.name = as< std::string >(description["name"]);
 
-            ExtraByte.name = as< std::string >(description["name"]);
+          if (!data.containsElementNamed(ExtraByte.name.c_str()))
+            stop("Extra Bytes described but not present in data.");
 
-            if (!data.containsElementNamed(ExtraByte.name.c_str()))
-              throw std::runtime_error("Extra Bytes described but not present in data.");
+          ExtraByte.options = (int)description["options"];
+          ExtraByte.parse_options();
 
-            ExtraByte.options = (int)description["options"];
-            ExtraByte.parse_options();
+          ExtraByte.data_type = ((int)(description["data_type"])-1) % 10;
+          ExtraByte.desc = as< std::string >(description["description"]);
 
-            ExtraByte.data_type = ((int)(description["data_type"])-1) % 10;
-            ExtraByte.desc = as< std::string >(description["description"]);
+          if(ExtraByte.has_scale)
+            ExtraByte.scale = (double)(description["scale"]);
 
-            if(ExtraByte.has_scale)
-              ExtraByte.scale = (double)(description["scale"]);
+          if(ExtraByte.has_offset)
+            ExtraByte.offset = (double)(description["offset"]);
 
-            if(ExtraByte.has_offset)
-              ExtraByte.offset = (double)(description["offset"]);
+          if(ExtraByte.has_no_data)
+            ExtraByte.no_data = ((double)(description["no_data"]) - ExtraByte.offset)/ExtraByte.scale;
 
-            if(ExtraByte.has_no_data)
-              ExtraByte.no_data = ((double)(description["no_data"]) - ExtraByte.offset)/ExtraByte.scale;
+          if(ExtraByte.has_min)
+            ExtraByte.min = ((double)(description["min"]) - ExtraByte.offset)/ExtraByte.scale;
 
-            if(ExtraByte.has_min)
-              ExtraByte.min = ((double)(description["min"]) - ExtraByte.offset)/ExtraByte.scale;
+          if(ExtraByte.has_max)
+            ExtraByte.max =  ((double)(description["max"]) - ExtraByte.offset)/ExtraByte.scale;
 
-            if(ExtraByte.has_max)
-              ExtraByte.max =  ((double)(description["max"]) - ExtraByte.offset)/ExtraByte.scale;
+          LASattribute attribute = ExtraByte.make_LASattribute();
 
-            LASattribute attribute = ExtraByte.make_LASattribute();
-
-            ExtraByte.id  = header.add_attribute(attribute);
-            ExtraByte.Reb = as<NumericVector>(data[ExtraByte.name.c_str()]);
-            ExtraBytesAttr.push_back(ExtraByte);
-          }
-
-          header.update_extra_bytes_vlr();
-          header.point_data_record_length += header.get_attributes_size();
-
-          // Starting byte
-          for(auto& ExtraByte : ExtraBytesAttr)
-            ExtraByte.start = header.get_attribute_start(ExtraByte.id);
+          ExtraByte.id  = header.add_attribute(attribute);
+          ExtraByte.Reb = as<NumericVector>(data[ExtraByte.name.c_str()]);
+          ExtraBytesAttr.push_back(ExtraByte);
         }
+
+        header.update_extra_bytes_vlr();
+        header.point_data_record_length += header.get_attributes_size();
+
+        // Starting byte
+        for(auto& ExtraByte : ExtraBytesAttr)
+          ExtraByte.start = header.get_attribute_start(ExtraByte.id);
       }
     }
+
+    if (!header.check())
+      stop("LASlib internal error. See message above.");
 
     // ===============================
     // 3. Write the data into the file
@@ -219,7 +201,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     LASwriter* laswriter = laswriteopener.open(&header);
 
     if(0 == laswriter || NULL == laswriter)
-      throw std::runtime_error("LASlib internal error. See message above.");
+      stop("LASlib internal error. See message above.");
+
+    #define ISSET(NAME) data.containsElementNamed(NAME)
 
     bool i = ISSET("Intensity");
     bool r = ISSET("ReturnNumber");
@@ -296,11 +280,6 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     laswriter->update_header(&header, true);
     laswriter->close();
     delete laswriter;
-  }
-  catch (std::exception const& e)
-  {
-    Rcerr << e.what() << std::endl;
-  }
 }
 
 void set_global_enconding(LASheader &header, List encoding)
@@ -363,7 +342,7 @@ int get_point_data_record_length(int point_data_format)
     case 8: return 38; break;
     case 9: return 59; break;
     case 10: return 67; break;
-    default: throw std::runtime_error("point_data_format out of range."); break;
+    default: stop("point_data_format out of range."); break;
   }
 }
 

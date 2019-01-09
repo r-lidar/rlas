@@ -46,17 +46,14 @@ typedef boost::geometry::model::multi_polygon<Polygon> MultiPolygon;
 List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt)
 {
   RLASstreamer streamer(ifiles, ofile, filter);
-
   streamer.select(select);
   streamer.allocation();
 
-  // Regular reading with LASlib filters
   if (filter_wkt == "")
   {
     while(streamer.read_point())
       streamer.write_point();
   }
-  // Extra filter within a MULTIPOLYGON
   else if (filter_wkt.find("MULTIPOLYGON") != std::string::npos)
   {
     Point p;
@@ -72,7 +69,6 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector sel
         streamer.write_point();
     }
   }
-  // Extra filter within a POLYGON
   else if (filter_wkt.find("POLYGON") != std::string::npos)
   {
     Point p;
@@ -89,7 +85,7 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector sel
     }
   }
   else
-    throw std::runtime_error("WKT not supported. Should be a POLYGON or MULTIPOLYGON");
+    stop("WKT not supported. Should be a POLYGON or MULTIPOLYGON");
 
   return streamer.terminate();
 }

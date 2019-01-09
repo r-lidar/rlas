@@ -45,7 +45,7 @@ RLASstreamer::~RLASstreamer()
 void RLASstreamer::setinputfiles(CharacterVector ifiles)
 {
   if (ifiles.length() == 0)
-    throw std::runtime_error("Input files vector is null");
+    stop("Input files vector is null");
 
   lasreadopener.set_merged(true);
   lasreadopener.set_populate_header(true);
@@ -53,8 +53,7 @@ void RLASstreamer::setinputfiles(CharacterVector ifiles)
   for (int j = 0; j < ifiles.length(); j++)
   {
     std::string filestd  = as<std::string>(ifiles[j]);
-    const char* filechar = filestd.c_str();
-    lasreadopener.add_file_name(filechar);
+    lasreadopener.add_file_name(filestd.c_str());
   }
 
   return;
@@ -63,10 +62,10 @@ void RLASstreamer::setinputfiles(CharacterVector ifiles)
 void RLASstreamer::setoutputfile(CharacterVector ofile)
 {
   if (ofile.length() == 0)
-    throw std::runtime_error("Output file vector is empty.");
+    stop("Output file vector is empty.");
 
   if (ofile.length() > 1)
-    throw std::runtime_error("Cannot write several files at one time.");
+    stop("Cannot write several files at one time.");
 
   std::string ofilestd  = as<std::string>(ofile);
 
@@ -74,11 +73,9 @@ void RLASstreamer::setoutputfile(CharacterVector ofile)
     return;
 
   if (!useFilter)
-    throw std::runtime_error("Writing an output file without filter is useless.");
+    stop("Writing an output file without filter is useless.");
 
-  const char* ofilechar = ofilestd.c_str();
-
-  laswriteopener.set_file_name(ofilechar);
+  laswriteopener.set_file_name(ofilestd.c_str());
 
   inR = false;
 
@@ -88,10 +85,10 @@ void RLASstreamer::setoutputfile(CharacterVector ofile)
 void RLASstreamer::setfilter(CharacterVector filter)
 {
   if (filter.length() == 0)
-    throw std::runtime_error("Filter vector is empty.");
+    stop("Filter vector is empty.");
 
   if (filter.length() > 1)
-    throw std::runtime_error("Filter must have a length 1.");
+    stop("Filter must have a length 1.");
 
   std::string filterstd  = as<std::string>(filter);
 
@@ -103,7 +100,7 @@ void RLASstreamer::setfilter(CharacterVector filter)
   if (!lasreadopener.parse_str(filterchar))
   {
     lasreadopener.set_filter(0);
-    throw std::runtime_error("Filter error see message above.");
+    stop("Filter error see message above.");
   }
 
   useFilter = true;
@@ -220,8 +217,8 @@ void RLASstreamer::initialize()
   lasreader = lasreadopener.open();
   header = &lasreader->header;
 
-  if(0 == lasreader || NULL == lasreader)
-    throw std::runtime_error("LASlib internal error. See message above.");
+  if (0 == lasreader || NULL == lasreader)
+    stop("LASlib internal error. See message above.");
 
   // Initilize the writer if write in file
   if (!inR)
@@ -229,7 +226,7 @@ void RLASstreamer::initialize()
     laswriter = laswriteopener.open(&lasreader->header);
 
     if(0 == laswriter || NULL == laswriter)
-      throw std::runtime_error("LASlib internal error. See message above.");
+      stop("LASlib internal error. See message above.");
   }
   else
   {
@@ -239,10 +236,12 @@ void RLASstreamer::initialize()
     int npoints = lasreader->header.number_of_point_records;
 
     bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8);
-    bool has_t  = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
+    bool has_t   = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
+    bool has_nir = (format == 8);
 
-    t = t && has_t;
+    t   = t && has_t;
     rgb = rgb && has_rgb;
+    nir = nir && has_nir;
 
     if (useFilter)
       nalloc = ceil((float)npoints/8);
@@ -250,8 +249,8 @@ void RLASstreamer::initialize()
       nalloc = npoints;
   }
 
-  nsynthetic = 0;
-  nwithheld = 0;
+  nsynthetic  = 0;
+  nwithheld   = 0;
   initialized = true;
 
   return;
@@ -430,15 +429,15 @@ List RLASstreamer::terminate()
     Z.clear();
     Z.shrink_to_fit();
 
-    CharacterVector field(0);
-    field.push_back("X");
-    field.push_back("Y");
-    field.push_back("Z");
+    CharacterVector attr_name(0);
+    attr_name.push_back("X");
+    attr_name.push_back("Y");
+    attr_name.push_back("Z");
 
     if(t)
     {
       lasdata.push_back(T);
-      field.push_back("gpstime");
+      attr_name.push_back("gpstime");
       T.clear();
       T.shrink_to_fit();
     }
@@ -446,7 +445,7 @@ List RLASstreamer::terminate()
     if(i)
     {
       lasdata.push_back(I);
-      field.push_back("Intensity");
+      attr_name.push_back("Intensity");
       I.clear();
       I.shrink_to_fit();
     }
@@ -454,7 +453,7 @@ List RLASstreamer::terminate()
     if(r)
     {
       lasdata.push_back(RN);
-      field.push_back("ReturnNumber");
+      attr_name.push_back("ReturnNumber");
       RN.clear();
       RN.shrink_to_fit();
     }
@@ -462,7 +461,7 @@ List RLASstreamer::terminate()
     if(n)
     {
       lasdata.push_back(NoR);
-      field.push_back("NumberOfReturns");
+      attr_name.push_back("NumberOfReturns");
       NoR.clear();
       NoR.shrink_to_fit();
     }
@@ -470,7 +469,7 @@ List RLASstreamer::terminate()
     if(d)
     {
       lasdata.push_back(SDF);
-      field.push_back("ScanDirectionFlag");
+      attr_name.push_back("ScanDirectionFlag");
       SDF.clear();
       SDF.shrink_to_fit();
     }
@@ -478,7 +477,7 @@ List RLASstreamer::terminate()
     if(e)
     {
       lasdata.push_back(EoF);
-      field.push_back("EdgeOfFlightline");
+      attr_name.push_back("EdgeOfFlightline");
       EoF.clear();
       EoF.shrink_to_fit();
     }
@@ -486,7 +485,7 @@ List RLASstreamer::terminate()
     if(c)
     {
       lasdata.push_back(C);
-      field.push_back("Classification");
+      attr_name.push_back("Classification");
       C.clear();
       C.shrink_to_fit();
     }
@@ -494,7 +493,7 @@ List RLASstreamer::terminate()
     if(s)
     {
       lasdata.push_back(Synthetic);
-      field.push_back("Synthetic_flag");
+      attr_name.push_back("Synthetic_flag");
       Synthetic.clear();
       Synthetic.shrink_to_fit();
     }
@@ -502,7 +501,7 @@ List RLASstreamer::terminate()
     if(k)
     {
       lasdata.push_back(Keypoint);
-      field.push_back("Keypoint_flag");
+      attr_name.push_back("Keypoint_flag");
       Keypoint.clear();
       Keypoint.shrink_to_fit();
     }
@@ -510,7 +509,7 @@ List RLASstreamer::terminate()
     if(w)
     {
       lasdata.push_back(Withheld);
-      field.push_back("Withheld_flag");
+      attr_name.push_back("Withheld_flag");
       Withheld.clear();
       Withheld.shrink_to_fit();
     }
@@ -518,7 +517,7 @@ List RLASstreamer::terminate()
     if(a)
     {
       lasdata.push_back(SA);
-      field.push_back("ScanAngle");
+      attr_name.push_back("ScanAngle");
       SA.clear();
       SA.shrink_to_fit();
     }
@@ -526,7 +525,7 @@ List RLASstreamer::terminate()
     if(u)
     {
       lasdata.push_back(UD);
-      field.push_back("UserData");
+      attr_name.push_back("UserData");
       UD.clear();
       UD.shrink_to_fit();
     }
@@ -534,7 +533,7 @@ List RLASstreamer::terminate()
     if(p)
     {
       lasdata.push_back(PSI);
-      field.push_back("PointSourceID");
+      attr_name.push_back("PointSourceID");
       PSI.clear();
       PSI.shrink_to_fit();
     }
@@ -542,17 +541,17 @@ List RLASstreamer::terminate()
     if(rgb)
     {
       lasdata.push_back(R);
-      field.push_back("R");
+      attr_name.push_back("R");
       R.clear();
       R.shrink_to_fit();
 
       lasdata.push_back(G);
-      field.push_back("G");
+      attr_name.push_back("G");
       G.clear();
       G.shrink_to_fit();
 
       lasdata.push_back(B);
-      field.push_back("B");
+      attr_name.push_back("B");
       B.clear();
       B.shrink_to_fit();
     }
@@ -560,28 +559,28 @@ List RLASstreamer::terminate()
     if(nir)
     {
       lasdata.push_back(NIR);
-      field.push_back("NIR");
+      attr_name.push_back("NIR");
       NIR.clear();
       NIR.shrink_to_fit();
     }
 
-    for(size_t j = 0; j < extra_bytes_attr.size(); j++)
+    for(auto ExtraByte : extra_bytes_attr)
     {
-      if (extra_bytes_attr[j].is_32bits())
+      if (ExtraByte.is_32bits())
       {
-        IntegerVector X = wrap(extra_bytes_attr[j].eb32);
+        IntegerVector X = wrap(ExtraByte.eb32);
         lasdata.push_back(X);
-        field.push_back(extra_bytes_attr[j].name);
+        attr_name.push_back(ExtraByte.name);
       }
       else
       {
-        NumericVector X = wrap(extra_bytes_attr[j].eb64);
+        NumericVector X = wrap(ExtraByte.eb64);
         lasdata.push_back(X);
-        field.push_back(extra_bytes_attr[j].name);
+        attr_name.push_back(ExtraByte.name);
       }
     }
 
-    lasdata.names() = field;
+    lasdata.names() = attr_name;
 
     if (nwithheld > 0)
       Rcerr << "Warning: there are " << nwithheld << " points flagged 'withheld'." << std::endl;
@@ -636,70 +635,46 @@ void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || f
 void RLASstreamer::read_nir(bool b){ nir = b && (format == 8); }
 void RLASstreamer::read_eb(IntegerVector x)
 {
+
+  if (x.size() == 0)
+    return;
+
   std::sort(x.begin(), x.end());
   x.erase( std::unique( x.begin(), x.end() ), x.end() );
 
-  if(x.size() && x[0]==-1 ) // 0 means get all available extra_bytes
+
+  if(x[0] == -1) // 0 means get all available extra_bytes
   {
-    for(int j = 0; j < header->number_attributes; j++)
-    {
+    for(int j = 0; j < header->number_attributes ; j++)
       eb.push_back(j);
-    }
   }
   else // filters attribute numbers not existing
   {
-    for(int j = 0; j < x.size(); j++)
+    for(int j : x)
     {
-      if(x[j] < header->number_attributes)
-      {
-        eb.push_back(x[j]);
-      }
+      if (j < header->number_attributes)
+        eb.push_back(j);
     }
   }
 }
 
 int RLASstreamer::get_format(U8 point_type)
 {
-  int format;
-
   switch (point_type)
   {
-  case 0:
-    format = 0;
-    break;
-  case 1:
-    format = 1;
-    break;
-  case 2:
-    format = 2;
-    break;
-  case 3:
-    format = 3;
-    break;
-  case 4:
-    throw std::runtime_error("Point data record type 4 not yet supported");
-    break;
-  case 5:
-    throw std::runtime_error("Point data record type 5 not yet supported");
-    break;
-  case 6:
-    format = 6;
-    break;
-  case 7:
-    format = 7;
-    break;
-  case 8:
-    format = 8;
-    break;
-  case 9:
-    throw std::runtime_error("Point data record type 9 not yet supported");
-    break;
-  case 10:
-    throw std::runtime_error("Point data record type 10 not yet supported");
-    break;
-  default:
-    throw std::runtime_error("LAS format not valid");
+    case 0: return 0; break;
+    case 1: return 1; break;
+    case 2: return 2; break;
+    case 3: return 3; break;
+    case 4: stop("Point data record type 4 not yet supported"); break;
+    case 5: stop("Point data record type 5 not yet supported"); break;
+    case 6: return 6; break;
+    case 7: return 7; break;
+    case 8: return 8; break;
+    case 9: stop("Point data record type 9 not yet supported"); break;
+    case 10: stop("Point data record type 10 not yet supported"); break;
+    default: stop("LAS format not valid");
   }
 
-  return(format);
+  return 0;
 }
