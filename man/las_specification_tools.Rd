@@ -27,10 +27,13 @@
 \alias{is_valid_ScanDirectionFlag}
 \alias{is_valid_EdgeOfFlightline}
 \alias{is_valid_Classification}
+\alias{is_valid_ScannerChannel}
 \alias{is_valid_SyntheticFlag}
 \alias{is_valid_KeypointFlag}
 \alias{is_valid_WithheldFlag}
+\alias{is_valid_OverlapFlag}
 \alias{is_valid_ScanAngle}
+\alias{is_valid_ScanAngleRank}
 \alias{is_valid_UserData}
 \alias{is_valid_gpstime}
 \alias{is_valid_PointSourceID}
@@ -43,6 +46,8 @@
 \alias{is_NIR_in_valid_format}
 \alias{is_gpstime_in_valid_format}
 \alias{is_RGB_in_valid_format}
+\alias{is_ScanAngle_in_valid_format}
+\alias{is_ScannerChannel_in_valid_format}
 \alias{is_XY_larger_than_bbox}
 \alias{is_XY_smaller_than_bbox}
 \alias{is_Z_in_bbox}
@@ -61,7 +66,7 @@ is_valid_scalefactors(header, behavior = "bool")
 
 is_defined_filesourceid(header, behavior = "bool")
 
-is_valid_filesourceid(header)
+is_valid_filesourceid(header, behavior)
 
 is_defined_globalencoding(header, behavior = "bool")
 
@@ -69,7 +74,7 @@ is_valid_globalencoding(header, behavior = "bool")
 
 is_defined_version(header, behavior = "bool")
 
-is_valid_version(header)
+is_valid_version(header, behavior = "bool")
 
 is_defined_date(header, behavior = "bool")
 
@@ -101,13 +106,19 @@ is_valid_EdgeOfFlightline(data, behavior = "bool")
 
 is_valid_Classification(data, header, behavior = "bool")
 
+is_valid_ScannerChannel(data, behavior = "bool")
+
 is_valid_SyntheticFlag(data, behavior = "bool")
 
 is_valid_KeypointFlag(data, behavior = "bool")
 
 is_valid_WithheldFlag(data, behavior = "bool")
 
+is_valid_OverlapFlag(data, behavior = "bool")
+
 is_valid_ScanAngle(data, behavior = "bool")
+
+is_valid_ScanAngleRank(data, behavior = "bool")
 
 is_valid_UserData(data, behavior = "bool")
 
@@ -132,6 +143,10 @@ is_NIR_in_valid_format(header, data, behavior = "bool")
 is_gpstime_in_valid_format(header, data, behavior = "bool")
 
 is_RGB_in_valid_format(header, data, behavior = "bool")
+
+is_ScanAngle_in_valid_format(header, data, behavior = "bool")
+
+is_ScannerChannel_in_valid_format(header, data, behavior = "bool")
 
 is_XY_larger_than_bbox(header, data, behavior = "bool")
 
