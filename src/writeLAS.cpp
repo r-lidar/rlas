@@ -65,6 +65,8 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     header.y_offset             = (double)LASheader["Y offset"];
     header.z_offset             = (double)LASheader["Z offset"];
 
+    bool extended = (header.version_minor >= 4) && (header.point_data_format >= 6);
+
     // 1.2. These one need special interpretation
 
     header.point_data_record_length = get_point_data_record_length(header.point_data_format);
@@ -214,7 +216,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     bool s = ISSET("Synthetic_flag");
     bool k = ISSET("Keypoint_flag");
     bool w = ISSET("Withheld_flag");
-    bool a = ISSET("ScanAngle");
+    bool o = ISSET("Overlap_flag") && extended;
     bool u = ISSET("UserData");
     bool p = ISSET("PointSourceID");
     bool t = ISSET("gpstime");
@@ -222,6 +224,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     bool G = ISSET("G");
     bool B = ISSET("B");
     bool N = ISSET("NIR");
+    bool sar = ISSET("ScanAngleRank");
+    bool esa = ISSET("ScanAngle");
+    bool cha = ISSET("ScannerChannel") && extended;
 
     NumericVector X   = data["X"];
     NumericVector Y   = data["Y"];
@@ -235,7 +240,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     LogicalVector S   = (s) ? data["Synthetic_flag"] : LogicalVector(0);
     LogicalVector K   = (k) ? data["Keypoint_flag"] : LogicalVector(0);
     LogicalVector W   = (w) ? data["Withheld_flag"] : LogicalVector(0);
-    IntegerVector A   = (a) ? data["ScanAngle"] : IntegerVector(0);
+    LogicalVector O   = (o) ? data["Overlap_flag"] : LogicalVector(0);
     IntegerVector U   = (u) ? data["UserData"] : IntegerVector(0);
     IntegerVector P   = (p) ? data["PointSourceID"] : IntegerVector(0);
     NumericVector T   = (t) ? data["gpstime"] : NumericVector(0);
@@ -243,6 +248,9 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     IntegerVector Gre = (G) ? data["G"] : IntegerVector(0);
     IntegerVector Blu = (B) ? data["B"] : IntegerVector(0);
     IntegerVector NIR = (N) ? data["NIR"] : IntegerVector(0);
+    IntegerVector SAR = (sar) ? data["ScanAngleRank"] : IntegerVector(0);
+    IntegerVector ESA = (esa) ? data["ScanAngle"] : IntegerVector(0);
+    IntegerVector CHA = (cha) ? data["ScannerChannel"] : IntegerVector(0);
 
     for(int j = 0 ; j < X.length() ; j++)
     {
@@ -252,15 +260,29 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       point.set_z(Z[j]);
 
       if(i) { point.set_intensity((U16)I[j]); }
-      if(r) { point.set_return_number((U8)RN[j]); }
-      if(n) { point.set_number_of_returns((U8)NR[j]); }
+
+      if(r && !extended) { point.set_return_number((U8)RN[j]); }
+      if(r &&  extended) { point.set_extended_return_number((U8)RN[j]); }
+
+      if(n && !extended) { point.set_number_of_returns((U8)NR[j]); }
+      if(n &&  extended) { point.set_extended_number_of_returns((U8)NR[j]); }
+
       if(d) { point.set_scan_direction_flag((U8)D[j]); }
       if(e) { point.set_edge_of_flight_line((U8)E[j]); }
-      if(c) { point.set_classification((U8)C[j]); }
-      if(c) { point.set_synthetic_flag((U8)S[j]); }
+
+      if(c && !extended) { point.set_classification((U8)C[j]); }
+      if(c &&  extended) { point.set_extended_classification((U8)C[j]); }
+
+      if(cha) { point.set_extended_scanner_channel((U8)CHA[j]); }
+
+      if(s) { point.set_synthetic_flag((U8)S[j]); }
       if(k) { point.set_keypoint_flag((U8)K[j]); }
       if(w) { point.set_withheld_flag((U8)W[j]); }
-      if(a) { point.set_scan_angle_rank((I8)A[j]); }
+      if(o) { point.set_extended_overlap_flag((U8)O[j]); }
+
+      if(sar) { point.set_scan_angle_rank((I8)SAR[j]); }
+      if(esa) { point.set_extended_scan_angle((I16)ESA[j]/0.006f); }
+
       if(u) { point.set_user_data((U8)U[j]); }
       if(p) { point.set_point_source_ID((U16)P[j]); }
       if(t) { point.set_gps_time((F64)T[j]); }

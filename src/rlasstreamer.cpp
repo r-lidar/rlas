@@ -123,14 +123,16 @@ void RLASstreamer::select(CharacterVector string)
   s = false;
   k = false;
   w = false;
+  o = false;
   a = false;
   u = false;
   p = false;
   rgb = false;
   nir = false;
+  cha = false;
 
   if (select.find("*") != std::string::npos)
-    select = "xyztirndecskwaupRGBN0";
+    select = "xyztirndecCskwoaupRGBN0";
 
   if (select.find("i") != std::string::npos) read_i(true);
   if (select.find("t") != std::string::npos) read_t(true);
@@ -142,6 +144,7 @@ void RLASstreamer::select(CharacterVector string)
   if (select.find("s") != std::string::npos) read_s(true);
   if (select.find("k") != std::string::npos) read_k(true);
   if (select.find("w") != std::string::npos) read_w(true);
+  if (select.find("o") != std::string::npos) read_o(true);
   if (select.find("a") != std::string::npos) read_a(true);
   if (select.find("u") != std::string::npos) read_u(true);
   if (select.find("p") != std::string::npos) read_p(true);
@@ -149,6 +152,7 @@ void RLASstreamer::select(CharacterVector string)
   if (select.find("G") != std::string::npos) read_rgb(true);
   if (select.find("B") != std::string::npos) read_rgb(true);
   if (select.find("N") != std::string::npos) read_nir(true);
+  if (select.find("C") != std::string::npos) read_cha(true);
 
   if (unselect.find("-i") != std::string::npos) read_i(false);
   if (unselect.find("-t") != std::string::npos) read_t(false);
@@ -160,6 +164,7 @@ void RLASstreamer::select(CharacterVector string)
   if (unselect.find("-s") != std::string::npos) read_s(false);
   if (unselect.find("-k") != std::string::npos) read_k(false);
   if (unselect.find("-w") != std::string::npos) read_w(false);
+  if (unselect.find("-o") != std::string::npos) read_o(false);
   if (unselect.find("-a") != std::string::npos) read_a(false);
   if (unselect.find("-u") != std::string::npos) read_u(false);
   if (unselect.find("-p") != std::string::npos) read_p(false);
@@ -167,6 +172,7 @@ void RLASstreamer::select(CharacterVector string)
   if (unselect.find("-G") != std::string::npos) read_rgb(false);
   if (unselect.find("-B") != std::string::npos) read_rgb(false);
   if (unselect.find("-N") != std::string::npos) read_nir(false);
+  if (unselect.find("-C") != std::string::npos) read_cha(false);
 
   std::vector<bool> select_eb(9);
   std::fill(select_eb.begin(), select_eb.end(), false);
@@ -232,7 +238,9 @@ void RLASstreamer::initialize()
   {
     // Read the header and test some properties of the file
     U8 point_type = lasreader->header.point_data_format;
-    format = get_format(point_type);
+    format   = get_format(point_type);
+    extended = (lasreader->header.version_minor >= 4) && (format >= 6);
+
     int npoints = lasreader->header.number_of_point_records;
 
     bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8);
@@ -242,6 +250,8 @@ void RLASstreamer::initialize()
     t   = t && has_t;
     rgb = rgb && has_rgb;
     nir = nir && has_nir;
+    o   = o && extended;
+    cha = cha && extended;
 
     if (useFilter)
       nalloc = ceil((float)npoints/8);
@@ -358,26 +368,47 @@ void RLASstreamer::write_point()
     Y.push_back(lasreader->point.get_y());
     Z.push_back(lasreader->point.get_z());
 
-    if(t) T.push_back(lasreader->point.get_gps_time());
-    if(i) I.push_back(lasreader->point.get_intensity());
-    if(r) RN.push_back(lasreader->point.get_return_number());
-    if(n) NoR.push_back(lasreader->point.get_number_of_returns());
-    if(d) SDF.push_back(lasreader->point.get_scan_direction_flag());
-    if(e) EoF.push_back(lasreader->point.get_edge_of_flight_line());
-    if(c) C.push_back(lasreader->point.get_classification());
-    if(s) Synthetic.push_back(lasreader->point.get_synthetic_flag());
-    if(k) Keypoint.push_back(lasreader->point.get_keypoint_flag());
-    if(w) Withheld.push_back(lasreader->point.get_withheld_flag());
-    if(a) SA.push_back(lasreader->point.get_scan_angle_rank());
-    if(u) UD.push_back(lasreader->point.get_user_data());
-    if(p) PSI.push_back(lasreader->point.get_point_source_ID());
-    if(rgb)
+    if (t) T.push_back(lasreader->point.get_gps_time());
+    if (i) I.push_back(lasreader->point.get_intensity());
+
+    if (r && !extended)
+      RN.push_back(lasreader->point.get_return_number());
+    else if (r && extended)
+      RN.push_back(lasreader->point.get_extended_return_number());
+
+    if (n && !extended)
+      NoR.push_back(lasreader->point.get_number_of_returns());
+    else if (n && extended)
+      NoR.push_back(lasreader->point.get_extended_number_of_returns());
+
+    if (d) SDF.push_back(lasreader->point.get_scan_direction_flag());
+    if (e) EoF.push_back(lasreader->point.get_edge_of_flight_line());
+
+    if (c && !extended)
+      C.push_back(lasreader->point.get_classification());
+    else if (c && extended)
+      C.push_back(lasreader->point.get_extended_classification());
+
+    if (cha && extended)
+      Channel.push_back(lasreader->point.get_extended_scanner_channel());
+
+    if (s) Synthetic.push_back(lasreader->point.get_synthetic_flag());
+    if (k) Keypoint.push_back(lasreader->point.get_keypoint_flag());
+    if (w) Withheld.push_back(lasreader->point.get_withheld_flag());
+
+    if (o && extended)
+      Overlap.push_back(lasreader->point.get_extended_overlap_flag());
+
+    if (a) SA.push_back(lasreader->point.get_scan_angle());
+    if (u) UD.push_back(lasreader->point.get_user_data());
+    if (p) PSI.push_back(lasreader->point.get_point_source_ID());
+    if (rgb)
     {
       R.push_back(lasreader->point.get_R());
       G.push_back(lasreader->point.get_G());
       B.push_back(lasreader->point.get_B());
     }
-    if(nir) NIR.push_back(lasreader->point.get_NIR());
+    if (nir) NIR.push_back(lasreader->point.get_NIR());
 
     for(auto& extra_byte : extra_bytes_attr)
       extra_byte.push_back(&lasreader->point);
@@ -385,7 +416,7 @@ void RLASstreamer::write_point()
     if (lasreader->point.get_synthetic_flag())
       nsynthetic++;
 
-    if(lasreader->point.get_withheld_flag())
+    if (lasreader->point.get_withheld_flag())
       nwithheld++;
   }
 }
@@ -490,6 +521,14 @@ List RLASstreamer::terminate()
       C.shrink_to_fit();
     }
 
+    if(cha)
+    {
+      lasdata.push_back(Channel);
+      attr_name.push_back("ScannerChannel");
+      Channel.clear();
+      Channel.shrink_to_fit();
+    }
+
     if(s)
     {
       lasdata.push_back(Synthetic);
@@ -514,10 +553,29 @@ List RLASstreamer::terminate()
       Withheld.shrink_to_fit();
     }
 
+    if(o)
+    {
+      lasdata.push_back(Overlap);
+      attr_name.push_back("Overlap_flag");
+      Overlap.clear();
+      Overlap.shrink_to_fit();
+    }
+
     if(a)
     {
-      lasdata.push_back(SA);
-      attr_name.push_back("ScanAngle");
+      if (extended)
+      {
+        NumericVector ScanAngle = wrap(SA);
+        lasdata.push_back(SA);
+        attr_name.push_back("ScanAngle");
+      }
+      else
+      {
+        IntegerVector ScanAngleRank = wrap(SA);
+        lasdata.push_back(SA);
+        attr_name.push_back("ScanAngleRank");
+      }
+
       SA.clear();
       SA.shrink_to_fit();
     }
@@ -604,11 +662,13 @@ void RLASstreamer::initialize_bool()
   s = true;
   k = true;
   w = true;
+  o = true;
   a = true;
   u = true;
   p = true;
   rgb = true;
   nir = true;
+  cha = true;
 
   inR = true;
   useFilter = false;
@@ -628,11 +688,13 @@ void RLASstreamer::read_c(bool b){ c = b; }
 void RLASstreamer::read_s(bool b){ s = b; }
 void RLASstreamer::read_k(bool b){ k = b; }
 void RLASstreamer::read_w(bool b){ w = b; }
+void RLASstreamer::read_o(bool b){ o = b && extended; }
 void RLASstreamer::read_a(bool b){ a = b; }
 void RLASstreamer::read_u(bool b){ u = b; }
 void RLASstreamer::read_p(bool b){ p = b; }
 void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 7 || format == 8); }
 void RLASstreamer::read_nir(bool b){ nir = b && (format == 8); }
+void RLASstreamer::read_cha(bool b){ cha = b && extended; }
 void RLASstreamer::read_eb(IntegerVector x)
 {
 

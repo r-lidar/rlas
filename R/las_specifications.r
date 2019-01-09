@@ -43,6 +43,11 @@ error_handling_engine = function(errors, behavior)
 
 # ==== HEADER =====
 
+is_extended = function(header)
+{
+  return(header[["Version Minor"]] >= 4L & header[["Point Data Format ID"]] >= 6L)
+}
+
 
 #' @export
 #' @rdname las_specification_tools
@@ -421,7 +426,7 @@ is_valid_ReturnNumber = function(data, header, behavior = "bool")
   if (min(data[["ReturnNumber"]]) < 1)
     errors = append(errors, "Invalid data: ReturnNumber is not an unsigned integer")
 
-  nbits <- if (header[["Version Minor"]] < 4L) 3L else 4L
+  nbits <- if (is_extended(header)) 3L else 4L
 
   if (max(data[["ReturnNumber"]]) > 2^nbits - 1)
     errors = append(errors, paste0("Invalid data: ReturnNumber is not an unsigned integer on ", nbits, " bits"))
@@ -444,7 +449,7 @@ is_valid_NumberOfReturns = function(data, header, behavior = "bool")
   if (min(data[["NumberOfReturns"]]) < 0)
     errors = append(errors, "Invalid data: NumberOfReturns is not an unsigned integer")
 
-  nbits <- if (header[["Version Minor"]] < 4L) 3L else 4L
+  nbits <- if (!is_extended(header)) 3L else 4L
 
   if (max(data[["NumberOfReturns"]]) > 2^nbits - 1)
     errors = append(errors, paste0("Invalid data: NumberOfReturns is not an unsigned integer on ", nbits, " bits"))
@@ -509,9 +514,32 @@ is_valid_Classification = function(data, header, behavior = "bool")
   if (min(data[["Classification"]]) < 0)
     errors = append(errors, "Invalid data: Classification is not an unsigned integer")
 
-  nbits <- if (header[["Version Minor"]] < 4L) 5L else 8L
+  nbits <- if (!is_extended(header)) 5L else 8L
 
   if (max(data[["Classification"]]) > 2^nbits - 1)
+    errors = append(errors, paste0("Invalid data: Classification is not an unsigned integer on ", nbits, " bits"))
+
+  return(error_handling_engine(errors, behavior))
+}
+
+#' @export
+#' @rdname las_specification_tools
+is_valid_ScannerChannel = function(data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScannerChannel"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (!is.integer(data[["ScannerChannel"]]))
+    errors = append(errors, "Invalid data: ScannerChannel is not an integer")
+
+  if (min(data[["ScannerChannel"]]) < 0)
+    errors = append(errors, "Invalid data: ScannerChannel is not an unsigned integer")
+
+  nbits = 2
+
+  if (max(data[["ScannerChannel"]]) > 2^nbits - 1)
     errors = append(errors, paste0("Invalid data: Classification is not an unsigned integer on ", nbits, " bits"))
 
   return(error_handling_engine(errors, behavior))
@@ -562,6 +590,22 @@ is_valid_WithheldFlag = function(data, behavior = "bool")
   return(error_handling_engine(errors, behavior))
 }
 
+#' @export
+#' @rdname las_specification_tools
+is_valid_OverlapFlag = function(data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["Overlap_flag"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (!is.logical(data[["Overlap_flag"]]))
+    errors = append(errors, "Invalid data: Overlap_flag is not logical")
+
+  return(error_handling_engine(errors, behavior))
+}
+
+
 
 #' @export
 #' @rdname las_specification_tools
@@ -577,6 +621,25 @@ is_valid_ScanAngle = function(data, behavior = "bool")
 
   if (max(data[["ScanAngle"]]) > 90)
     errors = append(errors, "Invalid data: ScanAngle greater than 90")
+
+  return(error_handling_engine(errors, behavior))
+}
+
+
+#' @export
+#' @rdname las_specification_tools
+is_valid_ScanAngleRank = function(data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScanAngleRank"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (min(data[["ScanAngleRank"]]) < -90)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than -90.")
+
+  if (max(data[["ScanAngleRank"]]) > 90)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than 90")
 
   return(error_handling_engine(errors, behavior))
 }
@@ -816,6 +879,37 @@ is_RGB_in_valid_format = function(header, data, behavior = "bool")
 
   return(error_handling_engine(errors, behavior))
 }
+
+#' @export
+#' @rdname las_specification_tools
+is_ScanAngle_in_valid_format = function(header, data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScanAngle"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (!is_extended(header))
+    errors = append(errors, "Invalid file: the data contains a 'ScanAngle' attribute but LAS format is not 1.4 and point data format not >= 6. Use attribute 'ScanAngleRank' instead.")
+
+  return(error_handling_engine(errors, behavior))
+}
+
+#' @export
+#' @rdname las_specification_tools
+is_ScannerChannel_in_valid_format = function(header, data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScannerChannel"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (!is_extended(header))
+    errors = append(errors, "Invalid file: the data contains a 'ScannerChannel' attribute but LAS format is not 1.4 and point data format not >= 6.")
+
+  return(error_handling_engine(errors, behavior))
+}
+
 
 #' @export
 #' @rdname las_specification_tools

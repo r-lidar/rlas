@@ -36,11 +36,13 @@ class RLASstreamer
     void read_s(bool);
     void read_k(bool);
     void read_w(bool);
+    void read_o(bool);
     void read_a(bool);
     void read_u(bool);
     void read_p(bool);
     void read_rgb(bool);
     void read_nir(bool);
+    void read_cha(bool);
     void read_eb(IntegerVector); // extra byte numbers
 
   private:
@@ -59,10 +61,12 @@ class RLASstreamer
     std::vector<unsigned short> SDF;
     std::vector<unsigned short> EoF;
     std::vector<unsigned short> C;
+    std::vector<unsigned short> Channel;
     std::vector<bool> Synthetic;
     std::vector<bool> Keypoint;
     std::vector<bool> Withheld;
-    std::vector<short> SA;
+    std::vector<bool> Overlap;
+    std::vector<float> SA;
     std::vector<unsigned short> UD;
     std::vector<unsigned short> PSI;
     std::vector<unsigned short> R;
@@ -86,6 +90,7 @@ class RLASstreamer
     bool useFilter;
     bool initialized;
     bool ended;
+    bool extended;
 
     bool t;
     bool i;
@@ -97,11 +102,13 @@ class RLASstreamer
     bool s;
     bool k;
     bool w;
+    bool o;
     bool a;
     bool u;
     bool p;
     bool rgb;
     bool nir;
+    bool cha;
     std::vector<RLASExtrabyteAttributes> extra_bytes_attr;
     std::vector<int> eb;
 };

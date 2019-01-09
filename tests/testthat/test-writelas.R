@@ -137,5 +137,31 @@ test_that("write.las writes LAS 1.4",{
   expect_equal(las, wlas)
 })
 
+test_that("write.las writes LAS 1.4 point format 6",{
+  new_header = header
+  new_header$`Version Minor` = 4
+  new_header$`Point Data Format ID` = 6
+  new_header$`Header Size`   = 375
+
+  las$Overlap_flag = TRUE
+  las$ScannerChannel = 1L
+
+  data.table::setnames(las, "ScanAngleRank", "ScanAngle")
+  data.table::setcolorder(las, c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
+                                 "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScannerChannel",
+                                 "Synthetic_flag", "Keypoint_flag", "Withheld_flag", "Overlap_flag",
+                                 "ScanAngle", "UserData", "PointSourceID", "Amplitude", "Pulse width"))
+
+  write.las(write_path, new_header, las)
+
+  wlas    <- read.las(write_path)
+  wheader <- read.lasheader(write_path)
+
+  expect_true(new_header$`Version Minor` == 4L)
+  expect_equal(length(wheader$`Number of points by return`), 15)
+  expect_equal(las, wlas, tolerance = 0.00015)
+})
+
+
 
 
