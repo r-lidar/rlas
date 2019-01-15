@@ -66,7 +66,8 @@ class RLASstreamer
     std::vector<bool> Keypoint;
     std::vector<bool> Withheld;
     std::vector<bool> Overlap;
-    std::vector<float> SA;
+    std::vector<double> SA;
+    std::vector<short> SAR;
     std::vector<unsigned short> UD;
     std::vector<unsigned short> PSI;
     std::vector<unsigned short> R;

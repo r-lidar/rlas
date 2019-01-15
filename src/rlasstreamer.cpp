@@ -399,7 +399,11 @@ void RLASstreamer::write_point()
     if (o && extended)
       Overlap.push_back(lasreader->point.get_extended_overlap_flag());
 
-    if (a) SA.push_back(lasreader->point.get_scan_angle());
+    if (a && !extended)
+      SAR.push_back(lasreader->point.get_scan_angle());
+    else if (a && extended)
+      SA.push_back(lasreader->point.get_scan_angle());
+
     if (u) UD.push_back(lasreader->point.get_user_data());
     if (p) PSI.push_back(lasreader->point.get_point_source_ID());
     if (rgb)
@@ -565,19 +569,18 @@ List RLASstreamer::terminate()
     {
       if (extended)
       {
-        NumericVector ScanAngle = wrap(SA);
         lasdata.push_back(SA);
         attr_name.push_back("ScanAngle");
+        SA.clear();
+        SA.shrink_to_fit();
       }
       else
       {
-        IntegerVector ScanAngleRank = wrap(SA);
-        lasdata.push_back(SA);
+        lasdata.push_back(SAR);
         attr_name.push_back("ScanAngleRank");
+        SAR.clear();
+        SAR.shrink_to_fit();
       }
-
-      SA.clear();
-      SA.shrink_to_fit();
     }
 
     if(u)
