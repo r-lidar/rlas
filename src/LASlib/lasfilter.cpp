@@ -1706,6 +1706,7 @@ void LASfilter::usage() const
   REprintf("  -keep_every_nth 2 -drop_every_nth 3\n");
   REprintf("  -keep_random_fraction 0.1\n");
   REprintf("  -thin_with_grid 1.0\n");
+  REprintf("  -thin_with_voxel 0.1\n");
   REprintf("  -thin_pulses_with_time 0.0001\n");
   REprintf("  -thin_points_with_time 0.000001\n");
   REprintf("Boolean combination of filters.\n");

@@ -31,6 +31,7 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 
 # lasfilter.cpp            44         #include "lasfilter_voxelgrid.hpp"
 #                          3094-3103  added argument parser for -thin_with_voxel
+#                          1709       LASfilter::usage() updated
   
 
 # R is happy now!
