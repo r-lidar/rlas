@@ -40,6 +40,9 @@
 
 #include <map>
 #include <set>
+
+#include "lasfilter_voxelgrid.hpp"
+
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
@@ -3086,6 +3089,16 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionThinWithGrid((F32)atof(argv[i+1])));
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-thin_with_voxel") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: voxel_side_length\n", argv[i]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionThinWithVoxel((F32)atof(argv[i+1])));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-thin_pulses_with_time") == 0 || strcmp(argv[i],"-thin_with_time") == 0)
