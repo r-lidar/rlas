@@ -40,6 +40,9 @@
 
 #include <map>
 #include <set>
+
+#include "voxelgrid.hpp"
+
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
@@ -1517,6 +1520,35 @@ private:
   U16* plus_plus_sizes;
 };
 
+
+// voxel thinner
+class LAScriterionThinWithVoxel : public LAScriterion
+{
+public:
+  inline const CHAR* name() const { return "thin_with_voxel"; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), resolution); };
+  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY | LASZIP_DECOMPRESS_SELECTIVE_Z; };  
+  inline BOOL filter(const LASpoint* point)
+  {
+    return box.checkRegistry(point->get_x(), point->get_y(), point->get_z());
+  };
+  void reset(){
+    box.resetDynamicReg();
+  };
+  LAScriterionThinWithVoxel(double voxel_resolution){
+    resolution = voxel_resolution;
+    box.active = true;
+    box.dynamic = true;
+    box.setVoxel(resolution);
+  };
+  ~LAScriterionThinWithVoxel() { reset(); };
+
+private:
+  voxelGrid box;
+  double resolution;
+};
+
+
 class LAScriterionThinPulsesWithTime : public LAScriterion
 {
 public:
@@ -1703,6 +1735,7 @@ void LASfilter::usage() const
   REprintf("  -keep_every_nth 2 -drop_every_nth 3\n");
   REprintf("  -keep_random_fraction 0.1\n");
   REprintf("  -thin_with_grid 1.0\n");
+  REprintf("  -thin_with_voxel 0.1\n");
   REprintf("  -thin_pulses_with_time 0.0001\n");
   REprintf("  -thin_points_with_time 0.000001\n");
   REprintf("Boolean combination of filters.\n");
@@ -3086,6 +3119,16 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionThinWithGrid((F32)atof(argv[i+1])));
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-thin_with_voxel") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: voxel_resolution\n", argv[i]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionThinWithVoxel((double)atof(argv[i+1])));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-thin_pulses_with_time") == 0 || strcmp(argv[i],"-thin_with_time") == 0)
