@@ -50,7 +50,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					./writeLAS.cpp \
 					./writeLAX.cpp \
 					./fast.cpp \
-					./voxelgrid.cpp \
+					./lasfilter_voxelgrid.cpp \
 					./RcppExports.cpp
 
 TEMP1   =  $(SOURCES:.cpp=.o)
