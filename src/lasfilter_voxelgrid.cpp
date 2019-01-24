@@ -21,8 +21,7 @@ bool voxelGrid::checkRegistry(double x, double y, double z){
     int nReg = dynamic_registry.size();
     dynamic_registry.insert(nVals);
 
-    bool check = (nReg != dynamic_registry.size()) ? false : true;
-    return check;
+    return nReg == dynamic_registry.size();
 }
 
 void voxelGrid::resetDynamicReg(){
