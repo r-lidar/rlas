@@ -76,13 +76,13 @@ check_data = function(data)
 
   if (!is.null(data[["ScanAngle"]]))
   {
-    if (!is.integer(data$ScanAngle))
+    if (!is.double(data$ScanAngle))
       stop("Invalid data: ScanAngle is not an integer", call. = FALSE)
   }
 
   if (!is.null(data[["ScanAngleRank"]]))
   {
-    if (!is.integer(data$ScanAngleRank))
+    if (!is.double(data$ScanAngleRank))
       stop("Invalid data: ScanAngleRank is not an integer", call. = FALSE)
   }
 
