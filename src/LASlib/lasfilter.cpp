@@ -40,6 +40,7 @@
 
 #include <map>
 #include <set>
+#include <boost/functional/hash.hpp>
 
 using namespace std;
 
@@ -1520,6 +1521,8 @@ private:
 
 class LAScriterionThinWithVoxel : public LAScriterion
 {
+typedef std::array<I32,3> Array;
+
 public:
   inline const CHAR* name() const { return "thin_with_voxel"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
@@ -1537,7 +1540,7 @@ public:
     I32 nx = I32_FLOOR((point->get_x() - xoffset) / voxel_spacing);
     I32 ny = I32_FLOOR((point->get_y() - yoffset) / voxel_spacing);
     I32 nz = I32_FLOOR((point->get_z() - zoffset) / voxel_spacing);
-    std::array<I32,3> key = {nx, ny, nz};
+    Array key = {nx, ny, nz};
 
     return !dynamic_registry.insert(key).second;
   };
@@ -1563,7 +1566,7 @@ private:
   double xoffset;
   double yoffset;
   double zoffset;
-  std::set< std::array<I32,3> > dynamic_registry;
+  std::unordered_set<Array, boost::hash<Array> > dynamic_registry;
 };
 
 class LAScriterionThinPulsesWithTime : public LAScriterion
