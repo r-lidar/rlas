@@ -644,10 +644,16 @@ List RLASstreamer::terminate()
     lasdata.names() = attr_name;
 
     if (nwithheld > 0)
-      Rcerr << "Warning: there are " << nwithheld << " points flagged 'withheld'." << std::endl;
+    {
+      std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'withheld'.");
+      Rf_warningcall(R_NilValue, msg.c_str());
+    }
 
     if (nsynthetic > 0)
-      Rcerr << "Warning: there are " << nsynthetic << " points flagged 'synthetic'."  << std::endl;
+    {
+      std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'synthetic'.");
+      Rf_warningcall(R_NilValue, msg.c_str());
+    }
 
     return(lasdata);
   }
