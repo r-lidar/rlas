@@ -243,9 +243,9 @@ void RLASstreamer::initialize()
 
     int npoints = lasreader->header.number_of_point_records;
 
-    bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8);
-    bool has_t   = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8);
-    bool has_nir = (format == 8);
+    bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8 || format == 10);
+    bool has_t   = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8 || format == 9 || format == 10);
+    bool has_nir = (format == 8 || format == 10);
 
     t   = t && has_t;
     rgb = rgb && has_rgb;
@@ -733,18 +733,26 @@ int RLASstreamer::get_format(U8 point_type)
 {
   switch (point_type)
   {
-    case 0: return 0; break;
-    case 1: return 1; break;
-    case 2: return 2; break;
-    case 3: return 3; break;
-    case 4: stop("Point data record type 4 not yet supported"); break;
-    case 5: stop("Point data record type 5 not yet supported"); break;
-    case 6: return 6; break;
-    case 7: return 7; break;
-    case 8: return 8; break;
-    case 9: stop("Point data record type 9 not yet supported"); break;
-    case 10: stop("Point data record type 10 not yet supported"); break;
-    default: stop("LAS format not valid");
+    case 0: return 0;
+    case 1: return 1;
+    case 2: return 2;
+    case 3: return 3;
+    case 4:
+      Rf_warningcall(R_NilValue, "Point data record type 4 partially supported. Full waveform not read.");
+      return 4;
+    case 5:
+      Rf_warningcall(R_NilValue, "Point data record type 5 partially supported. Full waveform not read.");
+      return 5;
+    case 6: return 6;
+    case 7: return 7;
+    case 8: return 8;
+    case 9:
+      Rf_warningcall(R_NilValue, "Point data record type 9 partially supported. Full waveform not read.");
+      return 9;
+    case 10:
+      Rf_warningcall(R_NilValue, "Point data record type 10 partially supported. Full waveform not read.");
+      return 10;
+    default: Rf_errorcall(R_NilValue, "LAS format not valid.");
   }
 
   return 0;
