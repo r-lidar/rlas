@@ -243,8 +243,8 @@ void RLASstreamer::initialize()
 
     int npoints = lasreader->header.number_of_point_records;
 
-    bool has_rgb = (format == 2 || format == 3 || format == 7 || format == 8 || format == 10);
-    bool has_t   = (format == 1 || format == 3 || format == 6 || format == 7 || format == 8 || format == 9 || format == 10);
+    bool has_rgb = (format == 2 || format == 3 || format == 5 || format == 7 || format == 8 || format == 10);
+    bool has_t   = (format == 1 || format >= 3);
     bool has_nir = (format == 8 || format == 10);
 
     t   = t && has_t;
@@ -687,7 +687,7 @@ void RLASstreamer::initialize_bool()
   laswriter = 0;
 }
 
-void RLASstreamer::read_t(bool b){ t = b && (format == 1 || format == 3 || format == 6 || format == 7 || format == 8); }
+void RLASstreamer::read_t(bool b){ t = b && (format == 1 || format >= 3); }
 void RLASstreamer::read_i(bool b){ i = b; }
 void RLASstreamer::read_r(bool b){ r = b; }
 void RLASstreamer::read_n(bool b){ n = b; }
@@ -701,8 +701,8 @@ void RLASstreamer::read_o(bool b){ o = b && extended; }
 void RLASstreamer::read_a(bool b){ a = b; }
 void RLASstreamer::read_u(bool b){ u = b; }
 void RLASstreamer::read_p(bool b){ p = b; }
-void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 7 || format == 8); }
-void RLASstreamer::read_nir(bool b){ nir = b && (format == 8); }
+void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 5 || format == 7 || format == 8 || format == 10); }
+void RLASstreamer::read_nir(bool b){ nir = b && (format == 8 || format == 10); }
 void RLASstreamer::read_cha(bool b){ cha = b && extended; }
 void RLASstreamer::read_eb(IntegerVector x)
 {
