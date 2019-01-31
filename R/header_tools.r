@@ -394,6 +394,13 @@ header_get_wktcs = function(header)
 #' @rdname crs_tools
 header_set_wktcs = function(header, WKT)
 {
+  if (is.null(header[["Variable Length Records"]]))
+    header[["Variable Length Records"]] <- list()
+
+  if (is.null(header[["Variable Length Records"]][["WKT OGC CS"]]))
+    header[["Variable Length Records"]][["WKT OGC CS"]] <- list()
+
+
   header[["Variable Length Records"]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
   header[["Variable Length Records"]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
   header[["Variable Length Records"]][["WKT OGC CS"]][["record ID"]]                 <- 2112
