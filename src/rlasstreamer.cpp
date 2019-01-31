@@ -40,6 +40,11 @@ RLASstreamer::~RLASstreamer()
 
   if(0 != laswriter && NULL != laswriter)
     delete laswriter;
+
+  if (0 != laswaveform13reader)
+  {
+    delete laswaveform13reader;
+  }
 }
 
 void RLASstreamer::setinputfiles(CharacterVector ifiles)
@@ -132,7 +137,7 @@ void RLASstreamer::select(CharacterVector string)
   cha = false;
 
   if (select.find("*") != std::string::npos)
-    select = "xyztirndecCskwoaupRGBN0";
+    select = "xyztirndecCskwoaupRGBNW0";
 
   if (select.find("i") != std::string::npos) read_i(true);
   if (select.find("t") != std::string::npos) read_t(true);
@@ -153,6 +158,7 @@ void RLASstreamer::select(CharacterVector string)
   if (select.find("B") != std::string::npos) read_rgb(true);
   if (select.find("N") != std::string::npos) read_nir(true);
   if (select.find("C") != std::string::npos) read_cha(true);
+  if (select.find("W") != std::string::npos) read_W(true);
 
   if (unselect.find("-i") != std::string::npos) read_i(false);
   if (unselect.find("-t") != std::string::npos) read_t(false);
@@ -173,6 +179,7 @@ void RLASstreamer::select(CharacterVector string)
   if (unselect.find("-B") != std::string::npos) read_rgb(false);
   if (unselect.find("-N") != std::string::npos) read_nir(false);
   if (unselect.find("-C") != std::string::npos) read_cha(false);
+  if (unselect.find("-W") != std::string::npos) read_W(false);
 
   std::vector<bool> select_eb(9);
   std::fill(select_eb.begin(), select_eb.end(), false);
@@ -220,8 +227,11 @@ void RLASstreamer::select(CharacterVector string)
 void RLASstreamer::initialize()
 {
   // Intialize the reader
+  // (maybe) open laswaveform13reader
+
   lasreader = lasreadopener.open();
   header = &lasreader->header;
+  laswaveform13reader = lasreadopener.open_waveform13(&lasreader->header);
 
   if (0 == lasreader || NULL == lasreader)
     stop("LASlib internal error. See message above.");
@@ -355,6 +365,35 @@ bool RLASstreamer::read_point()
   return lasreader->read_point();
 }
 
+void RLASstreamer::write_waveform()
+{
+  if (laswaveform13reader && laswaveform13reader->read_waveform(&lasreader->point))
+  {
+    if (laswaveform13reader->nbits == 8)
+    {
+      std::vector<int> wave(laswaveform13reader->nsamples);
+
+      for (unsigned int i = 0; i < laswaveform13reader->nsamples; i++)
+        wave[i] = laswaveform13reader->samples[i];
+
+      waveform.push_back(wave);
+    }
+    else if (laswaveform13reader->nbits == 16)
+    {
+      std::vector<int> wave(laswaveform13reader->nsamples);
+
+      for (unsigned int i = 0; i < laswaveform13reader->nsamples; i++)
+        wave[i] = ((U16*)laswaveform13reader->samples)[i];
+
+      waveform.push_back(wave);
+    }
+    else if (laswaveform13reader->nbits == 32)
+    {
+      Rf_errorcall(R_NilValue, "32 bits full waveform not supported yet.");
+    }
+  }
+}
+
 void RLASstreamer::write_point()
 {
   if (!inR)
@@ -414,6 +453,9 @@ void RLASstreamer::write_point()
     }
     if (nir) NIR.push_back(lasreader->point.get_NIR());
 
+    if (W)
+      write_waveform();
+
     for(auto& extra_byte : extra_bytes_attr)
       extra_byte.push_back(&lasreader->point);
 
@@ -443,8 +485,15 @@ List RLASstreamer::terminate()
     lasreader->close();
     delete lasreader;
 
+    if (laswaveform13reader)
+    {
+      laswaveform13reader->close();
+      delete laswaveform13reader;
+    }
+
     lasreader = 0;
     laswriter = 0;
+    laswaveform13reader = 0;
 
     ended = true;
     return List(0);
@@ -453,7 +502,19 @@ List RLASstreamer::terminate()
   {
     lasreader->close();
     delete lasreader;
+
+    if (laswaveform13reader)
+    {
+      laswaveform13reader->close();
+      delete laswaveform13reader;
+    }
+
     lasreader = 0;
+    laswaveform13reader = 0;
+
+    lasreader = 0;
+    laswriter = 0;
+    laswaveform13reader = 0;
     ended = true;
 
     List lasdata = List::create(X,Y,Z);
@@ -625,6 +686,14 @@ List RLASstreamer::terminate()
       NIR.shrink_to_fit();
     }
 
+    if (waveform.size() > 0)
+    {
+      lasdata.push_back(waveform);
+      attr_name.push_back("FullWaveForm");
+      waveform.clear();
+      waveform.shrink_to_fit();
+    }
+
     for(auto ExtraByte : extra_bytes_attr)
     {
       if (ExtraByte.is_32bits())
@@ -704,6 +773,7 @@ void RLASstreamer::read_p(bool b){ p = b; }
 void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 5 || format == 7 || format == 8 || format == 10); }
 void RLASstreamer::read_nir(bool b){ nir = b && (format == 8 || format == 10); }
 void RLASstreamer::read_cha(bool b){ cha = b && extended; }
+void RLASstreamer::read_W(bool b){ W = b && (format == 4  || format == 5); }
 void RLASstreamer::read_eb(IntegerVector x)
 {
 
@@ -737,12 +807,8 @@ int RLASstreamer::get_format(U8 point_type)
     case 1: return 1;
     case 2: return 2;
     case 3: return 3;
-    case 4:
-      Rf_warningcall(R_NilValue, "Point data record type 4 partially supported. Full waveform not read.");
-      return 4;
-    case 5:
-      Rf_warningcall(R_NilValue, "Point data record type 5 partially supported. Full waveform not read.");
-      return 5;
+    case 4: return 4;
+    case 5: return 5;
     case 6: return 6;
     case 7: return 7;
     case 8: return 8;

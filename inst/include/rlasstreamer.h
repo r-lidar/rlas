@@ -5,6 +5,7 @@
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
+#include "laswaveform13reader.hpp"
 #include "rlasextrabytesattributes.h"
 
 using namespace Rcpp;
@@ -43,12 +44,14 @@ class RLASstreamer
     void read_rgb(bool);
     void read_nir(bool);
     void read_cha(bool);
+    void read_W(bool);
     void read_eb(IntegerVector); // extra byte numbers
 
   private:
     void initialize_bool();
     void initialize();
     int get_format(U8);
+    void write_waveform();
 
   private:
     std::vector<double> X;
@@ -75,8 +78,11 @@ class RLASstreamer
     std::vector<unsigned short> B;
     std::vector<unsigned short> NIR;
 
+    std::vector< std::vector<int> >waveform;
+
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
+    LASwaveform13reader* laswaveform13reader;
     LASreader* lasreader;
     LASwriter* laswriter;
     LASheader* header;
@@ -110,6 +116,7 @@ class RLASstreamer
     bool rgb;
     bool nir;
     bool cha;
+    bool W;
     std::vector<RLASExtrabyteAttributes> extra_bytes_attr;
     std::vector<int> eb;
 };
