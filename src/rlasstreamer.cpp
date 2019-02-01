@@ -305,6 +305,17 @@ void RLASstreamer::allocation()
       B.reserve(nalloc);
     }
     if(nir) NIR.reserve(nalloc);
+    if(cha) Channel.reserve(nalloc);
+    if (W)
+    {
+      wavePacketIndex.reserve(nalloc);
+      wavePacketOffset.reserve(nalloc);
+      wavePacketSize.reserve(nalloc);
+      wavePacketLocation.reserve(nalloc);
+      Xt.reserve(nalloc);
+      Yt.reserve(nalloc);
+      Zt.reserve(nalloc);
+    }
 
     // Find if extra bytes are 32 of 64 bytes types
     for(size_t j = 0; j < eb.size(); j++)
@@ -369,6 +380,14 @@ void RLASstreamer::write_waveform()
 {
   if (laswaveform13reader && laswaveform13reader->read_waveform(&lasreader->point))
   {
+    wavePacketIndex.push_back(lasreader->point.wavepacket.getIndex());
+    wavePacketOffset.push_back((U32)lasreader->point.wavepacket.getOffset());
+    wavePacketSize.push_back(lasreader->point.wavepacket.getSize());
+    wavePacketLocation.push_back(lasreader->point.wavepacket.getLocation());
+    Xt.push_back(lasreader->point.wavepacket.getXt());
+    Yt.push_back(lasreader->point.wavepacket.getYt());
+    Zt.push_back(lasreader->point.wavepacket.getZt());
+
     if (laswaveform13reader->nbits == 8)
     {
       std::vector<int> wave(laswaveform13reader->nsamples);
@@ -376,7 +395,7 @@ void RLASstreamer::write_waveform()
       for (unsigned int i = 0; i < laswaveform13reader->nsamples; i++)
         wave[i] = laswaveform13reader->samples[i];
 
-      waveform.push_back(wave);
+      fullwaveform.push_back(wave);
     }
     else if (laswaveform13reader->nbits == 16)
     {
@@ -385,12 +404,23 @@ void RLASstreamer::write_waveform()
       for (unsigned int i = 0; i < laswaveform13reader->nsamples; i++)
         wave[i] = ((U16*)laswaveform13reader->samples)[i];
 
-      waveform.push_back(wave);
+      fullwaveform.push_back(wave);
     }
     else if (laswaveform13reader->nbits == 32)
     {
       Rf_errorcall(R_NilValue, "32 bits full waveform not supported yet.");
     }
+  }
+  else
+  {
+    wavePacketIndex.push_back(0);
+    wavePacketOffset.push_back(0);
+    wavePacketSize.push_back(0);
+    wavePacketLocation.push_back(0);
+    Xt.push_back(0);
+    Yt.push_back(0);
+    Zt.push_back(0);
+    fullwaveform.push_back({0});
   }
 }
 
@@ -686,12 +716,47 @@ List RLASstreamer::terminate()
       NIR.shrink_to_fit();
     }
 
-    if (waveform.size() > 0)
+    if (W)
     {
-      lasdata.push_back(waveform);
-      attr_name.push_back("FullWaveForm");
-      waveform.clear();
-      waveform.shrink_to_fit();
+      lasdata.push_back(wavePacketIndex);
+      attr_name.push_back("WDPIndex");
+      wavePacketIndex.clear();
+      wavePacketIndex.shrink_to_fit();
+
+      lasdata.push_back(wavePacketOffset);
+      attr_name.push_back("WDPOffset");
+      wavePacketOffset.clear();
+      wavePacketOffset.shrink_to_fit();
+
+      lasdata.push_back(wavePacketSize);
+      attr_name.push_back("WDPSize");
+      wavePacketSize.clear();
+      wavePacketSize.shrink_to_fit();
+
+      lasdata.push_back(wavePacketLocation);
+      attr_name.push_back("WDPLocation");
+      wavePacketLocation.clear();
+      wavePacketLocation.shrink_to_fit();
+
+      lasdata.push_back(Xt);
+      attr_name.push_back("Xt");
+      Xt.clear();
+      Xt.shrink_to_fit();
+
+      lasdata.push_back(Yt);
+      attr_name.push_back("Yt");
+      Yt.clear();
+      Yt.shrink_to_fit();
+
+      lasdata.push_back(Zt);
+      attr_name.push_back("Zt");
+      Zt.clear();
+      Zt.shrink_to_fit();
+
+      lasdata.push_back(fullwaveform);
+      attr_name.push_back("FWF");
+      fullwaveform.clear();
+      fullwaveform.shrink_to_fit();
     }
 
     for(auto ExtraByte : extra_bytes_attr)

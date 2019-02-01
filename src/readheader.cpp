@@ -378,6 +378,22 @@ List vlrsreader(LASheader* lasheader)
           ExtraBytes.names() = ExtraBytesnames;
           lvlr.push_back(ExtraBytes);
         }
+        else if (vlr.record_id >= 100 &&  vlr.record_id < 355) // FWF
+        {
+          LASvlr_wave_packet_descr* vlr_wave_packet_descr = (LASvlr_wave_packet_descr*) vlr.data;
+
+          List FWF = List::create(
+            Named("Bits per sample") = (U32)(vlr_wave_packet_descr->getBitsPerSample()),
+            Named("Waveform compression type") = (U32)(vlr_wave_packet_descr->getCompressionType()),
+            Named("Number of sample") = vlr_wave_packet_descr->getNumberOfSamples(),
+            Named("Temporal Spacing") = vlr_wave_packet_descr->getTemporalSpacing(),
+            Named("Digitizer Gain") = vlr_wave_packet_descr->getDigitizerGain(),
+            Named("Digitizer Offset") = vlr_wave_packet_descr->getDigitizerOffset());
+
+          lvlrsnames.push_back("Full WaveForm Description");
+          lvlrnames.push_back("Full WaveForm");
+          lvlr.push_back(FWF);
+        }
         else
         {
           // not supported yet

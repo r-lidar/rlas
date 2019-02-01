@@ -57,6 +57,7 @@ lasheader[["Variable Length Records"]]
 }
 \seealso{
 Other header_tools: \code{\link{crs_tools}},
+  \code{\link{fwf_interpreter}},
   \code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

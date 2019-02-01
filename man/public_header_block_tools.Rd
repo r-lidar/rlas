@@ -48,6 +48,7 @@ lasheader = header_create(lasdata)
 }
 \seealso{
 Other header_tools: \code{\link{crs_tools}},
-  \code{\link{extra_bytes_attribute_tools}}
+  \code{\link{extra_bytes_attribute_tools}},
+  \code{\link{fwf_interpreter}}
 }
 \concept{header_tools}

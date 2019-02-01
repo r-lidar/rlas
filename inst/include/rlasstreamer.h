@@ -78,7 +78,14 @@ class RLASstreamer
     std::vector<unsigned short> B;
     std::vector<unsigned short> NIR;
 
-    std::vector< std::vector<int> >waveform;
+    std::vector<int> wavePacketIndex;
+    std::vector<U64> wavePacketOffset;
+    std::vector<U32> wavePacketSize;
+    std::vector<F32> wavePacketLocation;
+    std::vector<F32> Xt;
+    std::vector<F32> Yt;
+    std::vector<F32> Zt;
+    std::vector< std::vector<int> >fullwaveform;
 
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
