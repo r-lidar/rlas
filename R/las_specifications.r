@@ -260,8 +260,6 @@ is_valid_pointformat = function(header, behavior = "bool")
 
   if (!header[["Point Data Format ID"]] %in% 0:10)
     errors = append(errors, paste0("Invalid header: The point data format ", header[["Point Data Format ID"]], " is not part of the LAS specifications."))
-  else if (header[["Point Data Format ID"]] %in% c(4,5,9,10))
-    errors = append(errors, paste0("Invalid header: The point data format ", header[["Point Data Format ID"]], " is not supported yet."))
 
   return(error_handling_engine(errors, behavior))
 }
