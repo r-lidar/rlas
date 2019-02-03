@@ -5,7 +5,7 @@
 #' @param ... internal use only
 #'
 #' @export
-#' @rdname check
+#' @rdname deprecated
 check_data = function(data)
 {
   if (is.null(data$X) | is.null(data$Y) | is.null(data$Z))
@@ -178,7 +178,7 @@ check_data = function(data)
 }
 
 #' @export
-#' @rdname check
+#' @rdname deprecated
 check_header = function(header)
 {
   if (is.null(header[["X offset"]]) | is.null(header[["Y offset"]]) | is.null(header[["Z offset"]]))
