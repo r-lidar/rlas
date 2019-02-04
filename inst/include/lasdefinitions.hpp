@@ -555,7 +555,9 @@ public:
     }
     memset((void*)(&(vlrs[i])), 0, sizeof(LASvlr));
     vlrs[i].reserved = 0; // used to be 0xAABB
-    strncpy(vlrs[i].user_id, user_id, 16);
+    //strncpy(vlrs[i].user_id, user_id, 16);
+    int len = 0 ; while(*(user_id+len) != '\0' && len < 16) len++;
+    memcpy(vlrs[i].user_id, user_id, len);
     vlrs[i].record_id = record_id;
     vlrs[i].record_length_after_header = record_length_after_header;
     if (keep_description && found_description)
@@ -675,7 +677,9 @@ public:
       evlrs = (LASevlr*)malloc(sizeof(LASevlr)*number_of_extended_variable_length_records);
     }
     evlrs[i].reserved = 0; // used to be 0xAABB
-    strncpy(evlrs[i].user_id, user_id, 16);
+    //strncpy(evlrs[i].user_id, user_id, 16);
+    int len = 0 ; while(*(user_id+len) != '\0' && len < 16) len++;
+    memcpy(evlrs[i].user_id, user_id, len);
     evlrs[i].record_id = record_id;
     evlrs[i].record_length_after_header = record_length_after_header;
     if (keep_description && found_description)
