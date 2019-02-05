@@ -1,4 +1,8 @@
-### rlas v1.3.0 (Release date: )
+### rlas v1.3.1 (Release date: )
+
+* Fix: valgrind conditionnal jump on uninitialized value (consequentless for users)
+
+### rlas v1.3.0 (Release date: 2019-02-03)
 
 * New: write.las is 25% faster
 * New: [#27](https://github.com/Jean-Romain/rlas/issues/27) improved support of LAS specifications including LAS 1.4.
