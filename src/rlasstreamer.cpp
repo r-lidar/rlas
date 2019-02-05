@@ -229,6 +229,7 @@ void RLASstreamer::initialize()
   // Initilize the writer if write in file
   if (!inR)
   {
+    format = lasreader->header.point_data_format;
     laswriter = laswriteopener.open(&lasreader->header);
 
     if(0 == laswriter || NULL == laswriter)
@@ -683,8 +684,10 @@ void RLASstreamer::initialize_bool()
   useFilter = false;
   initialized = false;
   ended = false;
+  extended = false;
   lasreader = 0;
   laswriter = 0;
+  laswaveform13reader = 0;
 }
 
 void RLASstreamer::read_t(bool b){ t = b && (format == 1 || format >= 3); }
