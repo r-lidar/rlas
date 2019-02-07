@@ -1,6 +1,8 @@
-### rlas v1.3.1 (Release date: )
+### rlas v1.3.1 (Release date: 2019-02-08)
 
-* Fix: valgrind conditionnal jump on uninitialized value (consequentless for users)
+* Fix: valgrind - Conditionnal jump on uninitialized value (consequentless for users)
+* Fix: valgrind - Invalid read of size 2
+* Fix: USBAN-ASAN - heap-buffer-overflow on address 
 
 ### rlas v1.3.0 (Release date: 2019-02-03)
 
