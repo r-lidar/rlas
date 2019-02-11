@@ -614,11 +614,11 @@ is_valid_ScanAngle = function(data, behavior = "bool")
   if (is.null(data[["ScanAngle"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (min(data[["ScanAngle"]]) < -90)
-    errors = append(errors, "Invalid data: ScanAngle greater than -180.")
+  if (min(data[["ScanAngle"]]) < -180)
+    errors = append(errors, "Invalid data: ScanAngle greater than -180 degrees.")
 
-  if (max(data[["ScanAngle"]]) > 90)
-    errors = append(errors, "Invalid data: ScanAngle greater than 180")
+  if (max(data[["ScanAngle"]]) > 180)
+    errors = append(errors, "Invalid data: ScanAngle greater than 180 degrees")
 
   return(error_handling_engine(errors, behavior))
 }
@@ -634,10 +634,10 @@ is_valid_ScanAngleRank = function(data, behavior = "bool")
     return(error_handling_engine(errors, behavior))
 
   if (min(data[["ScanAngleRank"]]) < -90)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than -90.")
+    errors = append(errors, "Invalid data: ScanAngleRank greater than -90 degrees.")
 
   if (max(data[["ScanAngleRank"]]) > 90)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than 90")
+    errors = append(errors, "Invalid data: ScanAngleRank greater than 90 degrees")
 
   return(error_handling_engine(errors, behavior))
 }
