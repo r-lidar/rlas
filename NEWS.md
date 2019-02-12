@@ -1,3 +1,7 @@
+### rlas v1.3.2 (Release date: )
+
+* Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write ScanAngleRank above 90 degrees but not above 127 degrees.
+
 ### rlas v1.3.1 (Release date: 2019-02-08)
 
 * Fix: valgrind - Conditionnal jump on uninitialized value (consequentless for users)
