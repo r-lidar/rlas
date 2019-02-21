@@ -67,8 +67,8 @@ is_valid_offsets = function(header, behavior = "bool")
 {
   errors <- character(0)
 
-  if (header[["X offset"]] < 0 | header[["Y offset"]] < 0 | header[["Z offset"]] < 0)
-    errors = append(errors, "Invalid header: offsets cnnot be negative")
+  if (is.null(header[["X offset"]]) | is.null(header[["Y offset"]]) | is.null(header[["Z offset"]]))
+    errors = append(errors, "Invalid header: Offset not defined in the header.")
 
   return(error_handling_engine(errors, behavior))
 }

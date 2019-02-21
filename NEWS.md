@@ -1,6 +1,7 @@
 ### rlas v1.3.2 (Release date: )
 
 * Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write ScanAngleRank above 90 degrees but not above 127 degrees.
+* Fix: [#34](https://github.com/Jean-Romain/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
 
 ### rlas v1.3.1 (Release date: 2019-02-08)
 
