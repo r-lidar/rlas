@@ -80,25 +80,6 @@ test_that("streaming reads if no ofile", {
   expect_equal(las1, las2)
 })
 
-test_that("read in poly works", {
-  ofile = ""
-
-  xpoly = c(8, 10, 11, 7, 8) + 339000
-  ypoly = c(0, 0, 1, 1, 0) + 5248000
-
-  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, filter = "")
-
-  expect_equal(dim(las), c(14, 16))
-})
-
-test_that("read in poly works with filter and select", {
-  ofile = ""
-  xpoly = c(8, 10, 11, 7, 8) + 339000
-  ypoly = c(0, 0, 1, 1, 0) + 5248000
-  las = rlas:::stream.las_inpoly(lazfile, xpoly, ypoly, ofile, select = "* -t -i -s -k -w", filter = "-drop_z_above 977.5")
-  expect_equal(dim(las), c(8, 11))
-})
-
 test_that("filter wkt works with a POLYGON", {
   ofile = ""
   wkt = "POLYGON ((339008 5248000, 339007 5248001, 339011 5248001, 339010 5248000, 339008 5248000))"
