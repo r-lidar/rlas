@@ -6,7 +6,7 @@ test_that("read returns good values", {
 
   las = read.las(lazfile)
 
-  expect_true(data.table::is.data.table(las))
+  expect_true(is.data.frame(las))
   expect_equal(dim(las), c(30, 16))
 })
 
@@ -14,7 +14,7 @@ test_that("filter returns good values", {
 
   las = read.las(lazfile, filter = "-keep_first")
 
-  expect_true(data.table::is.data.table(las))
+  expect_true(is.data.frame(las))
   expect_equal(dim(las), c(26, 16))
 })
 
@@ -22,7 +22,7 @@ test_that("colunm selection works", {
 
   las = read.las(lazfile, select = "xyzrndecaupRGBN0")
 
-  expect_true(data.table::is.data.table(las))
+  expect_true(is.data.frame(las))
   expect_equal(dim(las), c(30, 11))
   expect_true(!"gpstime" %in% names(las))
   expect_true(!"Intensity" %in% names(las))
@@ -30,7 +30,7 @@ test_that("colunm selection works", {
 
   las = read.las(lazfile, select = "xyztirndeauRGBN0")
 
-  expect_true(data.table::is.data.table(las))
+  expect_true(is.data.frame(las))
   expect_equal(dim(las), c(30, 11))
   expect_true("gpstime" %in% names(las))
   expect_true("Intensity" %in% names(las))

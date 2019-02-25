@@ -2,6 +2,9 @@
 
 * Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write ScanAngleRank above 90 degrees but not above 127 degrees.
 * Fix: [#34](https://github.com/Jean-Romain/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
+* Change: the output of `read.las()` is not longer a `data.table` but a `data.frame`. Dependence to `data.table` has been removed.
+* Change: `header_create()` does not generates random UUID. The UUID is set to `"00000000-0000-0000-0000-000000000000"`. Dependence to `uuid` has been removed.
+* Change: Dependance to `sp`, `sf` and `rgeos` was no longer useful. `rlas` only depends on `Rcpp`.
 
 ### rlas v1.3.1 (Release date: 2019-02-08)
 

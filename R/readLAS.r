@@ -114,7 +114,5 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt 
   if (ofile != "")
     return(invisible())
 
-  data.table::setDT(data)
-
   return(data)
 }

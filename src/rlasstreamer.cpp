@@ -432,7 +432,7 @@ LASpoint* RLASstreamer::point()
   return &lasreader->point;
 }
 
-List RLASstreamer::terminate()
+DataFrame RLASstreamer::terminate()
 {
   if(!inR)
   {
@@ -448,7 +448,7 @@ List RLASstreamer::terminate()
     laswriter = 0;
 
     ended = true;
-    return List(0);
+    return DataFrame(0);
   }
   else
   {
@@ -642,8 +642,6 @@ List RLASstreamer::terminate()
       }
     }
 
-    lasdata.names() = attr_name;
-
     if (nwithheld > 0)
     {
       std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'withheld'.");
@@ -656,7 +654,10 @@ List RLASstreamer::terminate()
       Rf_warningcall(R_NilValue, msg.c_str());
     }
 
-    return(lasdata);
+    DataFrame las = as<DataFrame>(lasdata);
+    las.names() = attr_name;
+
+    return las;
   }
 }
 
