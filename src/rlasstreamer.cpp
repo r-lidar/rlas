@@ -135,6 +135,7 @@ void RLASstreamer::select(CharacterVector string)
   rgb = false;
   nir = false;
   cha = false;
+  W = false;
 
   if (select.find("*") != std::string::npos)
     select = "xyztirndecCskwoaupRGBNW0";
@@ -307,7 +308,7 @@ void RLASstreamer::allocation()
     }
     if(nir) NIR.reserve(nalloc);
     if(cha) Channel.reserve(nalloc);
-    if (W)
+    if(W)
     {
       wavePacketIndex.reserve(nalloc);
       wavePacketOffset.reserve(nalloc);
@@ -812,6 +813,7 @@ void RLASstreamer::initialize_bool()
   rgb = true;
   nir = true;
   cha = true;
+  W = true;
 
   inR = true;
   useFilter = false;
@@ -840,7 +842,7 @@ void RLASstreamer::read_p(bool b){ p = b; }
 void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 5 || format == 7 || format == 8 || format == 10); }
 void RLASstreamer::read_nir(bool b){ nir = b && (format == 8 || format == 10); }
 void RLASstreamer::read_cha(bool b){ cha = b && extended; }
-void RLASstreamer::read_W(bool b){ W = b && (format == 4  || format == 5); }
+void RLASstreamer::read_W(bool b){ W = b && (format == 4 || format == 5); }
 void RLASstreamer::read_eb(IntegerVector x)
 {
 
