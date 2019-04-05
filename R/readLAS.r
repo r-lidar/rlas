@@ -110,6 +110,7 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt 
     ofile = suppressWarnings(normalizePath(ofile))
 
   data = C_reader(ifiles, ofile, select, filter, filter_wkt)
+  data.table::setDT(data)
 
   if (ofile != "")
     return(invisible())
