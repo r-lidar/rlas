@@ -12,36 +12,34 @@
 #' @export
 fwf_interpreter = function(header, data)
 {
-  ts    = header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Temporal Spacing"]]
-  nbits = header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Bits per sample"]]
-  nsamp = header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Number of sample"]]
+  ts    <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Temporal Spacing"]]
+  nbits <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Bits per sample"]]
+  nsamp <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Number of sample"]]
 
-  X = data[["X"]]
-  Y = data[["Y"]]
-  Z = data[["Z"]]
-  W = data[["FWF"]]
+  X     <- data[["X"]]
+  Y     <- data[["Y"]]
+  Z     <- data[["Z"]]
+  W     <- data[["FWF"]]
+  dx    <- data[["Xt"]]
+  dy    <- data[["Yt"]]
+  dz    <- data[["Zt"]]
+  loc   <- data[["WDPLocation"]]
 
-  dx = data[["Xt"]]
-  dy = data[["Yt"]]
-  dz = data[["Zt"]]
-
-  loc = data[["WDPLocation"]]
-
-  FWF = mapply(function(X,Y,Z,W,dx,dy,dz,loc)
+  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc)
   {
-    Xstart = X + loc * dx
-    Ystart = Y + loc * dy
-    Zstart = Z + loc * dz
+    Xstart <- X + loc * dx
+    Ystart <- Y + loc * dy
+    Zstart <- Z + loc * dz
 
-    t = 0:(nsamp-1)*ts
+    t <- 0:(length(W) - 1)*ts
 
-    Px = Xstart - t * dx
-    Py = Ystart - t * dy
-    Pz = Zstart - t * dz
+    Px <- Xstart - t * dx
+    Py <- Ystart - t * dy
+    Pz <- Zstart - t * dz
 
-    return(data.frame(X = Px, Y = Py,Z = Pz, Amplitude = W/2^nbits))
+    return(data.frame(X = Px, Y = Py, Z = Pz, t = t, Amplitude = W/2^nbits))
   },
-  X,Y,Z,W,dz,dy,dz,loc,
+  X, Y, Z, W, dz, dy, dz, loc,
   SIMPLIFY = FALSE)
 
   return(FWF)
