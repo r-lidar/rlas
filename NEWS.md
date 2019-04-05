@@ -1,9 +1,23 @@
-### rlas v1.3.0 (Release date: )
+### rlas v1.3.2 (Release date: )
+
+* Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write ScanAngleRank above 90 degrees but not above 127 degrees.
+* Fix: [#34](https://github.com/Jean-Romain/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
+* Change: the output of `read.las()` is not longer a `data.table` but a `data.frame`. Dependence to `data.table` has been removed.
+* Change: `header_create()` does not generates random UUID. The UUID is set to `"00000000-0000-0000-0000-000000000000"`. Dependence to `uuid` has been removed.
+* Change: Dependance to `sp`, `sf` and `rgeos` was no longer useful. `rlas` only depends on `Rcpp`.
+
+### rlas v1.3.1 (Release date: 2019-02-08)
+
+* Fix: valgrind - Conditionnal jump on uninitialized value (consequentless for users)
+* Fix: valgrind - Invalid read of size 2
+* Fix: USBAN-ASAN - heap-buffer-overflow on address 
+
+### rlas v1.3.0 (Release date: 2019-02-03)
 
 * New: write.las is 25% faster
 * New: [#27](https://github.com/Jean-Romain/rlas/issues/27) improved support of LAS specifications including LAS 1.4.
 * New: introduction of a set of 50+ functions to test compliance with LAS specifications
-* New: introduction of a set of 5+ function to modifiy a header easily repecting LAS specifications
+* New: introduction of a set of 5+ functions to modify a header easily repecting LAS specifications
 * Fix: [#26](https://github.com/Jean-Romain/rlas/issues/26) segfault in `read.las` when using an inappropriated filter such as -keep_class 123.
 
 ### rlas v1.2.9 (Release date: 2018-10-26)

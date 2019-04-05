@@ -26,7 +26,7 @@ class RLASstreamer
     bool read_point();
     void write_point();
     LASpoint* point();
-    List terminate();
+    DataFrame terminate();
     void read_t(bool);
     void read_i(bool);
     void read_r(bool);
@@ -99,6 +99,8 @@ class RLASstreamer
 
     int nsynthetic;
     int nwithheld;
+
+    unsigned int npoints;
 
     bool inR;
     bool useFilter;

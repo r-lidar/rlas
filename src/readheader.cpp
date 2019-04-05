@@ -41,6 +41,7 @@ using namespace Rcpp;
 
 List vlrsreader(LASheader*);
 List globalencodingreader(LASheader*);
+inline std::string nullterminate(CHAR*, int);
 
 // Read header in a las or laz file
 //
@@ -243,22 +244,19 @@ List vlrsreader(LASheader* lasheader)
       }
       else if (vlr.record_id == 34737) // GeoAsciiParamsTag
       {
-        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
-        //lvlr.push_back("The reading of this information is not yet supported by rlas");
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ascii_params, vlr.record_length_after_header));
         lvlrnames.push_back("tags");
         lvlrsnames.push_back("GeoAsciiParamsTag");
       }
       else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
       {
-        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
-        //lvlr.push_back("The reading of this information is not yet supported by rlas");
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt_math, vlr.record_length_after_header));
         lvlrnames.push_back("WKT OGC MATH TRANSFORM");
         lvlrsnames.push_back("WKT OGC MT");
       }
       else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
       {
-        lvlr.push_back(std::string(reinterpret_cast< char const* >(vlr.data)));
-        //lvlr.push_back("The reading of this information is not yet supported by rlas");
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt, vlr.record_length_after_header));
         lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
         lvlrsnames.push_back("WKT OGC CS");
       }
@@ -426,4 +424,12 @@ void lasfilterusage()
   {
     Rcerr << "Error: " << e.what() << std::endl;
   }
+}
+
+inline std::string nullterminate(CHAR* str, int len)
+{
+  if (str[len-1] != '\0')
+    return(std::string(str, str+len));
+  else
+    return(std::string(str));
 }

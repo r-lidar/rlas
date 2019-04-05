@@ -239,6 +239,7 @@ void RLASstreamer::initialize()
   // Initilize the writer if write in file
   if (!inR)
   {
+    format = lasreader->header.point_data_format;
     laswriter = laswriteopener.open(&lasreader->header);
 
     if(0 == laswriter || NULL == laswriter)
@@ -503,7 +504,7 @@ LASpoint* RLASstreamer::point()
   return &lasreader->point;
 }
 
-List RLASstreamer::terminate()
+DataFrame RLASstreamer::terminate()
 {
   if(!inR)
   {
@@ -526,7 +527,7 @@ List RLASstreamer::terminate()
     laswaveform13reader = 0;
 
     ended = true;
-    return List(0);
+    return DataFrame(0);
   }
   else
   {
@@ -775,8 +776,6 @@ List RLASstreamer::terminate()
       }
     }
 
-    lasdata.names() = attr_name;
-
     if (nwithheld > 0)
     {
       std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'withheld'.");
@@ -789,7 +788,10 @@ List RLASstreamer::terminate()
       Rf_warningcall(R_NilValue, msg.c_str());
     }
 
-    return(lasdata);
+    DataFrame las = as<DataFrame>(lasdata);
+    las.names() = attr_name;
+
+    return las;
   }
 }
 
@@ -817,8 +819,10 @@ void RLASstreamer::initialize_bool()
   useFilter = false;
   initialized = false;
   ended = false;
+  extended = false;
   lasreader = 0;
   laswriter = 0;
+  laswaveform13reader = 0;
 }
 
 void RLASstreamer::read_t(bool b){ t = b && (format == 1 || format >= 3); }

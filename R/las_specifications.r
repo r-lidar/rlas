@@ -67,8 +67,8 @@ is_valid_offsets = function(header, behavior = "bool")
 {
   errors <- character(0)
 
-  if (header[["X offset"]] < 0 | header[["Y offset"]] < 0 | header[["Z offset"]] < 0)
-    errors = append(errors, "Invalid header: offsets cnnot be negative")
+  if (is.null(header[["X offset"]]) | is.null(header[["Y offset"]]) | is.null(header[["Z offset"]]))
+    errors = append(errors, "Invalid header: Offset not defined in the header.")
 
   return(error_handling_engine(errors, behavior))
 }
@@ -614,11 +614,11 @@ is_valid_ScanAngle = function(data, behavior = "bool")
   if (is.null(data[["ScanAngle"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (min(data[["ScanAngle"]]) < -90)
-    errors = append(errors, "Invalid data: ScanAngle greater than -180.")
+  if (min(data[["ScanAngle"]]) < -180)
+    errors = append(errors, "Invalid data: ScanAngle greater than -180 degrees.")
 
-  if (max(data[["ScanAngle"]]) > 90)
-    errors = append(errors, "Invalid data: ScanAngle greater than 180")
+  if (max(data[["ScanAngle"]]) > 180)
+    errors = append(errors, "Invalid data: ScanAngle greater than 180 degrees")
 
   return(error_handling_engine(errors, behavior))
 }
@@ -633,11 +633,11 @@ is_valid_ScanAngleRank = function(data, behavior = "bool")
   if (is.null(data[["ScanAngleRank"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (min(data[["ScanAngleRank"]]) < -90)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than -90.")
+  if (min(data[["ScanAngleRank"]]) < -127)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than -127 degrees.")
 
-  if (max(data[["ScanAngleRank"]]) > 90)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than 90")
+  if (max(data[["ScanAngleRank"]]) > 127)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than 127 degrees")
 
   return(error_handling_engine(errors, behavior))
 }
@@ -827,6 +827,24 @@ is_compliant_RGB = function(data, behavior = "bool")
 
   if ((maxR > 0 & maxR <= 255) | (maxG > 0 & maxG <= 255) | (maxB > 0 & maxB <= 255))
     errors = append(errors, "Invalid data: RGB colors are recorded on 8 bits instead of 16 bits.")
+
+  return(error_handling_engine(errors, behavior))
+}
+
+#' @export
+#' @rdname las_specification_tools
+is_compliant_ScanAngleRank = function(data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScanAngleRank"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (min(data[["ScanAngleRank"]]) < -90)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than -90 degrees.")
+
+  if (max(data[["ScanAngleRank"]]) > 90)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than 90 degrees")
 
   return(error_handling_engine(errors, behavior))
 }

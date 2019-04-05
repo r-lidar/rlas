@@ -91,8 +91,8 @@ read.lasheader = function(file)
   islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
   file = normalizePath(file)
 
-  if(!valid)  stop("File not found", call. = F)
-  if(!islas)  stop("File not supported", call. = F)
+  if (!valid)  stop("File not found", call. = F)
+  if (!islas)  stop("File not supported", call. = F)
 
   data = lasheaderreader(file)
 
@@ -114,20 +114,5 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt 
   if (ofile != "")
     return(invisible())
 
-  data.table::setDT(data)
-
   return(data)
 }
-
-stream.las_inpoly = function(ifiles, xpoly, ypoly, ofile = "", select = "*", filter = "")
-{
-  p = sp::Polygon(cbind(xpoly,ypoly))
-  p = sp::Polygons(list(p), ID = "1")
-  p = sp::SpatialPolygons(list(p))
-  p = sf::st_as_sf(p)
-  wkt = sf::st_as_text(p$geometry)
-  data = stream.las(ifiles, ofile, select, filter, wkt)
-  return(data)
-}
-
-`%is_in%` <- function(char, str) grepl(char, str)

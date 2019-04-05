@@ -18,13 +18,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // fast_countequal
-int fast_countequal(NumericVector x, double t);
+int fast_countequal(IntegerVector x, int t);
 RcppExport SEXP _rlas_fast_countequal(SEXP xSEXP, SEXP tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type t(tSEXP);
     rcpp_result_gen = Rcpp::wrap(fast_countequal(x, t));
     return rcpp_result_gen;
 END_RCPP
