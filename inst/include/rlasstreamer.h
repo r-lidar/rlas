@@ -26,7 +26,7 @@ class RLASstreamer
     bool read_point();
     void write_point();
     LASpoint* point();
-    DataFrame terminate();
+    List terminate();
     void read_t(bool);
     void read_i(bool);
     void read_r(bool);

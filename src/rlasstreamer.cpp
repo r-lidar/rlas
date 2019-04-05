@@ -432,7 +432,7 @@ LASpoint* RLASstreamer::point()
   return &lasreader->point;
 }
 
-DataFrame RLASstreamer::terminate()
+List RLASstreamer::terminate()
 {
   if(!inR)
   {
@@ -448,7 +448,7 @@ DataFrame RLASstreamer::terminate()
     laswriter = 0;
 
     ended = true;
-    return DataFrame(0);
+    return List(0);
   }
   else
   {
@@ -654,10 +654,8 @@ DataFrame RLASstreamer::terminate()
       Rf_warningcall(R_NilValue, msg.c_str());
     }
 
-    DataFrame las = as<DataFrame>(lasdata);
-    las.names() = attr_name;
-
-    return las;
+    lasdata.names() = attr_name;
+    return lasdata;
   }
 }
 
