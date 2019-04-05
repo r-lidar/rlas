@@ -860,7 +860,7 @@ is_NIR_in_valid_format = function(header, data, behavior = "bool")
   if (is.null(data[["NIR"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (header[["Point Data Format ID"]] != 8)
+  if (!header[["Point Data Format ID"]] %in% c(8, 10))
     errors = append(errors, "Invalid file: the data contains a 'NIR' attribute but point data format is not set to 8")
 
   return(error_handling_engine(errors, behavior))
@@ -875,7 +875,7 @@ is_gpstime_in_valid_format = function(header, data, behavior = "bool")
   if (is.null(data[["gpstime"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (!header[["Point Data Format ID"]] %in% c(1,3,6,7,8))
+  if (!header[["Point Data Format ID"]] %in% c(1,3,4,5,6,7,8))
     errors = append(errors, "Invalid file: the data contains a 'gpstime' attribute but point data format is not set to 1, 3, 6, 7 or 8.")
 
   return(error_handling_engine(errors, behavior))
@@ -890,7 +890,7 @@ is_RGB_in_valid_format = function(header, data, behavior = "bool")
   if (is.null(data[["R"]]) & is.null(data[["G"]]) & is.null(data[["B"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (!header[["Point Data Format ID"]] %in% c(2,3,8))
+  if (!header[["Point Data Format ID"]] %in% c(2,3,5,7,8))
     errors = append(errors, "Invalid file: the data contains a 'RGB' field but point data format is not set to 2, 3 or 8")
 
   return(error_handling_engine(errors, behavior))

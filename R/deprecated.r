@@ -222,9 +222,6 @@ check_header = function(header)
   else
     stop("Invalid header: scale factors not defined in the header", call. = FALSE)
 
-  if (header[["Point Data Format ID"]] %in% c(4,5,9,10))
-    stop(paste0("Invalid header: The point data format ", header[["Point Data Format ID"]], " is not supported yet."))
-
   if (!is.null(header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`))
   {
     for (extra_byte in header$`Variable Length Records`$Extra_Bytes$`Extra Bytes Description`)
@@ -299,14 +296,14 @@ check_data_vs_header = function(header, data, ...)
   format = header$`Point Data Format ID`
   fields = names(data)
 
-  if ("NIR" %in% fields & format != 8)
-    warning("Invalid file: the data contains a 'NIR' field but point data format is not set to 8.", call. = FALSE)
+  if ("NIR" %in% fields & format %in% c(8, 10))
+    warning("Invalid file: the data contains a 'NIR' attribute but point data format is not set to 8 or 10.", call. = FALSE)
 
-  if ("gpstime" %in% fields & !format %in% c(1,3,6,7,8))
-    warning("Invalid file: the data contains a 'gpstime' field but point data format is not set to 1, 3, 6, 7 or 8.", call. = FALSE)
+  if ("gpstime" %in% fields & !format %in% c(1,3,4,5,6,7,8))
+    warning("Invalid file: the data contains a 'gpstime' attribute but point data format is not set to 1, 3, 4, 5, 6, 7 or 8.", call. = FALSE)
 
-  if (any(c("R", "G", "B") %in% fields) & !format %in% c(2,3,8))
-    warning("Invalid file: the data contains a 'RGB' field but point data format is not set to 2, 3 or 8.", call. = FALSE)
+  if (any(c("R", "G", "B") %in% fields) & !format %in% c(2,3,5,7,8))
+    warning("Invalid file: the data contains a 'RGB' attribute but point data format is not set to 2, 3, 5, 7 or 8.", call. = FALSE)
 
   if (max(data$X) > header$`Max X` | max(data$Y) > header$`Max Y` | min(data$X) < header$`Min X` | min(data$Y) < header$`Min Y`)
     warning("Invalid file: some points are outside the bounding box defined by the header", call. = FALSE)
