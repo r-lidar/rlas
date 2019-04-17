@@ -13,7 +13,7 @@
   
   COPYRIGHT:
   
-    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2018, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -24,6 +24,8 @@
   
   CHANGE HISTORY:
   
+     6 March 2018 -- changed '%g' to '%lf' for all sprintf() of F64 values
+    28 February 2017 -- now '-set_RGB_of_class' also works for classifications > 31
      1 February 2017 -- new '-copy_intensity_into_z' for use in lasgrid or lascanopy
      9 May 2016 -- new '-translate_raw_xy_at_random 2 2' for random pertubation
     20 April 2016 -- new '-switch_R_G', '-switch_R_B' and '-set_RGB 32768 16384 0'
@@ -38,6 +40,7 @@
 #define LAS_TRANSFORM_HPP
 
 #include "lasdefinitions.hpp"
+#include "laszip_decompress_selective_v3.hpp"
 
 class LASfilter;
 
@@ -45,7 +48,8 @@ class LASoperation
 {
 public:
   virtual const CHAR * name() const = 0;
-  virtual int get_command(CHAR* string) const = 0;
+  virtual I32 get_command(CHAR* string) const = 0;
+  virtual U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   virtual void transform(LASpoint* point) = 0;
   virtual void reset(){};
   virtual ~LASoperation(){};
@@ -63,6 +67,7 @@ public:
   BOOL parse(CHAR* string);
   I32 unparse(CHAR* string) const;
   inline BOOL active() const { return (num_operations != 0); };
+  U32 get_decompress_selective() const;
   inline BOOL filtered() const { return is_filtered; };
 
   void setFilter(LASfilter* filter);

@@ -28,11 +28,9 @@
 
 ===============================================================================
 */
-
 #include <Rcpp.h>
 
 #include "lasfilter.hpp"
-#include "laszip_decompress_selective_v3.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +39,6 @@
 #include <map>
 #include <set>
 #include <boost/functional/hash.hpp>
-
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
@@ -78,7 +75,6 @@ class LAScriterionKeepTile : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_tile"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g ", name(), ll_x, ll_y, tile_size); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (!point->inside_tile(ll_x, ll_y, ur_x, ur_y)); };
   LAScriterionKeepTile(F32 ll_x, F32 ll_y, F32 tile_size) { this->ll_x = ll_x; this->ll_y = ll_y; this->ur_x = ll_x+tile_size; this->ur_y = ll_y+tile_size; this->tile_size = tile_size; };
 private:
@@ -89,8 +85,7 @@ class LAScriterionKeepCircle : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_circle"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g ", name(), center_x, center_y, radius); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf %lf ", name(), center_x, center_y, radius); };
   inline BOOL filter(const LASpoint* point) { return (!point->inside_circle(center_x, center_y, radius_squared)); };
   LAScriterionKeepCircle(F64 x, F64 y, F64 radius) { this->center_x = x; this->center_y = y; this->radius = radius; this->radius_squared = radius*radius; };
 private:
@@ -101,7 +96,7 @@ class LAScriterionKeepxyz : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_xyz"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g %g %g %g ", name(), min_x, min_y, min_z, max_x, max_y, max_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf %lf %lf %lf %lf ", name(), min_x, min_y, min_z, max_x, max_y, max_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY | LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { return (!point->inside_box(min_x, min_y, min_z, max_x, max_y, max_z)); };
   LAScriterionKeepxyz(F64 min_x, F64 min_y, F64 min_z, F64 max_x, F64 max_y, F64 max_z) { this->min_x = min_x; this->min_y = min_y; this->min_z = min_z; this->max_x = max_x; this->max_y = max_y; this->max_z = max_z; };
@@ -113,7 +108,7 @@ class LAScriterionDropxyz : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_xyz"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g %g %g %g ", name(), min_x, min_y, min_z, max_x, max_y, max_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf %lf %lf %lf %lf ", name(), min_x, min_y, min_z, max_x, max_y, max_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY | LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { return (point->inside_box(min_x, min_y, min_z, max_x, max_y, max_z)); };
   LAScriterionDropxyz(F64 min_x, F64 min_y, F64 min_z, F64 max_x, F64 max_y, F64 max_z) { this->min_x = min_x; this->min_y = min_y; this->min_z = min_z; this->max_x = max_x; this->max_y = max_y; this->max_z = max_z; };
@@ -125,8 +120,7 @@ class LAScriterionKeepxy : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_xy"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g %g ", name(), below_x, below_y, above_x, above_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf %lf %lf ", name(), below_x, below_y, above_x, above_y); };
   inline BOOL filter(const LASpoint* point) { return (!point->inside_rectangle(below_x, below_y, above_x, above_y)); };
   LAScriterionKeepxy(F64 below_x, F64 below_y, F64 above_x, F64 above_y) { this->below_x = below_x; this->below_y = below_y; this->above_x = above_x; this->above_y = above_y; };
 private:
@@ -137,8 +131,7 @@ class LAScriterionDropxy : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_xy"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g %g %g ", name(), below_x, below_y, above_x, above_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf %lf %lf ", name(), below_x, below_y, above_x, above_y); };
   inline BOOL filter(const LASpoint* point) { return (point->inside_rectangle(below_x, below_y, above_x, above_y)); };
   LAScriterionDropxy(F64 below_x, F64 below_y, F64 above_x, F64 above_y) { this->below_x = below_x; this->below_y = below_y; this->above_x = above_x; this->above_y = above_y; };
 private:
@@ -149,8 +142,7 @@ class LAScriterionKeepx : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_x"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_x, above_x); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_x, above_x); };
   inline BOOL filter(const LASpoint* point) { F64 x = point->get_x(); return (x < below_x) || (x >= above_x); };
   LAScriterionKeepx(F64 below_x, F64 above_x) { this->below_x = below_x; this->above_x = above_x; };
 private:
@@ -161,8 +153,7 @@ class LAScriterionDropx : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_x"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_x, above_x); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_x, above_x); };
   inline BOOL filter(const LASpoint* point) { F64 x = point->get_x(); return ((below_x <= x) && (x < above_x)); };
   LAScriterionDropx(F64 below_x, F64 above_x) { this->below_x = below_x; this->above_x = above_x; };
 private:
@@ -173,8 +164,7 @@ class LAScriterionKeepy : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_y"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_y, above_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_y, above_y); };
   inline BOOL filter(const LASpoint* point) { F64 y = point->get_y(); return (y < below_y) || (y >= above_y); };
   LAScriterionKeepy(F64 below_y, F64 above_y) { this->below_y = below_y; this->above_y = above_y; };
 private:
@@ -185,8 +175,7 @@ class LAScriterionDropy : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_y"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_y, above_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_y, above_y); };
   inline BOOL filter(const LASpoint* point) { F64 y = point->get_y(); return ((below_y <= y) && (y < above_y)); };
   LAScriterionDropy(F64 below_y, F64 above_y) { this->below_y = below_y; this->above_y = above_y; };
 private:
@@ -197,7 +186,7 @@ class LAScriterionKeepz : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_z"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_z, above_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_z, above_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { F64 z = point->get_z(); return (z < below_z) || (z >= above_z); };
   LAScriterionKeepz(F64 below_z, F64 above_z) { this->below_z = below_z; this->above_z = above_z; };
@@ -209,7 +198,7 @@ class LAScriterionDropz : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_z"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(), below_z, above_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_z, above_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { F64 z = point->get_z(); return ((below_z <= z) && (z < above_z)); };
   LAScriterionDropz(F64 below_z, F64 above_z) { this->below_z = below_z; this->above_z = above_z; };
@@ -221,8 +210,7 @@ class LAScriterionDropxBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_x_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), below_x); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), below_x); };
   inline BOOL filter(const LASpoint* point) { return (point->get_x() < below_x); };
   LAScriterionDropxBelow(F64 below_x) { this->below_x = below_x; };
 private:
@@ -233,8 +221,7 @@ class LAScriterionDropxAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_x_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), above_x); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), above_x); };
   inline BOOL filter(const LASpoint* point) { return (point->get_x() >= above_x); };
   LAScriterionDropxAbove(F64 above_x) { this->above_x = above_x; };
 private:
@@ -245,8 +232,7 @@ class LAScriterionDropyBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_y_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), below_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), below_y); };
   inline BOOL filter(const LASpoint* point) { return (point->get_y() < below_y); };
   LAScriterionDropyBelow(F64 below_y) { this->below_y = below_y; };
 private:
@@ -257,8 +243,7 @@ class LAScriterionDropyAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_y_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), above_y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), above_y); };
   inline BOOL filter(const LASpoint* point) { return (point->get_y() >= above_y); };
   LAScriterionDropyAbove(F64 above_y) { this->above_y = above_y; };
 private:
@@ -269,7 +254,7 @@ class LAScriterionDropzBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_z_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), below_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), below_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { return (point->get_z() < below_z); };
   LAScriterionDropzBelow(F64 below_z) { this->below_z = below_z; };
@@ -281,7 +266,7 @@ class LAScriterionDropzAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_z_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), above_z); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), above_z); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_Z; };
   inline BOOL filter(const LASpoint* point) { return (point->get_z() >= above_z); };
   LAScriterionDropzAbove(F64 above_z) { this->above_z = above_z; };
@@ -294,7 +279,6 @@ class LAScriterionKeepXY : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_XY"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d %d %d ", name(), below_X, below_Y, above_X, above_Y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_X() < below_X) || (point->get_Y() < below_Y) || (point->get_X() >= above_X) || (point->get_Y() >= above_Y); };
   LAScriterionKeepXY(I32 below_X, I32 below_Y, I32 above_X, I32 above_Y) { this->below_X = below_X; this->below_Y = below_Y; this->above_X = above_X; this->above_Y = above_Y; };
 private:
@@ -306,7 +290,6 @@ class LAScriterionKeepX : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_X"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_X, above_X); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_X() < below_X) || (above_X <= point->get_X()); };
   LAScriterionKeepX(I32 below_X, I32 above_X) { this->below_X = below_X; this->above_X = above_X; };
 private:
@@ -318,7 +301,6 @@ class LAScriterionDropX : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_X"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_X, above_X); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((below_X <= point->get_X()) && (point->get_X() < above_X)); };
   LAScriterionDropX(I32 below_X, I32 above_X) { this->below_X = below_X; this->above_X = above_X; };
 private:
@@ -331,7 +313,6 @@ class LAScriterionKeepY : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_Y"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_Y, above_Y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_Y() < below_Y) || (above_Y <= point->get_Y()); };
   LAScriterionKeepY(I32 below_Y, I32 above_Y) { this->below_Y = below_Y; this->above_Y = above_Y; };
 private:
@@ -343,7 +324,6 @@ class LAScriterionDropY : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_Y"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_Y, above_Y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((below_Y <= point->get_Y()) && (point->get_Y() < above_Y)); };
   LAScriterionDropY(I32 below_Y, I32 above_Y) { this->below_Y = below_Y; this->above_Y = above_Y; };
 private:
@@ -381,7 +361,6 @@ class LAScriterionDropXBelow : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_X_below"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), below_X); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_X() < below_X); };
   LAScriterionDropXBelow(I32 below_X) { this->below_X = below_X; };
 private:
@@ -393,7 +372,6 @@ class LAScriterionDropXAbove : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_X_above"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), above_X); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_X() >= above_X); };
   LAScriterionDropXAbove(I32 above_X) { this->above_X = above_X; };
 private:
@@ -405,7 +383,6 @@ class LAScriterionDropYBelow : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_Y_below"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), below_Y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_Y() < below_Y); };
   LAScriterionDropYBelow(I32 below_Y) { this->below_Y = below_Y; };
 private:
@@ -417,7 +394,6 @@ class LAScriterionDropYAbove : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_Y_above"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), above_Y); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_Y() >= above_Y); };
   LAScriterionDropYAbove(I32 above_Y) { this->above_Y = above_Y; };
 private:
@@ -453,7 +429,6 @@ class LAScriterionKeepFirstReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_first"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->return_number > 1); };
 };
 
@@ -462,7 +437,6 @@ class LAScriterionKeepFirstOfManyReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_first_of_many"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->number_of_returns == 1) || (point->return_number > 1)); };
 };
 
@@ -471,7 +445,6 @@ class LAScriterionKeepMiddleReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_middle"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->return_number == 1) || (point->return_number >= point->number_of_returns)); };
 };
 
@@ -480,7 +453,6 @@ class LAScriterionKeepLastReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_last"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->return_number < point->number_of_returns); };
 };
 
@@ -489,7 +461,6 @@ class LAScriterionKeepLastOfManyReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_last_of_many"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->return_number == 1) || (point->return_number < point->number_of_returns)); };
 };
 
@@ -498,7 +469,6 @@ class LAScriterionKeepSecondLast : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_second_last"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->number_of_returns <= 1) || (point->return_number != (point->number_of_returns-1))); };
 };
 
@@ -507,7 +477,6 @@ class LAScriterionDropFirstReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_first"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->return_number == 1); };
 };
 
@@ -516,7 +485,6 @@ class LAScriterionDropFirstOfManyReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_first_of_many"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->number_of_returns > 1) && (point->return_number == 1)); };
 };
 
@@ -525,7 +493,6 @@ class LAScriterionDropMiddleReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_middle"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->return_number > 1) && (point->return_number < point->number_of_returns)); };
 };
 
@@ -534,7 +501,6 @@ class LAScriterionDropLastReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_last"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->return_number >= point->number_of_returns); };
 };
 
@@ -543,7 +509,6 @@ class LAScriterionDropLastOfManyReturn : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_last_of_many"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->number_of_returns > 1) && (point->return_number >= point->number_of_returns)); };
 };
 
@@ -552,7 +517,6 @@ class LAScriterionDropSecondLast : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_second_last"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return ((point->number_of_returns > 1) && (point->return_number == (point->number_of_returns-1))); };
 };
 
@@ -560,36 +524,57 @@ class LAScriterionKeepReturns : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_return_mask"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u ", name(), ~drop_return_mask); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
-  inline BOOL filter(const LASpoint* point) { return ((1 << point->return_number) & drop_return_mask); };
-  LAScriterionKeepReturns(U32 keep_return_mask) { drop_return_mask = ~keep_return_mask; };
+  inline I32 get_command(CHAR* string) const {
+    U32 i;
+    U32 n = sprintf(string, "-keep_return ");
+    U16 keep_return_mask = ~drop_return_mask;
+    for (i = 0; i < 16; i++) if ((1 << i) & keep_return_mask) n += sprintf(string + n, "%u ", i);
+    return n;
+  };
+  inline BOOL filter(const LASpoint* point) { return ((1 << point->get_return_number()) & drop_return_mask); };
+  LAScriterionKeepReturns(U16 keep_return_mask) { drop_return_mask = ~keep_return_mask; };
+  inline U16 get_keep_return_mask() const { return ~drop_return_mask; };
 private:
-  U32 drop_return_mask;
+  U16 drop_return_mask;
+};
+
+class LAScriterionDropReturns : public LAScriterion
+{
+public:
+  inline const CHAR* name() const { return "drop_return_mask"; };
+  inline I32 get_command(CHAR* string) const {
+    U32 i;
+    U32 n = sprintf(string, "-drop_return ");
+    for (i = 0; i < 16; i++) if ((1 << i) & drop_return_mask) n += sprintf(string + n, "%u ", i);
+    return n;
+  };
+  inline BOOL filter(const LASpoint* point) { return ((1 << point->get_return_number()) & drop_return_mask); };
+  LAScriterionDropReturns(U16 drop_return_mask) { this->drop_return_mask = drop_return_mask; };
+  inline U16 get_drop_return_mask() const { return drop_return_mask; };
+private:
+  U16 drop_return_mask;
 };
 
 class LAScriterionKeepSpecificNumberOfReturns : public LAScriterion
 {
 public:
-  inline const CHAR* name() const { return (numberOfReturns == 1 ? "keep_single" : (numberOfReturns == 2 ? "keep_double" : (numberOfReturns == 3 ? "keep_triple" : (numberOfReturns == 4 ? "keep_quadruple" : "keep_quintuple")))); };
+  inline const CHAR* name() const { return (number_of_returns == 1 ? "keep_single" : (number_of_returns == 2 ? "keep_double" : (number_of_returns == 3 ? "keep_triple" : (number_of_returns == 4 ? "keep_quadruple" : "keep_quintuple")))); };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
-  inline BOOL filter(const LASpoint* point) { return (point->number_of_returns != numberOfReturns); };
-  LAScriterionKeepSpecificNumberOfReturns(U32 numberOfReturns) { this->numberOfReturns = numberOfReturns; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_number_of_returns() != number_of_returns); };
+  LAScriterionKeepSpecificNumberOfReturns(U32 number_of_returns) { this->number_of_returns = number_of_returns; };
 private:
-  U32 numberOfReturns;
+  U32 number_of_returns;
 };
 
 class LAScriterionDropSpecificNumberOfReturns : public LAScriterion
 {
 public:
-  inline const CHAR* name() const { return (numberOfReturns == 1 ? "drop_single" : (numberOfReturns == 2 ? "drop_double" : (numberOfReturns == 3 ? "drop_triple" : (numberOfReturns == 4 ? "drop_quadruple" : "drop_quintuple")))); };
+  inline const CHAR* name() const { return (number_of_returns == 1 ? "drop_single" : (number_of_returns == 2 ? "drop_double" : (number_of_returns == 3 ? "drop_triple" : (number_of_returns == 4 ? "drop_quadruple" : "drop_quintuple")))); };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
-  inline BOOL filter(const LASpoint* point) { return (point->number_of_returns == numberOfReturns); };
-  LAScriterionDropSpecificNumberOfReturns(U32 numberOfReturns) { this->numberOfReturns = numberOfReturns; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_number_of_returns() == number_of_returns); };
+  LAScriterionDropSpecificNumberOfReturns(U32 number_of_returns) { this->number_of_returns = number_of_returns; };
 private:
-  U32 numberOfReturns;
+  U32 number_of_returns;
 };
 
 class LAScriterionDropScanDirection : public LAScriterion
@@ -631,7 +616,6 @@ class LAScriterionKeepScannerChannel : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_scanner_channel"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), scanner_channel); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_extended_scanner_channel() != scanner_channel); };
   LAScriterionKeepScannerChannel(I32 scanner_channel) { this->scanner_channel = scanner_channel; };
 private:
@@ -643,7 +627,6 @@ class LAScriterionDropScannerChannel : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_scanner_channel"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), scanner_channel); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point) { return (point->get_extended_scanner_channel() == scanner_channel); };
   LAScriterionDropScannerChannel(I32 scanner_channel) { this->scanner_channel = scanner_channel; };
 private:
@@ -658,6 +641,18 @@ public:
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
   inline BOOL filter(const LASpoint* point) { return ((point->rgb[channel] < below_RGB) || (above_RGB < point->rgb[channel])); };
   LAScriterionKeepRGB(I32 below_RGB, I32 above_RGB, I32 channel) { if (above_RGB < below_RGB) { this->below_RGB = above_RGB; this->above_RGB = below_RGB; } else { this->below_RGB = below_RGB; this->above_RGB = above_RGB; }; this->channel = channel; };
+private:
+  I32 below_RGB, above_RGB, channel;
+};
+
+class LAScriterionDropRGB : public LAScriterion
+{
+public:
+  inline const CHAR* name() const { return "drop_RGB"; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s_%s %d %d ", name(), (channel == 0 ? "red" : (channel == 1 ? "green" : (channel == 2 ? "blue" : "nir"))),  below_RGB, above_RGB); };
+  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
+  inline BOOL filter(const LASpoint* point) { return ((below_RGB <= point->rgb[channel]) && (point->rgb[channel] <= above_RGB)); };
+  LAScriterionDropRGB(I32 below_RGB, I32 above_RGB, I32 channel) { if (above_RGB < below_RGB) { this->below_RGB = above_RGB; this->above_RGB = below_RGB; } else { this->below_RGB = below_RGB; this->above_RGB = above_RGB; }; this->channel = channel; };
 private:
   I32 below_RGB, above_RGB, channel;
 };
@@ -765,10 +760,10 @@ public:
   inline const CHAR* name() const { return "keep_intensity"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_intensity, above_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (point->intensity < below_intensity) || (point->intensity > above_intensity); };
-  LAScriterionKeepIntensity(I32 below_intensity, I32 above_intensity) { this->below_intensity = below_intensity; this->above_intensity = above_intensity; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_intensity() < below_intensity) || (point->get_intensity() > above_intensity); };
+  LAScriterionKeepIntensity(U16 below_intensity, U16 above_intensity) { this->below_intensity = below_intensity; this->above_intensity = above_intensity; };
 private:
-  I32 below_intensity, above_intensity;
+  U16 below_intensity, above_intensity;
 };
 
 class LAScriterionKeepIntensityBelow : public LAScriterion
@@ -777,10 +772,10 @@ public:
   inline const CHAR* name() const { return "keep_intensity_below"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), below_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (point->intensity >= below_intensity); };
-  LAScriterionKeepIntensityBelow(I32 below_intensity) { this->below_intensity = below_intensity; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_intensity() >= below_intensity); };
+  LAScriterionKeepIntensityBelow(U16 below_intensity) { this->below_intensity = below_intensity; };
 private:
-  I32 below_intensity;
+  U16 below_intensity;
 };
 
 class LAScriterionKeepIntensityAbove : public LAScriterion
@@ -789,10 +784,10 @@ public:
   inline const CHAR* name() const { return "keep_intensity_above"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), above_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (point->intensity <= above_intensity); };
-  LAScriterionKeepIntensityAbove(I32 above_intensity) { this->above_intensity = above_intensity; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_intensity() <= above_intensity); };
+  LAScriterionKeepIntensityAbove(U16 above_intensity) { this->above_intensity = above_intensity; };
 private:
-  I32 above_intensity;
+  U16 above_intensity;
 };
 
 class LAScriterionDropIntensityBelow : public LAScriterion
@@ -801,7 +796,7 @@ public:
   inline const CHAR* name() const { return "drop_intensity_below"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), below_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (point->intensity < below_intensity); };
+  inline BOOL filter(const LASpoint* point) { return (point->get_intensity() < below_intensity); };
   LAScriterionDropIntensityBelow(I32 below_intensity) { this->below_intensity = below_intensity; };
 private:
   I32 below_intensity;
@@ -813,7 +808,7 @@ public:
   inline const CHAR* name() const { return "drop_intensity_above"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), above_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (point->intensity > above_intensity); };
+  inline BOOL filter(const LASpoint* point) { return (point->get_intensity() > above_intensity); };
   LAScriterionDropIntensityAbove(I32 above_intensity) { this->above_intensity = above_intensity; };
 private:
   I32 above_intensity;
@@ -825,10 +820,29 @@ public:
   inline const CHAR* name() const { return "drop_intensity_between"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_intensity, above_intensity); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
-  inline BOOL filter(const LASpoint* point) { return (below_intensity <= point->intensity) && (point->intensity <= above_intensity); };
+  inline BOOL filter(const LASpoint* point) { return (below_intensity <= point->get_intensity()) && (point->get_intensity() <= above_intensity); };
   LAScriterionDropIntensityBetween(I32 below_intensity, I32 above_intensity) { this->below_intensity = below_intensity; this->above_intensity = above_intensity; };
 private:
   I32 below_intensity, above_intensity;
+};
+
+class LAScriterionKeepClassifications : public LAScriterion
+{
+public:
+  inline const CHAR* name() const { return "keep_classification_mask"; };
+  inline I32 get_command(CHAR* string) const {
+    U32 i;
+    U32 n = sprintf(string, "-keep_class ");
+    U32 keep_classification_mask = ~drop_classification_mask;
+    for (i = 0; i < 32; i++) if ((1u << i) & keep_classification_mask) n += sprintf(string + n, "%u ", i);
+    return n;
+  };
+  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CLASSIFICATION; };
+  inline BOOL filter(const LASpoint* point) { return ((1u << point->classification) & drop_classification_mask); };
+  LAScriterionKeepClassifications(U32 keep_classification_mask) { drop_classification_mask = ~keep_classification_mask; };
+  inline U32 get_keep_classification_mask() const { return ~drop_classification_mask; };
+private:
+  U32 drop_classification_mask;
 };
 
 class LAScriterionDropClassifications : public LAScriterion
@@ -836,23 +850,15 @@ class LAScriterionDropClassifications : public LAScriterion
 public:
   inline const CHAR* name() const { return "drop_classification_mask"; };
   inline I32 get_command(CHAR* string) const {
-    U32 i, n, drop = 0;
-    for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) drop++;
-    if (drop < 16)
-    {
-      n = sprintf(string, "-drop_class ");
-      for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) n += sprintf(string + n, "%u ", i);
-    }
-    else
-    {
-      n = sprintf(string, "-keep_class ");
-      for (i = 0; i < 32; i++) if (!((1 << i) & drop_classification_mask)) n += sprintf(string + n, "%u ", i);
-    }
+    U32 i;
+    U32 n = sprintf(string, "-drop_class ");
+    for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) n += sprintf(string + n, "%u ", i);
     return n;
   };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CLASSIFICATION; };
   inline BOOL filter(const LASpoint* point) { return ((1 << point->classification) & drop_classification_mask); };
   LAScriterionDropClassifications(U32 drop_classification_mask) { this->drop_classification_mask = drop_classification_mask; };
+  inline U32 get_drop_classification_mask() const { return drop_classification_mask; };
 private:
   U32 drop_classification_mask;
 };
@@ -1043,7 +1049,7 @@ public:
   inline const CHAR* name() const { return "keep_point_source"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (point->point_source_ID != point_source_id); };
+  inline BOOL filter(const LASpoint* point) { return (point->get_point_source_ID() != point_source_id); };
   LAScriterionKeepPointSource(U16 point_source_id) { this->point_source_id = point_source_id; };
 private:
   U16 point_source_id;
@@ -1055,7 +1061,7 @@ public:
   inline const CHAR* name() const { return "keep_point_source_between"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_point_source_id, above_point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (point->point_source_ID < below_point_source_id) || (above_point_source_id < point->point_source_ID); };
+  inline BOOL filter(const LASpoint* point) { return (point->get_point_source_ID() < below_point_source_id) || (above_point_source_id < point->get_point_source_ID()); };
   LAScriterionKeepPointSourceBetween(U16 below_point_source_id, U16 above_point_source_id) { this->below_point_source_id = below_point_source_id; this->above_point_source_id = above_point_source_id; };
 private:
   U16 below_point_source_id, above_point_source_id;
@@ -1067,7 +1073,7 @@ public:
   inline const CHAR* name() const { return "drop_point_source"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (point->point_source_ID == point_source_id) ; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_point_source_ID() == point_source_id) ; };
   LAScriterionDropPointSource(U16 point_source_id) { this->point_source_id = point_source_id; };
 private:
   U16 point_source_id;
@@ -1079,7 +1085,7 @@ public:
   inline const CHAR* name() const { return "drop_point_source_below"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), below_point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (point->point_source_ID < below_point_source_id) ; };
+  inline BOOL filter(const LASpoint* point) { return (point->get_point_source_ID() < below_point_source_id) ; };
   LAScriterionDropPointSourceBelow(U16 below_point_source_id) { this->below_point_source_id = below_point_source_id; };
 private:
   U16 below_point_source_id;
@@ -1091,7 +1097,7 @@ public:
   inline const CHAR* name() const { return "drop_point_source_above"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), above_point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (point->point_source_ID > above_point_source_id); };
+  inline BOOL filter(const LASpoint* point) { return (point->get_point_source_ID() > above_point_source_id); };
   LAScriterionDropPointSourceAbove(U16 above_point_source_id) { this->above_point_source_id = above_point_source_id; };
 private:
   U16 above_point_source_id;
@@ -1103,7 +1109,7 @@ public:
   inline const CHAR* name() const { return "drop_point_source_between"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %d ", name(), below_point_source_id, above_point_source_id); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_POINT_SOURCE; };
-  inline BOOL filter(const LASpoint* point) { return (below_point_source_id <= point->point_source_ID) && (point->point_source_ID <= above_point_source_id); };
+  inline BOOL filter(const LASpoint* point) { return (below_point_source_id <= point->get_point_source_ID()) && (point->get_point_source_ID() <= above_point_source_id); };
   LAScriterionDropPointSourceBetween(U16 below_point_source_id, U16 above_point_source_id) { this->below_point_source_id = below_point_source_id; this->above_point_source_id = above_point_source_id; };
 private:
   U16 below_point_source_id, above_point_source_id;
@@ -1113,7 +1119,7 @@ class LAScriterionKeepGpsTime : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_gps_time"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %.6f %.6f ", name(), below_gpstime, above_gpstime); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_gpstime, above_gpstime); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point) { return (point->have_gps_time && ((point->gps_time < below_gpstime) || (point->gps_time > above_gpstime))); };
   LAScriterionKeepGpsTime(F64 below_gpstime, F64 above_gpstime) { this->below_gpstime = below_gpstime; this->above_gpstime = above_gpstime; };
@@ -1125,7 +1131,7 @@ class LAScriterionDropGpsTimeBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_gps_time_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %.6f ", name(), below_gpstime); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), below_gpstime); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point) { return (point->have_gps_time && (point->gps_time < below_gpstime)); };
   LAScriterionDropGpsTimeBelow(F64 below_gpstime) { this->below_gpstime = below_gpstime; };
@@ -1137,7 +1143,7 @@ class LAScriterionDropGpsTimeAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_gps_time_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %.6f ", name(), above_gpstime); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), above_gpstime); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point) { return (point->have_gps_time && (point->gps_time > above_gpstime)); };
   LAScriterionDropGpsTimeAbove(F64 above_gpstime) { this->above_gpstime = above_gpstime; };
@@ -1149,7 +1155,7 @@ class LAScriterionDropGpsTimeBetween : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_gps_time_between"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %.6f %.6f ", name(), below_gpstime, above_gpstime); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf %lf ", name(), below_gpstime, above_gpstime); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point) { return (point->have_gps_time && ((below_gpstime <= point->gps_time) && (point->gps_time <= above_gpstime))); };
   LAScriterionDropGpsTimeBetween(F64 below_gpstime, F64 above_gpstime) { this->below_gpstime = below_gpstime; this->above_gpstime = above_gpstime; };
@@ -1185,12 +1191,12 @@ class LAScriterionKeepAttributeBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_attribute_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g ", name(), index, below_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf ", name(), index, below_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { return (point->get_attribute_as_float(index) >= below_attribute); };
-  LAScriterionKeepAttributeBelow(I32 index, F64 below_attribute) { this->index = index; this->below_attribute = below_attribute; };
+  LAScriterionKeepAttributeBelow(U32 index, F64 below_attribute) { this->index = index; this->below_attribute = below_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 below_attribute;
 };
 
@@ -1198,12 +1204,12 @@ class LAScriterionKeepAttributeAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_attribute_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g ", name(), index, above_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf ", name(), index, above_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { return (point->get_attribute_as_float(index) <= above_attribute); };
-  LAScriterionKeepAttributeAbove(I32 index, F64 above_attribute) { this->index = index; this->above_attribute = above_attribute; };
+  LAScriterionKeepAttributeAbove(U32 index, F64 above_attribute) { this->index = index; this->above_attribute = above_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 above_attribute;
 };
 
@@ -1211,12 +1217,12 @@ class LAScriterionKeepAttributeBetween : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_attribute_between"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g %g ", name(), index, below_attribute, above_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf %lf ", name(), index, below_attribute, above_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { F64 attribute = point->get_attribute_as_float(index); return (attribute < below_attribute) || (above_attribute < attribute); };
-  LAScriterionKeepAttributeBetween(I32 index, F64 below_attribute, F64 above_attribute) { this->index = index; this->below_attribute = below_attribute; this->above_attribute = above_attribute; };
+  LAScriterionKeepAttributeBetween(U32 index, F64 below_attribute, F64 above_attribute) { this->index = index; this->below_attribute = below_attribute; this->above_attribute = above_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 below_attribute;
   F64 above_attribute;
 };
@@ -1225,12 +1231,12 @@ class LAScriterionDropAttributeBelow : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_attribute_below"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g ", name(), index, below_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf ", name(), index, below_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { return (point->get_attribute_as_float(index) < below_attribute); };
-  LAScriterionDropAttributeBelow(I32 index, F64 below_attribute) { this->index = index; this->below_attribute = below_attribute; };
+  LAScriterionDropAttributeBelow(U32 index, F64 below_attribute) { this->index = index; this->below_attribute = below_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 below_attribute;
 };
 
@@ -1238,12 +1244,12 @@ class LAScriterionDropAttributeAbove : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_attribute_above"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g ", name(), index, above_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf ", name(), index, above_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { return (point->get_attribute_as_float(index) > above_attribute); };
-  LAScriterionDropAttributeAbove(I32 index, F64 above_attribute) { this->index = index; this->above_attribute = above_attribute; };
+  LAScriterionDropAttributeAbove(U32 index, F64 above_attribute) { this->index = index; this->above_attribute = above_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 above_attribute;
 };
 
@@ -1251,12 +1257,12 @@ class LAScriterionDropAttributeBetween : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_attribute_between"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d %g %g ", name(), index, below_attribute, above_attribute); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u %lf %lf ", name(), index, below_attribute, above_attribute); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_EXTRA_BYTES; };
   inline BOOL filter(const LASpoint* point) { F64 attribute = point->get_attribute_as_float(index); return (below_attribute <= attribute) && (attribute <= above_attribute); };
-  LAScriterionDropAttributeBetween(I32 index, F64 below_attribute, F64 above_attribute) { this->index = index; this->below_attribute = below_attribute; this->above_attribute = above_attribute; };
+  LAScriterionDropAttributeBetween(U32 index, F64 below_attribute, F64 above_attribute) { this->index = index; this->below_attribute = below_attribute; this->above_attribute = above_attribute; };
 private:
-  I32 index;
+  U32 index;
   F64 below_attribute;
   F64 above_attribute;
 };
@@ -1265,26 +1271,24 @@ class LAScriterionKeepEveryNth : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_every_nth"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), every); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u ", name(), every); };
   inline BOOL filter(const LASpoint* point) { if (counter == every) { counter = 1; return FALSE; } else { counter++; return TRUE; } };
-  LAScriterionKeepEveryNth(I32 every) { this->every = every; counter = 1; };
+  LAScriterionKeepEveryNth(U32 every) { this->every = every; counter = 1; };
 private:
-  I32 counter;
-  I32 every;
+  U32 counter;
+  U32 every;
 };
 
 class LAScriterionDropEveryNth : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_every_nth"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %d ", name(), every); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %u ", name(), every); };
   inline BOOL filter(const LASpoint* point) { if (counter == every) { counter = 1; return TRUE; } else { counter++; return FALSE; } };
-  LAScriterionDropEveryNth(I32 every) { this->every = every; counter = 1; };
+  LAScriterionDropEveryNth(U32 every) { this->every = every; counter = 1; };
 private:
-  I32 counter;
-  I32 every;
+  U32 counter;
+  U32 every;
 };
 
 class LAScriterionKeepRandomFraction : public LAScriterion
@@ -1292,7 +1296,6 @@ class LAScriterionKeepRandomFraction : public LAScriterion
 public:
   inline const CHAR* name() const { return "keep_random_fraction"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), fraction); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point)
   {
     //srand(seed);
@@ -1300,9 +1303,11 @@ public:
     seed = R::runif(0, RAND_MAX);
     return ((F32)seed/(F32)RAND_MAX) > fraction;
   };
-  void reset() { seed = 0; };
-  LAScriterionKeepRandomFraction(F32 fraction) { seed = 0; this->fraction = fraction; };
+  void reset() { seed = requested_seed; };
+  LAScriterionKeepRandomFraction(F32 fraction) { requested_seed = seed = 0; this->fraction = fraction; };
+  LAScriterionKeepRandomFraction(U32 seed, F32 fraction) { requested_seed = this->seed = seed; this->fraction = fraction; };
 private:
+  U32 requested_seed;
   U32 seed;
   F32 fraction;
 };
@@ -1312,7 +1317,6 @@ class LAScriterionThinWithGrid : public LAScriterion
 public:
   inline const CHAR* name() const { return "thin_with_grid"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (grid_spacing > 0 ? grid_spacing : -grid_spacing)); };
-  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY; };
   inline BOOL filter(const LASpoint* point)
   {
     if (grid_spacing < 0)
@@ -1521,7 +1525,7 @@ private:
 
 class LAScriterionThinWithVoxel : public LAScriterion
 {
-typedef std::array<I32,3> Array;
+  typedef std::array<I32,3> Array;
 
 public:
   inline const CHAR* name() const { return "thin_with_voxel"; };
@@ -1573,7 +1577,7 @@ class LAScriterionThinPulsesWithTime : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "thin_pulses_with_time"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
   {
@@ -1611,7 +1615,7 @@ class LAScriterionThinPointsWithTime : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "thin_points_with_time"; };
-  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
   {
@@ -1740,7 +1744,9 @@ void LASfilter::usage() const
   REprintf("  -drop_gps_time_between 22.0 48.0\n");
   REprintf("Filter points based on their RGB/CIR/NIR channels.\n");
   REprintf("  -keep_RGB_red 1 1\n");
+  REprintf("  -drop_RGB_red 5000 20000\n");
   REprintf("  -keep_RGB_green 30 100\n");
+  REprintf("  -drop_RGB_green 2000 10000\n");
   REprintf("  -keep_RGB_blue 0 0\n");
   REprintf("  -keep_RGB_nir 64 127\n");
   REprintf("  -keep_NDVI 0.2 0.7 -keep_NDVI_from_CIR -0.1 0.5\n");
@@ -1754,6 +1760,7 @@ void LASfilter::usage() const
   REprintf("Filter points with simple thinning.\n");
   REprintf("  -keep_every_nth 2 -drop_every_nth 3\n");
   REprintf("  -keep_random_fraction 0.1\n");
+  REprintf("  -keep_random_fraction 0.1 4711\n");
   REprintf("  -thin_with_grid 1.0\n");
   REprintf("  -thin_with_voxel 0.1\n");
   REprintf("  -thin_pulses_with_time 0.0001\n");
@@ -1765,12 +1772,6 @@ void LASfilter::usage() const
 BOOL LASfilter::parse(int argc, char* argv[])
 {
   int i;
-
-  U32 keep_return_mask = 0;
-  U32 drop_return_mask = 0;
-
-  U32 keep_classification_mask = 0;
-  U32 drop_classification_mask = 0;
 
   U32 keep_extended_classification_mask[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   U32 drop_extended_classification_mask[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -1877,28 +1878,55 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs 1 at least argument: classification\n", argv[i]);
+            REprintf("ERROR: '%s' needs at least 1 argument: classification\n", argv[i]);
             return FALSE;
           }
           *argv[i]='\0';
           i+=1;
+          U32 classification;
+          U32 keep_classification_mask = 0;
           do
           {
-            if (atoi(argv[i]) > 31)
+            if (sscanf(argv[i], "%u", &classification) != 1)
             {
-              REprintf("ERROR: cannot keep classification %d because it is larger than 31\n", atoi(argv[i]));
+              REprintf("ERROR: '-keep_classification' needs at least 1 argument: classification but '%s' is no valid classification\n", argv[i]);
               return FALSE;
             }
-            else if (atoi(argv[i]) < 0)
+            if (classification > 31)
             {
-              REprintf("ERROR: cannot keep classification %d because it is smaller than 0\n", atoi(argv[i]));
+              REprintf("ERROR: cannot keep classification %u because it is larger than 31\n", classification);
               return FALSE;
             }
-            keep_classification_mask |= (1 << atoi(argv[i]));
+            keep_classification_mask |= (1u << classification);
             *argv[i]='\0';
             i+=1;
           } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
           i-=1;
+          // if last criteria was also keep_class filter then combine them
+          if (num_criteria && (strcmp(criteria[num_criteria-1]->name(), "keep_classification_mask") == 0))
+          {
+            LAScriterionKeepClassifications* criterion = (LAScriterionKeepClassifications*)(criteria[num_criteria-1]);
+            num_criteria--;
+            keep_classification_mask |= criterion->get_keep_classification_mask();
+            delete criterion;
+          }
+          add_criterion(new LAScriterionKeepClassifications(keep_classification_mask));
+        }
+        else if (strcmp(argv[i],"-keep_classification_mask") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: mask\n", argv[i]);
+            return FALSE;
+          }
+          U32 keep_classification_mask;
+          if (sscanf(argv[i+1], "%u", &keep_classification_mask) != 1)
+          {
+            REprintf("ERROR: '%s' needs at least 1 argument: mask but '%s' is no valid mask\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepClassifications(keep_classification_mask));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
       else if (strncmp(argv[i],"-keep_extended_", 15) == 0)
@@ -1907,24 +1935,25 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs 1 at least argument: classification\n", argv[i]);
+            REprintf("ERROR: '%s' needs at least a argument: classification\n", argv[i]);
             return FALSE;
           }
           *argv[i]='\0';
           i+=1;
+          U32 extended_classification;
           do
           {
-            if (atoi(argv[i]) > 255)
+            if (sscanf(argv[i], "%u", &extended_classification) != 1)
             {
-              REprintf("ERROR: cannot keep extended classification %d because it is larger than 255\n", atoi(argv[i]));
+              REprintf("ERROR: '-keep_extended_classification' needs at least 1 argument: classification but '%s' is no valid classification\n", argv[i]);
               return FALSE;
             }
-            else if (atoi(argv[i]) < 0)
+            if (extended_classification > 255)
             {
-              REprintf("ERROR: cannot keep extended classification %d because it is smaller than 0\n", atoi(argv[i]));
+              REprintf("ERROR: cannot keep extended classification %u because it is larger than 255\n", extended_classification);
               return FALSE;
             }
-            keep_extended_classification_mask[atoi(argv[i])/32] |= (1 << (atoi(argv[i]) - (32*(atoi(argv[i])/32))));
+            keep_extended_classification_mask[extended_classification/32] |= (1u << (extended_classification%32));
             *argv[i]='\0';
             i+=1;
           } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
@@ -1940,7 +1969,31 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min_y;
+          if (sscanf(argv[i+2], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid min_y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+3], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid max_x\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+4], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid max_y\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepxy(min_x, min_y, max_x, max_y));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_xyz") == 0)
@@ -1950,7 +2003,43 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min_y;
+          if (sscanf(argv[i+2], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 min_z;
+          if (sscanf(argv[i+3], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_z\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+4], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_x\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+5], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_y\n", argv[i], argv[i+5]);
+            return FALSE;
+          }
+          F64 max_z;
+          if (sscanf(argv[i+6], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_z\n", argv[i], argv[i+6]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepxyz(min_x, min_y, min_z, max_x, max_y, max_z));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-keep_x") == 0)
@@ -1960,7 +2049,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_x max_x\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepx(atof(argv[i+1]), atof(argv[i+2])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_x max_x but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+2], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_x max_x but '%s' is no valid max_x\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepx(min_x, max_x));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -1971,18 +2072,77 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 2 arguments: min_y max_y\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepy(atof(argv[i+1]), atof(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-      }
-      else if (strcmp(argv[i],"-keep_z") == 0)
-      {
-        if ((i+2) >= argc)
+        F64 min_y;
+        if (sscanf(argv[i+1], "%lf", &min_y) != 1)
         {
-          REprintf("ERROR: '%s' needs 2 arguments: min_z max_z\n", argv[i]);
+          REprintf("ERROR: '%s' needs 2 arguments: min_y max_y but '%s' is no valid min_y\n", argv[i], argv[i+1]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepz(atof(argv[i+1]), atof(argv[i+2])));
+        F64 max_y;
+        if (sscanf(argv[i+2], "%lf", &max_y) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min_y max_y but '%s' is no valid max_y\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepy(min_y, max_y));
         *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+      }
+      else if (strncmp(argv[i],"-keep_z", 7) == 0)
+      {
+        if (strcmp(argv[i],"-keep_z") == 0)
+        {
+          if ((i+2) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_z max_z\n", argv[i]);
+            return FALSE;
+          }
+          F64 min_z;
+          if (sscanf(argv[i+1], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_z max_z but '%s' is no valid min_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max_z;
+          if (sscanf(argv[i+2], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_z max_z but '%s' is no valid max_z\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepz(min_z, max_z));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i],"-keep_z_above") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_z\n", argv[i]);
+            return FALSE;
+          }
+          F64 min_z;
+          if (sscanf(argv[i+1], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_z but '%s' is no valid min_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropzBelow(min_z));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
+        else if (strcmp(argv[i],"-keep_z_below") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_z\n", argv[i]);
+            return FALSE;
+          }
+          F64 max_z;
+          if (sscanf(argv[i+1], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_z but '%s' is no valid max_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropzAbove(max_z));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
       }
       else if (strncmp(argv[i],"-keep_X", 7) == 0)
       {
@@ -1993,7 +2153,31 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepXY(atoi(argv[i+1]), atoi(argv[i+2]), atoi(argv[i+3]), atoi(argv[i+4])));
+          I32 min_X;
+          if (sscanf(argv[i+1], "%d", &min_X) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y but '%s' is no valid min_X\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 min_Y;
+          if (sscanf(argv[i+2], "%d", &min_Y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y but '%s' is no valid min_Y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          I32 max_X;
+          if (sscanf(argv[i+3], "%d", &max_X) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y but '%s' is no valid max_X\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          I32 max_Y;
+          if (sscanf(argv[i+4], "%d", &max_Y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_X min_Y max_X max_Y but '%s' is no valid max_Y\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepXY(min_X, min_Y, max_X, max_Y));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_X") == 0)
@@ -2003,7 +2187,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_X max_X\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepX(atoi(argv[i+1]), atoi(argv[i+2])));
+          I32 min_X;
+          if (sscanf(argv[i+1], "%d", &min_X) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_X max_X but '%s' is no valid min_X\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max_X;
+          if (sscanf(argv[i+2], "%d", &max_X) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_X max_X but '%s' is no valid max_X\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepX(min_X, max_X));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -2014,18 +2210,77 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 2 arguments: min_Y max_Y\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepY(atoi(argv[i+1]), atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-      }
-      else if (strcmp(argv[i],"-keep_Z") == 0)
-      {
-        if ((i+2) >= argc)
+        I32 min_Y;
+        if (sscanf(argv[i+1], "%d", &min_Y) != 1)
         {
-          REprintf("ERROR: '%s' needs 2 arguments: min_Z max_Z\n", argv[i]);
+          REprintf("ERROR: '%s' needs 2 arguments: min_Y max_Y but '%s' is no valid min_Y\n", argv[i], argv[i+1]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepZ(atoi(argv[i+1]), atoi(argv[i+2])));
+        I32 max_Y;
+        if (sscanf(argv[i+2], "%d", &max_Y) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min_Y max_Y but '%s' is no valid max_Y\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepY(min_Y, max_Y));
         *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+      }
+      else if (strncmp(argv[i],"-keep_Z", 7) == 0)
+      {
+        if (strcmp(argv[i],"-keep_Z") == 0)
+        {
+          if ((i+2) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_Z max_Z\n", argv[i]);
+            return FALSE;
+          }
+          I32 min_Z;
+          if (sscanf(argv[i+1], "%d", &min_Z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_Z max_Z but '%s' is no valid min_Z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max_Z;
+          if (sscanf(argv[i+2], "%d", &max_Z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_Z max_Z but '%s' is no valid max_Z\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepZ(min_Z, max_Z));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i],"-keep_Z_above") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_Z\n", argv[i]);
+            return FALSE;
+          }
+          I32 min_Z;
+          if (sscanf(argv[i+1], "%d", &min_Z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_Z but '%s' is no valid min_Z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropZBelow(min_Z));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
+        else if (strcmp(argv[i],"-keep_Z_below") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_Z\n", argv[i]);
+            return FALSE;
+          }
+          I32 max_Z;
+          if (sscanf(argv[i+1], "%d", &max_Z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_Z but '%s' is no valid max_Z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropZAbove(max_Z));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
       }
       else if (strcmp(argv[i],"-keep_tile") == 0)
       {
@@ -2034,7 +2289,25 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 3 arguments: llx lly size\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepTile((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3])));
+        F32 llx;
+        if (sscanf(argv[i+1], "%f", &llx) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: llx lly size but '%s' is no valid llx\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        F32 lly;
+        if (sscanf(argv[i+2], "%f", &lly) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: llx lly size but '%s' is no valid lly\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        F32 size;
+        if (sscanf(argv[i+3], "%f", &size) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: llx lly size but '%s' is no valid size\n", argv[i], argv[i+3]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepTile(llx, lly, size));
         *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-keep_circle") == 0)
@@ -2044,44 +2317,103 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 3 arguments: center_x center_y radius\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepCircle(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3])));
+        F64 center_x;
+        if (sscanf(argv[i+1], "%lf", &center_x) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: center_x center_y radius but '%s' is no valid center_x\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        F64 center_y;
+        if (sscanf(argv[i+2], "%lf", &center_y) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: center_x center_y radius but '%s' is no valid center_y\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        F64 radius;
+        if (sscanf(argv[i+3], "%lf", &radius) != 1)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: center_x center_y radius but '%s' is no valid radius\n", argv[i], argv[i+3]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepCircle(center_x, center_y, radius));
         *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
-      else if (strcmp(argv[i],"-keep_return") == 0)
+      else if (strncmp(argv[i],"-keep_return", 12) == 0)
       {
-        if ((i+1) >= argc)
+        if (strcmp(argv[i],"-keep_return") == 0)
         {
-          REprintf("ERROR: '%s' needs at least 1 argument: return_number\n", argv[i]);
-          return FALSE;
-        }
-        *argv[i]='\0';
-        i+=1;
-        do
-        {
-          keep_return_mask |= (1 << atoi(argv[i]));
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs at least 1 argument: return_number\n", argv[i]);
+            return FALSE;
+          }
           *argv[i]='\0';
           i+=1;
-        } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
-        i-=1;
-      }
-      else if (strcmp(argv[i],"-keep_return_mask") == 0)
-      {
-        if ((i+1) >= argc)
-        {
-          REprintf("ERROR: '%s' needs 1 argument: return_mask\n", argv[i]);
-          return FALSE;
+          U32 return_number;
+          U16 keep_return_mask = 0;
+          do
+          {
+            if (sscanf(argv[i], "%u", &return_number) != 1)
+            {
+              REprintf("ERROR: '-keep_return' needs at least 1 argument: return_number but '%s' is no valid return_number\n", argv[i]);
+              return FALSE;
+            }
+            if (return_number > 15)
+            {
+              REprintf("ERROR: cannot keep return_number %u because it is larger than 15\n", return_number);
+              return FALSE;
+            }
+            keep_return_mask |= (1u << return_number);
+            *argv[i]='\0';
+            i+=1;
+          } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
+          i-=1;
+          // if last criteria was also keep_return filter then combine them
+          if (num_criteria && (strcmp(criteria[num_criteria-1]->name(), "keep_return_mask") == 0))
+          {
+            LAScriterionKeepReturns* criterion = (LAScriterionKeepReturns*)(criteria[num_criteria-1]);
+            num_criteria--;
+            keep_return_mask |= criterion->get_keep_return_mask();
+            delete criterion;
+          }
+          add_criterion(new LAScriterionKeepReturns(keep_return_mask));
         }
-        keep_return_mask = atoi(argv[i+1]);
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        else if (strcmp(argv[i],"-keep_return_mask") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: return_mask\n", argv[i]);
+            return FALSE;
+          }
+          U32 keep_return_mask;
+          if (sscanf(argv[i+1], "%u", &keep_return_mask) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: return_mask but '%s' is no valid return_mask\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (keep_return_mask > U16_MAX)
+          {
+            REprintf("ERROR: '%s' needs a return_mask between 0 and %u but return_mask is %u\n", argv[i], U16_MAX, keep_return_mask);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepReturns((U16)keep_return_mask));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
       }
       else if (strcmp(argv[i],"-keep_number_of_returns") == 0)
       {
         if ((i+1) >= argc)
         {
-          REprintf("ERROR: '%s' needs 1 argument: number of returns\n", argv[i]);
+          REprintf("ERROR: '%s' needs 1 argument: number_of_returns\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepSpecificNumberOfReturns(atoi(argv[i+1])));
+        U32 number_of_returns;
+        if (sscanf(argv[i+1], "%u", &number_of_returns) != 1)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: number_of_returns but '%s' is no valid number_of_returns\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepSpecificNumberOfReturns(number_of_returns));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-keep_single") == 0)
@@ -2118,7 +2450,29 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepIntensity(atoi(argv[i+1]), atoi(argv[i+2])));
+          U32 min;
+          if (sscanf(argv[i+1], "%u", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          U32 max;
+          if (sscanf(argv[i+2], "%u", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          if (min > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep intensity because min of %u is larger than %u\n", min, U16_MAX);
+            return FALSE;
+          }
+          if (max > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep intensity because max of %u is larger than %u\n", max, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepIntensity((U16)min, (U16)max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-keep_intensity_above") == 0)
@@ -2128,7 +2482,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepIntensityAbove(atoi(argv[i+1])));
+          U32 max;
+          if (sscanf(argv[i+1], "%u", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max but '%s' is no valid max\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (max > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep intensity above max of %u because it is larger than %u\n", max, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepIntensityAbove((U16)max));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_intensity_below") == 0)
@@ -2138,90 +2503,130 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepIntensityBelow(atoi(argv[i+1])));
+          U32 min;
+          if (sscanf(argv[i+1], "%u", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (min > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep intensity below min of %u because it is larger than %u\n", min, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepIntensityBelow((U16)min));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
       else if (strncmp(argv[i],"-keep_RGB_", 10) == 0)
-      {
-        if (strcmp(argv[i]+10,"red") == 0)
-        {
-          if ((i+2) >= argc)
-          {
-            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
-            return FALSE;
-          }
-          add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 0));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"green") == 0)
-        {
-          if ((i+2) >= argc)
-          {
-            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
-            return FALSE;
-          }
-          add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 1));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"blue") == 0)
-        {
-          if ((i+2) >= argc)
-          {
-            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
-            return FALSE;
-          }
-          add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 2));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"nir") == 0)
-        {
-          if ((i+2) >= argc)
-          {
-            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
-            return FALSE;
-          }
-          add_criterion(new LAScriterionKeepRGB(atoi(argv[i+1]), atoi(argv[i+2]), 3));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-      }
-      else if (strncmp(argv[i],"-keep_NDVI", 10) == 0)
-      {
-        if (strcmp(argv[i]+10,"") == 0)
-        {
-          add_criterion(new LAScriterionKeepNDVI(atof(argv[i+1]), atof(argv[i+2]), 3));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"_from_CIR") == 0)
-        {
-          add_criterion(new LAScriterionKeepNDVIfromCIR(atof(argv[i+1]), atof(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"_green_is_NIR") == 0)
-        {
-          add_criterion(new LAScriterionKeepNDVI(atof(argv[i+1]), atof(argv[i+2]), 1));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"_blue_is_NIR") == 0)
-        {
-          add_criterion(new LAScriterionKeepNDVI(atof(argv[i+1]), atof(argv[i+2]), 2));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-        else if (strcmp(argv[i]+10,"_intensity_is_NIR") == 0)
-        {
-          add_criterion(new LAScriterionKeepNDVIintensityIsNIR(atof(argv[i+1]), atof(argv[i+2])));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-        }
-      }
-      else if (strcmp(argv[i],"-keep_scan_angle") == 0)
       {
         if ((i+2) >= argc)
         {
           REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepScanAngle(atoi(argv[i+1]), atoi(argv[i+2])));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        I32 min;
+        if (sscanf(argv[i+1], "%d", &min) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        I32 max;
+        if (sscanf(argv[i+2], "%d", &max) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (strcmp(argv[i]+10,"red") == 0)
+        {
+          add_criterion(new LAScriterionKeepRGB(min, max, 0));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"green") == 0)
+        {
+          add_criterion(new LAScriterionKeepRGB(min, max, 1));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"blue") == 0)
+        {
+          add_criterion(new LAScriterionKeepRGB(min, max, 2));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"nir") == 0)
+        {
+          add_criterion(new LAScriterionKeepRGB(min, max, 3));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+      }
+      else if (strncmp(argv[i],"-keep_NDVI", 10) == 0)
+      {
+        if ((i+2) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
+          return FALSE;
+        }
+        F32 min;
+        if (sscanf(argv[i+1], "%f", &min) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        F32 max;
+        if (sscanf(argv[i+2], "%f", &max) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (strcmp(argv[i]+10,"") == 0)
+        {
+          add_criterion(new LAScriterionKeepNDVI(min, max, 3));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"_from_CIR") == 0)
+        {
+          add_criterion(new LAScriterionKeepNDVIfromCIR(min, max));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"_green_is_NIR") == 0)
+        {
+          add_criterion(new LAScriterionKeepNDVI(min, max, 1));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"_blue_is_NIR") == 0)
+        {
+          add_criterion(new LAScriterionKeepNDVI(min, max, 2));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"_intensity_is_NIR") == 0)
+        {
+          add_criterion(new LAScriterionKeepNDVIintensityIsNIR(min, max));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+      }
+      else if (strncmp(argv[i],"-keep_scan_angle", 16) == 0)
+      {
+        if ((strcmp(argv[i],"-keep_scan_angle") == 0) || (strcmp(argv[i],"-keep_scan_angle_between") == 0))
+        {
+          if ((i+2) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
+            return FALSE;
+          }
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max;
+          if (sscanf(argv[i+2], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepScanAngle(min, max));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
       }
       else if (strcmp(argv[i],"-keep_synthetic") == 0)
       {
@@ -2264,7 +2669,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: value\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepUserData(atoi(argv[i+1])));
+          I32 value;
+          if (sscanf(argv[i+1], "%d", &value) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: value but '%s' is no valid value\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepUserData(value));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_user_data_below") == 0)
@@ -2274,7 +2685,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: value\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepUserDataBelow(atoi(argv[i+1])));
+          I32 value;
+          if (sscanf(argv[i+1], "%d", &value) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: value but '%s' is no valid value\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepUserDataBelow(value));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_user_data_above") == 0)
@@ -2284,17 +2701,35 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: value\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepUserDataAbove(atoi(argv[i+1])));
+          I32 value;
+          if (sscanf(argv[i+1], "%d", &value) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: value but '%s' is no valid value\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepUserDataAbove(value));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_user_data_between") == 0)
         {
           if ((i+2) >= argc)
           {
-            REprintf("ERROR: '%s' needs 2 arguments: min_value max_value\n", argv[i]);
+            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepUserDataBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max;
+          if (sscanf(argv[i+2], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepUserDataBetween(min, max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -2304,10 +2739,43 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs 1 argument: ID\n", argv[i]);
+            REprintf("ERROR: '%s' needs at least 1 argument: ID\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepPointSource(atoi(argv[i+1])));
+          U32 ID;
+          if (sscanf(argv[i+1], "%u", &ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs at least 1 argument: ID but '%s' is no valid ID\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep_point_source ID %u because it is larger than %u\n", ID, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepPointSource(ID));
+          while (((i+2) < argc) && ('0' <= argv[i+2][0]) && (argv[i+2][0] <= '9'))
+          {
+            *argv[i]='\0';
+            if (sscanf(argv[i+2], "%d", &ID) != 1)
+            {
+              REprintf("ERROR: '-keep_point_source' takes one or more IDs but '%s' is no valid ID\n", argv[i+2]);
+              return FALSE;
+            }
+            if (ID > U16_MAX)
+            {
+              REprintf("ERROR: cannot keep_point_source ID %u because it is larger than %u\n", ID, U16_MAX);
+              return FALSE;
+            }
+            add_criterion(new LAScriterionKeepPointSource(ID));
+            LAScriterion* filter_criterion = new LAScriterionAnd(criteria[num_criteria-2], criteria[num_criteria-1]);
+            num_criteria--;
+            criteria[num_criteria] = 0;
+            num_criteria--;
+            criteria[num_criteria] = 0;
+            add_criterion(filter_criterion);
+            i+=1;
+          }
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_point_source_between") == 0)
@@ -2317,21 +2785,87 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepPointSourceBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          U32 min_ID;
+          if (sscanf(argv[i+1], "%u", &min_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID but '%s' is no valid min_ID\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          U32 max_ID;
+          if (sscanf(argv[i+2], "%u", &max_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID but '%s' is no valid max_ID\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          if (min_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep point source because min_ID of %u is larger than %u\n", min_ID, U16_MAX);
+            return FALSE;
+          }
+          if (max_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot keep point source because max_ID of %u is larger than %u\n", max_ID, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepPointSourceBetween((U16)min_ID, (U16)max_ID));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
       else if (strncmp(argv[i],"-keep_gps", 9) == 0)
       {
-        if (strcmp(argv[i],"-keep_gps_time") == 0 || strcmp(argv[i],"-keep_gpstime") == 0)
+        if (strcmp(argv[i],"-keep_gps_time") == 0 || strcmp(argv[i],"-keep_gpstime") == 0 || strcmp(argv[i],"-keep_gps_time_between") == 0 || strcmp(argv[i],"-keep_gpstime_between") == 0)
         {
           if ((i+2) >= argc)
           {
-            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
+            REprintf("ERROR: '%s' needs 2 arguments: start end\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepGpsTime(atof(argv[i+1]), atof(argv[i+2])));
+          F64 start = 0.0;
+          if (sscanf(argv[i+1], "%lf", &start) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: start end but '%s' is no valid start\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 end = 0.0;
+          if (sscanf(argv[i+2], "%lf", &end) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: start end but '%s' is no valid end\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepGpsTime(start, end));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i],"-keep_gps_time_above") == 0 || strcmp(argv[i],"-keep_gpstime_above") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: time\n", argv[i]);
+            return FALSE;
+          }
+          F64 time = 0.0;
+          if (sscanf(argv[i+1], "%lf", &time) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: time but '%s' is no valid time\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropGpsTimeBelow(time));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+         }
+        else if (strcmp(argv[i],"-keep_gps_time_below") == 0 || strcmp(argv[i],"-keep_gpstime_below") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: time\n", argv[i]);
+            return FALSE;
+          }
+          F64 time = 0.0;
+          if (sscanf(argv[i+1], "%lf", &time) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: time but '%s' is no valid time\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropGpsTimeAbove(time));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
       else if (strncmp(argv[i],"-keep_attribute", 15) == 0)
@@ -2343,7 +2877,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: index value\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepAttributeBelow(atoi(argv[i+1]), atof(argv[i+2])));
+          I32 index;
+          if (sscanf(argv[i+1], "%d", &index) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: index value but '%s' is no valid index\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 value;
+          if (sscanf(argv[i+2], "%lf", &value) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid value\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepAttributeBelow(index, value));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-keep_attribute_above") == 0)
@@ -2353,17 +2899,47 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: index value\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepAttributeAbove(atoi(argv[i+1]), atof(argv[i+2])));
+          I32 index;
+          if (sscanf(argv[i+1], "%d", &index) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: index value but '%s' is no valid index\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 value;
+          if (sscanf(argv[i+2], "%lf", &value) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid value\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepAttributeAbove(index, value));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-keep_attribute_between") == 0)
         {
           if ((i+3) >= argc)
           {
-            REprintf("ERROR: '%s' needs 3 arguments: index below above\n", argv[i]);
+            REprintf("ERROR: '%s' needs 3 arguments: index min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionKeepAttributeBetween(atoi(argv[i+1]), atof(argv[i+2]), atof(argv[i+3])));
+          I32 index;
+          if (sscanf(argv[i+1], "%d", &index) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index min max but '%s' is no valid index\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min;
+          if (sscanf(argv[i+2], "%lf", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index min max but '%s' is no valid min\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 max;
+          if (sscanf(argv[i+3], "%lf", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index min max but '%s' is no valid max\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepAttributeBetween(index, min, max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
       }
@@ -2374,7 +2950,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 1 argument: nth\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepEveryNth((I32)atoi(argv[i+1])));
+        U32 nth;
+        if (sscanf(argv[i+1], "%u", &nth) != 1)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: nth but '%s' is no valid nth\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (nth == 0)
+        {
+          REprintf("ERROR: %u is no valid nth for '%s'\n", nth, argv[i]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepEveryNth(nth));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-keep_random_fraction") == 0)
@@ -2384,8 +2971,28 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 1 argument: fraction\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepRandomFraction((F32)atof(argv[i+1])));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        F32 fraction;
+        if (sscanf(argv[i+1], "%f", &fraction) != 1)
+        {
+          REprintf("ERROR: '%s' needs at least 1 argument: fraction [seed] but '%s' is no valid fraction\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (((i+2) < argc) && ('0' <= argv[i+2][0]) && (argv[i+2][0] <= '9')) // maybe a seed was specified
+        {
+          U32 seed;
+          if (sscanf(argv[i+2], "%u", &seed) != 1)
+          {
+            REprintf("ERROR: '%s' takes seed as second argument but '%s' is no valid seed\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepRandomFraction(seed, fraction));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else // no seed was specified
+        {
+          add_criterion(new LAScriterionKeepRandomFraction(fraction));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
       }
       else if (strcmp(argv[i],"-keep_scan_direction_change") == 0)
       {
@@ -2404,7 +3011,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 1 argument: number\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionKeepScannerChannel((I32)atof(argv[i+1])));
+        I32 number;
+        if (sscanf(argv[i+1], "%d", &number) != 1)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: number but '%s' is no valid number\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if ((number < 0) || (number > 3))
+        {
+          REprintf("ERROR: '%s' needs 1 argument: number between 0 and 3 so '%s' is not valid\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionKeepScannerChannel(number));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
     }
@@ -2457,23 +3075,34 @@ BOOL LASfilter::parse(int argc, char* argv[])
           }
           *argv[i]='\0';
           i+=1;
+          U32 classification;
+          U32 drop_classification_mask = 0;
           do
           {
-            if (atoi(argv[i]) > 31)
+            if (sscanf(argv[i], "%u", &classification) != 1)
             {
-              REprintf("ERROR: cannot drop classification %d because it is larger than 31\n", atoi(argv[i]));
+              REprintf("ERROR: '-drop_classification' needs at least 1 argument: classification but '%s' is no valid classification\n", argv[i]);
               return FALSE;
             }
-            else if (atoi(argv[i]) < 0)
+            if (classification > 31)
             {
-              REprintf("ERROR: cannot drop classification %d because it is smaller than 0\n", atoi(argv[i]));
+              REprintf("ERROR: cannot drop classification %u because it is larger than 31\n", classification);
               return FALSE;
             }
-            drop_classification_mask |= (1 << atoi(argv[i]));
+            drop_classification_mask |= (1u << classification);
             *argv[i]='\0';
             i+=1;
           } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
           i-=1;
+          // if last criteria was also drop_class filter then combine them
+          if (num_criteria && (strcmp(criteria[num_criteria-1]->name(), "drop_classification_mask") == 0))
+          {
+            LAScriterionDropClassifications* criterion = (LAScriterionDropClassifications*)(criteria[num_criteria-1]);
+            num_criteria--;
+            drop_classification_mask |= criterion->get_drop_classification_mask();
+            delete criterion;
+          }
+          add_criterion(new LAScriterionDropClassifications(drop_classification_mask));
         }
         else if (strcmp(argv[i],"-drop_classification_mask") == 0)
         {
@@ -2482,7 +3111,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: mask\n", argv[i]);
             return FALSE;
           }
-          drop_classification_mask = atoi(argv[i+1]);
+          U32 drop_classification_mask;
+          if (sscanf(argv[i+1], "%u", &drop_classification_mask) != 1)
+          {
+            REprintf("ERROR: '%s' needs at least 1 argument: mask but '%s' is no valid mask\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropClassifications(drop_classification_mask));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
@@ -2497,19 +3132,20 @@ BOOL LASfilter::parse(int argc, char* argv[])
           }
           *argv[i]='\0';
           i+=1;
+          U32 extended_classification;
           do
           {
-            if (atoi(argv[i]) > 255)
+            if (sscanf(argv[i], "%u", &extended_classification) != 1)
             {
-              REprintf("ERROR: cannot drop extended classification %d because it is larger than 255\n", atoi(argv[i]));
+              REprintf("ERROR: '-drop_extended_classification' needs at least 1 argument: classification but '%s' is no valid classification\n", argv[i]);
               return FALSE;
             }
-            else if (atoi(argv[i]) < 0)
+            if (extended_classification > 255)
             {
-              REprintf("ERROR: cannot drop extended classification %d because it is smaller than 0\n", atoi(argv[i]));
+              REprintf("ERROR: cannot drop extended classification %u because it is larger than 255\n", extended_classification);
               return FALSE;
             }
-            drop_extended_classification_mask[atoi(argv[i])/32] |= (1 << (atoi(argv[i]) - (32*(atoi(argv[i])/32))));
+            drop_extended_classification_mask[extended_classification/32] |= (1u << (extended_classification%32));
             *argv[i]='\0';
             i+=1;
           } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
@@ -2542,7 +3178,31 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropxy(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min_y;
+          if (sscanf(argv[i+2], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid min_y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+3], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid max_x\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+4], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y but '%s' is no valid max_y\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropxy(min_x, min_y, max_x, max_y));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-drop_xyz") == 0)
@@ -2552,7 +3212,43 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropxyz(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min_y;
+          if (sscanf(argv[i+2], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 min_z;
+          if (sscanf(argv[i+3], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid min_z\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+4], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_x\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+5], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_y\n", argv[i], argv[i+5]);
+            return FALSE;
+          }
+          F64 max_z;
+          if (sscanf(argv[i+6], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 6 arguments: min_x min_y min_z max_x max_y max_z but '%s' is no valid max_z\n", argv[i], argv[i+6]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropxyz(min_x, min_y, min_z, max_x, max_y, max_z));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-drop_x") == 0)
@@ -2562,7 +3258,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_x max_x\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropx(atof(argv[i+1]), atof(argv[i+2])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_x max_x but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+2], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_x max_x but '%s' is no valid max_x\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropx(min_x, max_x));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-drop_x_below") == 0)
@@ -2572,7 +3280,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min_x\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropxBelow(atof(argv[i+1])));
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_x but '%s' is no valid min_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropxBelow(min_x));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_x_above") == 0)
@@ -2582,7 +3296,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max_x\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropxAbove(atof(argv[i+1])));
+          F64 max_x;
+          if (sscanf(argv[i+1], "%lf", &max_x) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_x but '%s' is no valid max_x\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropxAbove(max_x));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
@@ -2595,7 +3315,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_y max_y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropy(atof(argv[i+1]), atof(argv[i+2])));
+          F64 min_y;
+          if (sscanf(argv[i+1], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_y max_y but '%s' is no valid min_y\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+2], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_y max_y but '%s' is no valid max_y\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropy(min_y, max_y));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-drop_y_below") == 0)
@@ -2605,7 +3337,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min_y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropyBelow(atof(argv[i+1])));
+          F64 min_y;
+          if (sscanf(argv[i+1], "%lf", &min_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_y but '%s' is no valid min_y\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropyBelow(min_y));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_y_above") == 0)
@@ -2615,7 +3353,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max_y\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropyAbove(atof(argv[i+1])));
+          F64 max_y;
+          if (sscanf(argv[i+1], "%lf", &max_y) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_y but '%s' is no valid max_y\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropyAbove(max_y));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
@@ -2628,7 +3372,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_z max_z\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropz(atof(argv[i+1]), atof(argv[i+2])));
+          F64 min_z;
+          if (sscanf(argv[i+1], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_z max_z but '%s' is no valid min_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max_z;
+          if (sscanf(argv[i+2], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_z max_z but '%s' is no valid max_z\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropz(min_z, max_z));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-drop_z_below") == 0)
@@ -2638,7 +3394,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min_z\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropzBelow(atof(argv[i+1])));
+          F64 min_z;
+          if (sscanf(argv[i+1], "%lf", &min_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_z but '%s' is no valid min_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropzBelow(min_z));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_z_above") == 0)
@@ -2648,7 +3410,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max_z\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropzAbove(atof(argv[i+1])));
+          F64 max_z;
+          if (sscanf(argv[i+1], "%lf", &max_z) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_z but '%s' is no valid max_z\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropzAbove(max_z));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
@@ -2751,22 +3519,67 @@ BOOL LASfilter::parse(int argc, char* argv[])
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
-      else if (strcmp(argv[i],"-drop_return") == 0)
+      else if (strncmp(argv[i],"-drop_return", 12) == 0)
       {
-        if ((i+1) >= argc)
+        if (strcmp(argv[i],"-drop_return") == 0)
         {
-          REprintf("ERROR: '%s' needs at least 1 argument: return_number\n", argv[i]);
-          return FALSE;
-        }
-        *argv[i]='\0';
-        i+=1;
-        do
-        {
-          drop_return_mask |= (1 << atoi(argv[i]));
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs at least 1 argument: return_number\n", argv[i]);
+            return FALSE;
+          }
           *argv[i]='\0';
           i+=1;
-        } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
-        i-=1;
+          U32 return_number;
+          U16 drop_return_mask = 0;
+          do
+          {
+            if (sscanf(argv[i], "%u", &return_number) != 1)
+            {
+              REprintf("ERROR: '-drop_return' needs at least 1 argument: return_number but '%s' is no valid return_number\n", argv[i]);
+              return FALSE;
+            }
+            if (return_number > 15)
+            {
+              REprintf("ERROR: cannot drop return_number %u because it is larger than 15\n", return_number);
+              return FALSE;
+            }
+            drop_return_mask |= (1u << return_number);
+            *argv[i]='\0';
+            i+=1;
+          } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
+          i-=1;
+          // if last criteria was also drop_return filter then combine them
+          if (num_criteria && (strcmp(criteria[num_criteria-1]->name(), "drop_return_mask") == 0))
+          {
+            LAScriterionDropReturns* criterion = (LAScriterionDropReturns*)(criteria[num_criteria-1]);
+            num_criteria--;
+            drop_return_mask |= criterion->get_drop_return_mask();
+            delete criterion;
+          }
+          add_criterion(new LAScriterionDropReturns(drop_return_mask));
+        }
+        else if (strcmp(argv[i],"-drop_return_mask") == 0)
+        {
+          if ((i+1) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: return_mask\n", argv[i]);
+            return FALSE;
+          }
+          U32 drop_return_mask;
+          if (sscanf(argv[i+1], "%u", &drop_return_mask) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: return_mask but '%s' is no valid return_mask\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (drop_return_mask > U16_MAX)
+          {
+            REprintf("ERROR: '%s' needs a return_mask between 0 and %u but return_mask is %u\n", argv[i], U16_MAX, drop_return_mask);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropReturns((U16)drop_return_mask));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+        }
       }
       else if (strcmp(argv[i],"-drop_number_of_returns") == 0)
       {
@@ -2808,7 +3621,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         add_criterion(new LAScriterionDropScanDirection(atoi(argv[i+1])));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
-      else if (strncmp(argv[i],"-drop_intensity_above",15) == 0)
+      else if (strncmp(argv[i],"-drop_intensity",15) == 0)
       {
         if (strcmp(argv[i],"-drop_intensity_above") == 0)
         {
@@ -2817,7 +3630,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropIntensityAbove(atoi(argv[i+1])));
+          I32 max;
+          if (sscanf(argv[i+1], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max but '%s' is no valid max\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropIntensityAbove(max));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_intensity_below") == 0)
@@ -2827,7 +3646,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropIntensityBelow(atoi(argv[i+1])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropIntensityBelow(min));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_intensity_between") == 0)
@@ -2837,7 +3662,59 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropIntensityBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max;
+          if (sscanf(argv[i+2], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropIntensityBetween(min, max));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+      }
+      else if (strncmp(argv[i],"-drop_RGB_", 10) == 0)
+      {
+        if ((i+2) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
+          return FALSE;
+        }
+        I32 min;
+        if (sscanf(argv[i+1], "%d", &min) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        I32 max;
+        if (sscanf(argv[i+2], "%d", &max) != 1)
+        {
+          REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (strcmp(argv[i]+10,"red") == 0)
+        {
+          add_criterion(new LAScriterionDropRGB(min, max, 0));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"green") == 0)
+        {
+          add_criterion(new LAScriterionDropRGB(min, max, 1));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"blue") == 0)
+        {
+          add_criterion(new LAScriterionDropRGB(min, max, 2));
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+        }
+        else if (strcmp(argv[i]+10,"nir") == 0)
+        {
+          add_criterion(new LAScriterionDropRGB(min, max, 3));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -2850,8 +3727,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max\n", argv[i]);
             return FALSE;
           }
-          I32 angle = atoi(argv[i+1]);
-          add_criterion(new LAScriterionKeepScanAngle(-angle, angle));
+          I32 max;
+          if (sscanf(argv[i+1], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max but '%s' is no valid max\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionKeepScanAngle(-max, max));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_abs_scan_angle_below") == 0)
@@ -2861,8 +3743,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min\n", argv[i]);
             return FALSE;
           }
-          I32 angle = atoi(argv[i+1]);
-          add_criterion(new LAScriterionDropScanAngleBetween(-angle+1, angle-1));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropScanAngleBetween(-min+1, min-1));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
       }
@@ -2875,7 +3762,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropScanAngleAbove(atoi(argv[i+1])));
+          I32 max;
+          if (sscanf(argv[i+1], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max but '%s' is no valid max\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropScanAngleAbove(max));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_scan_angle_below") == 0)
@@ -2885,7 +3778,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropScanAngleBelow(atoi(argv[i+1])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropScanAngleBelow(min));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_scan_angle_between") == 0)
@@ -2895,7 +3794,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropScanAngleBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max;
+          if (sscanf(argv[i+2], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropScanAngleBetween(min, max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -2937,7 +3848,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs at least 1 argument: ID\n", argv[i]);
+            REprintf("ERROR: '%s' needs at least 1 argument: value\n", argv[i]);
             return FALSE;
           }
           *argv[i]='\0';
@@ -2954,30 +3865,54 @@ BOOL LASfilter::parse(int argc, char* argv[])
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs 1 argument: min_value\n", argv[i]);
+            REprintf("ERROR: '%s' needs 1 argument: min\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropUserDataBelow(atoi(argv[i+1])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropUserDataBelow(min));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_user_data_above") == 0)
         {
           if ((i+1) >= argc)
           {
-            REprintf("ERROR: '%s' needs 1 argument: max_value\n", argv[i]);
+            REprintf("ERROR: '%s' needs 1 argument: max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropUserDataAbove(atoi(argv[i+1])));
+          I32 max;
+          if (sscanf(argv[i+1], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max but '%s' is no valid max\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropUserDataAbove(max));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_user_data_between") == 0)
         {
           if ((i+2) >= argc)
           {
-            REprintf("ERROR: '%s' needs 2 arguments: min_value max_value\n", argv[i]);
+            REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropUserDataBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          I32 min;
+          if (sscanf(argv[i+1], "%d", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          I32 max;
+          if (sscanf(argv[i+2], "%d", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropUserDataBetween(min, max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -2994,7 +3929,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
           i+=1;
           do
           {
-            add_criterion(new LAScriterionDropPointSource(atoi(argv[i])));
+            U32 ID;
+            if (sscanf(argv[i], "%u", &ID) != 1)
+            {
+              REprintf("ERROR: '-drop_point_source' needs at least 1 argument: ID but '%s' is no valid ID\n", argv[i]);
+              return FALSE;
+            }
+            if (ID > U16_MAX)
+            {
+              REprintf("ERROR: cannot drop_point_source ID %u because it is larger than %u\n", ID, U16_MAX);
+              return FALSE;
+            }
+            add_criterion(new LAScriterionDropPointSource(ID));
             *argv[i]='\0';
             i+=1;
           } while ((i < argc) && ('0' <= *argv[i]) && (*argv[i] <= '9'));
@@ -3007,7 +3953,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min_ID\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropPointSourceBelow(atoi(argv[i+1])));
+          U32 min_ID;
+          if (sscanf(argv[i+1], "%u", &min_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_ID max_ID but '%s' is no valid min_ID\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (min_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot drop point source below min_ID of %u because it is larger than %u\n", min_ID, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropPointSourceBelow((U16)min_ID));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_point_source_above") == 0)
@@ -3017,7 +3974,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max_ID\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropPointSourceAbove(atoi(argv[i+1])));
+          U32 max_ID;
+          if (sscanf(argv[i+1], "%u", &max_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_ID but '%s' is no valid max_ID\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          if (max_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot drop point source above max_ID of %u because it is larger than %u\n", max_ID, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropPointSourceAbove((U16)max_ID));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_point_source_between") == 0)
@@ -3027,7 +3995,29 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropPointSourceBetween(atoi(argv[i+1]), atoi(argv[i+2])));
+          U32 min_ID;
+          if (sscanf(argv[i+1], "%u", &min_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID but '%s' is no valid min_ID\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          U32 max_ID;
+          if (sscanf(argv[i+2], "%d", &max_ID) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID but '%s' is no valid max_ID\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          if (min_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot drop point source because min_ID of %u is larger than %u\n", min_ID, U16_MAX);
+            return FALSE;
+          }
+          if (max_ID > U16_MAX)
+          {
+            REprintf("ERROR: cannot drop point source because max_ID of %u is larger than %u\n", max_ID, U16_MAX);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropPointSourceBetween((U16)min_ID, (U16)max_ID));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -3040,7 +4030,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: max_gps_time\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropGpsTimeAbove(atof(argv[i+1])));
+          F64 max_gps_time;
+          if (sscanf(argv[i+1], "%lf", &max_gps_time) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: max_gps_time but '%s' is no valid max_gps_time\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropGpsTimeAbove(max_gps_time));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_gps_time_below") == 0 || strcmp(argv[i],"-drop_gpstime_below") == 0)
@@ -3050,7 +4046,13 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 1 argument: min_gps_time\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropGpsTimeBelow(atof(argv[i+1])));
+          F64 min_gps_time;
+          if (sscanf(argv[i+1], "%lf", &min_gps_time) != 1)
+          {
+            REprintf("ERROR: '%s' needs 1 argument: min_gps_time but '%s' is no valid min_gps_time\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropGpsTimeBelow(min_gps_time));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-drop_gps_time_between") == 0 || strcmp(argv[i],"-drop_gpstime_between") == 0)
@@ -3060,7 +4062,19 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 2 arguments: min max\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropGpsTimeBetween(atof(argv[i+1]), atof(argv[i+2])));
+          F64 min;
+          if (sscanf(argv[i+1], "%lf", &min) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid min\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 max;
+          if (sscanf(argv[i+2], "%lf", &max) != 1)
+          {
+            REprintf("ERROR: '%s' needs 2 arguments: min max but '%s' is no valid max\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropGpsTimeBetween(min, max));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
@@ -3093,7 +4107,25 @@ BOOL LASfilter::parse(int argc, char* argv[])
             REprintf("ERROR: '%s' needs 3 arguments: index below above\n", argv[i]);
             return FALSE;
           }
-          add_criterion(new LAScriterionDropAttributeBetween(atoi(argv[i+1]), atof(argv[i+2]), atof(argv[i+3])));
+          U32 index;
+          if (sscanf(argv[i+1], "%u", &index) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index below above but '%s' is no valid index\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 below;
+          if (sscanf(argv[i+2], "%lf", &below) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index below above but '%s' is no valid below\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 above;
+          if (sscanf(argv[i+3], "%lf", &above) != 1)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: index below above but '%s' is no valid above\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          add_criterion(new LAScriterionDropAttributeBetween(index, below, above));
           *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
         }
       }
@@ -3104,7 +4136,18 @@ BOOL LASfilter::parse(int argc, char* argv[])
           REprintf("ERROR: '%s' needs 1 argument: nth\n", argv[i]);
           return FALSE;
         }
-        add_criterion(new LAScriterionDropEveryNth((I32)atoi(argv[i+1])));
+        U32 nth;
+        if (sscanf(argv[i+1], "%u", &nth) != 1)
+        {
+          REprintf("ERROR: '%s' needs 1 argument nth but '%s' is no valid nth\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (nth == 0)
+        {
+          REprintf("ERROR: %u is no valid nth for '%s'\n", nth, argv[i]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionDropEveryNth(nth));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
 
@@ -3207,40 +4250,6 @@ BOOL LASfilter::parse(int argc, char* argv[])
     }
   }
 
-  if (drop_return_mask)
-  {
-    if (keep_return_mask)
-    {
-      REprintf("ERROR: cannot use '-drop_return' and '-keep_return' simultaneously\n");
-      return FALSE;
-    }
-    else
-    {
-      keep_return_mask = 255 & ~drop_return_mask;
-    }
-  }
-  if (keep_return_mask)
-  {
-    add_criterion(new LAScriterionKeepReturns(keep_return_mask));
-  }
-
-  if (keep_classification_mask)
-  {
-    if (drop_classification_mask)
-    {
-      REprintf("ERROR: cannot use '-drop_class' and '-keep_class' simultaneously\n");
-      return FALSE;
-    }
-    else
-    {
-      drop_classification_mask = ~keep_classification_mask;
-    }
-  }
-  if (drop_classification_mask)
-  {
-    add_criterion(new LAScriterionDropClassifications(drop_classification_mask));
-  }
-
   if (keep_extended_classification_mask[0] || keep_extended_classification_mask[1] || keep_extended_classification_mask[2] || keep_extended_classification_mask[3] || keep_extended_classification_mask[4] || keep_extended_classification_mask[5] || keep_extended_classification_mask[6] || keep_extended_classification_mask[7])
   {
     if (drop_extended_classification_mask[0] || drop_extended_classification_mask[1] || drop_extended_classification_mask[2] || drop_extended_classification_mask[3] || drop_extended_classification_mask[4] || drop_extended_classification_mask[5] || drop_extended_classification_mask[6] || drop_extended_classification_mask[7])
@@ -3273,7 +4282,7 @@ BOOL LASfilter::parse(CHAR* string)
   int p = 0;
   int argc = 1;
   char* argv[64];
-  int len = strlen(string);
+  I32 len = (I32)strlen(string);
 
   while (p < len)
   {

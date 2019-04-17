@@ -8,6 +8,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/laswriter_wrl.cpp \
 					LASlib/lasreader_shp.cpp \
 					LASlib/lasreader_asc.cpp \
+					LASlib/lasreaderstored.cpp \
 					LASlib/lasreaderpipeon.cpp \
 					LASlib/lasreader_bil.cpp \
 					LASlib/lastransform.cpp \
@@ -22,6 +23,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/laswriter.cpp  \
 					LASlib/lasreader.cpp \
 					LASlib/lasreader_las.cpp \
+					LASlib/lasreader_ply.cpp \
 					LASlib/lasreader_bin.cpp \
 					LASlib/laswriter_bin.cpp \
 					LASlib/laswriter_txt.cpp \
@@ -31,9 +33,11 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/laswriteitemcompressed_v1.cpp \
 					LASzip/laswriteitemcompressed_v2.cpp \
 					LASzip/laswriteitemcompressed_v3.cpp \
+					LASzip/laswriteitemcompressed_v4.cpp \
 					LASzip/lasreaditemcompressed_v1.cpp \
 					LASzip/lasreaditemcompressed_v2.cpp \
 					LASzip/lasreaditemcompressed_v3.cpp \
+					LASzip/lasreaditemcompressed_v4.cpp \
 					LASzip/arithmeticdecoder.cpp \
 					LASzip/arithmeticencoder.cpp \
 					LASzip/lasquadtree.cpp \

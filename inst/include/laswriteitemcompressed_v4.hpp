@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
-  FILE:  laswriteitemcompressed_v3.hpp
+  FILE:  laswriteitemcompressed_v4.hpp
   
   CONTENTS:
   
@@ -24,14 +24,15 @@
   
   CHANGE HISTORY:
   
+    28 December 2017 -- fix incorrect 'context switch' reported by Wanwannodao 
     28 August 2017 -- moving 'context' from global development hack to interface  
     22 August 2016 -- finalizing at Basecamp in Bonn during FOSS4g hackfest
     23 February 2016 -- created at OSGeo Code Sprint in Paris to prototype
 
 ===============================================================================
 */
-#ifndef LAS_WRITE_ITEM_COMPRESSED_V3_HPP
-#define LAS_WRITE_ITEM_COMPRESSED_V3_HPP
+#ifndef LAS_WRITE_ITEM_COMPRESSED_V4_HPP
+#define LAS_WRITE_ITEM_COMPRESSED_V4_HPP
 
 #include "laswriteitem.hpp"
 #include "arithmeticencoder.hpp"
@@ -40,18 +41,18 @@
 
 #include "laszip_common_v3.hpp"
 
-class LASwriteItemCompressed_POINT14_v3 : public LASwriteItemCompressed
+class LASwriteItemCompressed_POINT14_v4 : public LASwriteItemCompressed
 {
 public:
 
-  LASwriteItemCompressed_POINT14_v3(ArithmeticEncoder* enc);
+  LASwriteItemCompressed_POINT14_v4(ArithmeticEncoder* enc);
 
   BOOL init(const U8* item, U32& context);
   BOOL write(const U8* item, U32& context);
   BOOL chunk_sizes();
   BOOL chunk_bytes();
 
-  ~LASwriteItemCompressed_POINT14_v3();
+  ~LASwriteItemCompressed_POINT14_v4();
 
 private:
 
@@ -104,18 +105,18 @@ private:
   void write_gps_time(const U64I64F64 gps_time);
 };
 
-class LASwriteItemCompressed_RGB14_v3 : public LASwriteItemCompressed
+class LASwriteItemCompressed_RGB14_v4 : public LASwriteItemCompressed
 {
 public:
 
-  LASwriteItemCompressed_RGB14_v3(ArithmeticEncoder* enc);
+  LASwriteItemCompressed_RGB14_v4(ArithmeticEncoder* enc);
 
   BOOL init(const U8* item, U32& context);
   BOOL write(const U8* item, U32& context);
   BOOL chunk_sizes();
   BOOL chunk_bytes();
 
-  ~LASwriteItemCompressed_RGB14_v3();
+  ~LASwriteItemCompressed_RGB14_v4();
 
 private:
 
@@ -137,18 +138,18 @@ private:
   BOOL createAndInitModelsAndCompressors(U32 context, const U8* item);
 };
 
-class LASwriteItemCompressed_RGBNIR14_v3 : public LASwriteItemCompressed
+class LASwriteItemCompressed_RGBNIR14_v4 : public LASwriteItemCompressed
 {
 public:
 
-  LASwriteItemCompressed_RGBNIR14_v3(ArithmeticEncoder* enc);
+  LASwriteItemCompressed_RGBNIR14_v4(ArithmeticEncoder* enc);
 
   BOOL init(const U8* item, U32& context);
   BOOL write(const U8* item, U32& context);
   BOOL chunk_sizes();
   BOOL chunk_bytes();
 
-  ~LASwriteItemCompressed_RGBNIR14_v3();
+  ~LASwriteItemCompressed_RGBNIR14_v4();
 
 private:
 
@@ -174,18 +175,18 @@ private:
   BOOL createAndInitModelsAndCompressors(U32 context, const U8* item);
 };
 
-class LASwriteItemCompressed_WAVEPACKET14_v3 : public LASwriteItemCompressed
+class LASwriteItemCompressed_WAVEPACKET14_v4 : public LASwriteItemCompressed
 {
 public:
 
-  LASwriteItemCompressed_WAVEPACKET14_v3(ArithmeticEncoder* enc);
+  LASwriteItemCompressed_WAVEPACKET14_v4(ArithmeticEncoder* enc);
 
   BOOL init(const U8* item, U32& context);
   BOOL write(const U8* item, U32& context);
   BOOL chunk_sizes();
   BOOL chunk_bytes();
 
-  ~LASwriteItemCompressed_WAVEPACKET14_v3();
+  ~LASwriteItemCompressed_WAVEPACKET14_v4();
 
 private:
 
@@ -207,18 +208,18 @@ private:
   BOOL createAndInitModelsAndCompressors(U32 context, const U8* item);
 };
 
-class LASwriteItemCompressed_BYTE14_v3 : public LASwriteItemCompressed
+class LASwriteItemCompressed_BYTE14_v4 : public LASwriteItemCompressed
 {
 public:
 
-  LASwriteItemCompressed_BYTE14_v3(ArithmeticEncoder* enc, U32 number);
+  LASwriteItemCompressed_BYTE14_v4(ArithmeticEncoder* enc, U32 number);
 
   BOOL init(const U8* item, U32& context);
   BOOL write(const U8* item, U32& context);
   BOOL chunk_sizes();
   BOOL chunk_bytes();
 
-  ~LASwriteItemCompressed_BYTE14_v3();
+  ~LASwriteItemCompressed_BYTE14_v4();
 
 private:
 

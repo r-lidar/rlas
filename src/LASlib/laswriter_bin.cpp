@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  laswriter_bin.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
-
+  
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
 
   COPYRIGHT:
@@ -21,13 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
-     6  may  2018 -- by Jean-Romain Roussel - l173-176 use memcpy instead of strncpy
-
+  
 ===============================================================================
 */
 #include "laswriter_bin.hpp"
@@ -172,11 +170,11 @@ BOOL LASwriterBIN::open(ByteStreamOut* stream, const LASheader* header, const ch
   tsheader.size = sizeof(TSheader);
   tsheader.version = this->version;
   tsheader.recog_val = 970401;
-  memcpy(tsheader.recog_str, "CXYZ", 4);
+  strncpy(tsheader.recog_str, "CXYZ", 4);
   tsheader.npoints = (header->number_of_point_records ? header->number_of_point_records : (U32)header->extended_number_of_point_records);
   double scale = header->x_scale_factor;
-  if (header->y_scale_factor < scale) scale = header->y_scale_factor;
-  if (header->z_scale_factor < scale) scale = header->z_scale_factor;
+  if (header->y_scale_factor < scale) scale = header->y_scale_factor; 
+  if (header->z_scale_factor < scale) scale = header->z_scale_factor; 
   units = tsheader.units = (I32)(1.0 / scale);
   origin_x = tsheader.origin_x = -header->x_offset/scale;
   origin_y = tsheader.origin_y = -header->y_offset/scale;
@@ -249,13 +247,13 @@ BOOL LASwriterBIN::update_header(const LASheader* header, BOOL use_inventory, BO
   return TRUE;
 }
 
-I64 LASwriterBIN::close(BOOL update_header)
+I64 LASwriterBIN::close(BOOL update_npoints)
 {
   I64 bytes = 0;
-
+  
   if (stream)
   {
-    if (update_header && p_count != npoints)
+    if (update_npoints && p_count != npoints)
     {
       if (!stream->isSeekable())
       {

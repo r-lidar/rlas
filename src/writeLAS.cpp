@@ -249,7 +249,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
     IntegerVector Blu = (B) ? data["B"] : IntegerVector(0);
     IntegerVector NIR = (N) ? data["NIR"] : IntegerVector(0);
     IntegerVector SAR = (sar) ? data["ScanAngleRank"] : IntegerVector(0);
-    IntegerVector ESA = (esa) ? data["ScanAngle"] : IntegerVector(0);
+    NumericVector ESA = (esa) ? data["ScanAngle"] : NumericVector(0);
     IntegerVector CHA = (cha) ? data["ScannerChannel"] : IntegerVector(0);
 
     for(int j = 0 ; j < X.length() ; j++)
@@ -281,7 +281,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       if(o) { point.set_extended_overlap_flag((U8)O[j]); }
 
       if(sar) { point.set_scan_angle_rank((I8)SAR[j]); }
-      if(esa) { point.set_extended_scan_angle((I16)ESA[j]/0.006f); }
+      if(esa) { point.set_extended_scan_angle((I16)((ESA[j]/0.006f))); }
 
       if(u) { point.set_user_data((U8)U[j]); }
       if(p) { point.set_point_source_ID((U16)P[j]); }
