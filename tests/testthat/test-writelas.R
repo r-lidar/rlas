@@ -93,48 +93,47 @@ test_that("write.las skips selectively extra bytes if missing VLR",{
   expect_equal(wlas, las[, -c(17)])
 })
 
-# test_that("write.las writes LAS 1.4",{
-#
-#   new_header <- header
-#   new_header[["Version Minor"]] <- 4L
-#   new_header[["Header Size"]]   <- 375L
-#
-#   write.las(write_path, new_header, las)
-#
-#   wlas    <- read.las(write_path)
-#   wheader <- read.lasheader(write_path)
-#
-#   expect_equal(wheader[["Version Minor"]], 4L)
-#   expect_equal(length(wheader[["Number of points by return"]]), 15)
-#   expect_equal(las, wlas)
-# })
-#
-# test_that("write.las writes LAS 1.4 point format 6",{
-#
-#   new_header <- header
-#   new_header[["Version Minor"]] <- 4L
-#   new_header[["Point Data Format ID"]] <- 6L
-#   new_header[["Header Size"]] <- 375L
-#
-#   las$Overlap_flag <- TRUE
-#   las$ScannerChannel <- 1L
-#
-#   colnames(las)[colnames(las) == "ScanAngleRank"] <- "ScanAngle"
-#   las <- las[c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
-#                                  "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScannerChannel",
-#                                  "Synthetic_flag", "Keypoint_flag", "Withheld_flag", "Overlap_flag",
-#                                  "ScanAngle", "UserData", "PointSourceID", "Amplitude", "Pulse width")]
-#
-#   write.las(write_path, new_header, las)
-#
-#   wlas    <- read.las(write_path)
-#   wheader <- read.lasheader(write_path)
-#
-#   expect_equal(wheader[["Version Minor"]], 4L)
-#   expect_equal(length(wheader[["Number of points by return"]]), 15)
-#   expect_equal(las, wlas, tolerance = 0.00015)
-# })
+test_that("write.las writes LAS 1.4",{
 
+  new_header <- header
+  new_header[["Version Minor"]] <- 4L
+  new_header[["Header Size"]]   <- 375L
+
+  write.las(write_path, new_header, las)
+
+  wlas    <- read.las(write_path)
+  wheader <- read.lasheader(write_path)
+
+  expect_equal(wheader[["Version Minor"]], 4L)
+  expect_equal(length(wheader[["Number of points by return"]]), 15)
+  expect_equal(las, wlas)
+})
+
+test_that("write.las writes LAS 1.4 point format 6",{
+
+  new_header <- header
+  new_header[["Version Minor"]] <- 4L
+  new_header[["Point Data Format ID"]] <- 6L
+  new_header[["Header Size"]] <- 375L
+
+  las$Overlap_flag <- TRUE
+  las$ScannerChannel <- 1L
+
+  colnames(las)[colnames(las) == "ScanAngleRank"] <- "ScanAngle"
+  las <- data.table::setcolorder(las, c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
+                                 "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScannerChannel",
+                                 "Synthetic_flag", "Keypoint_flag", "Withheld_flag", "Overlap_flag",
+                                 "ScanAngle", "UserData", "PointSourceID", "Amplitude", "Pulse width"))
+
+  write.las(write_path, new_header, las)
+
+  wlas    <- read.las(write_path)
+  wheader <- read.lasheader(write_path)
+
+  expect_equal(wheader[["Version Minor"]], 4L)
+  expect_equal(length(wheader[["Number of points by return"]]), 15)
+  expect_equal(las, wlas, tolerance = 0.00015)
+})
 
 
 
