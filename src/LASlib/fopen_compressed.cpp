@@ -39,8 +39,8 @@
 #include <windows.h>
 #endif
 
-#include <R.h>
 #define STRICT_R_HEADERS
+#include <R.h>
 
 enum PIPES { READ_HANDLE, WRITE_HANDLE }; /* Constants 0 and 1 for READ and WRITE */
 

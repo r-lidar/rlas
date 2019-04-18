@@ -31,8 +31,8 @@
 ===============================================================================
 */
 
-#include <R.h>
 #define STRICT_R_HEADERS
+#include <R.h>
 
 #ifndef MYDEFS_HPP
 #define MYDEFS_HPP
