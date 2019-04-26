@@ -1,10 +1,10 @@
-### rlas v1.3.2 (Release date: )
+### rlas v1.3.2 (Release date: 2019-04-26)
 
-* Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write ScanAngleRank above 90 degrees but not above 127 degrees.
+* Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write `ScanAngleRank` above 90 degrees but not above 127 degrees.
 * Fix: [#34](https://github.com/Jean-Romain/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
-* Fix: [#35](https://github.com/Jean-Romain/rlas/issues/35) Erreur reading a specific laz file. The actual problem is unknown. This has been fixed by updating LASlib
-* Fix: [#36](https://github.com/Jean-Romain/rlas/issues/35) Classification was zeroed when writing LAS1.4 prf 6. The actual problem is not known. This has been fixed by updating LASlib
-* Fix: ScanAngle was rounded to integer for LAS1.4 prf >= 6 before to be written. With the 0.006 factor conversion this lead to unrelated values when reading back a written file.
+* Fix: [#35](https://github.com/Jean-Romain/rlas/issues/35) Erreur reading a specific laz file. The actual problem is unknown. This has been fixed by updating `LASlib`
+* Fix: [#36](https://github.com/Jean-Romain/rlas/issues/35) Classification was zeroed when writing LAS1.4 prf 6. The actual problem is not known. This has been fixed by updating `LASlib`
+* Fix: `ScanAngle` was rounded to integer for LAS 1.4 prf >= 6 before to be written. With the 0.006 factor conversion this lead to unrelated values when reading back a written file.
 * Change: `header_create()` does not generates random UUID. The UUID is set to `"00000000-0000-0000-0000-000000000000"`. Dependence to `uuid` has been removed.
 * Change: Dependancies to `sp`, `sf` and `rgeos` were no longer useful. `rlas` only depends on `data.table + Rcpp`.
 
