@@ -23,8 +23,9 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # lasattributer.hpp        l79-80     for gcc 8+ replace strncpy by memcpy - requires to get the char* length:
 #     int len = 0 ; while(*(description+len) != '\0' && len < 32) len++;
 #     memcpy(this->description, description, len);
+# lasdefinition.hpp        l570       cast to void* : memset((void*)&(vlrs[i]), 0, sizeof(LASvlr));
 # lasdefinition.hpp        l572,697   for gcc 8+ replace strncpy by memcpy in the same way than lasattributer.hpp
-# laswriter_bin.cpp        l176       for gcc 8+ replace strncpy by memcpy
+# laswriter_bin.cpp        l173       for gcc 8+ replace strncpy by memcpy
 # bytestreamount_file.hpp  l134       return (true)
 # lastransform.cpp         l401       R::runif(0, RAND_MAX); (need #include <Rcpp.h>)
 # lasfilter.cpp            l1298      R::runif(0, RAND_MAX); (need #include <Rcpp.h>)
