@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreadpoint.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 
@@ -36,6 +36,7 @@
 #include "lasreaditemcompressed_v1.hpp"
 #include "lasreaditemcompressed_v2.hpp"
 #include "lasreaditemcompressed_v3.hpp"
+#include "lasreaditemcompressed_v4.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,10 +104,10 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
       // entropy decoder not supported
       return FALSE;
     }
-    // maybe layered compression for LAS 1.4
+    // maybe layered compression for LAS 1.4 
     layered_las14_compression = (laszip->compressor == LASZIP_COMPRESSOR_LAYERED_CHUNKED);
   }
-
+ 
   // initizalize the readers
   readers = 0;
   num_readers = num_items;
@@ -131,7 +132,7 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
         readers_raw[i] = new LASreadItemRaw_GPSTIME11_LE();
       else
         readers_raw[i] = new LASreadItemRaw_GPSTIME11_BE();
-      break;
+       break;
     case LASitem::RGB12:
     case LASitem::RGB14:
       if (IS_LITTLE_ENDIAN())
@@ -179,7 +180,17 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
     }
     seek_point = new U8*[num_items];
     if (!seek_point) return FALSE;
-    seek_point[0] = new U8[point_size];
+    if (layered_las14_compression)
+    {
+      // because combo LAS 1.0 - 1.4 point struct has padding
+      seek_point[0] = new U8[(point_size*2)];
+      // because extended_point_type must be set
+      seek_point[0][22] = 1;
+    }
+    else
+    {
+      seek_point[0] = new U8[point_size];
+    }
     if (!seek_point[0]) return FALSE;
     for (i = 0; i < num_readers; i++)
     {
@@ -220,24 +231,32 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
       case LASitem::POINT14:
         if ((items[i].version == 3) || (items[i].version == 2)) // version == 2 from lasproto
           readers_compressed[i] = new LASreadItemCompressed_POINT14_v3(dec, decompress_selective);
+        else if (items[i].version == 4)
+          readers_compressed[i] = new LASreadItemCompressed_POINT14_v4(dec, decompress_selective);
         else
           return FALSE;
         break;
       case LASitem::RGB14:
         if ((items[i].version == 3) || (items[i].version == 2)) // version == 2 from lasproto
           readers_compressed[i] = new LASreadItemCompressed_RGB14_v3(dec, decompress_selective);
+        else if (items[i].version == 4)
+          readers_compressed[i] = new LASreadItemCompressed_RGB14_v4(dec, decompress_selective);
         else
           return FALSE;
         break;
       case LASitem::RGBNIR14:
         if ((items[i].version == 3) || (items[i].version == 2)) // version == 2 from lasproto
           readers_compressed[i] = new LASreadItemCompressed_RGBNIR14_v3(dec, decompress_selective);
+        else if (items[i].version == 4)
+          readers_compressed[i] = new LASreadItemCompressed_RGBNIR14_v4(dec, decompress_selective);
         else
           return FALSE;
         break;
       case LASitem::BYTE14:
         if ((items[i].version == 3) || (items[i].version == 2)) // version == 2 from lasproto
           readers_compressed[i] = new LASreadItemCompressed_BYTE14_v3(dec, items[i].size, decompress_selective);
+        else if (items[i].version == 4)
+          readers_compressed[i] = new LASreadItemCompressed_BYTE14_v4(dec, items[i].size, decompress_selective);
         else
           return FALSE;
         break;
@@ -250,13 +269,26 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
       case LASitem::WAVEPACKET14:
         if (items[i].version == 3)
           readers_compressed[i] = new LASreadItemCompressed_WAVEPACKET14_v3(dec, decompress_selective);
+        else if (items[i].version == 4)
+          readers_compressed[i] = new LASreadItemCompressed_WAVEPACKET14_v4(dec, decompress_selective);
         else
           return FALSE;
         break;
       default:
         return FALSE;
       }
-      if (i) seek_point[i] = seek_point[i-1]+items[i-1].size;
+      if (i)
+      {
+        if (layered_las14_compression)
+        {
+          // because combo LAS 1.0 - 1.4 point struct has padding
+          seek_point[i] = seek_point[i-1]+(2*items[i-1].size);
+        }
+        else
+        {
+          seek_point[i] = seek_point[i-1]+items[i-1].size;
+        }
+      }
     }
     if (laszip->compressor != LASZIP_COMPRESSOR_POINTWISE)
     {
@@ -373,6 +405,7 @@ BOOL LASreadPoint::seek(const U32 current, const U32 target)
 BOOL LASreadPoint::read(U8* const * point)
 {
   U32 i;
+  U32 context = 0;
 
   try
   {
@@ -419,14 +452,14 @@ BOOL LASreadPoint::read(U8* const * point)
       {
         for (i = 0; i < num_readers; i++)
         {
-          readers[i]->read(point[i]);
+          readers[i]->read(point[i], context);
         }
       }
       else
       {
         for (i = 0; i < num_readers; i++)
         {
-          readers_raw[i]->read(point[i]);
+          readers_raw[i]->read(point[i], context);
         }
         if (layered_las14_compression)
         {
@@ -442,7 +475,7 @@ BOOL LASreadPoint::read(U8* const * point)
           }
           for (i = 0; i < num_readers; i++)
           {
-            ((LASreadItemCompressed*)(readers_compressed[i]))->init(point[i]);
+            ((LASreadItemCompressed*)(readers_compressed[i]))->init(point[i], context);
           }
           if (DEBUG_OUTPUT_NUM_BYTES_DETAILS) REprintf( "\n");
         }
@@ -450,7 +483,7 @@ BOOL LASreadPoint::read(U8* const * point)
         {
           for (i = 0; i < num_readers; i++)
           {
-            ((LASreadItemCompressed*)(readers_compressed[i]))->init(point[i]);
+            ((LASreadItemCompressed*)(readers_compressed[i]))->init(point[i], context);
           }
           dec->init(instream);
         }
@@ -461,11 +494,11 @@ BOOL LASreadPoint::read(U8* const * point)
     {
       for (i = 0; i < num_readers; i++)
       {
-        readers[i]->read(point[i]);
+        readers[i]->read(point[i], context);
       }
     }
   }
-  catch (I32 exception)
+  catch (I32 exception) 
   {
     // create error string
     if (last_error == 0) last_error = new CHAR[128];

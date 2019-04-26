@@ -120,10 +120,10 @@ test_that("write.las skips selectively extra bytes if missing VLR",{
 #   las$ScannerChannel <- 1L
 #
 #   colnames(las)[colnames(las) == "ScanAngleRank"] <- "ScanAngle"
-#   las <- las[c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
+#   las <- data.table::setcolorder(las, c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns",
 #                                  "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScannerChannel",
 #                                  "Synthetic_flag", "Keypoint_flag", "Withheld_flag", "Overlap_flag",
-#                                  "ScanAngle", "UserData", "PointSourceID", "Amplitude", "Pulse width")]
+#                                  "ScanAngle", "UserData", "PointSourceID", "Amplitude", "Pulse width"))
 #
 #   write.las(write_path, new_header, las)
 #
@@ -134,7 +134,6 @@ test_that("write.las skips selectively extra bytes if missing VLR",{
 #   expect_equal(length(wheader[["Number of points by return"]]), 15)
 #   expect_equal(las, wlas, tolerance = 0.00015)
 # })
-
 
 
 

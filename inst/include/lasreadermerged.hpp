@@ -24,6 +24,7 @@
   
   CHANGE HISTORY:
   
+     5 September 2018 -- support for reading points from the PLY format
      1 December 2017 -- support extra bytes during '-merged' operations
      3 May 2015 -- header sets file source ID to 0 when merging flightlines 
     20 January 2011 -- created missing Livermore and my Extra Virgin Olive Oil
@@ -36,10 +37,11 @@
 #include "lasreader_las.hpp"
 #include "lasreader_bin.hpp"
 #include "lasreader_shp.hpp"
-#include "lasreader_qfit.hpp"
 #include "lasreader_asc.hpp"
 #include "lasreader_bil.hpp"
 #include "lasreader_dtm.hpp"
+#include "lasreader_ply.hpp"
+#include "lasreader_qfit.hpp"
 #include "lasreader_txt.hpp"
 
 class LASreaderMerged : public LASreader
@@ -51,8 +53,8 @@ public:
   BOOL add_file_name(const CHAR* file_name);
   void set_scale_factor(const F64* scale_factor);
   void set_offset(const F64* offset);
-  void set_files_are_flightlines(BOOL files_are_flightlines);
-  void set_apply_file_source_ID(BOOL apply_file_source_ID);
+  void set_files_are_flightlines(const I32 files_are_flightlines);
+  void set_apply_file_source_ID(const BOOL apply_file_source_ID);
   void set_translate_intensity(F32 translate_intensity);
   void set_scale_intensity(F32 scale_intensity);
   void set_translate_scan_angle(F32 translate_scan_angle);
@@ -92,10 +94,11 @@ private:
   LASreaderLAS* lasreaderlas;
   LASreaderBIN* lasreaderbin;
   LASreaderSHP* lasreadershp;
-  LASreaderQFIT* lasreaderqfit;
   LASreaderASC* lasreaderasc;
   LASreaderBIL* lasreaderbil;
   LASreaderDTM* lasreaderdtm;
+  LASreaderPLY* lasreaderply;
+  LASreaderQFIT* lasreaderqfit;
   LASreaderTXT* lasreadertxt;
   BOOL point_type_change;
   BOOL point_size_change;
@@ -104,7 +107,7 @@ private:
   BOOL reoffset;
   F64* scale_factor;
   F64* offset;
-  BOOL files_are_flightlines;
+  I32 files_are_flightlines;
   BOOL apply_file_source_ID;
   F32 translate_intensity;
   F32 scale_intensity;

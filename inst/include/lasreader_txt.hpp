@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasreader_txt.hpp
-  
+
   CONTENTS:
-  
+
     Reads LIDAR points in LAS format through on-the-fly conversion from ASCII.
 
   PROGRAMMERS:
@@ -21,15 +21,17 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
+    7 September 2018 -- replaced calls to _strdup with calls to the LASCopyString macro
+   22 July 2018 -- bug fix for parsing classfication to point type 6 (or higher)
    11 January 2017 -- added with<h>eld and scanner channe<l> for the parse string
    11 January 2017 -- added 'k'eypoint and 'o'verlap flags for the parse string
    17 January 2016 -- pre-scaling and pre-offsetting of "extra bytes" attributes
     9 July 2014 -- allowing input from stdin after the 7:1 in the World Cup
     8 April 2011 -- created after starting a google group for LAStools users
-  
+
 ===============================================================================
 */
 #ifndef LAS_READER_TXT_HPP
@@ -87,15 +89,15 @@ private:
   bool piped;
   CHAR line[512];
   I32 number_attributes;
-  I32 attributes_data_types[10];
-  const CHAR* attribute_names[10];
-  const CHAR* attribute_descriptions[10];
-  F64 attribute_scales[10];
-  F64 attribute_offsets[10];
-  F64 attribute_pre_scales[10];
-  F64 attribute_pre_offsets[10];
-  F64 attribute_no_datas[10];
-  I32 attribute_starts[10];
+  I32 attributes_data_types[32];
+  const CHAR* attribute_names[32];
+  const CHAR* attribute_descriptions[32];
+  F64 attribute_scales[32];
+  F64 attribute_offsets[32];
+  F64 attribute_pre_scales[32];
+  F64 attribute_pre_offsets[32];
+  F64 attribute_no_datas[32];
+  I32 attribute_starts[32];
   BOOL parse_attribute(const CHAR* l, I32 index);
   BOOL parse(const CHAR* parse_string);
   BOOL check_parse_string(const CHAR* parse_string);

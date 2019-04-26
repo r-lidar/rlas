@@ -13,7 +13,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2018, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -103,14 +103,14 @@ BOOL LASreaderLAS::open(FILE* file, BOOL peek_only, U32 decompress_selective)
   return open(in, peek_only, decompress_selective);
 }
 
-BOOL LASreaderLAS::open(istream& stream, BOOL peek_only, U32 decompress_selective)
+BOOL LASreaderLAS::open(istream& stream, BOOL peek_only, U32 decompress_selective, BOOL seekable)
 {
   // create input
   ByteStreamIn* in;
   if (IS_LITTLE_ENDIAN())
-    in = new ByteStreamInIstreamLE(stream);
+    in = new ByteStreamInIstreamLE(stream, seekable);
   else
-    in = new ByteStreamInIstreamBE(stream);
+    in = new ByteStreamInIstreamBE(stream, seekable);
 
   return open(in, peek_only, decompress_selective);
 }
@@ -782,6 +782,13 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           else if (header.vlrs[i].record_id == 4) // ExtraBytes
           {
             header.init_attributes(header.vlrs[i].record_length_after_header/sizeof(LASattribute), (LASattribute*)header.vlrs[i].data);
+            for (j = 0; j < (U32)header.number_attributes; j++)
+            {
+              if (header.attributes[j].data_type > 10)
+              {
+                REprintf("WARNING: data type %d of attribute %d ('%s') is deprecated\n", header.attributes[j].data_type, j, header.attributes[j].name);
+              }
+            }
           }
           else if ((header.vlrs[i].record_id >= 100) && (header.vlrs[i].record_id < 355)) // WavePacketDescriptor
           {
@@ -1411,7 +1418,10 @@ void LASreaderLAS::close(BOOL close_stream)
   {
     if (stream)
     {
-      delete stream;
+      if (delete_stream)
+      {
+        delete stream;
+      }
       stream = 0;
     }
     if (file)
@@ -1426,6 +1436,7 @@ LASreaderLAS::LASreaderLAS()
 {
   file = 0;
   stream = 0;
+  delete_stream = TRUE;
   reader = 0;
 }
 

@@ -156,13 +156,13 @@ void RLASExtrabyteAttributes::set_attribute(int i, LASpoint* p)
 
 LASattribute RLASExtrabyteAttributes::make_LASattribute()
 {
-  LASattribute attribute(data_type, name.c_str(), desc.c_str(), 1);
+  LASattribute attribute(data_type, name.c_str(), desc.c_str());
 
   if(has_scale)
-    attribute.set_scale(scale, 0);
+    attribute.set_scale(scale);
 
   if(has_offset)
-    attribute.set_offset(offset, 0);
+    attribute.set_offset(offset);
 
   if(has_no_data)
   {

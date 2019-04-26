@@ -28,7 +28,6 @@
 
 ===============================================================================
 */
-
 #include "laszip.hpp"
 #include "mydefs.hpp"
 #include <assert.h>
@@ -62,12 +61,12 @@ LASzip::~LASzip()
 }
 
 // the data of the LASzip VLR
-//     U16  compressor         2 bytes
-//     U16  coder              2 bytes
-//     U8   version_major      1 byte
+//     U16  compressor         2 bytes 
+//     U16  coder              2 bytes 
+//     U8   version_major      1 byte 
 //     U8   version_minor      1 byte
 //     U16  version_revision   2 bytes
-//     U32  options            4 bytes
+//     U32  options            4 bytes 
 //     U32  chunk_size         4 bytes
 //     I64  num_points         8 bytes
 //     I64  num_bytes          8 bytes
@@ -82,7 +81,7 @@ bool LASzip::unpack(const U8* bytes, const I32 num)
 {
   // check input
   if (num < 34) return return_error("too few bytes to unpack");
-  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack");
+  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack"); 
   if (((num - 34) / 6) == 0) return return_error("zero items to unpack");
   num_items = (num - 34) / 6;
 
@@ -239,19 +238,19 @@ bool LASzip::check_item(const LASitem* item)
     break;
   case LASitem::POINT14:
     if (item->size != 30) return return_error("POINT14 has size != 30");
-    if ((item->version != 0) && (item->version != 2) && (item->version != 3)) return return_error("POINT14 has version != 0 and != 2 and != 3"); // version == 2 from lasproto
+    if ((item->version != 0) && (item->version != 2) && (item->version != 3) && (item->version != 4)) return return_error("POINT14 has version != 0 and != 2 and != 3 and != 4"); // version == 2 from lasproto, version == 4 fixes context-switch
     break;
   case LASitem::RGB14:
     if (item->size != 6) return return_error("RGB14 has size != 6");
-    if ((item->version != 0) && (item->version != 2) && (item->version != 3)) return return_error("RGB14 has version != 0 and != 2 and != 3"); // version == 2 from lasproto
+    if ((item->version != 0) && (item->version != 2) && (item->version != 3) && (item->version != 4)) return return_error("RGB14 has version != 0 and != 2 and != 3 and != 4"); // version == 2 from lasproto, version == 4 fixes context-switch
     break;
   case LASitem::RGBNIR14:
     if (item->size != 8) return return_error("RGBNIR14 has size != 8");
-    if ((item->version != 0) && (item->version != 2) && (item->version != 3)) return return_error("RGBNIR14 has version != 0 and != 2 and != 3"); // version == 2 from lasproto
+    if ((item->version != 0) && (item->version != 2) && (item->version != 3) && (item->version != 4)) return return_error("RGBNIR14 has version != 0 and != 2 and != 3 and != 4"); // version == 2 from lasproto, version == 4 fixes context-switch
     break;
   case LASitem::BYTE14:
     if (item->size < 1) return return_error("BYTE14 has size < 1");
-    if ((item->version != 0) && (item->version != 2) && (item->version != 3)) return return_error("BYTE14 has version != 0 and != 2 and != 3"); // version == 2 from lasproto
+    if ((item->version != 0) && (item->version != 2) && (item->version != 3) && (item->version != 4)) return return_error("BYTE14 has version != 0 and != 2 and != 3 and != 4"); // version == 2 from lasproto, version == 4 fixes context-switch
     break;
   case LASitem::WAVEPACKET13:
     if (item->size != 29) return return_error("WAVEPACKET13 has size != 29");
@@ -259,7 +258,7 @@ bool LASzip::check_item(const LASitem* item)
     break;
   case LASitem::WAVEPACKET14:
     if (item->size != 29) return return_error("WAVEPACKET14 has size != 29");
-    if ((item->version != 0) && (item->version != 3)) return return_error("WAVEPACKET14 has version != 0 and != 3");
+    if ((item->version != 0) && (item->version != 3) && (item->version != 4)) return return_error("WAVEPACKET14 has version != 0 and != 3 and != 4"); // version == 4 fixes context-switch
     break;
   default:
     if (1)
@@ -423,7 +422,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
   BOOL have_wavepacket = FALSE;
   I32 extra_bytes_number = 0;
 
-  // turns on LAS 1.4 compatibility mode
+  // turns on LAS 1.4 compatibility mode 
 
   if (options & 1) compatible = TRUE;
 
@@ -511,7 +510,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
     // if we have NIR ...
     if (have_nir)
     {
-      // we need another 2 extra bytes
+      // we need another 2 extra bytes 
       extra_bytes_number += 2;
       // we do not use the NIR item
       have_nir = FALSE;
@@ -753,7 +752,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 57);
               return true;
             }
-            else
+            else 
             {
               if (items[3].is_type(LASitem::BYTE))
               {
@@ -859,7 +858,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 67);
               return true;
             }
-            else
+            else 
             {
               if (items[3].is_type(LASitem::BYTE) || items[3].is_type(LASitem::BYTE14))
               {

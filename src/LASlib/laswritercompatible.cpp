@@ -170,7 +170,7 @@ BOOL LASwriterCompatibleDown::open(LASheader* header, LASwriteOpener* laswriteop
 
   // scan_angle (difference or remainder) is stored as a I16
   LASattribute lasattribute_scan_angle(3, "LAS 1.4 scan angle", "additional attributes");
-  lasattribute_scan_angle.set_scale(0.006, 0);
+  lasattribute_scan_angle.set_scale(0.006);
   I32 index_scan_angle = header->add_attribute(lasattribute_scan_angle);
   start_scan_angle = header->get_attribute_start(index_scan_angle);
   // extended returns stored as a U8
@@ -276,6 +276,13 @@ BOOL LASwriterCompatibleDown::open(LASheader* header, LASwriteOpener* laswriteop
     }
   }
 
+  // remove the old LASzip (in case it exists)
+
+  if (header->laszip)
+  {
+    header->clean_laszip();
+  }
+  
   writer = laswriteopener->open(header);
 
   if (writer == 0)
@@ -624,7 +631,7 @@ BOOL LASwriterCompatibleUp::write_point(const LASpoint* point)
   pointCompatibleUp.extended_number_of_returns = number_of_returns_increment + pointCompatibleUp.number_of_returns;
   pointCompatibleUp.extended_classification = classification + pointCompatibleUp.get_classification();
   pointCompatibleUp.extended_scanner_channel = scanner_channel;
-  pointCompatibleUp.extended_classification_flags = (overlap_bit << 3) | (pointCompatibleUp.classification >> 5);
+  pointCompatibleUp.extended_classification_flags = (overlap_bit << 3) | ((pointCompatibleUp.withheld_flag) << 2) | ((pointCompatibleUp.keypoint_flag) << 1) | (pointCompatibleUp.synthetic_flag);
 
   writer->write_point(&pointCompatibleUp);
   p_count++;

@@ -13,7 +13,7 @@
   
   COPYRIGHT:
   
-    (c) 2007-2015, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -24,6 +24,8 @@
   
   CHANGE HISTORY:
   
+    27 August 2017 -- added '-histo scanner_channel 1'
+     1 June 2017 -- improved "fluff" detection
      3 May 2015 -- updated LASinventory to handle LAS 1.4 content 
     25 December 2010 -- created after swinging in Mara's hammock for hours
   
@@ -69,6 +71,10 @@ public:
   I64 classification_extended_overlap;
   LASpoint min;
   LASpoint max;
+  U16 xyz_low_digits_10[3];
+  U16 xyz_low_digits_100[3];
+  U16 xyz_low_digits_1000[3];
+  U16 xyz_low_digits_10000[3];
   I64 xyz_fluff_10[3];
   I64 xyz_fluff_100[3];
   I64 xyz_fluff_1000[3];
@@ -97,17 +103,17 @@ public:
   void add(F64 item, F64 value);
   void report(FILE* file, const CHAR* name=0, const CHAR* name_avg=0) const;
   void reset();
-  F32 get_step() const;
-  LASbin(F32 step, F32 clamp_min=F32_MIN, F32 clamp_max=F32_MAX);
+  F64 get_step() const;
+  LASbin(F64 step, F64 clamp_min=F64_MIN, F64 clamp_max=F64_MAX);
   ~LASbin();
 private:
   void add_to_bin(I32 bin);
   F64 total;
   I64 count;
-  F32 step;
-  F32 clamp_min;
-  F32 clamp_max;
-  F32 one_over_step;
+  F64 step;
+  F64 clamp_min;
+  F64 clamp_max;
+  F64 one_over_step;
   BOOL first;
   I32 anker;
   I32 size_pos;
@@ -124,8 +130,8 @@ public:
   BOOL active() const { return is_active; }; 
   BOOL parse(int argc, char* argv[]);
   I32 unparse(CHAR* string) const;
-  BOOL histo(const CHAR* name, F32 step);
-  BOOL histo_avg(const CHAR* name, F32 step, const CHAR* name_avg);
+  BOOL histo(const CHAR* name, F64 step);
+  BOOL histo_avg(const CHAR* name, F64 step, const CHAR* name_avg);
   void add(const LASpoint* point);
   void report(FILE* file) const;
   void reset();
@@ -144,9 +150,12 @@ private:
   LASbin* classification_bin;
   LASbin* scan_angle_bin;
   LASbin* extended_scan_angle_bin;
+  LASbin* return_number_bin;
+  LASbin* number_of_returns_bin;
   LASbin* user_data_bin;
   LASbin* point_source_id_bin;
   LASbin* gps_time_bin;
+  LASbin* scanner_channel_bin;
   LASbin* R_bin;
   LASbin* G_bin;
   LASbin* B_bin;

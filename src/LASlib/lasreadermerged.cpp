@@ -2,17 +2,17 @@
 ===============================================================================
 
   FILE:  lasreadermerged.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
-
+  
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-
+  
   COPYRIGHT:
-
+  
     (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lasreadermerged.hpp"
@@ -71,11 +71,6 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix SHP with LAS. skipping '%s' ...\n", file_name);
       return FALSE;
     }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with LAS. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
     if (lasreaderasc)
     {
       REprintf( "ERROR: cannot mix ASC with LAS. skipping '%s' ...\n", file_name);
@@ -89,6 +84,16 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
     if (lasreaderdtm)
     {
       REprintf( "ERROR: cannot mix DTM with LAS. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with LAS. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with LAS. skipping '%s' ...\n", file_name);
       return FALSE;
     }
     if (lasreadertxt)
@@ -113,11 +118,6 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix SHP with BIN. skipping '%s' ...\n", file_name);
       return FALSE;
     }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with BIN. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
     if (lasreaderasc)
     {
       REprintf( "ERROR: cannot mix ASC with BIN. skipping '%s' ...\n", file_name);
@@ -131,6 +131,16 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
     if (lasreaderdtm)
     {
       REprintf( "ERROR: cannot mix DTM with BIN. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with BIN. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with BIN. skipping '%s' ...\n", file_name);
       return FALSE;
     }
     if (lasreadertxt)
@@ -155,11 +165,6 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix BIN with SHP. skipping '%s' ...\n", file_name);
       return FALSE;
     }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with SHP. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
     if (lasreaderasc)
     {
       REprintf( "ERROR: cannot mix ASC with SHP. skipping '%s' ...\n", file_name);
@@ -175,6 +180,16 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix DTM with SHP. skipping '%s' ...\n", file_name);
       return FALSE;
     }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with SHP. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with SHP. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
     if (lasreadertxt)
     {
       REprintf( "ERROR: cannot mix TXT with SHP. skipping '%s' ...\n", file_name);
@@ -183,6 +198,194 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
     if (lasreadershp == 0)
     {
       lasreader = lasreadershp = new LASreaderSHP();
+    }
+  }
+  else if (strstr(file_name, ".asc") || strstr(file_name, ".ASC"))
+  {
+    if (lasreaderlas)
+    {
+      REprintf( "ERROR: cannot mix LAS with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbin)
+    {
+      REprintf( "ERROR: cannot mix BIN with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadershp)
+    {
+      REprintf( "ERROR: cannot mix SHP with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbil)
+    {
+      REprintf( "ERROR: cannot mix BIL with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderdtm)
+    {
+      REprintf( "ERROR: cannot mix DTM with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadertxt)
+    {
+      REprintf( "ERROR: cannot mix TXT with ASC. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderasc == 0)
+    {
+      lasreader = lasreaderasc = new LASreaderASC();
+    }
+  }
+  else if (strstr(file_name, ".bil") || strstr(file_name, ".BIL"))
+  {
+    if (lasreaderlas)
+    {
+      REprintf( "ERROR: cannot mix LAS with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbin)
+    {
+      REprintf( "ERROR: cannot mix BIN with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadershp)
+    {
+      REprintf( "ERROR: cannot mix SHP with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderdtm)
+    {
+      REprintf( "ERROR: cannot mix DTM with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderasc)
+    {
+      REprintf( "ERROR: cannot mix ASC with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadertxt)
+    {
+      REprintf( "ERROR: cannot mix TXT with BIL. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbil == 0)
+    {
+      lasreader = lasreaderbil = new LASreaderBIL();
+    }
+  }
+  else if (strstr(file_name, ".dtm") || strstr(file_name, ".DTM"))
+  {
+    if (lasreaderlas)
+    {
+      REprintf( "ERROR: cannot mix LAS with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbin)
+    {
+      REprintf( "ERROR: cannot mix BIN with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadershp)
+    {
+      REprintf( "ERROR: cannot mix SHP with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbil)
+    {
+      REprintf( "ERROR: cannot mix BIL with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderasc)
+    {
+      REprintf( "ERROR: cannot mix ASC with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadertxt)
+    {
+      REprintf( "ERROR: cannot mix TXT with DTM. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderdtm == 0)
+    {
+      lasreader = lasreaderdtm = new LASreaderDTM();
+    }
+  }
+  else if (strstr(file_name, ".ply") || strstr(file_name, ".PLY"))
+  {
+    if (lasreaderlas)
+    {
+      REprintf( "ERROR: cannot mix LAS with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbin)
+    {
+      REprintf( "ERROR: cannot mix BIN with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadershp)
+    {
+      REprintf( "ERROR: cannot mix SHP with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderasc)
+    {
+      REprintf( "ERROR: cannot mix ASC with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderbil)
+    {
+      REprintf( "ERROR: cannot mix BIL with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderdtm)
+    {
+      REprintf( "ERROR: cannot mix DTM with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreadertxt)
+    {
+      REprintf( "ERROR: cannot mix TXT with PLY. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply == 0)
+    {
+      lasreader = lasreaderply = new LASreaderPLY();
     }
   }
   else if (strstr(file_name, ".qi") || strstr(file_name, ".QI"))
@@ -217,6 +420,11 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix DTM with QFIT. skipping '%s' ...\n", file_name);
       return FALSE;
     }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with QFIT. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
     if (lasreadertxt)
     {
       REprintf( "ERROR: cannot mix TXT with QFIT. skipping '%s' ...\n", file_name);
@@ -225,132 +433,6 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
     if (lasreaderqfit == 0)
     {
       lasreader = lasreaderqfit = new LASreaderQFIT();
-    }
-  }
-  else if (strstr(file_name, ".asc") || strstr(file_name, ".ASC"))
-  {
-    if (lasreaderlas)
-    {
-      REprintf( "ERROR: cannot mix LAS with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbin)
-    {
-      REprintf( "ERROR: cannot mix BIN with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadershp)
-    {
-      REprintf( "ERROR: cannot mix SHP with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbil)
-    {
-      REprintf( "ERROR: cannot mix BIL with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderdtm)
-    {
-      REprintf( "ERROR: cannot mix DTM with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadertxt)
-    {
-      REprintf( "ERROR: cannot mix TXT with ASC. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderasc == 0)
-    {
-      lasreader = lasreaderasc = new LASreaderASC();
-    }
-  }
-  else if (strstr(file_name, ".bil") || strstr(file_name, ".BIL"))
-  {
-    if (lasreaderlas)
-    {
-      REprintf( "ERROR: cannot mix LAS with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbin)
-    {
-      REprintf( "ERROR: cannot mix BIN with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadershp)
-    {
-      REprintf( "ERROR: cannot mix SHP with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderdtm)
-    {
-      REprintf( "ERROR: cannot mix DTM with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderasc)
-    {
-      REprintf( "ERROR: cannot mix ASC with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadertxt)
-    {
-      REprintf( "ERROR: cannot mix TXT with BIL. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbil == 0)
-    {
-      lasreader = lasreaderbil = new LASreaderBIL();
-    }
-  }
-  else if (strstr(file_name, ".dtm") || strstr(file_name, ".DTM"))
-  {
-    if (lasreaderlas)
-    {
-      REprintf( "ERROR: cannot mix LAS with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbin)
-    {
-      REprintf( "ERROR: cannot mix BIN with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadershp)
-    {
-      REprintf( "ERROR: cannot mix SHP with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderbil)
-    {
-      REprintf( "ERROR: cannot mix BIL with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderasc)
-    {
-      REprintf( "ERROR: cannot mix ASC with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreadertxt)
-    {
-      REprintf( "ERROR: cannot mix TXT with DTM. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
-    if (lasreaderdtm == 0)
-    {
-      lasreader = lasreaderdtm = new LASreaderDTM();
     }
   }
   else
@@ -370,11 +452,6 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       REprintf( "ERROR: cannot mix SHP with TXT. skipping '%s' ...\n", file_name);
       return FALSE;
     }
-    if (lasreaderqfit)
-    {
-      REprintf( "ERROR: cannot mix QFIT with TXT. skipping '%s' ...\n", file_name);
-      return FALSE;
-    }
     if (lasreaderasc)
     {
       REprintf( "ERROR: cannot mix ASC with TXT. skipping '%s' ...\n", file_name);
@@ -388,6 +465,16 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
     if (lasreaderdtm)
     {
       REprintf( "ERROR: cannot mix DTM with TXT. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderply)
+    {
+      REprintf( "ERROR: cannot mix PLY with TXT. skipping '%s' ...\n", file_name);
+      return FALSE;
+    }
+    if (lasreaderqfit)
+    {
+      REprintf( "ERROR: cannot mix QFIT with TXT. skipping '%s' ...\n", file_name);
       return FALSE;
     }
     if (lasreadertxt == 0)
@@ -413,7 +500,7 @@ BOOL LASreaderMerged::add_file_name(const char* file_name)
       return FALSE;
     }
   }
-  file_names[file_name_number] = strdup(file_name);
+  file_names[file_name_number] = LASCopyString(file_name);
   file_name_number++;
   return TRUE;
 }
@@ -450,7 +537,7 @@ void LASreaderMerged::set_offset(const F64* offset)
   }
 }
 
-void LASreaderMerged::set_files_are_flightlines(BOOL files_are_flightlines)
+void LASreaderMerged::set_files_are_flightlines(const I32 files_are_flightlines)
 {
   this->files_are_flightlines = files_are_flightlines;
   // when merging multiple flightlines the merged header must have a file source ID of 0
@@ -495,7 +582,7 @@ void LASreaderMerged::set_parse_string(const char* parse_string)
   if (this->parse_string) free(this->parse_string);
   if (parse_string)
   {
-    this->parse_string = strdup(parse_string);
+    this->parse_string = LASCopyString(parse_string);
   }
   else
   {
@@ -566,14 +653,6 @@ BOOL LASreaderMerged::open()
         return FALSE;
       }
     }
-    else if (lasreaderqfit)
-    {
-      if (!lasreaderqfit->open(file_names[i]))
-      {
-        REprintf( "ERROR: could not open lasreaderqfit for file '%s'\n", file_names[i]);
-        return FALSE;
-      }
-    }
     else if (lasreaderasc)
     {
       if (!lasreaderasc->open(file_names[i]))
@@ -595,6 +674,22 @@ BOOL LASreaderMerged::open()
       if (!lasreaderdtm->open(file_names[i]))
       {
         REprintf( "ERROR: could not open lasreaderdtm for file '%s'\n", file_names[i]);
+        return FALSE;
+      }
+    }
+    else if (lasreaderply)
+    {
+      if (!lasreaderply->open(file_names[i]))
+      {
+        REprintf( "ERROR: could not open lasreaderply for file '%s'\n", file_names[i]);
+        return FALSE;
+      }
+    }
+    else if (lasreaderqfit)
+    {
+      if (!lasreaderqfit->open(file_names[i]))
+      {
+        REprintf( "ERROR: could not open lasreaderqfit for file '%s'\n", file_names[i]);
         return FALSE;
       }
     }
@@ -692,7 +787,7 @@ BOOL LASreaderMerged::open()
         // have there not been any points before
         if (npoints == lasreader->npoints)
         {
-          // use the counters
+          // use the counters 
           header.number_of_point_records = lasreader->header.number_of_point_records;
           for (j = 0; j < 5; j++)
           {
@@ -728,7 +823,7 @@ BOOL LASreaderMerged::open()
         }
         else
         {
-          // increment point counters
+          // increment point counters 
           header.number_of_point_records += lasreader->header.number_of_point_records;
           for (j = 0; j < 5; j++)
           {
@@ -810,9 +905,9 @@ BOOL LASreaderMerged::open()
     if (0) // (auto_upgrade)
     {
 #ifdef _WIN32
-      REprintf( "WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d). upgrading to LAS 1.4\n", header.version_minor, npoints);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d). upgrading to LAS 1.4\n", header.version_minor, npoints);
 #else
-      REprintf( "WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld). upgrading to LAS 1.4\n", header.version_minor, npoints);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld). upgrading to LAS 1.4\n", header.version_minor, npoints);
 #endif
       if (header.version_minor == 3)
       {
@@ -829,9 +924,9 @@ BOOL LASreaderMerged::open()
     else
     {
 #ifdef _WIN32
-      REprintf( "WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
 #else
-      REprintf( "WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
 #endif
     }
   }
@@ -913,7 +1008,7 @@ BOOL LASreaderMerged::open()
       reoffset = TRUE;
     }
   }
-
+    
   // check y
 
   if ((((header.max_y - header.y_offset) / header.y_scale_factor) > I32_MAX) || (((header.min_y - header.y_offset) / header.y_scale_factor) < I32_MIN))
@@ -939,7 +1034,7 @@ BOOL LASreaderMerged::open()
       reoffset = TRUE;
     }
   }
-
+    
   // check z
 
   if ((((header.max_z - header.z_offset) / header.z_scale_factor) > I32_MAX) || (((header.min_z - header.z_offset) / header.z_scale_factor) < I32_MIN))
@@ -1001,17 +1096,6 @@ BOOL LASreaderMerged::open()
         lasreadershp = new LASreaderSHPreoffset(header.x_offset, header.y_offset, header.z_offset);
       lasreader = lasreadershp;
     }
-    else if (lasreaderqfit)
-    {
-      delete lasreaderqfit;
-      if (rescale && reoffset)
-        lasreaderqfit = new LASreaderQFITrescalereoffset(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor, header.x_offset, header.y_offset, header.z_offset);
-      else if (rescale)
-        lasreaderqfit = new LASreaderQFITrescale(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor);
-      else
-        lasreaderqfit = new LASreaderQFITreoffset(header.x_offset, header.y_offset, header.z_offset);
-      lasreader = lasreaderqfit;
-    }
     else if (lasreaderasc)
     {
       delete lasreaderasc;
@@ -1044,6 +1128,28 @@ BOOL LASreaderMerged::open()
       else
         lasreaderdtm = new LASreaderDTMreoffset(header.x_offset, header.y_offset, header.z_offset);
       lasreader = lasreaderdtm;
+    }
+    else if (lasreaderply)
+    {
+      delete lasreaderply;
+      if (rescale && reoffset)
+        lasreaderply = new LASreaderPLYrescalereoffset(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor, header.x_offset, header.y_offset, header.z_offset);
+      else if (rescale)
+        lasreaderply = new LASreaderPLYrescale(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor);
+      else
+        lasreaderply = new LASreaderPLYreoffset(header.x_offset, header.y_offset, header.z_offset);
+      lasreader = lasreaderply;
+    }
+    else if (lasreaderqfit)
+    {
+      delete lasreaderqfit;
+      if (rescale && reoffset)
+        lasreaderqfit = new LASreaderQFITrescalereoffset(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor, header.x_offset, header.y_offset, header.z_offset);
+      else if (rescale)
+        lasreaderqfit = new LASreaderQFITrescale(header.x_scale_factor, header.y_scale_factor, header.z_scale_factor);
+      else
+        lasreaderqfit = new LASreaderQFITreoffset(header.x_offset, header.y_offset, header.z_offset);
+      lasreader = lasreaderqfit;
     }
     else
     {
@@ -1196,7 +1302,7 @@ BOOL LASreaderMerged::read_point_default()
 
 void LASreaderMerged::close(BOOL close_stream)
 {
-  if (lasreader)
+  if (lasreader) 
   {
     lasreader->close(close_stream);
   }
@@ -1213,17 +1319,18 @@ BOOL LASreaderMerged::reopen()
 
 void LASreaderMerged::clean()
 {
-  if (lasreader)
+  if (lasreader) 
   {
     delete lasreader;
     lasreader = 0;
     lasreaderlas = 0;
     lasreaderbin = 0;
     lasreadershp = 0;
-    lasreaderqfit = 0;
     lasreaderasc = 0;
     lasreaderbil = 0;
     lasreaderdtm = 0;
+    lasreaderply = 0;
+    lasreaderqfit = 0;
     lasreadertxt = 0;
   }
   point_type_change = FALSE;
@@ -1281,14 +1388,15 @@ LASreaderMerged::LASreaderMerged()
   lasreaderlas = 0;
   lasreaderbin = 0;
   lasreadershp = 0;
-  lasreaderqfit = 0;
   lasreaderasc = 0;
   lasreaderbil = 0;
   lasreaderdtm = 0;
+  lasreaderply = 0;
+  lasreaderqfit = 0;
   lasreadertxt = 0;
   scale_factor = 0;
   offset = 0;
-  files_are_flightlines = FALSE;
+  files_are_flightlines = 0;
   apply_file_source_ID = FALSE;
   parse_string = 0;
   io_ibuffer_size = LAS_TOOLS_IO_IBUFFER_SIZE;
@@ -1382,19 +1490,6 @@ BOOL LASreaderMerged::open_next_file()
         return FALSE;
       }
     }
-    else if (lasreaderqfit)
-    {
-      if (!lasreaderqfit->open(file_names[file_name_current]))
-      {
-        REprintf( "ERROR: could not open lasreaderqfit for file '%s'\n", file_names[file_name_current]);
-        return FALSE;
-      }
-      LASindex* index = new LASindex;
-      if (index->read(file_names[file_name_current]))
-        lasreaderqfit->set_index(index);
-      else
-        delete index;
-    }
     else if (lasreaderasc)
     {
       if (!lasreaderasc->open(file_names[file_name_current]))
@@ -1429,6 +1524,32 @@ BOOL LASreaderMerged::open_next_file()
       else
         delete index;
     }
+    else if (lasreaderply)
+    {
+      if (!lasreaderply->open(file_names[file_name_current]))
+      {
+        REprintf( "ERROR: could not open lasreaderply for file '%s'\n", file_names[file_name_current]);
+        return FALSE;
+      }
+      LASindex* index = new LASindex;
+      if (index->read(file_names[file_name_current]))
+        lasreaderply->set_index(index);
+      else
+        delete index;
+    }
+    else if (lasreaderqfit)
+    {
+      if (!lasreaderqfit->open(file_names[file_name_current]))
+      {
+        REprintf( "ERROR: could not open lasreaderqfit for file '%s'\n", file_names[file_name_current]);
+        return FALSE;
+      }
+      LASindex* index = new LASindex;
+      if (index->read(file_names[file_name_current]))
+        lasreaderqfit->set_index(index);
+      else
+        delete index;
+    }
     else
     {
       if (!lasreadertxt->open(file_names[file_name_current], 0, parse_string, skip_lines, populate_header))
@@ -1440,7 +1561,7 @@ BOOL LASreaderMerged::open_next_file()
     file_name_current++;
     if (files_are_flightlines)
     {
-      transform->setPointSource(file_name_current);
+      transform->setPointSource(file_name_current + files_are_flightlines - 1);
     }
     else if (apply_file_source_ID)
     {
