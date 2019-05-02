@@ -1,4 +1,4 @@
-### rlas v1.3.2 
+### rlas v1.3.3
 
 * New: enable to read `.ply` files in `read.las` and `read.lasheader` ([#39](https://github.com/Jean-Romain/rlas/issues/39))
 
