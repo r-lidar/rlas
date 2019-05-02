@@ -1,3 +1,7 @@
+### rlas v1.3.2 
+
+* New: enable to read `.ply` files in `read.las` and `read.lasheader` ([#39](https://github.com/Jean-Romain/rlas/issues/39))
+
 ### rlas v1.3.2 (Release date: 2019-04-26)
 
 * Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write `ScanAngleRank` above 90 degrees but not above 127 degrees.

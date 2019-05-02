@@ -87,21 +87,27 @@ read.las = function(files, select = "*", filter = "")
 #' lasheader <- read.lasheader(lazfile)
 read.lasheader = function(file)
 {
-  valid = file.exists(file)
-  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
-  file = normalizePath(file)
+  valid     <- file.exists(file)
+  supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  file      <- normalizePath(file)
 
-  if (!valid)  stop("File not found", call. = F)
-  if (!islas)  stop("File not supported", call. = F)
+  if (!valid)      stop("File not found", call. = F)
+  if (!supported)  stop("File not supported", call. = F)
 
-  data = lasheaderreader(file)
+  data <- lasheaderreader(file)
 
   return(data)
 }
 
 stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
 {
-  check_file(ifiles)
+  valid     <- file.exists(ifiles)
+  supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  file      <- normalizePath(ifiles)
+
+  if (!valid)      stop("File not found", call. = F)
+  if (!supported)  stop("File not supported", call. = F)
+
   check_filter(filter)
 
   ifiles = normalizePath(ifiles)
