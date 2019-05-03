@@ -101,25 +101,21 @@ read.lasheader = function(file)
 
 stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
 {
+  stream    <- ofile != ""
+  ifiles    <- normalizePath(ifiles)
+  ofile     <- normalizePath(ofile, mustWork = FALSE)
   valid     <- file.exists(ifiles)
   supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
-  file      <- normalizePath(ifiles)
 
-  if (!valid)      stop("File not found", call. = F)
-  if (!supported)  stop("File not supported", call. = F)
+  if (!all(valid))      stop("File not found", call. = F)
+  if (!all(supported))  stop("File not supported", call. = F)
 
   check_filter(filter)
 
-  ifiles = normalizePath(ifiles)
-
-  if (ofile != "")
-    ofile = suppressWarnings(normalizePath(ofile))
-
-  data = C_reader(ifiles, ofile, select, filter, filter_wkt)
+  data <- C_reader(ifiles, ofile, select, filter, filter_wkt)
   data.table::setDT(data)
 
-  if (ofile != "")
-    return(invisible())
+  if (stream) return(invisible())
 
   return(data)
 }
