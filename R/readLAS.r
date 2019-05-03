@@ -89,7 +89,7 @@ read.lasheader = function(file)
 {
   valid     <- file.exists(file)
   supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
-  file      <- normalizePath(file)
+  file      <- enc2native(normalizePath(file))
 
   if (!valid)      stop("File not found", call. = F)
   if (!supported)  stop("File not supported", call. = F)
@@ -102,8 +102,8 @@ read.lasheader = function(file)
 stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
 {
   stream    <- ofile != ""
-  ifiles    <- normalizePath(ifiles)
-  ofile     <- normalizePath(ofile, mustWork = FALSE)
+  ifiles    <- enc2native(normalizePath(ifiles))
+  ofile     <- enc2native(normalizePath(ofile, mustWork = FALSE))
   valid     <- file.exists(ifiles)
   supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
 

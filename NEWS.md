@@ -1,6 +1,7 @@
 ### rlas v1.3.3
 
-* New: enable to read `.ply` files in `read.las` and `read.lasheader` ([#39](https://github.com/Jean-Romain/rlas/issues/39))
+* New: enable to read `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).
+* Fix: ([#40](https://github.com/Jean-Romain/rlas/issues/40)) in `read.las` and `read.lasheader` modifications in string encoding in R 3.5.0 generated issues with path containing special characters. Native encoding is now enforced.
 
 ### rlas v1.3.2 (Release date: 2019-04-26)
 
