@@ -842,7 +842,7 @@ void RLASstreamer::read_p(bool b){ p = b; }
 void RLASstreamer::read_rgb(bool b){ rgb = b && (format == 2 || format == 3 || format == 5 || format == 7 || format == 8 || format == 10); }
 void RLASstreamer::read_nir(bool b){ nir = b && (format == 8 || format == 10); }
 void RLASstreamer::read_cha(bool b){ cha = b && extended; }
-void RLASstreamer::read_W(bool b){ W = b && (format == 4 || format == 5); }
+void RLASstreamer::read_W(bool b){ W = b && (format == 4 || format == 5 || format == 9 || format == 10); }
 void RLASstreamer::read_eb(IntegerVector x)
 {
 
@@ -881,12 +881,8 @@ int RLASstreamer::get_format(U8 point_type)
     case 6: return 6;
     case 7: return 7;
     case 8: return 8;
-    case 9:
-      Rf_warningcall(R_NilValue, "Point data record type 9 partially supported. Full waveform not read.");
-      return 9;
-    case 10:
-      Rf_warningcall(R_NilValue, "Point data record type 10 partially supported. Full waveform not read.");
-      return 10;
+    case 9: return 9;
+    case 10: return 10;
     default: Rf_errorcall(R_NilValue, "LAS format not valid.");
   }
 
