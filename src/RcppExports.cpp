@@ -101,12 +101,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // laxwriter
-void laxwriter(CharacterVector file);
-RcppExport SEXP _rlas_laxwriter(SEXP fileSEXP) {
+void laxwriter(CharacterVector file, bool verbose);
+RcppExport SEXP _rlas_laxwriter(SEXP fileSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    laxwriter(file);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    laxwriter(file, verbose);
     return R_NilValue;
 END_RCPP
 }
@@ -120,7 +121,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
-    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
+    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 2},
     {NULL, NULL, 0}
 };
 

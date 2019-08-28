@@ -33,7 +33,7 @@ C_writer <- function(file, LASheader, data) {
     invisible(.Call(`_rlas_C_writer`, file, LASheader, data))
 }
 
-laxwriter <- function(file) {
-    invisible(.Call(`_rlas_laxwriter`, file))
+laxwriter <- function(file, verbose) {
+    invisible(.Call(`_rlas_laxwriter`, file, verbose))
 }
 

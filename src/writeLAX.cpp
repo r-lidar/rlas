@@ -45,7 +45,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-void laxwriter(CharacterVector file)
+void laxwriter(CharacterVector file, bool verbose)
 {
   try
   {
@@ -93,7 +93,7 @@ void laxwriter(CharacterVector file)
     lasreader->close();
     delete lasreader;
 
-    lasindex.complete(100000, -20);
+    lasindex.complete(100000, -20, verbose);
     lasindex.write(lasreadopener.get_file_name());
 
     return;

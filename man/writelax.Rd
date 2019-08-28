@@ -4,10 +4,12 @@
 \alias{writelax}
 \title{Write a .lax file from a .las or .laz file}
 \usage{
-writelax(file)
+writelax(file, verbose = FALSE)
 }
 \arguments{
 \item{file}{character. filename of .las or .laz file}
+
+\item{verbose}{boolean. Verbose switch.}
 }
 \description{
 Write a lax file from a las or laz file. A lax file is a tiny file which can come with a

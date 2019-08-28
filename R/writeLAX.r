@@ -40,9 +40,10 @@
 #' https://rapidlasso.com/2012/12/03/lasindex-spatial-indexing-of-lidar-data/\cr
 #' https://github.com/LAStools/LAStools
 #' @param file character. filename of .las or .laz file
+#' @param verbose boolean. Verbose switch.
 #' @return NULL
 #' @export
-writelax = function(file)
+writelax = function(file, verbose = FALSE)
 {
   islas = tools::file_ext(file) %in% c("las", "laz")
 
@@ -54,7 +55,7 @@ writelax = function(file)
 
   file = path.expand(file)
 
-  laxwriter(file)
+  laxwriter(file, verbose)
 
   return(invisible())
 }
