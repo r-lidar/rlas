@@ -1,3 +1,7 @@
+### rlas v1.3.4
+
+- Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
+
 ### rlas v1.3.3
 
 * New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).

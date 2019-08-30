@@ -1487,13 +1487,13 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
       hex_string[0] = l[0]; hex_string[1] = l[1];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[0] = hex_value;
       hex_string[0] = l[2]; hex_string[1] = l[3];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[1] = hex_value;
       hex_string[0] = l[4]; hex_string[1] = l[5];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[2] = hex_value;
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1503,7 +1503,7 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       I32 hex_value;
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
-      sscanf(l,"%x",&hex_value);
+      sscanf(l,"%d",&hex_value);
       point.intensity = U8_CLAMP(((F64)hex_value/(F64)0xFFFFFF)*255);
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
