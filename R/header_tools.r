@@ -91,7 +91,7 @@ header_create = function(data)
   header[["Z scale factor"]] = 0.01
 
   if ("ReturnNumber" %in% fields)
-    header[["Number of points by return"]] <- fast_table(data$ReturnNumber, 5L)
+    header[["Number of points by return"]] <- tabulate(data$ReturnNumber, 5L)
   else
     header[["Number of points by return"]] <- rep(0L,5)
 
@@ -161,7 +161,7 @@ header_update = function(header, data)
   if ("ReturnNumber" %in% fields)
   {
     n <- if (header[["Version Minor"]] < 4) 5L else 15L
-    header[["Number of points by return"]] <- fast_table(data$ReturnNumber, n)
+    header[["Number of points by return"]] <- tabulate(data$ReturnNumber, n)
   }
 
   header[["Number of point records"]] = npts

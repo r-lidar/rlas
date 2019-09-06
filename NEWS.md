@@ -1,6 +1,7 @@
 ### rlas v1.3.4
 
 - Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
+- Note: use the function `tabulate()` instead of home made C++ code to count the return numbers. 
 
 ### rlas v1.3.3
 
