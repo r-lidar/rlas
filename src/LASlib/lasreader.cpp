@@ -1704,7 +1704,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
         REprintf("ERROR: '%s' needs 1 argument: list_of_files\n", argv[i]);
         return FALSE;
       }
-      if (!add_list_of_files(argv[i+1]), unique)
+      if (!add_list_of_files(argv[i+1], unique))
       {
         REprintf( "ERROR: cannot load list of files '%s'\n", argv[i+1]);
         return FALSE;

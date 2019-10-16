@@ -277,7 +277,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
 
     // skip lines if we have to
 
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
 
     if (ipts)
     {
@@ -638,7 +638,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
   this->skip_lines = skip_lines;
   if (skip_lines)
   {
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
   }
   else if (ipts)
   {
@@ -1086,7 +1086,7 @@ BOOL LASreaderTXT::seek(const I64 p_index)
     fseek(file, 0, SEEK_SET);
     // skip lines if we have to
     int i;
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
     // read the first line with full parse_string
     i = 0;
     while (fgets(line, 512, file))
@@ -1255,7 +1255,7 @@ BOOL LASreaderTXT::reopen(const char* file_name)
 
   // skip lines if we have to
 
-  for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+  for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
 
   // read the first line with full parse_string
 
@@ -1805,13 +1805,13 @@ BOOL LASreaderTXT::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
       hex_string[0] = l[0]; hex_string[1] = l[1];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[0] = hex_value;
       hex_string[0] = l[2]; hex_string[1] = l[3];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[1] = hex_value;
       hex_string[0] = l[4]; hex_string[1] = l[5];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[2] = hex_value;
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1821,7 +1821,7 @@ BOOL LASreaderTXT::parse(const char* parse_string)
       I32 hex_value;
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
-      sscanf(l,"%x",&hex_value);
+      sscanf(l,"%d",&hex_value);
       point.intensity = U8_CLAMP(((F64)hex_value/(F64)0xFFFFFF)*255);
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space

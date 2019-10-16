@@ -1,3 +1,14 @@
+### rlas v1.3.4
+
+- Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
+- Note: use the function `tabulate()` instead of home made C++ code to count the return numbers. 
+
+### rlas v1.3.3
+
+* New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).
+* New: verbose option in `writelax()`.
+* Fix: ([#40](https://github.com/Jean-Romain/rlas/issues/40)) in `read.las` and `read.lasheader` modifications in string encoding in R 3.5.0 generated issues with path containing special characters. Native encoding is now enforced.
+
 ### rlas v1.3.2 (Release date: 2019-04-26)
 
 * Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write `ScanAngleRank` above 90 degrees but not above 127 degrees.
@@ -16,7 +27,7 @@
 
 ### rlas v1.3.0 (Release date: 2019-02-03)
 
-* New: write.las is 25% faster
+* New: `write.las` is 25% faster
 * New: [#27](https://github.com/Jean-Romain/rlas/issues/27) improved support of LAS specifications including LAS 1.4.
 * New: introduction of a set of 50+ functions to test compliance with LAS specifications
 * New: introduction of a set of 5+ functions to modify a header easily repecting LAS specifications
@@ -28,11 +39,12 @@
 
 ### rlas v1.2.6 (Release date: 2018-08-20)
 
-* Change: `check_data` now check the adequation between the `ReturnNumber` and the `NumberOfReturns`
+* Change: `check_data` now checks the adequation between the `ReturnNumber` and the `NumberOfReturns`
 * Change: `readlasdata` and `readlasheader` were definitively removed.
 * Fix: `las` format 7 was supported at the C++ level when reading a file but an old test still throw an error at the R level stating that this format was not supported.
+* Fix: several compilation warnings on CRAN.
 * Fix: several compilation warnings on CRAN
-
+* Change: `readlasdata` and `readlasheader` were definitively removed.
 ### rlas v1.2.4 (Release date: 2018-06-10)
 
 * Reupload on CRAN after being removed.
@@ -70,10 +82,9 @@
 
 ### rlas v1.1.5 (Release date: 2017-10-23)
 
-* New: `writelax` enabled for writing .lax files.
-* New: `readlasdata` enabled for reading several .las/laz files.
-* Fix: The las files were read twice every time. `lasdatareader` is twice as fast since it reads files only once
-* Fix: `readlasdata` enables loading (or not) of the gpstime field.
+* New: function `writelax` for writing LAX files.
+* New: function `readlasdata` enable for reading several files.
+* Fix: the las files were read twice every time. `lasdatareader` is twice as fast since it reads files only once
 
 ### rlas v1.1.4 (Release date: 2017-07-26)
 
@@ -113,14 +124,14 @@ CRAN does not build binary packages. After exchanges with prof Bryan Ripley
 * Change: title in DESCRIPTION according to prof Bryan Ripley
 * Change: description in DESCRIPTION according to prof Bryan Ripley
 
-#### rlas v1.0.2 (Release date: 2016-12-23)
+### rlas v1.0.2 (Release date: 2016-12-23)
 
 Third submission
 
 * Change: Manually list sources in makevars
 * Change: Remove SystemRequirements field in DESCRIPTION
 
-#### rlas v1.0.1 (Release date: 2016-12-22)
+### rlas v1.0.1 (Release date: 2016-12-22)
 
 Second submission
 
@@ -129,6 +140,6 @@ Second submission
 * Change: single quoted 'las' and 'laz' in Description and Title fields in DESCRIPTION
 
 
-#### rlas v1.0.0 (Release date: 2016-12-22)
+### rlas v1.0.0 (Release date: 2016-12-22)
 
 First submission

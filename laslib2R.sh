@@ -15,6 +15,8 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 
 # Some extra changes were done manually:
 
+# Compile with g++7 and -flto -Wlto-type-mismatch -Wodr -Wall -pedantic -mtune=native -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-parentheses
+
 # fopen_compressed.cpp                #include <R.h> and #define STRICT_R_HEADERS
 # mydefs.hpp                          #include <R.h> and #define STRICT_R_HEADERS
 # lasreaderpipeon.cpp      l96-101    comment lines
@@ -27,8 +29,8 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # lasdefinition.hpp        l572,697   for gcc 8+ replace strncpy by memcpy in the same way than lasattributer.hpp
 # laswriter_bin.cpp        l173       for gcc 8+ replace strncpy by memcpy
 # bytestreamount_file.hpp  l134       return (true)
-# lastransform.cpp         l401       R::runif(0, RAND_MAX); (need #include <Rcpp.h>)
-# lasfilter.cpp            l1298      R::runif(0, RAND_MAX); (need #include <Rcpp.h>)
+# lastransform.cpp         l401       R::runif(0, RAND_MAX);
+# lasfilter.cpp            l1298      R::runif(0, RAND_MAX);
 # lasutility.cpp                      #include <stdexcept>
 
 # CRAN is happy now!

@@ -986,7 +986,7 @@ is_number_of_points_by_return_in_accordance_with_header = function(header, data,
 
   n <- if (header[["Version Minor"]] < 4L) 5L else 15L
   header_number_of <- header[["Number of points by return"]]
-  actual_number_of <- fast_table(data$ReturnNumber, n)
+  actual_number_of <- tabulate(data$ReturnNumber, n)
 
   for (i in 1:n)
   {

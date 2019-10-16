@@ -31,7 +31,7 @@
 #'
 #' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
-#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
 #' The optional parameters enable the user to save memory by choosing to load only the
 #' fields they need. Moreover, the function provides a streaming filter to load only the points of
 #' interest into the memory and hence avoids allocating any superfluous memory.
@@ -87,33 +87,35 @@ read.las = function(files, select = "*", filter = "")
 #' lasheader <- read.lasheader(lazfile)
 read.lasheader = function(file)
 {
-  valid = file.exists(file)
-  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
-  file = normalizePath(file)
+  valid     <- file.exists(file)
+  supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  file      <- enc2native(normalizePath(file))
 
-  if (!valid)  stop("File not found", call. = F)
-  if (!islas)  stop("File not supported", call. = F)
+  if (!valid)      stop("File not found", call. = F)
+  if (!supported)  stop("File not supported", call. = F)
 
-  data = lasheaderreader(file)
+  data <- lasheaderreader(file)
 
   return(data)
 }
 
 stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
 {
-  check_file(ifiles)
+  stream    <- ofile != ""
+  ifiles    <- enc2native(normalizePath(ifiles))
+  ofile     <- enc2native(normalizePath(ofile, mustWork = FALSE))
+  valid     <- file.exists(ifiles)
+  supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+
+  if (!all(valid))      stop("File not found", call. = F)
+  if (!all(supported))  stop("File not supported", call. = F)
+
   check_filter(filter)
 
-  ifiles = normalizePath(ifiles)
-
-  if (ofile != "")
-    ofile = suppressWarnings(normalizePath(ofile))
-
-  data = C_reader(ifiles, ofile, select, filter, filter_wkt)
+  data <- C_reader(ifiles, ofile, select, filter, filter_wkt)
   data.table::setDT(data)
 
-  if (ofile != "")
-    return(invisible())
+  if (stream) return(invisible())
 
   return(data)
 }

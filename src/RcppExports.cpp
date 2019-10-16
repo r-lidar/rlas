@@ -5,18 +5,6 @@
 
 using namespace Rcpp;
 
-// fast_table
-IntegerVector fast_table(IntegerVector x, int size);
-RcppExport SEXP _rlas_fast_table(SEXP xSEXP, SEXP sizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(fast_table(x, size));
-    return rcpp_result_gen;
-END_RCPP
-}
 // fast_countequal
 int fast_countequal(IntegerVector x, int t);
 RcppExport SEXP _rlas_fast_countequal(SEXP xSEXP, SEXP tSEXP) {
@@ -101,18 +89,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // laxwriter
-void laxwriter(CharacterVector file);
-RcppExport SEXP _rlas_laxwriter(SEXP fileSEXP) {
+void laxwriter(CharacterVector file, bool verbose);
+RcppExport SEXP _rlas_laxwriter(SEXP fileSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
-    laxwriter(file);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    laxwriter(file, verbose);
     return R_NilValue;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rlas_fast_table", (DL_FUNC) &_rlas_fast_table, 2},
     {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
@@ -120,7 +108,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
-    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 1},
+    {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 2},
     {NULL, NULL, 0}
 };
 

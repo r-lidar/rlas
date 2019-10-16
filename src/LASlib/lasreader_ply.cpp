@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader_ply.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_ply.hpp"
@@ -137,7 +137,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
 
   if (point_type)
   {
-    switch (point_type) 
+    switch (point_type)
     {
     case 1:
       header.point_data_record_length = 28;
@@ -232,7 +232,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
     for (i = 0; i < number_attributes; i++)
     {
       I32 type = (attributes_data_types[i]-1)%10;
-      try { 
+      try {
         LASattribute attribute(type, attribute_names[i], attribute_descriptions[i]);
         if (attribute_scales[i] != 1.0 || attribute_offsets[i] != 0.0)
         {
@@ -270,7 +270,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
 
     if (streamin) // binary
     {
-      // read the first point 
+      // read the first point
       read_binary_point();
     }
     else
@@ -330,7 +330,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
       }
     }
 
-    // read the remaining points 
+    // read the remaining points
 
     for (i = 1; i < npoints; i++)
     {
@@ -402,9 +402,9 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
     }
 
     // close the input file
-    
+
     fclose(file);
-    
+
     // populate scale and offset
 
     populate_scale_and_offset();
@@ -445,7 +445,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
 
   if (streamin) // binary
   {
-    // read the first point 
+    // read the first point
     read_binary_point();
   }
   else
@@ -480,7 +480,7 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
       return FALSE;
     }
   }
-  
+
   if (!populated_header)
   {
     // init the bounding box that we will incrementally compute
@@ -676,7 +676,7 @@ BOOL LASreaderPLY::read_point_default()
         }
       }
     }
-    
+
     // compute the quantized x, y, and z values
     point.set_X(header.get_X(point.coordinates[0]));
     point.set_Y(header.get_Y(point.coordinates[1]));
@@ -1487,13 +1487,13 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
       hex_string[0] = l[0]; hex_string[1] = l[1];
-      sscanf(hex_string,"%x",&hex_value);
-      point.rgb[0] = hex_value; 
+      sscanf(hex_string,"%d",&hex_value);
+      point.rgb[0] = hex_value;
       hex_string[0] = l[2]; hex_string[1] = l[3];
-      sscanf(hex_string,"%x",&hex_value);
-      point.rgb[1] = hex_value; 
+      sscanf(hex_string,"%d",&hex_value);
+      point.rgb[1] = hex_value;
       hex_string[0] = l[4]; hex_string[1] = l[5];
-      sscanf(hex_string,"%x",&hex_value);
+      sscanf(hex_string,"%d",&hex_value);
       point.rgb[2] = hex_value;
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1503,7 +1503,7 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       I32 hex_value;
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
-      sscanf(l,"%x",&hex_value);
+      sscanf(l,"%d",&hex_value);
       point.intensity = U8_CLAMP(((F64)hex_value/(F64)0xFFFFFF)*255);
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1526,7 +1526,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
 
   // first header line containing "ply"
 
-  fgets(line, 512, file);
+  if (fgets(line, 512, file));
   if (strncmp(line, "ply", 3) != 0)
   {
     return FALSE;
@@ -1545,8 +1545,8 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
   while (true)
   {
     // next line
-    fgets(line, 512, file);
-    
+    if (fgets(line, 512, file));
+
     if (strncmp(line, "end_header", 10) == 0)
     {
       break;
@@ -1784,7 +1784,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
         }
       }
       else
-      {     
+      {
         REprintf( "unknown property type: %snot implemented. contact martin@rapidlasso.com\n", &line[9]);
         return FALSE;
       }
