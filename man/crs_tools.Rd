@@ -28,7 +28,8 @@ Functions that update a header to describe coordinates reference system accordin
 \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
 }
 \seealso{
-Other header_tools: \code{\link{extra_bytes_attribute_tools}},
-  \code{\link{public_header_block_tools}}
+Other header_tools: 
+\code{\link{extra_bytes_attribute_tools}},
+\code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

@@ -8,8 +8,17 @@
 \usage{
 header_add_extrabytes(header, data, name, desc)
 
-header_add_extrabytes_manual(header, name, desc, type, offset = NULL,
-  scale = NULL, max = NULL, min = NULL, NA_value = NULL)
+header_add_extrabytes_manual(
+  header,
+  name,
+  desc,
+  type,
+  offset = NULL,
+  scale = NULL,
+  max = NULL,
+  min = NULL,
+  NA_value = NULL
+)
 }
 \arguments{
 \item{header}{list}
@@ -56,7 +65,8 @@ lasheader = header_add_extrabytes(lasheader, data$treeID, "treeID", "An id for e
 lasheader[["Variable Length Records"]]
 }
 \seealso{
-Other header_tools: \code{\link{crs_tools}},
-  \code{\link{public_header_block_tools}}
+Other header_tools: 
+\code{\link{crs_tools}},
+\code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

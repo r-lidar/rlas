@@ -157,11 +157,13 @@ is_XY_smaller_than_bbox(header, data, behavior = "bool")
 
 is_Z_in_bbox(header, data, behavior = "bool")
 
-is_number_of_points_in_accordance_with_header(header, data,
-  behavior = "bool")
+is_number_of_points_in_accordance_with_header(header, data, behavior = "bool")
 
-is_number_of_points_by_return_in_accordance_with_header(header, data,
-  behavior = "bool")
+is_number_of_points_by_return_in_accordance_with_header(
+  header,
+  data,
+  behavior = "bool"
+)
 
 is_extrabytes_in_accordance_with_data(header, data, behavior = "bool")
 }

@@ -53,6 +53,7 @@ file = file.path(tempdir(), "temp.laz")
 write.las(file, lasheader, lasdata)
 }
 \seealso{
-Other rlas: \code{\link{read.lasheader}}
+Other rlas: 
+\code{\link{read.lasheader}()}
 }
 \concept{rlas}
