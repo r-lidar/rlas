@@ -1,3 +1,7 @@
+### rlas v1.3.5
+
+- Defunc deprecated functions `check_data`, `check_header` and `check_data_vs-header`.
+
 ### rlas v1.3.4
 
 - Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
