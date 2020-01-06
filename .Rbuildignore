@@ -5,3 +5,4 @@
 ^laslib2R\.sh$
 ^\.travis\.yml$
 ^cran-comments\.md$
+^codecov\.yml$

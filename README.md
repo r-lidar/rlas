@@ -1,4 +1,6 @@
 ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
+[![Travis build status](https://travis-ci.org/Jean-Romain/rlas.svg?branch=master)](https://travis-ci.org/Jean-Romain/rlas)
+[![Codecov test coverage](https://codecov.io/gh/Jean-Romain/rlas/branch/master/graph/badge.svg)](https://codecov.io/gh/Jean-Romain/rlas?branch=master)
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 

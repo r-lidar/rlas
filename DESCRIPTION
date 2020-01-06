@@ -19,5 +19,7 @@ Imports: Rcpp, data.table
 LazyData: true
 RoxygenNote: 7.0.2
 LinkingTo: Rcpp,BH
-Suggests: testthat
+Suggests: 
+    testthat,
+    covr
 Encoding: UTF-8
