@@ -1,6 +1,8 @@
 ### rlas v1.3.5
 
-- Defunc deprecated functions `check_data`, `check_header` and `check_data_vs-header`.
+- Change: defunc deprecated functions `check_data`, `check_header` and `check_data_vs-header`.
+- Fix: `is_valid_ScanAngle` trigger an error if |a| > 196.6 instead of 180. 196.6 is the maximum writable angle but is not compliant with the specs ([#44   ](https://github.com/Jean-Romain/rlas/issues/44)).
+- New: function `is_compliant_ScanAngle` to check the compliance of the Scan Angle.
 
 ### rlas v1.3.4
 

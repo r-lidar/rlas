@@ -614,10 +614,10 @@ is_valid_ScanAngle = function(data, behavior = "bool")
   if (is.null(data[["ScanAngle"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (min(data[["ScanAngle"]]) < -180)
+  if (min(data[["ScanAngle"]]) < -196.6)
     errors = append(errors, "Invalid data: ScanAngle greater than -180 degrees.")
 
-  if (max(data[["ScanAngle"]]) > 180)
+  if (max(data[["ScanAngle"]]) > 196.6)
     errors = append(errors, "Invalid data: ScanAngle greater than 180 degrees")
 
   return(error_handling_engine(errors, behavior))
@@ -830,6 +830,25 @@ is_compliant_RGB = function(data, behavior = "bool")
 
   return(error_handling_engine(errors, behavior))
 }
+
+#' @export
+#' @rdname las_specification_tools
+is_compliant_ScanAngle = function(data, behavior = "bool")
+{
+  errors = character(0)
+
+  if (is.null(data[["ScanAngle"]]))
+    return(error_handling_engine(errors, behavior))
+
+  if (min(data[["ScanAngle"]]) < -180)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than -90 degrees.")
+
+  if (max(data[["ScanAngle"]]) > 180)
+    errors = append(errors, "Invalid data: ScanAngleRank greater than 90 degrees")
+
+  return(error_handling_engine(errors, behavior))
+}
+
 
 #' @export
 #' @rdname las_specification_tools
