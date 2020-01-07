@@ -43,6 +43,7 @@
 \alias{is_compliant_NumberOfReturns}
 \alias{is_compliant_ReturnNumber_vs_NumberOfReturns}
 \alias{is_compliant_RGB}
+\alias{is_compliant_ScanAngle}
 \alias{is_compliant_ScanAngleRank}
 \alias{is_NIR_in_valid_format}
 \alias{is_gpstime_in_valid_format}
@@ -138,6 +139,8 @@ is_compliant_NumberOfReturns(data, behavior = "bool")
 is_compliant_ReturnNumber_vs_NumberOfReturns(data, behavior = "bool")
 
 is_compliant_RGB(data, behavior = "bool")
+
+is_compliant_ScanAngle(data, behavior = "bool")
 
 is_compliant_ScanAngleRank(data, behavior = "bool")
 

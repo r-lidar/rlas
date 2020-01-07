@@ -101,3 +101,33 @@ check_las_compliance = function(header, data)
 
   return(invisible())
 }
+
+check_output_file = function(file)
+{
+  islas = tools::file_ext(file) %in% c("las", "laz")
+
+  if (length(file) > 1)
+    stop("Write only one file at a time.")
+
+  if (!islas)
+    stop("File not supported. Extension should be 'las' or 'laz'")
+}
+
+check_file = function(file)
+{
+  valid = file.exists(file)
+  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+  file = normalizePath(file)
+
+  if (!all(valid))
+    stop("File not found.")
+
+  if (!all(islas))
+    stop("File not supported.")
+}
+
+check_filter = function(filter)
+{
+  if (!is.character(filter) & length(filter) > 1)
+    stop("Incorrect argument 'filter'. A string is expected.")
+}

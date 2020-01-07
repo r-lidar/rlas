@@ -18,8 +18,8 @@ lasheader <- read.lasheader("<myfile.las>")
 for technical reasons. Details below.
 
 * For `LASlib` and `LASzip`:
-  - (c) 2007-2015 martin.isenburg@rapidlasso.com - http://rapidlasso.com
+  - (c) 2007-2019 martin.isenburg@rapidlasso.com - http://rapidlasso.com
   - Provided under LGPL license and modified to be R-compliant by Jean-Romain Roussel.
 * For `rlas` code enabling Martin Isenburg's code to be wrapped into R:
-  - (c) 2016-2018 Jean-Romain Roussel
+  - (c) 2016-2020 Jean-Romain Roussel
   - Provided under GPL-3 license.
