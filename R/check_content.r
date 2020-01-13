@@ -29,6 +29,7 @@ check_las_validity = function(header, data)
   is_defined_version(header, "stop")
   is_defined_globalencoding(header, "stop")
   is_defined_date(header, "stop")
+  is_defined_pointformat(header, "stop")
 
   is_defined_coordinates(data, "stop")
 
@@ -38,6 +39,7 @@ check_las_validity = function(header, data)
   is_valid_date(header, "stop")
   is_valid_pointformat(header, "stop")
   is_valid_extrabytes(header, "stop")
+  is_valid_filesourceid(header, "stop")
 
   is_valid_XYZ(data, "stop")
   is_valid_Intensity(data, "stop")
