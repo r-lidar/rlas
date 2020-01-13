@@ -1,26 +1,5 @@
 #include "rlasstreamer.h"
 
-RLASstreamer::RLASstreamer()
-{
-  initialize_bool();
-}
-
-RLASstreamer::RLASstreamer(CharacterVector ifiles)
-{
-  initialize_bool();
-  setinputfiles(ifiles);
-  initialize();
-}
-
-
-RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector filter)
-{
-  initialize_bool();
-  setinputfiles(ifiles);
-  setfilter(filter);
-  initialize();
-}
-
 RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter)
 {
   initialize_bool();
@@ -33,13 +12,13 @@ RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, Charac
 RLASstreamer::~RLASstreamer()
 {
   if (!ended)
-    terminate();
+    terminate(); // # nocov
 
   if(0 != lasreader && NULL != lasreader)
-    delete lasreader;
+    delete lasreader; // # nocov
 
   if(0 != laswriter && NULL != laswriter)
-    delete laswriter;
+    delete laswriter; // # nocov
 }
 
 void RLASstreamer::setinputfiles(CharacterVector ifiles)
@@ -99,8 +78,8 @@ void RLASstreamer::setfilter(CharacterVector filter)
 
   if (!lasreadopener.parse_str(filterchar))
   {
-    lasreadopener.set_filter(0);
-    stop("Filter error see message above.");
+    lasreadopener.set_filter(0); // # nocov
+    stop("Filter error see message above."); // # nocov
   }
 
   useFilter = true;
@@ -224,7 +203,7 @@ void RLASstreamer::initialize()
   header = &lasreader->header;
 
   if (0 == lasreader || NULL == lasreader)
-    stop("LASlib internal error. See message above.");
+    stop("LASlib internal error. See message above."); // # nocov
 
   // Initilize the writer if write in file
   if (!inR)
@@ -233,7 +212,7 @@ void RLASstreamer::initialize()
     laswriter = laswriteopener.open(&lasreader->header);
 
     if(0 == laswriter || NULL == laswriter)
-      stop("LASlib internal error. See message above.");
+      stop("LASlib internal error. See message above."); // # nocov
   }
   else
   {

@@ -13,9 +13,6 @@ using namespace Rcpp;
 class RLASstreamer
 {
   public:
-    RLASstreamer();
-    RLASstreamer(CharacterVector);
-    RLASstreamer(CharacterVector, CharacterVector);
     RLASstreamer(CharacterVector, CharacterVector, CharacterVector);
     ~RLASstreamer();
     void setinputfiles(CharacterVector);
