@@ -178,7 +178,7 @@ header_update = function(header, data)
 #' Extra Bytes Attributes Tools
 #'
 #' Functions that update a header to describe Extra Bytes Attributes according to the
-#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#' \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 #'
 #' @param header list
 #' @param name character. The name of the extrabytes attributes to add in the file.
@@ -331,7 +331,7 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
 #' Coordinate Reference System Tools
 #'
 #' Functions that update a header to describe coordinates reference system according to the
-#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#' \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 #'
 #' @param header list
 #' @param epsg integer. An EPSG code

@@ -25,7 +25,7 @@ header_set_wktcs(header, WKT)
 }
 \description{
 Functions that update a header to describe coordinates reference system according to the
-\href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+\href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 }
 \seealso{
 Other header_tools: 

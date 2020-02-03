@@ -19,7 +19,7 @@ A \code{data.table}
 \description{
 Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
-\href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+\href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 The optional parameters enable the user to save memory by choosing to load only the
 fields they need. Moreover, the function provides a streaming filter to load only the points of
 interest into the memory and hence avoids allocating any superfluous memory.

@@ -1,6 +1,6 @@
 #' A set of function to test conformance with LAS specifications
 #'
-#' A set of function to test conformance with \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specification}.
+#' A set of function to test conformance with \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specification}.
 #' Tools reserved to developpers and not intended to be used by regular users. The functions return TRUE
 #' or FALSE by default without more information. If behavior is 'warning' functions throw a warning
 #' for each fail and return FALSE if any warning TRUE otherwise. If behavior is 'stop' functions throw

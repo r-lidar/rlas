@@ -15,7 +15,7 @@ A \code{list}
 \description{
 Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
 a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
-\href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+\href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 }
 \examples{
 lazfile   <- system.file("extdata", "example.laz", package="rlas")

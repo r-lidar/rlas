@@ -37,7 +37,7 @@
 #' "R", "G", "B", "NIR". All other extra columns will be written in extra bytes attributes only if the
 #' header specifically states these data should be saved into extra bytes attributes. To use the full
 #' potential of the function \code{write.las} it is recommended users read the complete specifications of
-#' the \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' the \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #' Otherwise users can rely on automated procedures that are expected to be sufficient for most usages.
 #'
 #' @param file character. file path to .las or .laz file
