@@ -17,7 +17,6 @@
 #'
 #' @param data a data.frame or a data.table containing a point cloud
 #' @param header a list containing the header of a las file
-#' @param ... internal use only
 #'
 #' @export
 #' @rdname check

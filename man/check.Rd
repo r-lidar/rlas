@@ -13,8 +13,6 @@ check_las_compliance(header, data)
 \item{header}{a list containing the header of a las file}
 
 \item{data}{a data.frame or a data.table containing a point cloud}
-
-\item{...}{internal use only}
 }
 \description{
 las files are normalized files. These functions perform tests of compliance with LAS specification.
