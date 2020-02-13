@@ -1,3 +1,7 @@
+### rlas v1.3.6
+
+- Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. If missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6.
+
 ### rlas v1.3.5
 
 - Change: defunc deprecated functions `check_data`, `check_header` and `check_data_vs_header`.
