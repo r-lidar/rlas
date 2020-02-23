@@ -89,7 +89,7 @@ is_defined_scalefactors = function(header, behavior = "bool")
 is_valid_scalefactors = function(header, behavior = "bool")
 {
   errors <- character(0)
-  s      <- c(1,10,100,1000,10000)
+  s      <- 10^(0:7)
   valid  <- c(1/s, 0.5/s, 0.25/s)
 
   if (!header[["X scale factor"]] %in% valid)
