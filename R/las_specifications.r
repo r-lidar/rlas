@@ -420,7 +420,7 @@ is_valid_ReturnNumber = function(data, header, behavior = "bool")
   if (!is.integer(data[["ReturnNumber"]]))
     errors = append(errors, "Invalid data: ReturnNumber is not an integer")
 
-  if (min(data[["ReturnNumber"]]) < 1)
+  if (min(data[["ReturnNumber"]]) < 0)
     errors = append(errors, "Invalid data: ReturnNumber is not an unsigned integer")
 
   nbits <- if (is_extended(header)) 4L else 3L
