@@ -40,6 +40,82 @@ error_handling_engine = function(errors, behavior)
   }
 }
 
+is_no_na_integer_on_n_bits <- function(x, nbits, name, signed = TRUE, behavior = "bool")
+{
+  na.rm = FALSE
+  errors = character(0)
+
+  if (is.null(x))
+    return(error_handling_engine(errors, behavior))
+
+  if (anyNA(x))
+  {
+    errors <- append(errors, paste("Invalid data:",  name, "contains some NAs"))
+    na.rm <- TRUE
+  }
+
+  if (!is.integer(x))
+    errors = append(errors, paste("Invalid data:", name, "is not an integer"))
+
+  if (!signed)
+  {
+    if (min(x, na.rm = na.rm) < 0)
+      errors = append(errors, paste("Invalid data:", name, "is not an unsigned integer"))
+  }
+  else
+  {
+    if (min(x, na.rm = na.rm) < -2L^(nbits - 1) + 1)
+      errors = append(errors, paste("Invalid data:", name, "is not an integer on", nbits, "bits"))
+  }
+
+  if (!signed)
+  {
+    if (max(x, na.rm = na.rm) > 2L^nbits - 1)
+      errors = append(errors, paste("Invalid data:", name, "is not an unsigned integer on", nbits, "bits"))
+  }
+  else
+  {
+    if (max(x, na.rm = na.rm) > 2L^(nbits - 1) - 1)
+      errors = append(errors, paste("Invalid data:", name, "is not an unsigned integer on", nbits, "bits"))
+  }
+
+  return(error_handling_engine(errors, behavior))
+}
+
+is_no_na_bool <- function(x, name, behavior = "bool")
+{
+  na.rm = FALSE
+  errors = character(0)
+
+  if (is.null(x))
+    return(error_handling_engine(errors, behavior))
+
+  if (anyNA(x))
+    errors <- append(errors, paste("Invalid data:",  name, "contains some NAs"))
+
+  if (!is.logical(x))
+    errors <- append(errors, paste("Invalid data:", name, "is not logical"))
+
+  return(error_handling_engine(errors, behavior))
+}
+
+is_no_na_double <- function(x, name, behavior = "bool")
+{
+  na.rm = FALSE
+  errors = character(0)
+
+  if (is.null(x))
+    return(error_handling_engine(errors, behavior))
+
+  if (anyNA(x))
+    errors <- append(errors, paste("Invalid data:",  name, "contains some NAs"))
+
+  if (!is.double(x))
+    errors <- append(errors, paste("Invalid data:", name, "is not a double"))
+
+  return(error_handling_engine(errors, behavior))
+}
+
 # ==== HEADER =====
 
 is_extended = function(header)
@@ -391,215 +467,100 @@ is_valid_XYZ = function(data, behavior = "bool")
 #' @rdname las_specification_tools
 is_valid_Intensity = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Intensity"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["Intensity"]]))
-    errors = append(errors, "Invalid data: Intensity is not an unsigned integer")
-
-  if (min(data[["Intensity"]]) < 0)
-    errors = append(errors, "Invalid data: Intensity is not an unsigned integer")
-
-  if (max(data[["Intensity"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: Intensity is not an unsigned integer on 16 bits")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["Intensity"]], 16L, "Intensity", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_ReturnNumber = function(data, header, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["ReturnNumber"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["ReturnNumber"]]))
-    errors = append(errors, "Invalid data: ReturnNumber is not an integer")
-
-  if (min(data[["ReturnNumber"]]) < 0)
-    errors = append(errors, "Invalid data: ReturnNumber is not an unsigned integer")
+  # To maintain backward compatibility with lidR
+  # that inverted the argument. I don't understand
+  # why it used to work
+  if (!is.data.frame(data))
+  {
+    temp <- header
+    header <- data
+    data <- temp
+  }
 
   nbits <- if (is_extended(header)) 4L else 3L
-
-  if (max(data[["ReturnNumber"]]) > 2^nbits - 1)
-    errors = append(errors, paste0("Invalid data: ReturnNumber is not an unsigned integer on ", nbits, " bits"))
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["ReturnNumber"]], nbits, "ReturnNumber", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_NumberOfReturns = function(data, header, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["NumberOfReturns"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["NumberOfReturns"]]))
-    errors = append(errors, "Invalid data: NumberOfReturns is not an integer")
-
-  if (min(data[["NumberOfReturns"]]) < 0)
-    errors = append(errors, "Invalid data: NumberOfReturns is not an unsigned integer")
+  # To maintain backward compatibility with lidR
+  # that inverted the argument. I don't understand
+  # why it used to work
+  if (!is.data.frame(data))
+  {
+    temp <- header
+    header <- data
+    data <- temp
+  }
 
   nbits <- if (!is_extended(header)) 3L else 4L
-
-  if (max(data[["NumberOfReturns"]]) > 2^nbits - 1)
-    errors = append(errors, paste0("Invalid data: NumberOfReturns is not an unsigned integer on ", nbits, " bits"))
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["NumberOfReturns"]], nbits, "NumberOfReturns", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_ScanDirectionFlag = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["ScanDirectionFlag"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["ScanDirectionFlag"]]))
-    errors = append(errors, "Invalid data: ScanDirectionFlag is not an integer")
-
-  if (min(data[["ScanDirectionFlag"]]) < 0)
-    errors = append(errors, "Invalid data: ScanDirectionFlag is not 0 or 1")
-
-  if (max(data[["ScanDirectionFlag"]]) > 1)
-    errors = append(errors, "Invalid data: ScanDirectionFlag is not 0 or 1")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["ScanDirectionFlag"]], 1L, "ScanDirectionFlag", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_EdgeOfFlightline = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["EdgeOfFlightline"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["EdgeOfFlightline"]]))
-    errors = append(errors, "Invalid data: EdgeOfFlightline is not an integer")
-
-  if (min(data[["EdgeOfFlightline"]]) < 0)
-    errors = append(errors, "Invalid data: EdgeOfFlightline is not 0 or 1")
-
-  if (max(data[["EdgeOfFlightline"]]) > 1)
-    errors = append(errors, "Invalid data: EdgeOfFlightline is not 0 or 1")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["EdgeOfFlightline"]], 1L, "EdgeOfFlightline", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_Classification = function(data, header, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Classification"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["Classification"]]))
-    errors = append(errors, "Invalid data: Classification is not an integer")
-
-  if (min(data[["Classification"]]) < 0)
-    errors = append(errors, "Invalid data: Classification is not an unsigned integer")
-
   nbits <- if (!is_extended(header)) 5L else 8L
-
-  if (max(data[["Classification"]]) > 2^nbits - 1)
-    errors = append(errors, paste0("Invalid data: Classification is not an unsigned integer on ", nbits, " bits"))
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["Classification"]], nbits, "Classification", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_ScannerChannel = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["ScannerChannel"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["ScannerChannel"]]))
-    errors = append(errors, "Invalid data: ScannerChannel is not an integer")
-
-  if (min(data[["ScannerChannel"]]) < 0)
-    errors = append(errors, "Invalid data: ScannerChannel is not an unsigned integer")
-
-  nbits = 2
-
-  if (max(data[["ScannerChannel"]]) > 2^nbits - 1)
-    errors = append(errors, paste0("Invalid data: Classification is not an unsigned integer on ", nbits, " bits"))
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["ScannerChannel"]], 2L, "ScannerChannel", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_SyntheticFlag = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Synthetic_flag"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.logical(data[["Synthetic_flag"]]))
-    errors = append(errors, "Invalid data: Synthetic_flag is not logical")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_bool(data[["Synthetic_flag"]], "Synthetic_flag", behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_KeypointFlag = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Keypoint_flag"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.logical(data[["Keypoint_flag"]]))
-    errors = append(errors, "Invalid data: Keypoint_flag is not logical")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_bool(data[["Keypoint_flag"]], "Keypoint_flag", behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_WithheldFlag = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Withheld_flag"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.logical(data[["Withheld_flag"]]))
-    errors = append(errors, "Invalid data: Withheld_flag is not logical")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_bool(data[["Withheld_flag"]], "Withheld_flag", behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_OverlapFlag = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["Overlap_flag"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.logical(data[["Overlap_flag"]]))
-    errors = append(errors, "Invalid data: Overlap_flag is not logical")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_bool(data[["Overlap_flag"]], "Overlap_flag", behavior = behavior))
 }
 
 
@@ -608,15 +569,22 @@ is_valid_OverlapFlag = function(data, behavior = "bool")
 #' @rdname las_specification_tools
 is_valid_ScanAngle = function(data, behavior = "bool")
 {
+  na.rm = FALSE
   errors = character(0)
+
+  if (anyNA(data[["ScanAngle"]]))
+  {
+    errors <- append(errors, paste("Invalid data: ScanAngle contains some NAs."))
+    na.rm <- TRUE
+  }
 
   if (is.null(data[["ScanAngle"]]))
     return(error_handling_engine(errors, behavior))
 
-  if (min(data[["ScanAngle"]]) < -196.6)
+  if (min(data[["ScanAngle"]], na.rm = na.rm) < -196.6)
     errors = append(errors, "Invalid data: ScanAngle greater than -180 degrees.")
 
-  if (max(data[["ScanAngle"]]) > 196.6)
+  if (max(data[["ScanAngle"]], na.rm = na.rm) > 196.6)
     errors = append(errors, "Invalid data: ScanAngle greater than 180 degrees")
 
   return(error_handling_engine(errors, behavior))
@@ -627,114 +595,38 @@ is_valid_ScanAngle = function(data, behavior = "bool")
 #' @rdname las_specification_tools
 is_valid_ScanAngleRank = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["ScanAngleRank"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (min(data[["ScanAngleRank"]]) < -127)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than -127 degrees.")
-
-  if (max(data[["ScanAngleRank"]]) > 127)
-    errors = append(errors, "Invalid data: ScanAngleRank greater than 127 degrees")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["ScanAngleRank"]], 8L, "ScanAngleRank", signed = TRUE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_UserData = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["UserData"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["UserData"]]))
-    errors = append(errors, "Invalid data: UserData is not an integer")
-
-  if (min(data[["UserData"]]) < 0)
-    errors = append(errors, "Invalid data: UserData is not an unsigned integer")
-
-  if (max(data[["UserData"]]) > 255)
-    errors = append(errors, "Invalid data: UserData is not an unsigned integer on 8 bits")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["UserData"]], 8L, "UserData", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_gpstime = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["gpstime"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.double(data[["gpstime"]]))
-    errors = append(errors, "Invalid data: gpstime is not a double")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_double(data[["gpstime"]], "gpstime", behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_PointSourceID = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["PointSourceID"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["PointSourceID"]]))
-    errors = append(errors, "Invalid data: PointSourceID is not an integer")
-
-  if (min(data[["PointSourceID"]]) < 0)
-    errors = append(errors, "Invalid data: PointSourceID is not an unsigned integer")
-
-  if (max(data[["PointSourceID"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: PointSourceID is not an unsigned integer on 16 bits")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["PointSourceID"]], 16L, "PointSourceID", signed = FALSE, behavior = behavior))
 }
 
 #' @export
 #' @rdname las_specification_tools
 is_valid_RGB = function(data, behavior = "bool")
 {
-
-  errors = character(0)
-
-  if (is.null(data[["R"]]) & is.null(data[["G"]]) & is.null(data[["B"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["R"]]))
-    errors = append(errors, "Invalid data: R is not an integer")
-
-  if (!is.integer(data[["G"]]))
-    errors = append(errors, "Invalid data: G is not an integer")
-
-  if (!is.integer(data[["B"]]))
-    errors = append(errors, "Invalid data: B is not an integer")
-
-  if (min(data[["R"]]) < 0)
-    errors = append(errors, "Invalid data: R is not an unsigned integer")
-
-  if (min(data[["G"]]) < 0)
-    errors = append(errors, "Invalid data: G is not an unsigned integer")
-
-  if (min(data[["B"]]) < 0)
-    errors = append(errors, "Invalid data: B is not an unsigned integer")
-
-  if (max(data[["R"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: R is not an unsigned integer on 16 bits")
-
-  if (max(data[["G"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: G is not an unsigned integer on 16 bits")
-
-  if (max(data[["B"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: B is not an unsigned integer on 16 bits")
-
+  errorsR <- is_no_na_integer_on_n_bits(data[["R"]], 16L, "R", signed = FALSE, behavior = "vector")
+  errorsG <- is_no_na_integer_on_n_bits(data[["G"]], 16L, "G", signed = FALSE, behavior = "vector")
+  errorsB <- is_no_na_integer_on_n_bits(data[["B"]], 16L, "B", signed = FALSE, behavior = "vector")
+  errors  <- c(errorsR, errorsG, errorsB)
   return(error_handling_engine(errors, behavior))
 }
 
@@ -742,21 +634,7 @@ is_valid_RGB = function(data, behavior = "bool")
 #' @rdname las_specification_tools
 is_valid_NIR = function(data, behavior = "bool")
 {
-  errors = character(0)
-
-  if (is.null(data[["NIR"]]))
-    return(error_handling_engine(errors, behavior))
-
-  if (!is.integer(data[["NIR"]]))
-    errors = append(errors, "Invalid data: NIR is not an integer")
-
-  if (min(data[["PointSourceID"]]) < 0)
-    errors = append(errors, "Invalid data: NIR is not an unsigned integer")
-
-  if (max(data[["PointSourceID"]]) > 2^16 - 1)
-    errors = append(errors, "Invalid data: NIR is not an unsigned integer on 16 bits")
-
-  return(error_handling_engine(errors, behavior))
+  return(is_no_na_integer_on_n_bits(data[["NIR"]], 16L, "NIR", signed = FALSE, behavior = behavior))
 }
 
 #' @export

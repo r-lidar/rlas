@@ -8,6 +8,7 @@
 - Fix: format 10 was missing in the list of formats valid for storing NIR
 - New: new parameter transform to apply streaming transformations
 - New: list of filters and transformations are available via `read.las(filter = "-h")` and  `read.las(transform = "-h")`
+- New: las specification tests now check for NAs
 
 ### rlas v1.3.5
 
