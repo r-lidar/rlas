@@ -19,6 +19,18 @@ test_that("filter returns good values", {
   expect_equal(dim(las), c(26, 16))
 })
 
+test_that("tranform returns good values", {
+
+  las <- read.las(lazfile, transform = "-scale_z 0.5")
+
+  expect_equal(mean(las$Z), 487.9, tol = 0.1)
+
+  las <- read.las(lazfile, filter = "-keep_first", transform = "-scale_z 0.5")
+
+  expect_equal(dim(las), c(26, 16))
+  expect_equal(mean(las$Z), 488, tol = 0.1)
+})
+
 test_that("colunm selection works", {
 
   las <- read.las(lazfile, select = "xyzrndecaupRGBN0")

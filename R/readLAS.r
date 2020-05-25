@@ -50,12 +50,20 @@
 #' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 #' to read the binary files. Thus the package inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
-#' to display the \code{LASlib} documentation and the available filters.
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{read.las(filter = "-help")}
+#' to display the \code{LASlib} documentation and the available filters.\cr\cr
+#' \strong{Transform:} the 'transform' argument allows transformation of the point cloud while reading files.
+#' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
+#' to read the binary files. Thus the package inherits the tranform commands available in
+#' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these transformations the user can pass the
+#' common commands from \code{LAStools} into the parameter \code{'transform'}. Type \code{read.las(transform = "-help")}
+#' to display the \code{LASlib} documentation and the available transformations
+#'
 #'
 #' @param files array of characters
 #' @param select character. select only columns of interest to save memory (see details)
 #' @param filter character. streaming filters - filter data while reading the file (see details)
+#' @param transform character. streaming transformation - transform data while reading the file (see details)
 #' @return A \code{data.table}
 #' @export
 #' @examples
@@ -66,8 +74,18 @@
 #' lasdata <- read.las(lazfile, filter = "-drop_intensity_below 80")
 #' lasdata <- read.las(lazfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
-read.las = function(files, select = "*", filter = "")
+read.las = function(files, select = "*", filter = "", transform = "")
 {
+    if (filter == "-h" | filter == "-help")
+      lasfilterusage()
+
+    if (transform == "-h" | transform == "-help")
+      lastransformusage()
+
+    if (filter == "-h" | transform == "-h" | filter == "-help" | transform == "-help")
+      return(invisible())
+
+  filter = paste(filter, transform)
   stream.las(files, select = select, filter = filter)
 }
 

@@ -4,7 +4,7 @@
 \alias{read.las}
 \title{Read data from a .las or .laz file}
 \usage{
-read.las(files, select = "*", filter = "")
+read.las(files, select = "*", filter = "", transform = "")
 }
 \arguments{
 \item{files}{array of characters}
@@ -12,6 +12,8 @@ read.las(files, select = "*", filter = "")
 \item{select}{character. select only columns of interest to save memory (see details)}
 
 \item{filter}{character. streaming filters - filter data while reading the file (see details)}
+
+\item{transform}{character. streaming transformation - transform data while reading the file (see details)}
 }
 \value{
 A \code{data.table}
@@ -39,8 +41,14 @@ Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.
 \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 to read the binary files. Thus the package inherits the filter commands available in
 \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
-to display the \code{LASlib} documentation and the available filters.
+common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{read.las(filter = "-help")}
+to display the \code{LASlib} documentation and the available filters.\cr\cr
+\strong{Transform:} the 'transform' argument allows transformation of the point cloud while reading files.
+\code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
+to read the binary files. Thus the package inherits the tranform commands available in
+\href{https://rapidlasso.com/lastools/}{LAStools}. To use these transformations the user can pass the
+common commands from \code{LAStools} into the parameter \code{'transform'}. Type \code{read.las(transform = "-help")}
+to display the \code{LASlib} documentation and the available transformations
 }
 \examples{
 lazfile <- system.file("extdata", "example.laz", package="rlas")

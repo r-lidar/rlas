@@ -25,6 +25,10 @@ lasfilterusage <- function() {
     invisible(.Call(`_rlas_lasfilterusage`))
 }
 
+lastransformusage <- function() {
+    invisible(.Call(`_rlas_lastransformusage`))
+}
+
 C_writer <- function(file, LASheader, data) {
     invisible(.Call(`_rlas_C_writer`, file, LASheader, data))
 }

@@ -35,6 +35,7 @@
 
 #include "lasreader.hpp"
 #include "lasfilter.hpp"
+#include "lastransform.hpp"
 
 
 using namespace Rcpp;
@@ -403,6 +404,20 @@ void lasfilterusage()
   {
     LASfilter filter;
     filter.usage();
+  }
+  catch (std::exception const& e)
+  {
+    Rcerr << "Error: " << e.what() << std::endl;
+  }
+}
+
+// [[Rcpp::export]]
+void lastransformusage()
+{
+  try
+  {
+    LAStransform transform;
+    transform.usage();
   }
   catch (std::exception const& e)
   {

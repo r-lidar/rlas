@@ -1,14 +1,13 @@
-### rlas v1.3.7
-
-- Fix: formats 5, 7 and 10 were missing in the list of formats valid for storing RGB
-- Fix: format 10 was missing in the list of formats valid for storing NIR
-
-### rlas v1.3.6
+### rlas v1.4.0
 
 - Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. If missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/Jean-Romain/rlas/pull/45)
 - Fix: The function `is_empty_point_cloud()` did not actually test what it was expected to test.
 - Fix: `is_valid_scalefactors()` does not trigger any report for very fine scale factors such as 0.000001 that is a valid scale of long/lat coordinates.
-- Fix: `is_valid_returnnumber()` does not complain for ReturnNumber = 0. This is valid but not compliant to the specs.  
+- Fix: `is_valid_returnnumber()` does not complain for ReturnNumber = 0. This is valid but not compliant to the specs. 
+- Fix: formats 5, 7 and 10 were missing in the list of formats valid for storing RGB
+- Fix: format 10 was missing in the list of formats valid for storing NIR
+- New: new parameter transform to apply streaming transformations
+- New: list of filters and transformations are available via `read.las(filter = "-h")` and  `read.las(transform = "-h")`
 
 ### rlas v1.3.5
 

@@ -76,6 +76,15 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// lastransformusage
+void lastransformusage();
+RcppExport SEXP _rlas_lastransformusage() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    lastransformusage();
+    return R_NilValue;
+END_RCPP
+}
 // C_writer
 void C_writer(CharacterVector file, List LASheader, DataFrame data);
 RcppExport SEXP _rlas_C_writer(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP dataSEXP) {
@@ -107,6 +116,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
+    {"_rlas_lastransformusage", (DL_FUNC) &_rlas_lastransformusage, 0},
     {"_rlas_C_writer", (DL_FUNC) &_rlas_C_writer, 3},
     {"_rlas_laxwriter", (DL_FUNC) &_rlas_laxwriter, 2},
     {NULL, NULL, 0}
