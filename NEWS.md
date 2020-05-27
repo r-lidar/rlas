@@ -6,6 +6,7 @@
 - Fix: `is_valid_returnnumber()` does not complain for ReturnNumber = 0. This is valid but not compliant to the specs. 
 - Fix: formats 5, 7 and 10 were missing in the list of formats valid for storing RGB
 - Fix: format 10 was missing in the list of formats valid for storing NIR
+- Fix: more tests and fixes relative to asprs specification
 - New: new parameter transform to apply streaming transformations
 - New: list of filters and transformations are available via `read.las(filter = "-h")` and  `read.las(transform = "-h")`
 - Enhancement: las specification tests now check for NAs

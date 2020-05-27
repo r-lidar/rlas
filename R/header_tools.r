@@ -95,36 +95,8 @@ header_create = function(data)
   else
     header[["Number of points by return"]] <- rep(0L,5)
 
-  if ("NIR" %in% fields) # format 8
-  {
-    header[["Point Data Format ID"]] = 8
-    header[["Point Data Record Length"]] = 38
-  }
-  else if ("gpstime" %in% fields) # format 1, 3, 6, 7
-  {
-    if (all(c("R", "G", "B") %in% fields))  # format 3 (6 not supported)
-    {
-      header[["Point Data Format ID"]] = 3
-      header[["Point Data Record Length"]] = 34
-    }
-    else # format 1 (7 not supported)
-    {
-      header[["Point Data Format ID"]] = 1
-      header[["Point Data Record Length"]] = 28
-    }
-  }
-  else # format 0 or 2
-  {
-    if (all(c("R", "G", "B") %in% fields))
-    {
-      header[["Point Data Format ID"]] = 2
-      header[["Point Data Record Length"]] = 26
-    }
-    else {
-      header[["Point Data Format ID"]] = 0
-      header[["Point Data Record Length"]] = 20
-    }
-  }
+  header[["Point Data Format ID"]] <- guess_las_format(data)
+  header[["Point Data Record Length"]] <- get_data_record_length(header[["Point Data Format ID"]])
 
   header[["Variable Length Records"]] = list()
 
@@ -422,5 +394,40 @@ where_is_epsg = function(header)
 
   return(0)
 }
+
+guess_las_format <- function(data)
+{
+  fields <- names(data)
+
+  if ("NIR" %in% fields) # format 8 or 10
+    return(8L) # Format 10 is not supported
+
+  if ("gpstime" %in% fields) # format 1, 3:10
+  {
+    if (all(c("R", "G", "B") %in% fields))  # format 3, 5, 7, 8
+    {
+      if ("ScanAngleRank" %in% fields)
+        return(3L) # 5 not supported
+      else
+        return(7L) # It is not 8 because NIR has already been tested
+    }
+    else # format 1
+      return(1L)
+  }
+  else # format 0 or 2
+  {
+    if (all(c("R", "G", "B") %in% fields))
+      return(2L)
+    else
+      return(0L)
+  }
+}
+
+get_data_record_length <- function(format)
+{
+  bytes <- c(20L, 28L, 26L, 34L, 57L, 63L, 30L, 36L, 38L, 59L, 67L)
+  return(bytes[format + 1])
+}
+
 
 #allowed_fields = c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns", "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID", "R", "G", "B", "NIR")
