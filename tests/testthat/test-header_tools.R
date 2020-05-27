@@ -21,5 +21,5 @@ header = header_create(data)
 
 expect_equal(header[["Version Minor"]], 2L)
 expect_equal(header[["Point Data Format ID"]], 3L)
-}
+})
 
