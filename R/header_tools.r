@@ -406,10 +406,10 @@ guess_las_format <- function(data)
   {
     if (all(c("R", "G", "B") %in% fields))  # format 3, 5, 7, 8
     {
-      if ("ScanAngleRank" %in% fields)
-        return(3L) # 5 not supported
-      else
+     if ("ScanAngle" %in% fields)
         return(7L) # It is not 8 because NIR has already been tested
+      else
+        return(3L)
     }
     else # format 1
       return(1L)
