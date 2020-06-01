@@ -29,7 +29,7 @@
 
 #' Read data from a .las or .laz file
 #'
-#' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads data from .las or .laz files according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #' The optional parameters enable the user to save memory by choosing to load only the
@@ -91,7 +91,7 @@ read.las = function(files, select = "*", filter = "", transform = "")
 
 #' Read header from a .las or .laz file
 #'
-#' Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads header from .las or .laz files according to LAS specifications and returns
 #' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
 #' \href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #'

@@ -4,7 +4,7 @@
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
-`rlas` relies on a modified version of `LASlib` and `LASzip` that were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complaints from `R CMD check`. It enables R users to read and write binary files commonly used to store LiDAR data. LAS version 1.0 to 1.4 are supported. Point data record format 0,1,2,3,6,7,8 are supported.
+`rlas` relies on a modified version of `LASlib` and `LASzip` that were modified to be compatible with `R`. The library can therefore be compiled into `R` without any complaints from `R CMD check`. It enables R users to read and write binary files commonly used to store LiDAR data. LAS version 1.0 to 1.4 are supported.
 
 ```r
 library(rlas)
