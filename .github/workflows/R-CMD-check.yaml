@@ -53,6 +53,13 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
+      - name: Install system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+          sudo apt update
+          sudo apt install libcurl4-openssl-dev
+
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
