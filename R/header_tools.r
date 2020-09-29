@@ -342,7 +342,7 @@ header_set_epsg = function(header, epsg)
     }
     else
     {
-      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]) + 1
+      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
     }
   }
 

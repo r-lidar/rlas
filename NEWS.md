@@ -1,3 +1,7 @@
+### rlas v1.3.7
+
+- Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` inccorectly set the epsg code when the key 3072 is missing but the VLR is not empty
+
 ### rlas v1.3.6
 
 - Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. It missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/Jean-Romain/rlas/pull/45)
