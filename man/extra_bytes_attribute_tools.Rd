@@ -40,7 +40,7 @@ this value that will be considered as NA. NULL if not relevant.}
 }
 \description{
 Functions that update a header to describe Extra Bytes Attributes according to the
-\href{http://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
+\href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 }
 \examples{
 data = data.frame(X = c(339002.889, 339002.983, 339002.918),
