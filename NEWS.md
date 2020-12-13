@@ -1,3 +1,7 @@
+### rlas v1.3.8
+
+- Switch to C++14 to use boost 1.75.0 (see [#49](https://github.com/Jean-Romain/rlas/issues/49))
+
 ### rlas v1.3.7
 
 - Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` inccorectly set the epsg code when the key 3072 is missing but the VLR is not empty
