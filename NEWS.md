@@ -1,12 +1,16 @@
-### rlas v1.3.8
+### rlas v1.3.9 (Release date: ...)
+
+- Fix gcc-asan new-delete-type-mismatch error when reading las/laz with lax files that appeared with c++14 and later standard.
+
+### rlas v1.3.8 (Release date: 2020-12-14)
 
 - Switch to C++14 to use boost 1.75.0 (see [#49](https://github.com/Jean-Romain/rlas/issues/49))
 
-### rlas v1.3.7
+### rlas v1.3.7 (Release date: 2020-11-11)
 
-- Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` inccorectly set the epsg code when the key 3072 is missing but the VLR is not empty
+- Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` incorrectly set the epsg code when the key 3072 is missing but the VLR is not empty
 
-### rlas v1.3.6
+### rlas v1.3.6 (Release date: 2020-06-02)
 
 - Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. It missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/Jean-Romain/rlas/pull/45)
 - Fix: The function `is_empty_point_cloud()` did not actually test what it was expected to test.
@@ -19,18 +23,18 @@
 - New: list of filters and transformations are available via `read.las(filter = "-h")` and  `read.las(transform = "-h")`
 - Enhancement: las specification tests now check for NAs
 
-### rlas v1.3.5
+### rlas v1.3.5 (Release date: 2020-02-04)
 
 - Change: defunc deprecated functions `check_data`, `check_header` and `check_data_vs_header`.
 - Fix: `is_valid_ScanAngle()` triggers an error if |a| > 196.6 instead of 180. 196.6 is the maximum writable angle but is not compliant with the specs ([#44](https://github.com/Jean-Romain/rlas/issues/44)).
 - New: function `is_compliant_ScanAngle()` to check the compliance of the Scan Angle.
 
-### rlas v1.3.4
+### rlas v1.3.4 (Release date: 2019-09-19)
 
 - Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
 - Note: use the function `tabulate()` instead of home made C++ code to count the return numbers. 
 
-### rlas v1.3.3
+### rlas v1.3.3 (Release date: 2019-08-30)
 
 * New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).
 * New: verbose option in `writelax()`.

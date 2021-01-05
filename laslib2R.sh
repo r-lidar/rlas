@@ -32,6 +32,7 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # lastransform.cpp         l401       R::runif(0, RAND_MAX);
 # lasfilter.cpp            l1298      R::runif(0, RAND_MAX);
 # lasutility.cpp                      #include <stdexcept>
+# lasinterval.cpp          l545       delete ((LASintervalStartCell*)previous_cell); for gcc-asan fix in lax files
 
 # CRAN is happy now!
 
