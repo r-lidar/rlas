@@ -1,6 +1,6 @@
-### rlas v1.3.9 (Release date: ...)
+### rlas v1.3.9 (Release date: 2021-01-11)
 
-- Fix gcc-asan new-delete-type-mismatch error when reading las/laz with lax files that appeared with c++14 and later standard.
+- Fix gcc-asan new-delete-type-mismatch error when reading las/laz with lax files that appeared with C++14 and later standard.
 
 ### rlas v1.3.8 (Release date: 2020-12-14)
 
