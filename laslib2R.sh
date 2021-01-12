@@ -33,6 +33,11 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # lasfilter.cpp            l1298      R::runif(0, RAND_MAX);
 # lasutility.cpp                      #include <stdexcept>
 # lasinterval.cpp          l545       delete ((LASintervalStartCell*)previous_cell); for gcc-asan fix in lax files
+# lasquadtree.cpp          l1662      for interger overflow
+#    if (l < 16)
+#      level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
+#    else
+#      level_offset[l+1] = level_offset[l];
 
 # CRAN is happy now!
 

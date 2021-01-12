@@ -1,3 +1,7 @@
+### rlas v1.3.10 (Release date: )
+
+- Fix gcc-asan signed integer overflow.
+
 ### rlas v1.3.9 (Release date: 2021-01-11)
 
 - Fix gcc-asan new-delete-type-mismatch error when reading las/laz with lax files that appeared with C++14 and later standard.
