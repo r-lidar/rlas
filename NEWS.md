@@ -1,6 +1,7 @@
 ### rlas v1.3.10 (Release date: )
 
 - Fix gcc-asan signed integer overflow.
+- Use tinytest instead of testthat
 
 ### rlas v1.3.9 (Release date: 2021-01-11)
 

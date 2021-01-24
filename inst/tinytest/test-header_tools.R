@@ -2,13 +2,12 @@ lazfile <- system.file("extdata", "example.laz", package = "rlas")
 data    <- read.las(lazfile)
 header  <- read.lasheader(lazfile)
 
-test_that("header_create creates a valid header", {
-  h = header_create(data)
+# "header_create creates a valid header", {
+h = header_create(data)
 
-  expect_equal(h[["Point Data Format ID"]],  header[["Point Data Format ID"]])
-})
+expect_equal(h[["Point Data Format ID"]],  header[["Point Data Format ID"]])
 
-test_that("header_create creates a valid header", {
+# "header_create creates a valid header", {
 
 data = data.frame(X = runif(10), Y = runif(10), Z = runif(10))
 data$gpstime   <- runif(10, 0, 100)
@@ -21,5 +20,4 @@ header = header_create(data)
 
 expect_equal(header[["Version Minor"]], 2L)
 expect_equal(header[["Point Data Format ID"]], 3L)
-})
 

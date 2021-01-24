@@ -20,6 +20,6 @@ LazyData: true
 RoxygenNote: 7.1.1
 LinkingTo: Rcpp,BH
 Suggests: 
-    testthat (>= 2.1.0),
+    tinytest,
     covr
 Encoding: UTF-8
