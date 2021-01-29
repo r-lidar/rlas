@@ -32,7 +32,7 @@ wlas    <- read.las(write_path)
 wheader <- read.lasheader(write_path)
 
 expect_equal(las, wlas)
-expect_equal(wheader[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[1]][["value offset"]], 26917)
+expect_equal(wheader[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[2]][["value offset"]], 26917)
 
 
 # write.las writes WKT string",{

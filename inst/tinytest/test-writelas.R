@@ -11,6 +11,7 @@ wlas    <- read.las(write_path)
 wheader <- read.lasheader(write_path)
 
 expect_equal(las, wlas)
+expect_equal(header$`Variable Length Records`, wheader$`Variable Length Records`)
 
 # "UUID is properly written",{
 
@@ -59,7 +60,10 @@ eb2[["description"]] <- NULL
 
 expect_equal(eb1, eb2)
 expect_equal(las, wlas)
-
+expect_equal(length(header), length(wheader))
+expect_equal(length(header$`Variable Length Records`$GeoKeyDirectoryTag), length(wheader$`Variable Length Records`$GeoKeyDirectoryTag))
+expect_equal(length(header$`Variable Length Records`$GeoAsciiParamsTag), length(wheader$`Variable Length Records`$GeoAsciiParamsTag))
+expect_equal(header$`Variable Length Records`$GeoAsciiParamsTag$tags, wheader$`Variable Length Records`$GeoAsciiParamsTag$tags)
 
 # "write.las skips extra bytes if empty VLR", {
 

@@ -1,8 +1,10 @@
-### rlas v1.3.10 (Release date: )
+### rlas v1.4.0 (Release date: )
 
 - Fix: gcc-asan signed integer overflow.
 - Change: use `tinytest` instead of `testthat`
-- New: `read.lasheader()` now read the extend variable lenght record
+- New: `read.lasheader()` now reads the extended variable length record (EVLR)
+- New: `write.las()` now writes all GeoKeyDirectoryTag + GeoAsciiParamsTag + GeoDoubleParamsTag
+- New: `write.las()` can now write WKT OGC CS in EVLR
 
 ### rlas v1.3.9 (Release date: 2021-01-11)
 

@@ -103,24 +103,35 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       if (names[i] == "GeoKeyDirectoryTag")
       {
         List tags = vlr["tags"];
-        for (int j = 0 ; j < tags.size() ; j ++)
+        int ntags = tags.size();
+        LASvlr_key_entry vlr_epsg[ntags];
+        for (int j = 0 ; j < ntags ; j ++)
         {
           List tag = tags[j];
-          int key  = tag["key"];
+          vlr_epsg[j].key_id = (U16)tag["key"];
+          vlr_epsg[j].tiff_tag_location = (U16)tag["tiff tag location"];
+          vlr_epsg[j].count = (U16)tag["count"];
+          vlr_epsg[j].value_offset = (U16)tag["value offset"];
+        }
 
-          if (key == 3072)
-          {
-            LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry();
-            vlr_epsg->key_id = 3072;
-            vlr_epsg->tiff_tag_location = 0;
-            vlr_epsg->count = 1;
-            vlr_epsg->value_offset = (U16)tag["value offset"];
-
-            header.set_geo_keys(1, vlr_epsg);
-            delete vlr_epsg;
-
-            break;
-          }
+        header.set_geo_keys(ntags, vlr_epsg);
+      }
+      else if (names[i] == "GeoAsciiParamsTag")
+      {
+        if (vlr.containsElementNamed("tags"))
+        {
+          CharacterVector ASCII = vlr["tags"];
+          std::string sascii    = as<std::string>(ASCII);
+          header.set_geo_ascii_params(sascii.size(), sascii.c_str());
+        }
+      }
+      else if (names[i] == "GeoDoubleParamsTag")
+      {
+        if (vlr.containsElementNamed("tags"))
+        {
+          NumericVector DOUBLE = vlr["tags"];
+          std::vector<double> sdouble = as<std::vector<double> >(DOUBLE);
+          header.set_geo_double_params(sdouble.size(), &sdouble[0]);
         }
       }
       else if (names[i] == "WKT OGC CS")
@@ -186,7 +197,6 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       }
       else
       {
-        // Not supported
       }
     }
   }
