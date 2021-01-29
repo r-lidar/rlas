@@ -1,7 +1,8 @@
 ### rlas v1.3.10 (Release date: )
 
-- Fix gcc-asan signed integer overflow.
-- Use tinytest instead of testthat
+- Fix: gcc-asan signed integer overflow.
+- Change: use `tinytest` instead of `testthat`
+- New: `read.lasheader()` now read the extend variable lenght record
 
 ### rlas v1.3.9 (Release date: 2021-01-11)
 

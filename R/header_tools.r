@@ -316,10 +316,14 @@ header_get_epsg = function(header)
 {
   pos <- where_is_epsg(header)
 
-  if (pos == 0)
+  if (pos[1] == 0L)
     return(0)
+  else if (pos[2] == 1L)
+    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]][["value offset"]])
+  else if (pos[2] == 2L)
+    return(header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]][["value offset"]])
   else
-    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]][["value offset"]])
+    stop("Internal error in rlas. Please report")
 }
 
 #' @export
@@ -328,7 +332,7 @@ header_set_epsg = function(header, epsg)
 {
   pos <- where_is_epsg(header)
 
-  if (pos == 0)
+  if (pos[1] == 0)
   {
     if (is.null(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]))
     {
@@ -338,15 +342,29 @@ header_set_epsg = function(header, epsg)
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["length after header"]] <- 40
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["description"]]         <- "Geo Key Directory Tag"
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]                <- vector("list", 1)
-      pos <- 1
+      pos <- c(1L, 1L)
     }
-    else
+    else if (pos[2] == 1L)
     {
       pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
+      pos <- c(pos, 1L)
     }
+    else if (pos[2] == 2L)
+    {
+      pos <- length(header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
+      pos <- c(pos, 2L)
+    }
+    else
+      stop("Internal error in rlas. Please report")
   }
 
-  header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
+  if (pos[2] == 1L)
+    header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
+  else if (pos[2] == 2L)
+    header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
+  else
+    stop("Internal error in rlas. Please report")
+
   return(header)
 }
 
@@ -356,28 +374,43 @@ header_get_wktcs = function(header)
 {
   wkt = header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]]
 
-  if (is.null(wkt))
-    return("")
-  else
+  if (!is.null(wkt))
     return(wkt)
+
+  wkt = header[["Extended Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]]
+
+  if (!is.null(wkt))
+    return(wkt)
+
+  return("")
 }
 
 #' @export
 #' @rdname crs_tools
 header_set_wktcs = function(header, WKT)
 {
-  if (is.null(header[["Variable Length Records"]]))
-    header[["Variable Length Records"]] <- list()
+  vlrs <- length(header[["Variable Length Records"]]) > 0L
+  evlrs <- length(header[["Extended Variable Length Records"]]) > 0L
+  attr <- "Variable Length Records"
 
-  if (is.null(header[["Variable Length Records"]][["WKT OGC CS"]]))
-    header[["Variable Length Records"]][["WKT OGC CS"]] <- list()
+  if (!vlrs && evlrs)
+    attr <- "Extended Variable Length Records"
+
+  if (is.null(header[[attr]]))
+    header[[attr]] <- list()
+
+  if (is.null(header[[attr]][["WKT OGC CS"]]))
+  {
+    attr <- "Variable Length Records"
+    header[[attr]][["WKT OGC CS"]] <- list()
+  }
 
 
-  header[["Variable Length Records"]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
-  header[["Variable Length Records"]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
-  header[["Variable Length Records"]][["WKT OGC CS"]][["record ID"]]                 <- 2112
-  header[["Variable Length Records"]][["WKT OGC CS"]][["description"]]               <- "WKT Information"
-  header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]] <- WKT
+  header[[attr]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
+  header[[attr]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
+  header[[attr]][["WKT OGC CS"]][["record ID"]]                 <- 2112
+  header[[attr]][["WKT OGC CS"]][["description"]]               <- "WKT Information"
+  header[[attr]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]] <- WKT
   header[["Global Encoding"]][["WKT"]] <- TRUE
   return(header)
 }
@@ -389,10 +422,18 @@ where_is_epsg = function(header)
   for (i in seq_along(tags))
   {
     if (tags[[i]]$key == 3072)
-      return(i)
+      return(c(i,1L))
   }
 
-  return(0)
+  tags = header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]
+
+  for (i in seq_along(tags))
+  {
+    if (tags[[i]]$key == 3072)
+      return(c(i,2L))
+  }
+
+  return(c(0L, 0L))
 }
 
 guess_las_format <- function(data)
