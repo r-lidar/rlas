@@ -51,10 +51,10 @@ common commands from \code{LAStools} into the parameter \code{'transform'}. Type
 to display the \code{LASlib} documentation and the available transformations
 }
 \examples{
-lazfile <- system.file("extdata", "example.laz", package="rlas")
+lasfile <- system.file("extdata", "example.las", package="rlas")
 
-lasdata <- read.las(lazfile)
-lasdata <- read.las(lazfile, filter = "-keep_first")
-lasdata <- read.las(lazfile, filter = "-drop_intensity_below 80")
-lasdata <- read.las(lazfile, select = "xyzia")
+lasdata <- read.las(lasfile)
+lasdata <- read.las(lasfile, filter = "-keep_first")
+lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
+lasdata <- read.las(lasfile, select = "xyzia")
 }

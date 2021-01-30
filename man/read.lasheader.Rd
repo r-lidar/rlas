@@ -18,7 +18,7 @@ a \code{list} labeled according to LAS specifications. See the ASPRS documentati
 \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 }
 \examples{
-lazfile   <- system.file("extdata", "example.laz", package="rlas")
+lazfile   <- system.file("extdata", "example.las", package="rlas")
 lasheader <- read.lasheader(lazfile)
 }
 \seealso{

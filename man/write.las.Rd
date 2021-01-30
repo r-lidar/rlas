@@ -48,7 +48,7 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
                      PointSourceID = c(17L, 17L, 17L))
 
 lasheader = header_create(lasdata)
-file = file.path(tempdir(), "temp.laz")
+file = file.path(tempdir(), "temp.las")
 
 write.las(file, lasheader, lasdata)
 }

@@ -65,7 +65,7 @@
 #'                      PointSourceID = c(17L, 17L, 17L))
 #'
 #' lasheader = header_create(lasdata)
-#' file = file.path(tempdir(), "temp.laz")
+#' file = file.path(tempdir(), "temp.las")
 #'
 #' write.las(file, lasheader, lasdata)
 write.las = function(file, header, data)

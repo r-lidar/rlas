@@ -1,4 +1,4 @@
-lazfile <- system.file("extdata", "example.laz", package = "rlas")
+lazfile <- system.file("extdata", "example.las", package = "rlas")
 header <- read.lasheader(lazfile)
 
 # "read.lasheader read the header", {

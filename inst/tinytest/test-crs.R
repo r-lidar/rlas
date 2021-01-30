@@ -1,4 +1,4 @@
-lazfile    <- system.file("extdata", "example.laz", package = "rlas")
+lazfile    <- system.file("extdata", "example.las", package = "rlas")
 las        <- read.las(lazfile)
 header     <- read.lasheader(lazfile)
 write_path <- tempfile(fileext = ".las")

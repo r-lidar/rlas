@@ -67,12 +67,12 @@
 #' @return A \code{data.table}
 #' @export
 #' @examples
-#' lazfile <- system.file("extdata", "example.laz", package="rlas")
+#' lasfile <- system.file("extdata", "example.las", package="rlas")
 #'
-#' lasdata <- read.las(lazfile)
-#' lasdata <- read.las(lazfile, filter = "-keep_first")
-#' lasdata <- read.las(lazfile, filter = "-drop_intensity_below 80")
-#' lasdata <- read.las(lazfile, select = "xyzia")
+#' lasdata <- read.las(lasfile)
+#' lasdata <- read.las(lasfile, filter = "-keep_first")
+#' lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
+#' lasdata <- read.las(lasfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
 read.las = function(files, select = "*", filter = "", transform = "")
 {
@@ -101,7 +101,7 @@ read.las = function(files, select = "*", filter = "", transform = "")
 #' @importFrom Rcpp sourceCpp
 #' @export
 #' @examples
-#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
+#' lazfile   <- system.file("extdata", "example.las", package="rlas")
 #' lasheader <- read.lasheader(lazfile)
 read.lasheader = function(file)
 {

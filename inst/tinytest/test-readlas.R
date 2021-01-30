@@ -1,4 +1,4 @@
-lazfile <- system.file("extdata", "example.laz", package = "rlas")
+lazfile <- system.file("extdata", "example.las", package = "rlas")
 stream.las <- rlas:::stream.las
 
 # "read returns good values", {
@@ -64,7 +64,7 @@ expect_equal(las1, las2)
 
 # "streaming works", {
 
-ifile <- system.file("extdata", "example.laz", package = "rlas")
+ifile <- system.file("extdata", "example.las", package = "rlas")
 ofile <- tempfile(fileext = ".las")
 
 las1 <- read.las(ifile, filter = "-keep_first")
@@ -76,7 +76,7 @@ expect_equal(las1, las2)
 
 # "streaming works with extra bytes", {
 
-ifile <- system.file("extdata", "extra_byte.laz", package = "rlas")
+ifile <- system.file("extdata", "extra_byte.las", package = "rlas")
 ofile <- tempfile(fileext = ".las")
 
 las1 <- read.las(ifile, filter = "-keep_first")
@@ -88,7 +88,7 @@ expect_equal(las1, las2)
 
 # "streaming reads if no ofile", {
 
-ifile <- system.file("extdata", "example.laz", package = "rlas")
+ifile <- system.file("extdata", "example.las", package = "rlas")
 ofile <- ""
 las1  <- read.las(ifile, filter = "-keep_first")
 las2  <- stream.las(ifile, ofile, filter = "-keep_first")
@@ -98,7 +98,7 @@ expect_equal(las1, las2)
 
 # "filter wkt works with a POLYGON", {
 
-ifile <- system.file("extdata", "example.laz", package = "rlas")
+ifile <- system.file("extdata", "example.las", package = "rlas")
 ofile <- ""
 wkt   <- "POLYGON ((339008 5248000, 339007 5248001, 339011 5248001, 339010 5248000, 339008 5248000))"
 las   <- stream.las(ifile, ofile, select = "* -t -i -s -k -w", filter_wkt = wkt)
@@ -107,7 +107,7 @@ expect_equal(dim(las), c(14, 11))
 
 # "filter wkt works with a POLYGON with hole", {
 
-ifile <- system.file("extdata", "example.laz", package = "rlas")
+ifile <- system.file("extdata", "example.las", package = "rlas")
 ofile <- ""
 wkt   <- "POLYGON ((339008 5248000, 339007 5248001, 339011 5248001, 339010 5248000, 339008 5248000), (339008.3 5248000.5, 339008.2 5248000.1, 339008.8 5248000.1, 339009.7 5248000.2, 339009.1 5248000.5, 339008.3 5248000.5))"
 las   <- stream.las(ifile, ofile, filter_wkt = wkt)
@@ -117,7 +117,7 @@ expect_equal(dim(las), c(10, 16))
 
 # "filter wkt works with a MULTIPOLYGON", {
 
-ifile <- system.file("extdata", "example.laz", package = "rlas")
+ifile <- system.file("extdata", "example.las", package = "rlas")
 ofile <- ""
 wkt   <- "MULTIPOLYGON (((339008 5248000, 339008.1 5248001, 339009.2 5248001, 339010 5248000, 339008 5248000), (339008.3 5248000.5, 339008.2 5248000.1, 339008.8 5248000.1, 339009.7 5248000.2, 339009.1 5248000.6, 339008.3 5248000.5)), ((339003 5248001, 339003 5248000, 339007.3 5248001, 339003 5248001)))"
 las   <- rlas:::stream.las(ifile, ofile, filter_wkt = wkt)
@@ -126,7 +126,7 @@ expect_equal(dim(las), c(11, 16))
 
 # "extra byte selection works", {
 
-ifile <- system.file("extdata", "extra_byte.laz", package = "rlas")
+ifile <- system.file("extdata", "extra_byte.las", package = "rlas")
 las   <- read.las(ifile)
 
 expect_true("Pulse width" %in% names(las))
