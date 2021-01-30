@@ -104,7 +104,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
       {
         List tags = vlr["tags"];
         int ntags = tags.size();
-        LASvlr_key_entry vlr_epsg[ntags];
+        LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry[ntags];
         for (int j = 0 ; j < ntags ; j ++)
         {
           List tag = tags[j];
@@ -115,6 +115,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
         }
 
         header.set_geo_keys(ntags, vlr_epsg);
+        delete[] vlr_epsg;
       }
       else if (names[i] == "GeoAsciiParamsTag")
       {
