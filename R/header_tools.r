@@ -316,14 +316,10 @@ header_get_epsg = function(header)
 {
   pos <- where_is_epsg(header)
 
-  if (pos[1] == 0L)
+  if (pos == 0L)
     return(0)
-  else if (pos[2] == 1L)
-    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]][["value offset"]])
-  else if (pos[2] == 2L)
-    return(header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]][["value offset"]])
   else
-    stop("Internal error in rlas. Please report")
+    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][pos][["value offset"]])
 }
 
 #' @export
@@ -422,18 +418,10 @@ where_is_epsg = function(header)
   for (i in seq_along(tags))
   {
     if (tags[[i]]$key == 3072)
-      return(c(i,1L))
+      return(i)
   }
 
-  tags = header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]
-
-  for (i in seq_along(tags))
-  {
-    if (tags[[i]]$key == 3072)
-      return(c(i,2L))
-  }
-
-  return(c(0L, 0L))
+  return(0L)
 }
 
 guess_las_format <- function(data)
