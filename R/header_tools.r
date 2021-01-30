@@ -319,7 +319,7 @@ header_get_epsg = function(header)
   if (pos == 0L)
     return(0)
   else
-    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][pos][["value offset"]])
+    return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]][["value offset"]])
 }
 
 #' @export
@@ -328,7 +328,7 @@ header_set_epsg = function(header, epsg)
 {
   pos <- where_is_epsg(header)
 
-  if (pos[1] == 0)
+  if (pos == 0)
   {
     if (is.null(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]))
     {
@@ -338,29 +338,15 @@ header_set_epsg = function(header, epsg)
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["length after header"]] <- 40
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["description"]]         <- "Geo Key Directory Tag"
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]                <- vector("list", 1)
-      pos <- c(1L, 1L)
-    }
-    else if (pos[2] == 1L)
-    {
-      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
-      pos <- c(pos, 1L)
-    }
-    else if (pos[2] == 2L)
-    {
-      pos <- length(header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
-      pos <- c(pos, 2L)
+      pos <- 1L
     }
     else
-      stop("Internal error in rlas. Please report")
+    {
+      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
+    }
   }
 
-  if (pos[2] == 1L)
-    header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
-  else if (pos[2] == 2L)
-    header[["Extended Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos[1]]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
-  else
-    stop("Internal error in rlas. Please report")
-
+  header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]] <- list(key = 3072L, `tiff tag location` = 0L, count = 1L, `value offset` = as.integer(epsg))
   return(header)
 }
 
