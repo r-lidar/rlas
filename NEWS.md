@@ -1,5 +1,6 @@
 ### rlas v1.4.0 (Release date: )
 
+- Fix: build failure with GCC 4.x
 - Fix: gcc-asan signed integer overflow.
 - Change: use `tinytest` instead of `testthat`
 - New: `read.lasheader()` now reads the extended variable length record (EVLR)

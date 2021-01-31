@@ -27,7 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 ===============================================================================
 */
 
-// [[Rcpp::depends(BH)]]
+#ifdef __GNUC__
+  #if __GNUC__ < 5
+
+#include "gcc_4_9_patch/std_is_trivially.hpp"
+#include "gcc_4_9_patch/boost_compare_patched.hpp"
+
+  #endif
+#endif
 
 #include <Rcpp.h>
 #include <boost/geometry.hpp>
