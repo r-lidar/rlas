@@ -27,13 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 ===============================================================================
 */
 
-#ifdef __GNUC__
-  #if __GNUC__ < 5
-
-#include "gcc_4_9_patch/std_is_trivially.hpp"
+#if defined(__GNUC__) && (__GNUC__ < 5)
+#warning "USING GCC < 5"
+#include "gcc_4_9_patch/std_is_trivially_substitutes.hpp"
 #include "gcc_4_9_patch/boost_compare_patched.hpp"
-
-  #endif
 #endif
 
 #include <Rcpp.h>
