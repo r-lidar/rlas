@@ -2,6 +2,7 @@
 
 - Fix: build failure with GCC 4.x
 - Fix: gcc-asan signed integer overflow.
+- Fix: when reading an non supported extra bytes attribute rlas used to print a warning message. It now throws a real warning.
 - Change: use `tinytest` instead of `testthat`
 - New: `read.lasheader()` now reads the extended variable length record (EVLR)
 - New: `write.las()` now writes all GeoKeyDirectoryTag + GeoAsciiParamsTag + GeoDoubleParamsTag

@@ -325,7 +325,10 @@ void RLASstreamer::allocation()
         extra_bytes_attr.push_back(extrabyte);
       }
       else
-        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", extrabyte.data_type, extrabyte.id);
+      {
+        std::string msg = std::string("data type ") + std::to_string(extrabyte.data_type) + std::string(" of extra bytes attribute ") + std::to_string(extrabyte.id) + std::string(" is deprecated and not supported by rlas.");
+        Rf_warningcall(R_NilValue, msg.c_str());
+      }
     }
   }
 }
