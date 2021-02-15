@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader_asc.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,14 +21,16 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lasreader_asc.hpp"
+
+#include "lasvlrpayload.hpp"
 
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +45,7 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -53,13 +55,13 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
   file = fopen_compressed(file_name, "r", &piped);
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, 10*LAS_TOOLS_IO_IBUFFER_SIZE) != 0)
   {
-    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", 10*LAS_TOOLS_IO_IBUFFER_SIZE);
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", 10*LAS_TOOLS_IO_IBUFFER_SIZE);
   }
 
   // clean the header
@@ -213,7 +215,7 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
 
   if (!complete)
   {
-    REprintf("ERROR: was not able to find header\n");
+    fprintf(stderr,"ERROR: was not able to find header\n");
     return FALSE;
   }
 
@@ -234,7 +236,7 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
 
   // init the bounding box z and count the rasters
 
-  F32 elevation = 0;
+  F64 elevation = 0;
   npoints = 0;
   header.min_z = F64_MAX;
   header.max_z = F64_MIN;
@@ -252,9 +254,9 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
         if (!fgets(line, line_size, file))
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
         }
 
@@ -274,7 +276,7 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
         while ((line[line_curr] != '\0') && (line[line_curr] <= ' ')) line_curr++;
       }
       // get elevation value
-      sscanf(&(line[line_curr]), "%f", &elevation);
+      sscanf(&(line[line_curr]), "%lf", &elevation);
       // skip parsed number
       while ((line[line_curr] != '\0') && (line[line_curr] > ' ')) line_curr++;
       // skip following spaces
@@ -309,10 +311,29 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
   }
   else
   {
-    REprintf("WARNING: ASC raster contains only no data values\n");
+    fprintf(stderr,"WARNING: ASC raster contains only no data values\n");
     header.min_z = 0;
     header.max_z = 0;
   }
+
+  // add the VLR for Raster LAZ 
+
+  LASvlrRasterLAZ vlrRasterLAZ;
+  vlrRasterLAZ.nbands = 1;
+  vlrRasterLAZ.nbits = 32;
+  vlrRasterLAZ.ncols = ncols;
+  vlrRasterLAZ.nrows = nrows;
+  vlrRasterLAZ.reserved1 = 0;
+  vlrRasterLAZ.reserved2 = 0;
+  vlrRasterLAZ.stepx = cellsize;
+  vlrRasterLAZ.stepx_y = 0.0;
+  vlrRasterLAZ.stepy = cellsize;
+  vlrRasterLAZ.stepy_x = 0.0;
+  vlrRasterLAZ.llx = xllcenter - 0.5*cellsize;
+  vlrRasterLAZ.lly = yllcenter - 0.5*cellsize;
+  vlrRasterLAZ.sigmaxy = 0.0;
+
+  header.add_vlr("Raster LAZ", 7113, (U16)vlrRasterLAZ.get_payload_size(), vlrRasterLAZ.get_payload(), FALSE, "by LAStools of rapidlasso GmbH", FALSE);
 
   // reopen
 
@@ -358,7 +379,7 @@ BOOL LASreaderASC::seek(const I64 p_index)
 
 BOOL LASreaderASC::read_point_default()
 {
-  F32 elevation;
+  F64 elevation;
   while (p_count < npoints)
   {
     if (line[line_curr] == '\0')
@@ -366,9 +387,9 @@ BOOL LASreaderASC::read_point_default()
       if (!fgets(line, line_size, file))
       {
 #ifdef _WIN32
-        REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+        fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-        REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+        fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
         npoints = p_count;
         return FALSE;
@@ -394,7 +415,7 @@ BOOL LASreaderASC::read_point_default()
       row++;
     }
     // get elevation value
-    sscanf(&(line[line_curr]), "%f", &elevation);
+    sscanf(&(line[line_curr]), "%lf", &elevation);
     // skip parsed number
     while ((line[line_curr] != '\0') && (line[line_curr] > ' ')) line_curr++;
     // skip following spaces
@@ -403,9 +424,18 @@ BOOL LASreaderASC::read_point_default()
     if (elevation != nodata)
     {
       // compute the quantized x, y, and z values
-      point.set_x(xllcenter + col*cellsize);
-      point.set_y(yllcenter + (nrows - row - 1) * cellsize);
-      point.set_z(elevation);
+      if (!point.set_x(xllcenter + col*cellsize))
+      {
+        overflow_I32_x++;
+      }
+      if (!point.set_y(yllcenter + (nrows - row - 1) * cellsize))
+      {
+        overflow_I32_y++;
+      }
+      if (!point.set_z(elevation))
+      {
+        overflow_I32_z++;
+      }
       p_count++;
       col++;
       return TRUE;
@@ -425,6 +455,33 @@ ByteStreamIn* LASreaderASC::get_stream() const
 
 void LASreaderASC::close(BOOL close_stream)
 {
+  if (overflow_I32_x)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in x\n", overflow_I32_x);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in x\n", overflow_I32_x);
+#endif
+    overflow_I32_x = 0;
+  }
+  if (overflow_I32_y)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in y\n", overflow_I32_y);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in y\n", overflow_I32_y);
+#endif
+    overflow_I32_y = 0;
+  }
+  if (overflow_I32_z)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in z\n", overflow_I32_z);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in z\n", overflow_I32_z);
+#endif
+    overflow_I32_z = 0;
+  }
   if (file)
   {
     if (piped) while(fgets(line, line_size, file));
@@ -437,20 +494,20 @@ BOOL LASreaderASC::reopen(const CHAR* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
   file = fopen_compressed(file_name, "r", &piped);
   if (file == 0)
   {
-    REprintf( "ERROR: cannot reopen file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot reopen file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, 10*LAS_TOOLS_IO_IBUFFER_SIZE) != 0)
   {
-    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", 10*LAS_TOOLS_IO_IBUFFER_SIZE);
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", 10*LAS_TOOLS_IO_IBUFFER_SIZE);
   }
 
   // read the header lines
@@ -458,7 +515,7 @@ BOOL LASreaderASC::reopen(const CHAR* file_name)
   I32 i;
   for (i = 0; i < header_lines; i++)
   {
-    if(fgets(line, line_size, file));
+    fgets(line, line_size, file);
   }
 
   // special handling for European numbers
@@ -507,6 +564,9 @@ void LASreaderASC::clean()
   yllcenter = F64_MAX;
   cellsize = 0;
   nodata = -9999;
+  overflow_I32_x = 0;
+  overflow_I32_y = 0;
+  overflow_I32_z = 0;
 }
 
 LASreaderASC::LASreaderASC()
@@ -587,19 +647,19 @@ void LASreaderASC::populate_bounding_box()
 {
   // compute quantized and then unquantized bounding box
 
-  F64 dequant_min_x = header.get_x(header.get_X(header.min_x));
-  F64 dequant_max_x = header.get_x(header.get_X(header.max_x));
-  F64 dequant_min_y = header.get_y(header.get_Y(header.min_y));
-  F64 dequant_max_y = header.get_y(header.get_Y(header.max_y));
-  F64 dequant_min_z = header.get_z(header.get_Z(header.min_z));
-  F64 dequant_max_z = header.get_z(header.get_Z(header.max_z));
+  F64 dequant_min_x = header.get_x((I32)(header.get_X(header.min_x)));
+  F64 dequant_max_x = header.get_x((I32)(header.get_X(header.max_x)));
+  F64 dequant_min_y = header.get_y((I32)(header.get_Y(header.min_y)));
+  F64 dequant_max_y = header.get_y((I32)(header.get_Y(header.max_y)));
+  F64 dequant_min_z = header.get_z((I32)(header.get_Z(header.min_z)));
+  F64 dequant_max_z = header.get_z((I32)(header.get_Z(header.max_z)));
 
   // make sure there is not sign flip
 
   if ((header.min_x > 0) != (dequant_min_x > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_x from %g to %g.\n", header.min_x, dequant_min_x);
-    REprintf( "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_x from %g to %g.\n", header.min_x, dequant_min_x);
+    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
   }
   else
   {
@@ -607,8 +667,8 @@ void LASreaderASC::populate_bounding_box()
   }
   if ((header.max_x > 0) != (dequant_max_x > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_x from %g to %g.\n", header.max_x, dequant_max_x);
-    REprintf( "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_x from %g to %g.\n", header.max_x, dequant_max_x);
+    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
   }
   else
   {
@@ -616,8 +676,8 @@ void LASreaderASC::populate_bounding_box()
   }
   if ((header.min_y > 0) != (dequant_min_y > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_y from %g to %g.\n", header.min_y, dequant_min_y);
-    REprintf( "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_y from %g to %g.\n", header.min_y, dequant_min_y);
+    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
   }
   else
   {
@@ -625,8 +685,8 @@ void LASreaderASC::populate_bounding_box()
   }
   if ((header.max_y > 0) != (dequant_max_y > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_y from %g to %g.\n", header.max_y, dequant_max_y);
-    REprintf( "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_y from %g to %g.\n", header.max_y, dequant_max_y);
+    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
   }
   else
   {
@@ -634,8 +694,8 @@ void LASreaderASC::populate_bounding_box()
   }
   if ((header.min_z > 0) != (dequant_min_z > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_z from %g to %g.\n", header.min_z, dequant_min_z);
-    REprintf( "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_z from %g to %g.\n", header.min_z, dequant_min_z);
+    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
   }
   else
   {
@@ -643,8 +703,8 @@ void LASreaderASC::populate_bounding_box()
   }
   if ((header.max_z > 0) != (dequant_max_z > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_z from %g to %g.\n", header.max_z, dequant_max_z);
-    REprintf( "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_z from %g to %g.\n", header.max_z, dequant_max_z);
+    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
   }
   else
   {

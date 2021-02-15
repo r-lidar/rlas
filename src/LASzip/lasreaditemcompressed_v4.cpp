@@ -375,7 +375,7 @@ inline BOOL LASreadItemCompressed_POINT14_v4::createAndInitModelsAndDecompressor
   memcpy(contexts[context].last_item, item, sizeof(LASpoint14));
   ((LASpoint14*)contexts[context].last_item)->gps_time_change = FALSE;
 
-//  REprintf( "INIT: current_context %d last item %.14g %d %d %d %d %d %d\n", current_context, ((LASpoint14*)item)->gps_time, ((LASpoint14*)item)->X, ((LASpoint14*)item)->Y, ((LASpoint14*)item)->Z, ((LASpoint14*)item)->intensity, ((LASpoint14*)item)->return_number, ((LASpoint14*)item)->number_of_returns);
+//  fprintf(stderr, "INIT: current_context %d last item %.14g %d %d %d %d %d %d\n", current_context, ((LASpoint14*)item)->gps_time, ((LASpoint14*)item)->X, ((LASpoint14*)item)->Y, ((LASpoint14*)item)->Z, ((LASpoint14*)item)->intensity, ((LASpoint14*)item)->return_number, ((LASpoint14*)item)->number_of_returns);
 
   contexts[context].unused = FALSE;
 
@@ -2133,7 +2133,14 @@ LASreadItemCompressed_BYTE14_v4::LASreadItemCompressed_BYTE14_v4(ArithmeticDecod
 
     changed_Bytes[i] = FALSE;
 
-    requested_Bytes[i] = (decompress_selective & (LASZIP_DECOMPRESS_SELECTIVE_BYTE0 << i) ? TRUE : FALSE);
+    if (i > 15) // currently only the first 16 extra bytes can be selectively decompressed
+    {
+      requested_Bytes[i] = TRUE;
+    }
+    else
+    {
+      requested_Bytes[i] = (decompress_selective & (LASZIP_DECOMPRESS_SELECTIVE_BYTE0 << i) ? TRUE : FALSE);
+    }
   }
 
   /* init the bytes buffer to zero */

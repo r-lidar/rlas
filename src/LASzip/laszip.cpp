@@ -13,7 +13,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2013, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2019, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -29,7 +29,9 @@
 ===============================================================================
 */
 #include "laszip.hpp"
+
 #include "mydefs.hpp"
+
 #include <assert.h>
 
 #include <string.h>
@@ -494,7 +496,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
 
   if (extra_bytes_number < 0)
   {
-    REprintf( "WARNING: point size %d too small by %d bytes for point type %d. assuming point_size of %d\n", point_size, -extra_bytes_number, point_type, point_size-extra_bytes_number);
+    fprintf(stderr, "WARNING: point size %d too small by %d bytes for point type %d. assuming point_size of %d\n", point_size, -extra_bytes_number, point_type, point_size-extra_bytes_number);
     extra_bytes_number = 0;
   }
 
@@ -1001,3 +1003,4 @@ const char* LASitem::get_name() const
   }
   return 0;
 }
+

@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasquadtree.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 #include "lasquadtree.hpp"
@@ -108,7 +108,7 @@ void LASquadtree::get_cell_bounding_box(const F64 x, const F64 y, U32 level, F32
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-
+  
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -161,7 +161,7 @@ void LASquadtree::get_cell_bounding_box(U32 level_index, U32 level, F32* min, F3
   volatile F32 cell_mid_y;
   F32 cell_min_x, cell_max_x;
   F32 cell_min_y, cell_max_y;
-
+  
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -210,7 +210,7 @@ void LASquadtree::get_cell_bounding_box(U32 level_index, U32 level, F64* min, F6
   volatile F64 cell_mid_y;
   F64 cell_min_x, cell_max_x;
   F64 cell_min_y, cell_max_y;
-
+  
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -279,7 +279,7 @@ U32 LASquadtree::get_level_index(const F64 x, const F64 y, U32 level) const
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-
+  
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -331,7 +331,7 @@ U32 LASquadtree::get_level_index(const F64 x, const F64 y, U32 level, F32* min, 
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-
+  
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -577,45 +577,45 @@ U32* LASquadtree::raster_occupancy(BOOL(*does_cell_exist)(I32)) const
 BOOL LASquadtree::read(ByteStreamIn* stream)
 {
   // read data in the following order
-  //     U32  levels          4 bytes
+  //     U32  levels          4 bytes 
   //     U32  level_index     4 bytes (default 0)
   //     U32  implicit_levels 4 bytes (only used when level_index != 0))
-  //     F32  min_x           4 bytes
-  //     F32  max_x           4 bytes
-  //     F32  min_y           4 bytes
-  //     F32  max_y           4 bytes
+  //     F32  min_x           4 bytes 
+  //     F32  max_x           4 bytes 
+  //     F32  min_y           4 bytes 
+  //     F32  max_y           4 bytes 
   // which totals 28 bytes
 
   char signature[4];
   try { stream->getBytes((U8*)signature, 4); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading LASspatial signature\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading LASspatial signature\n");
     return FALSE;
   }
   if (strncmp(signature, "LASS", 4) != 0)
   {
-    REprintf("ERROR (LASquadtree): wrong LASspatial signature %4s instead of 'LASS'\n", signature);
+    fprintf(stderr,"ERROR (LASquadtree): wrong LASspatial signature %4s instead of 'LASS'\n", signature);
     return FALSE;
   }
   U32 type;
   try { stream->getBytes((U8*)&type, 4); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading LASspatial type\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading LASspatial type\n");
     return 0;
   }
   if (type != LAS_SPATIAL_QUAD_TREE)
   {
-    REprintf("ERROR (LASquadtree): unknown LASspatial type %u\n", type);
+    fprintf(stderr,"ERROR (LASquadtree): unknown LASspatial type %u\n", type);
     return 0;
   }
   try { stream->getBytes((U8*)signature, 4); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading signature\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading signature\n");
     return FALSE;
   }
   if (strncmp(signature, "LASQ", 4) != 0)
   {
-//    REprintf("ERROR (LASquadtree): wrong signature %4s instead of 'LASV'\n", signature);
+//    fprintf(stderr,"ERROR (LASquadtree): wrong signature %4s instead of 'LASV'\n", signature);
 //    return FALSE;
     levels = ((U32*)signature)[0];
   }
@@ -624,45 +624,45 @@ BOOL LASquadtree::read(ByteStreamIn* stream)
     U32 version;
     try { stream->get32bitsLE((U8*)&version); } catch(...)
     {
-      REprintf("ERROR (LASquadtree): reading version\n");
+      fprintf(stderr,"ERROR (LASquadtree): reading version\n");
       return FALSE;
     }
     try { stream->get32bitsLE((U8*)&levels); } catch(...)
     {
-      REprintf("ERROR (LASquadtree): reading levels\n");
+      fprintf(stderr,"ERROR (LASquadtree): reading levels\n");
       return FALSE;
     }
   }
   U32 level_index;
   try { stream->get32bitsLE((U8*)&level_index); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading level_index\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading level_index\n");
     return FALSE;
   }
   U32 implicit_levels;
   try { stream->get32bitsLE((U8*)&implicit_levels); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading implicit_levels\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading implicit_levels\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&min_x); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading min_x\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading min_x\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&max_x); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading max_x\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading max_x\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&min_y); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading min_y\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading min_y\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&max_y); } catch(...)
   {
-    REprintf("ERROR (LASquadtree): reading max_y\n");
+    fprintf(stderr,"ERROR (LASquadtree): reading max_y\n");
     return FALSE;
   }
   return TRUE;
@@ -671,82 +671,82 @@ BOOL LASquadtree::read(ByteStreamIn* stream)
 BOOL LASquadtree::write(ByteStreamOut* stream) const
 {
   // which totals 28 bytes
-  //     U32  levels          4 bytes
+  //     U32  levels          4 bytes 
   //     U32  level_index     4 bytes (default 0)
   //     U32  implicit_levels 4 bytes (only used when level_index != 0))
-  //     F32  min_x           4 bytes
-  //     F32  max_x           4 bytes
-  //     F32  min_y           4 bytes
-  //     F32  max_y           4 bytes
+  //     F32  min_x           4 bytes 
+  //     F32  max_x           4 bytes 
+  //     F32  min_y           4 bytes 
+  //     F32  max_y           4 bytes 
   // which totals 28 bytes
 
   if (!stream->putBytes((const U8*)"LASS", 4))
   {
-    REprintf("ERROR (LASquadtree): writing LASspatial signature\n");
+    fprintf(stderr,"ERROR (LASquadtree): writing LASspatial signature\n");
     return FALSE;
   }
 
   U32 type = LAS_SPATIAL_QUAD_TREE;
   if (!stream->put32bitsLE((U8*)&type))
   {
-    REprintf("ERROR (LASquadtree): writing LASspatial type %u\n", type);
+    fprintf(stderr,"ERROR (LASquadtree): writing LASspatial type %u\n", type);
     return FALSE;
   }
 
   if (!stream->putBytes((const U8*)"LASQ", 4))
   {
-    REprintf("ERROR (LASquadtree): writing signature\n");
+    fprintf(stderr,"ERROR (LASquadtree): writing signature\n");
     return FALSE;
   }
 
   U32 version = 0;
   if (!stream->put32bitsLE((const U8*)&version))
   {
-    REprintf("ERROR (LASquadtree): writing version\n");
+    fprintf(stderr,"ERROR (LASquadtree): writing version\n");
     return FALSE;
   }
 
   if (!stream->put32bitsLE((const U8*)&levels))
   {
-    REprintf("ERROR (LASquadtree): writing levels %u\n", levels);
+    fprintf(stderr,"ERROR (LASquadtree): writing levels %u\n", levels);
     return FALSE;
   }
   U32 level_index = 0;
   if (!stream->put32bitsLE((const U8*)&level_index))
   {
-    REprintf("ERROR (LASquadtree): writing level_index %u\n", level_index);
+    fprintf(stderr,"ERROR (LASquadtree): writing level_index %u\n", level_index);
     return FALSE;
   }
   U32 implicit_levels = 0;
   if (!stream->put32bitsLE((const U8*)&implicit_levels))
   {
-    REprintf("ERROR (LASquadtree): writing implicit_levels %u\n", implicit_levels);
+    fprintf(stderr,"ERROR (LASquadtree): writing implicit_levels %u\n", implicit_levels);
     return FALSE;
   }
   if (!stream->put32bitsLE((const U8*)&min_x))
   {
-    REprintf("ERROR (LASquadtree): writing min_x %g\n", min_x);
+    fprintf(stderr,"ERROR (LASquadtree): writing min_x %g\n", min_x);
     return FALSE;
   }
   if (!stream->put32bitsLE((const U8*)&max_x))
   {
-    REprintf("ERROR (LASquadtree): writing max_x %g\n", max_x);
+    fprintf(stderr,"ERROR (LASquadtree): writing max_x %g\n", max_x);
     return FALSE;
   }
   if (!stream->put32bitsLE((const U8*)&min_y))
   {
-    REprintf("ERROR (LASquadtree): writing min_y %g\n", min_y);
+    fprintf(stderr,"ERROR (LASquadtree): writing min_y %g\n", min_y);
     return FALSE;
   }
   if (!stream->put32bitsLE((const U8*)&max_y))
   {
-    REprintf("ERROR (LASquadtree): writing max_y %g\n", max_y);
+    fprintf(stderr,"ERROR (LASquadtree): writing max_y %g\n", max_y);
     return FALSE;
   }
   return TRUE;
 }
 
-// create or finalize the cell (in the spatial hierarchy)
+// create or finalize the cell (in the spatial hierarchy) 
 BOOL LASquadtree::manage_cell(const U32 cell_index, const BOOL finalize)
 {
   U32 adaptive_pos = cell_index/32;
@@ -869,8 +869,8 @@ U32 LASquadtree::intersect_circle(const F64 center_x, const F64 center_y, const 
     ((my_cell_vector*)current_cells)->clear();
   }
 
-  F64 r_min_x = center_x - radius;
-  F64 r_min_y = center_y - radius;
+  F64 r_min_x = center_x - radius; 
+  F64 r_min_y = center_y - radius; 
   F64 r_max_x = center_x + radius;
   F64 r_max_y = center_y + radius;
 
@@ -1532,7 +1532,7 @@ BOOL LASquadtree::setup(F64 bb_min_x, F64 bb_max_x, F64 bb_min_y, F64 bb_max_y, 
 
   if (cells_x == 0 || cells_y == 0)
   {
-    REprintf( "ERROR: cells_x %d cells_y %d\n", cells_x, cells_y);
+    fprintf(stderr, "ERROR: cells_x %d cells_y %d\n", cells_x, cells_y);
     return FALSE;
   }
 
@@ -1583,7 +1583,7 @@ BOOL LASquadtree::setup(F64 bb_min_x, F64 bb_max_x, F64 bb_min_y, F64 bb_max_y, 
 
   if (cells_x == 0 || cells_y == 0)
   {
-    REprintf( "ERROR: cells_x %d cells_y %d\n", cells_x, cells_y);
+    fprintf(stderr, "ERROR: cells_x %d cells_y %d\n", cells_x, cells_y);
     return FALSE;
   }
 
@@ -1659,10 +1659,7 @@ LASquadtree::LASquadtree()
   level_offset[0] = 0;
   for (l = 0; l < 23; l++)
   {
-    if (l < 16)
-      level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
-    else
-      level_offset[l+1] = level_offset[l];
+    level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
   }
   current_cells = 0;
   adaptive_alloc = 0;

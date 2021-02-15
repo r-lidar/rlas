@@ -13,7 +13,7 @@
 
   COPYRIGHT:
 
-    (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2019, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -30,6 +30,8 @@
 */
 #include "lasreader_bil.hpp"
 
+#include "lasvlrpayload.hpp"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,7 +43,7 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -53,7 +55,7 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
 
   if (!read_hdr_file(file_name))
   {
-    REprintf("ERROR: reading the *.hdr file for '%s'\n", file_name);
+    fprintf(stderr,"ERROR: reading the *.hdr file for '%s'\n", file_name);
     return FALSE;
   }
 
@@ -61,7 +63,7 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
 
   if (!read_blw_file(file_name))
   {
-    REprintf("WARNING: reading the *.blw file for '%s'\n", file_name);
+    fprintf(stderr,"WARNING: reading the *.blw file for '%s'\n", file_name);
   }
 
   // check that we have all the needed info
@@ -69,25 +71,25 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
   if (xdim <= 0)
   {
     xdim = 1;
-    REprintf("WARNING: xdim was not set. setting to %g\n", xdim);
+    fprintf(stderr,"WARNING: xdim was not set. setting to %g\n", xdim);
   }
 
   if (ydim <= 0)
   {
     ydim = 1;
-    REprintf("WARNING: ydim was not set. setting to %g\n", ydim);
+    fprintf(stderr,"WARNING: ydim was not set. setting to %g\n", ydim);
   }
 
   if (ulxcenter == F64_MAX)
   {
     ulxcenter = 0.5*xdim;
-    REprintf("WARNING: ulxcenter was not set. setting to %g\n", ulxcenter);
+    fprintf(stderr,"WARNING: ulxcenter was not set. setting to %g\n", ulxcenter);
   }
 
   if (ulycenter == F64_MAX)
   {
     ulycenter = (-0.5+nrows)*ydim;
-    REprintf("WARNING: ulycenter was not set. setting to %g\n", ulycenter);
+    fprintf(stderr,"WARNING: ulycenter was not set. setting to %g\n", ulycenter);
   }
 
   // open the BIL file
@@ -95,13 +97,13 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, 2*LAS_TOOLS_IO_IBUFFER_SIZE) != 0)
   {
-    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", 2*LAS_TOOLS_IO_IBUFFER_SIZE);
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", 2*LAS_TOOLS_IO_IBUFFER_SIZE);
   }
 
   // populate the header as much as it makes sense
@@ -123,7 +125,7 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
   if ((((creation.wYear)%4) == 0) && (creation.wMonth > 2)) header.file_creation_day++;
 #else
   header.file_creation_day = 333;
-  header.file_creation_year = 2012;
+  header.file_creation_year = 2019;
 #endif
 
   // initialize point format in header
@@ -327,10 +329,29 @@ BOOL LASreaderBIL::open(const CHAR* file_name)
   }
   else
   {
-    REprintf("WARNING: BIL raster contains only no data values\n");
+    fprintf(stderr,"WARNING: BIL raster contains only no data values\n");
     header.min_z = 0;
     header.max_z = 0;
   }
+
+  // add the VLR for Raster LAZ 
+
+  LASvlrRasterLAZ vlrRasterLAZ;
+  vlrRasterLAZ.nbands = 1;
+  vlrRasterLAZ.nbits = 32;
+  vlrRasterLAZ.ncols = ncols;
+  vlrRasterLAZ.nrows = nrows;
+  vlrRasterLAZ.reserved1 = 0;
+  vlrRasterLAZ.reserved2 = 0;
+  vlrRasterLAZ.stepx = xdim;
+  vlrRasterLAZ.stepx_y = 0.0;
+  vlrRasterLAZ.stepy = ydim;
+  vlrRasterLAZ.stepy_x = 0.0;
+  vlrRasterLAZ.llx = ulxcenter - 0.5*xdim;
+  vlrRasterLAZ.lly = ulycenter + (0.5 - nrows)*ydim;
+  vlrRasterLAZ.sigmaxy = 0.0;
+
+  header.add_vlr("Raster LAZ", 7113, (U16)vlrRasterLAZ.get_payload_size(), vlrRasterLAZ.get_payload(), FALSE, "by LAStools of rapidlasso GmbH", FALSE);
 
   // reopen
 
@@ -341,7 +362,7 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -354,7 +375,7 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
 
   if ((len == 0) && (file_name_hdr[len] != '.'))
   {
-    REprintf("ERROR: file name '%s' is not a valid BIL file\n", file_name);
+    fprintf(stderr,"ERROR: file name '%s' is not a valid BIL file\n", file_name);
     return FALSE;
   }
 
@@ -376,7 +397,7 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
     if (file == 0)
     {
       file_name_hdr[len] = '\0';
-      REprintf( "ERROR: cannot open files '%s.hdr' or '%s.HDR'\n", file_name_hdr, file_name_hdr);
+      fprintf(stderr, "ERROR: cannot open files '%s.hdr' or '%s.HDR'\n", file_name_hdr, file_name_hdr);
       return FALSE;
     }
   }
@@ -429,12 +450,12 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
       {
         if (strcmp(layout, "bil") && strcmp(layout, "BIL"))
         {
-          REprintf( "WARNING: %s '%s' not recognized by LASreader_bil\n", dummy, layout);
+          fprintf(stderr, "WARNING: %s '%s' not recognized by LASreader_bil\n", dummy, layout);
         }
       }
       else
       {
-        REprintf( "WARNING: argument of %s missing for LASreader_bil\n", dummy);
+        fprintf(stderr, "WARNING: argument of %s missing for LASreader_bil\n", dummy);
       }
     }
     else if (strstr(line, "pixeltype") || strstr(line, "PIXELTYPE"))
@@ -451,7 +472,7 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
       }
       else
       {
-        REprintf( "WARNING: pixeltype '%s' not recognized by LASreader_bil\n", pixeltype);
+        fprintf(stderr, "WARNING: pixeltype '%s' not recognized by LASreader_bil\n", pixeltype);
       }
     }
     else if (strstr(line, "nodata") || strstr(line, "NODATA"))
@@ -464,7 +485,7 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
       sscanf(line, "%s %s", dummy, byteorder);
       if (strcmp(byteorder, "i") && strcmp(byteorder, "I"))
       {
-        REprintf( "WARNING: byteorder '%s' not recognized by LASreader_bil\n", byteorder);
+        fprintf(stderr, "WARNING: byteorder '%s' not recognized by LASreader_bil\n", byteorder);
       }
     }
     else if (strstr(line, "ulxmap") || strstr(line, "ULXMAP"))
@@ -499,11 +520,11 @@ BOOL LASreaderBIL::read_hdr_file(const CHAR* file_name)
 
   if ((ncols <= 0) || (nrows <= 0) || (nbands <= 0) || (nbits <= 0))
   {
-    REprintf("WARNING: not able to find all entries in HDR file\n");
-    REprintf("       ncols  = %d\n", ncols);
-    REprintf("       nrows  = %d\n", nrows);
-    REprintf("       nbands = %d\n", nbands);
-    REprintf("       nbits  = %d\n", nbits);
+    fprintf(stderr,"WARNING: not able to find all entries in HDR file\n");
+    fprintf(stderr,"       ncols  = %d\n", ncols);
+    fprintf(stderr,"       nrows  = %d\n", nrows);
+    fprintf(stderr,"       nbands = %d\n", nbands);
+    fprintf(stderr,"       nbits  = %d\n", nbits);
     return FALSE;
   }
 
@@ -514,7 +535,7 @@ BOOL LASreaderBIL::read_blw_file(const CHAR* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -527,7 +548,7 @@ BOOL LASreaderBIL::read_blw_file(const CHAR* file_name)
 
   if ((len == 0) && (file_name_bwl[len] != '.'))
   {
-    REprintf("ERROR: file name '%s' is not a valid BIL file\n", file_name);
+    fprintf(stderr,"ERROR: file name '%s' is not a valid BIL file\n", file_name);
     return FALSE;
   }
 
@@ -548,7 +569,7 @@ BOOL LASreaderBIL::read_blw_file(const CHAR* file_name)
     if (file == 0)
     {
       file_name_bwl[len] = '\0';
-      REprintf( "WARNING: cannot open files '%s.blw' or '%s.BLW'\n", file_name_bwl, file_name_bwl);
+      fprintf(stderr, "WARNING: cannot open files '%s.blw' or '%s.BLW'\n", file_name_bwl, file_name_bwl);
       free(file_name_bwl);
       return FALSE;
     }
@@ -560,36 +581,36 @@ BOOL LASreaderBIL::read_blw_file(const CHAR* file_name)
 
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   sscanf(line, "%f", &xdim);
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   sscanf(line, "%f", &ydim);
   ydim = -1*ydim;
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   sscanf(line, "%lf", &ulxcenter);
   if (!fgets(line, 256, file))
   {
-    REprintf( "WARNING: corrupt world file\n");
+    fprintf(stderr, "WARNING: corrupt world file\n");
     return FALSE;
   }
   sscanf(line, "%lf", &ulycenter);
@@ -655,9 +676,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elevation, 4, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -669,9 +690,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 4, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -687,9 +708,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 2, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -702,9 +723,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 2, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -720,9 +741,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)rgb, 1, nbands, file) != (U32)nbands)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -735,9 +756,9 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)rgb, 1, nbands, file) != (U32)nbands)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
 #else
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
+          fprintf(stderr,"WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
           npoints = p_count;
           return FALSE;
@@ -748,9 +769,18 @@ BOOL LASreaderBIL::read_point_default()
 
     if (elevation != nodata)
     {
-      point.set_x(ulxcenter + col * xdim);
-      point.set_y(ulycenter - row * ydim);
-      point.set_z(elevation);
+      if (!point.set_x(ulxcenter + col * xdim))
+      {
+        overflow_I32_x++;
+      }
+      if (!point.set_y(ulycenter - row * ydim))
+      {
+        overflow_I32_y++;
+      }
+      if (!point.set_z(elevation))
+      {
+        overflow_I32_z++;
+      }
       p_count++;
       col++;
       return TRUE;
@@ -770,6 +800,33 @@ ByteStreamIn* LASreaderBIL::get_stream() const
 
 void LASreaderBIL::close(BOOL close_stream)
 {
+  if (overflow_I32_x)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in x\n", overflow_I32_x);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in x\n", overflow_I32_x);
+#endif
+    overflow_I32_x = 0;
+  }
+  if (overflow_I32_y)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in y\n", overflow_I32_y);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in y\n", overflow_I32_y);
+#endif
+    overflow_I32_y = 0;
+  }
+  if (overflow_I32_z)
+  {
+#ifdef _WIN32
+    fprintf(stderr, "WARNING: total of %I64d integer overflows in z\n", overflow_I32_z);
+#else
+    fprintf(stderr, "WARNING: total of %lld integer overflows in z\n", overflow_I32_z);
+#endif
+    overflow_I32_z = 0;
+  }
   if (file)
   {
     fclose(file);
@@ -781,20 +838,20 @@ BOOL LASreaderBIL::reopen(const CHAR* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    REprintf( "ERROR: cannot reopen file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot reopen file '%s'\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, 2*LAS_TOOLS_IO_IBUFFER_SIZE) != 0)
   {
-    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", 2*LAS_TOOLS_IO_IBUFFER_SIZE);
+    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", 2*LAS_TOOLS_IO_IBUFFER_SIZE);
   }
 
   col = 0;
@@ -824,6 +881,9 @@ void LASreaderBIL::clean()
   nodata = -9999;
   floatpixels = FALSE;
   signedpixels = FALSE;
+  overflow_I32_x = 0;
+  overflow_I32_y = 0;
+  overflow_I32_z = 0;
 }
 
 LASreaderBIL::LASreaderBIL()
@@ -917,19 +977,19 @@ void LASreaderBIL::populate_bounding_box()
 {
   // compute quantized and then unquantized bounding box
 
-  F64 dequant_min_x = header.get_x(header.get_X(header.min_x));
-  F64 dequant_max_x = header.get_x(header.get_X(header.max_x));
-  F64 dequant_min_y = header.get_y(header.get_Y(header.min_y));
-  F64 dequant_max_y = header.get_y(header.get_Y(header.max_y));
-  F64 dequant_min_z = header.get_z(header.get_Z(header.min_z));
-  F64 dequant_max_z = header.get_z(header.get_Z(header.max_z));
+  F64 dequant_min_x = header.get_x((I32)(header.get_X(header.min_x)));
+  F64 dequant_max_x = header.get_x((I32)(header.get_X(header.max_x)));
+  F64 dequant_min_y = header.get_y((I32)(header.get_Y(header.min_y)));
+  F64 dequant_max_y = header.get_y((I32)(header.get_Y(header.max_y)));
+  F64 dequant_min_z = header.get_z((I32)(header.get_Z(header.min_z)));
+  F64 dequant_max_z = header.get_z((I32)(header.get_Z(header.max_z)));
 
   // make sure there is not sign flip
 
   if ((header.min_x > 0) != (dequant_min_x > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_x from %g to %g.\n", header.min_x, dequant_min_x);
-    REprintf( "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_x from %g to %g.\n", header.min_x, dequant_min_x);
+    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
   }
   else
   {
@@ -937,8 +997,8 @@ void LASreaderBIL::populate_bounding_box()
   }
   if ((header.max_x > 0) != (dequant_max_x > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_x from %g to %g.\n", header.max_x, dequant_max_x);
-    REprintf( "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_x from %g to %g.\n", header.max_x, dequant_max_x);
+    fprintf(stderr, "         set scale factor for x coarser than %g with '-rescale'\n", header.x_scale_factor);
   }
   else
   {
@@ -946,8 +1006,8 @@ void LASreaderBIL::populate_bounding_box()
   }
   if ((header.min_y > 0) != (dequant_min_y > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_y from %g to %g.\n", header.min_y, dequant_min_y);
-    REprintf( "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_y from %g to %g.\n", header.min_y, dequant_min_y);
+    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
   }
   else
   {
@@ -955,8 +1015,8 @@ void LASreaderBIL::populate_bounding_box()
   }
   if ((header.max_y > 0) != (dequant_max_y > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_y from %g to %g.\n", header.max_y, dequant_max_y);
-    REprintf( "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_y from %g to %g.\n", header.max_y, dequant_max_y);
+    fprintf(stderr, "         set scale factor for y coarser than %g with '-rescale'\n", header.y_scale_factor);
   }
   else
   {
@@ -964,8 +1024,8 @@ void LASreaderBIL::populate_bounding_box()
   }
   if ((header.min_z > 0) != (dequant_min_z > 0))
   {
-    REprintf( "WARNING: quantization sign flip for min_z from %g to %g.\n", header.min_z, dequant_min_z);
-    REprintf( "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for min_z from %g to %g.\n", header.min_z, dequant_min_z);
+    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
   }
   else
   {
@@ -973,8 +1033,8 @@ void LASreaderBIL::populate_bounding_box()
   }
   if ((header.max_z > 0) != (dequant_max_z > 0))
   {
-    REprintf( "WARNING: quantization sign flip for max_z from %g to %g.\n", header.max_z, dequant_max_z);
-    REprintf( "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
+    fprintf(stderr, "WARNING: quantization sign flip for max_z from %g to %g.\n", header.max_z, dequant_max_z);
+    fprintf(stderr, "         set scale factor for z coarser than %g with '-rescale'\n", header.z_scale_factor);
   }
   else
   {

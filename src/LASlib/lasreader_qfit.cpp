@@ -44,7 +44,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -53,7 +53,7 @@ BOOL LASreaderQFIT::open(const char* file_name)
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 
@@ -125,7 +125,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   if (stream == 0)
   {
-    REprintf("ERROR: ByteStreamIn* pointer is zero\n");
+    fprintf(stderr,"ERROR: ByteStreamIn* pointer is zero\n");
     return FALSE;
   }
 
@@ -135,7 +135,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { stream->get32bitsLE((U8*)&version); } catch(...)
   {
-    REprintf("ERROR: reading QFIT header\n");
+    fprintf(stderr,"ERROR: reading QFIT header\n");
     return FALSE;
   }
 
@@ -156,7 +156,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     }
     else
     {
-      REprintf("ERROR: corrupt QFIT header.\n");
+      fprintf(stderr,"ERROR: corrupt QFIT header.\n");
       return FALSE;
     }
   }
@@ -165,7 +165,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { stream->getBytes((U8*)buffer, version); } catch(...)
   {
-    REprintf("ERROR: reading %d bytes until point start offset from QFIT header\n", version);
+    fprintf(stderr,"ERROR: reading %d bytes until point start offset from QFIT header\n", version);
     return FALSE;
   }
 
@@ -173,7 +173,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   try { if (little_endian) stream->get32bitsLE((U8*)&offset); else stream->get32bitsBE((U8*)&offset); } catch(...)
   {
-    REprintf("ERROR: reading point start offset from QFIT header\n");
+    fprintf(stderr,"ERROR: reading point start offset from QFIT header\n");
     return FALSE;
   }
 
@@ -212,7 +212,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(scan_azimuth);
   }
   catch(...) {
-    REprintf("ERROR: initializing attribute scan_azimuth\n");
+    fprintf(stderr,"ERROR: initializing attribute scan_azimuth\n");
     return FALSE;
   }
 
@@ -225,7 +225,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(pitch);
   }
   catch(...) {
-    REprintf("ERROR: initializing attribute pitch\n");
+    fprintf(stderr,"ERROR: initializing attribute pitch\n");
     return FALSE;
   }
 
@@ -238,7 +238,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
     header.add_attribute(roll);
   }
   catch(...) {
-    REprintf("ERROR: initializing attribute roll\n");
+    fprintf(stderr,"ERROR: initializing attribute roll\n");
     return FALSE;
   }
 
@@ -249,7 +249,7 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
       header.add_attribute(pulse_width);
     }
     catch(...) {
-      REprintf("ERROR: initializing attribute pulse width\n");
+      fprintf(stderr,"ERROR: initializing attribute pulse width\n");
       return FALSE;
     }
   }
@@ -314,7 +314,7 @@ BOOL LASreaderQFIT::read_point_default()
   {
     try { stream->getBytes((U8*)buffer, version); } catch(...)
     {
-      REprintf("ERROR: reading QFIT point after %u of %u\n", (U32)p_count, (U32)npoints);
+      fprintf(stderr,"ERROR: reading QFIT point after %u of %u\n", (U32)p_count, (U32)npoints);
       return FALSE;
     }
 
@@ -402,7 +402,7 @@ BOOL LASreaderQFIT::reopen(const char* file_name)
 {
   if (file_name == 0)
   {
-    REprintf("ERROR: file name pointer is zero\n");
+    fprintf(stderr,"ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -411,7 +411,7 @@ BOOL LASreaderQFIT::reopen(const char* file_name)
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s'\n", file_name);
+    fprintf(stderr, "ERROR: cannot open file '%s'\n", file_name);
     return FALSE;
   }
 

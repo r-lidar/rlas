@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasutility.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,9 +21,9 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
 
 ===============================================================================
@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 
 LASinventory::LASinventory()
 {
@@ -55,12 +54,12 @@ BOOL LASinventory::init(const LASheader* header)
     extended_number_of_points_by_return[0] = 0;
     for (i = 0; i < 5; i++) extended_number_of_points_by_return[i+1] = (header->number_of_points_by_return[i] ? header->number_of_points_by_return[i] : header->extended_number_of_points_by_return[i]);
     for (i = 5; i < 15; i++) extended_number_of_points_by_return[i+1] = header->extended_number_of_points_by_return[i];
-    max_X = header->get_X(header->max_x);
-    min_X = header->get_X(header->min_x);
-    max_Y = header->get_Y(header->max_y);
-    min_Y = header->get_Y(header->min_y);
-    max_Z = header->get_Z(header->max_z);
-    min_Z = header->get_Z(header->min_z);
+    max_X = (I32)header->get_X(header->max_x);
+    min_X = (I32)header->get_X(header->min_x);
+    max_Y = (I32)header->get_Y(header->max_y);
+    min_Y = (I32)header->get_Y(header->min_y);
+    max_Z = (I32)header->get_Z(header->max_z);
+    min_Z = (I32)header->get_Z(header->min_z);
     first = FALSE;
     return TRUE;
   }
@@ -161,7 +160,14 @@ LASsummary::LASsummary()
   for (i = 0; i < 16; i++) number_of_points_by_return[i] = 0;
   for (i = 0; i < 16; i++) number_of_returns[i] = 0;
   for (i = 0; i < 32; i++) classification[i] = 0;
-  for (i = 0; i < 256; i++) extended_classification[i] = 0;
+  for (i = 0; i < 256; i++)
+  {
+    extended_classification[i] = 0;
+    flagged_synthetic_classification[i] = 0;
+    flagged_keypoint_classification[i] = 0;
+    flagged_withheld_classification[i] = 0;
+    flagged_extended_overlap_classification[i] = 0;
+  }
   for (i = 0; i < 3; i++)
   {
     xyz_fluff_10[i] = 0;
@@ -169,10 +175,10 @@ LASsummary::LASsummary()
     xyz_fluff_1000[i] = 0;
     xyz_fluff_10000[i] = 0;
   }
-  classification_synthetic = 0;
-  classification_keypoint = 0;
-  classification_withheld = 0;
-  classification_extended_overlap = 0;
+  flagged_synthetic = 0;
+  flagged_keypoint = 0;
+  flagged_withheld = 0;
+  flagged_extended_overlap = 0;
   first = TRUE;
 }
 
@@ -191,7 +197,7 @@ BOOL LASsummary::add(const LASpoint* point)
     {
       classification[point->get_classification()]++;
     }
-    if (point->get_extended_overlap_flag()) classification_extended_overlap++;
+    if (point->get_extended_overlap_flag()) { flagged_extended_overlap++; flagged_extended_overlap_classification[(point->get_classification() ? point->get_classification() : point->get_extended_classification())]++; }
   }
   else
   {
@@ -199,9 +205,9 @@ BOOL LASsummary::add(const LASpoint* point)
     classification[point->get_classification()]++;
     number_of_returns[point->get_number_of_returns()]++;
   }
-  if (point->get_synthetic_flag()) classification_synthetic++;
-  if (point->get_keypoint_flag()) classification_keypoint++;
-  if (point->get_withheld_flag()) classification_withheld++;
+  if (point->get_synthetic_flag()) { flagged_synthetic++; flagged_synthetic_classification[(point->get_classification() ? point->get_classification() : point->get_extended_classification())]++; }
+  if (point->get_keypoint_flag()) { flagged_keypoint++;  flagged_keypoint_classification[(point->get_classification() ? point->get_classification() : point->get_extended_classification())]++; }
+  if (point->get_withheld_flag()) { flagged_withheld++;  flagged_withheld_classification[(point->get_classification() ? point->get_classification() : point->get_extended_classification())]++; }
   if (first)
   {
     // does the point have extra bytes
@@ -477,8 +483,8 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)malloc(sizeof(U32)*size_pos);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
+          exit(1);
         }
         for (i = 0; i < size_pos; i++) bins_pos[i] = 0;
       }
@@ -488,8 +494,8 @@ void LASbin::add_to_bin(I32 bin)
         bins_pos = (U32*)realloc(bins_pos, sizeof(U32)*new_size);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
+          exit(1);
         }
         for (i = size_pos; i < new_size; i++) bins_pos[i] = 0;
         size_pos = new_size;
@@ -509,8 +515,8 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)malloc(sizeof(U32)*size_neg);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
+          exit(1);
         }
         for (i = 0; i < size_neg; i++) bins_neg[i] = 0;
       }
@@ -520,8 +526,8 @@ void LASbin::add_to_bin(I32 bin)
         bins_neg = (U32*)realloc(bins_neg, sizeof(U32)*new_size);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
+          exit(1);
         }
         for (i = size_neg; i < new_size; i++) bins_neg[i] = 0;
         size_neg = new_size;
@@ -554,13 +560,13 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
+          exit(1);
         }
         if (values_pos == 0)
         {
-          REprintf( "ERROR: allocating %u pos values\012", size_pos);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u pos values\012", size_pos);
+          exit(1);
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
       }
@@ -571,13 +577,13 @@ void LASbin::add(I32 item, I32 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
+          exit(1);
         }
         if (values_pos == 0)
         {
-          REprintf( "ERROR: reallocating %u pos values\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u pos values\012", new_size);
+          exit(1);
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
         size_pos = new_size;
@@ -599,13 +605,13 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
+          exit(1);
         }
         if (values_neg == 0)
         {
-          REprintf( "ERROR: allocating %u neg values\012", size_neg);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u neg values\012", size_neg);
+          exit(1);
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
       }
@@ -616,13 +622,13 @@ void LASbin::add(I32 item, I32 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
+          exit(1);
         }
         if (values_neg == 0)
         {
-          REprintf( "ERROR: reallocating %u neg values\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u neg values\012", new_size);
+          exit(1);
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
         size_neg = new_size;
@@ -656,13 +662,13 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)malloc(sizeof(F64)*size_pos);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: allocating %u pos bins\012", size_pos);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u pos bins\012", size_pos);
+          exit(1);
         }
         if (values_pos == 0)
         {
-          REprintf( "ERROR: allocating %u pos values\012", size_pos);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u pos values\012", size_pos);
+          exit(1);
         }
         for (i = 0; i < size_pos; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
       }
@@ -673,13 +679,13 @@ void LASbin::add(F64 item, F64 value)
         values_pos = (F64*)realloc(values_pos, sizeof(F64)*new_size);
         if (bins_pos == 0)
         {
-          REprintf( "ERROR: reallocating %u pos bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u pos bins\012", new_size);
+          exit(1);
         }
         if (values_pos == 0)
         {
-          REprintf( "ERROR: reallocating %u pos values\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u pos values\012", new_size);
+          exit(1);
         }
         for (i = size_pos; i < new_size; i++) { bins_pos[i] = 0; values_pos[i] = 0; }
         size_pos = new_size;
@@ -701,13 +707,13 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)malloc(sizeof(F64)*size_neg);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: allocating %u neg bins\012", size_neg);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u neg bins\012", size_neg);
+          exit(1);
         }
         if (values_neg == 0)
         {
-          REprintf( "ERROR: allocating %u neg values\012", size_neg);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: allocating %u neg values\012", size_neg);
+          exit(1);
         }
         for (i = 0; i < size_neg; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
       }
@@ -718,13 +724,13 @@ void LASbin::add(F64 item, F64 value)
         values_neg = (F64*)realloc(values_neg, sizeof(F64)*new_size);
         if (bins_neg == 0)
         {
-          REprintf( "ERROR: reallocating %u neg bins\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u neg bins\012", new_size);
+          exit(1);
         }
         if (values_neg == 0)
         {
-          REprintf( "ERROR: reallocating %u neg values\012", new_size);
-          throw std::runtime_error("Internal error");
+          fprintf(stderr, "ERROR: reallocating %u neg values\012", new_size);
+          exit(1);
         }
         for (i = size_neg; i < new_size; i++) { bins_neg[i] = 0; values_neg[i] = 0; }
         size_neg = new_size;
@@ -906,6 +912,11 @@ LAShistogram::LAShistogram()
   attribute2_bin = 0;
   attribute3_bin = 0;
   attribute4_bin = 0;
+  attribute5_bin = 0;
+  attribute6_bin = 0;
+  attribute7_bin = 0;
+  attribute8_bin = 0;
+  attribute9_bin = 0;
   wavepacket_index_bin = 0;
   wavepacket_offset_bin = 0;
   wavepacket_size_bin = 0;
@@ -947,6 +958,11 @@ LAShistogram::~LAShistogram()
   if (attribute2_bin) delete attribute2_bin;
   if (attribute3_bin) delete attribute3_bin;
   if (attribute4_bin) delete attribute4_bin;
+  if (attribute5_bin) delete attribute5_bin;
+  if (attribute6_bin) delete attribute6_bin;
+  if (attribute7_bin) delete attribute7_bin;
+  if (attribute8_bin) delete attribute8_bin;
+  if (attribute9_bin) delete attribute9_bin;
   if (wavepacket_index_bin) delete wavepacket_index_bin;
   if (wavepacket_offset_bin) delete wavepacket_offset_bin;
   if (wavepacket_size_bin) delete wavepacket_size_bin;
@@ -977,33 +993,33 @@ BOOL LAShistogram::parse(int argc, char* argv[])
     {
       if ((i+2) >= argc)
       {
-        REprintf("ERROR: '%s' needs 2 arguments: name step\n", argv[i]);
+        fprintf(stderr,"ERROR: '%s' needs 2 arguments: name step\n", argv[i]);
         return FALSE;
       }
       F64 step = 0.0;
       if (sscanf(argv[i+2], "%lf", &step) != 1)
       {
-        REprintf("ERROR: '%s' needs 2 arguments: name step but '%s' is no valid step\n", argv[i], argv[i+2]);
+        fprintf(stderr,"ERROR: '%s' needs 2 arguments: name step but '%s' is no valid step\n", argv[i], argv[i+2]);
         return FALSE;
       }
       if (!histo(argv[i+1], step)) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
     }
     else if (strcmp(argv[i],"-histo_avg") == 0)
     {
       if ((i+3) >= argc)
       {
-        REprintf("ERROR: '%s' needs 3 arguments: name step name_avg\n", argv[i]);
+        fprintf(stderr,"ERROR: '%s' needs 3 arguments: name step name_avg\n", argv[i]);
         return FALSE;
       }
       F64 step = 0.0;
       if (sscanf(argv[i+2], "%lf", &step) != 1)
       {
-        REprintf("ERROR: '%s' needs 3 arguments: name step name_avg but '%s' is no valid step\n", argv[i], argv[i+2]);
+        fprintf(stderr,"ERROR: '%s' needs 3 arguments: name step name_avg but '%s' is no valid step\n", argv[i], argv[i+2]);
         return FALSE;
       }
       if (!histo_avg(argv[i+1], step, argv[i+3])) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
     }
   }
   return TRUE;
@@ -1032,11 +1048,16 @@ I32 LAShistogram::unparse(CHAR* string) const
   if (G_bin) n += sprintf(&string[n], "-histo G %lf ", G_bin->get_step());
   if (B_bin) n += sprintf(&string[n], "-histo B %lf ", B_bin->get_step());
   if (I_bin) n += sprintf(&string[n], "-histo I %lf ", I_bin->get_step());
-  if (attribute0_bin) n += sprintf(&string[n], "-histo 0 %lf ", attribute0_bin->get_step());
-  if (attribute1_bin) n += sprintf(&string[n], "-histo 1 %lf ", attribute1_bin->get_step());
-  if (attribute2_bin) n += sprintf(&string[n], "-histo 2 %lf ", attribute2_bin->get_step());
-  if (attribute3_bin) n += sprintf(&string[n], "-histo 3 %lf ", attribute3_bin->get_step());
-  if (attribute4_bin) n += sprintf(&string[n], "-histo 4 %lf ", attribute4_bin->get_step());
+  if (attribute0_bin) n += sprintf(&string[n], "-histo attribute0 %lf ", attribute0_bin->get_step());
+  if (attribute1_bin) n += sprintf(&string[n], "-histo attribute1 %lf ", attribute1_bin->get_step());
+  if (attribute2_bin) n += sprintf(&string[n], "-histo attribute2 %lf ", attribute2_bin->get_step());
+  if (attribute3_bin) n += sprintf(&string[n], "-histo attribute3 %lf ", attribute3_bin->get_step());
+  if (attribute4_bin) n += sprintf(&string[n], "-histo attribute4 %lf ", attribute4_bin->get_step());
+  if (attribute5_bin) n += sprintf(&string[n], "-histo attribute5 %lf ", attribute5_bin->get_step());
+  if (attribute6_bin) n += sprintf(&string[n], "-histo attribute6 %lf ", attribute6_bin->get_step());
+  if (attribute7_bin) n += sprintf(&string[n], "-histo attribute7 %lf ", attribute7_bin->get_step());
+  if (attribute8_bin) n += sprintf(&string[n], "-histo attribute8 %lf ", attribute8_bin->get_step());
+  if (attribute9_bin) n += sprintf(&string[n], "-histo attribute9 %lf ", attribute9_bin->get_step());
   if (wavepacket_index_bin) n += sprintf(&string[n], "-histo wavepacket_index %lf ", wavepacket_index_bin->get_step());
   if (wavepacket_offset_bin) n += sprintf(&string[n], "-histo wavepacket_offset %lf ", wavepacket_offset_bin->get_step());
   if (wavepacket_size_bin) n += sprintf(&string[n], "-histo wavepacket_size %lf ", wavepacket_size_bin->get_step());
@@ -1096,6 +1117,16 @@ BOOL LAShistogram::histo(const CHAR* name, F64 step)
     attribute3_bin = new LASbin(step);
   else if (strcmp(name, "4") == 0 || strcmp(name, "attribute4") == 0)
     attribute4_bin = new LASbin(step);
+  else if (strcmp(name, "5") == 0 || strcmp(name, "attribute5") == 0)
+    attribute5_bin = new LASbin(step);
+  else if (strcmp(name, "6") == 0 || strcmp(name, "attribute6") == 0)
+    attribute6_bin = new LASbin(step);
+  else if (strcmp(name, "7") == 0 || strcmp(name, "attribute7") == 0)
+    attribute7_bin = new LASbin(step);
+  else if (strcmp(name, "8") == 0 || strcmp(name, "attribute8") == 0)
+    attribute8_bin = new LASbin(step);
+  else if (strcmp(name, "9") == 0 || strcmp(name, "attribute9") == 0)
+    attribute9_bin = new LASbin(step);
   else if (strstr(name, "wavepacket_index") != 0)
     wavepacket_index_bin = new LASbin(step);
   else if (strstr(name, "wavepacket_offset") != 0)
@@ -1106,7 +1137,7 @@ BOOL LAShistogram::histo(const CHAR* name, F64 step)
     wavepacket_location_bin = new LASbin(step);
   else
   {
-    REprintf("ERROR: histogram of '%s' not implemented\n", name);
+    fprintf(stderr,"ERROR: histogram of '%s' not implemented\n", name);
     return FALSE;
   }
   is_active = TRUE;
@@ -1123,7 +1154,7 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F64 step, const CHAR* name_avg)
       classification_bin_scan_angle = new LASbin(step);
     else
     {
-      REprintf("ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
@@ -1137,7 +1168,7 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F64 step, const CHAR* name_avg)
       scan_angle_bin_intensity = new LASbin(step);
     else
     {
-      REprintf("ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
@@ -1147,13 +1178,13 @@ BOOL LAShistogram::histo_avg(const CHAR* name, F64 step, const CHAR* name_avg)
       return_map_bin_intensity = new LASbin(1);
     else
     {
-      REprintf("ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
+      fprintf(stderr,"ERROR: histogram of '%s' with '%s' averages not implemented\n", name, name_avg);
       return FALSE;
     }
   }
   else
   {
-    REprintf("ERROR: histogram of '%s' not implemented\n", name);
+    fprintf(stderr,"ERROR: histogram of '%s' not implemented\n", name);
     return FALSE;
   }
   is_active = TRUE;
@@ -1194,6 +1225,11 @@ void LAShistogram::add(const LASpoint* point)
   if (attribute2_bin) attribute2_bin->add(point->get_attribute_as_float(2));
   if (attribute3_bin) attribute3_bin->add(point->get_attribute_as_float(3));
   if (attribute4_bin) attribute4_bin->add(point->get_attribute_as_float(4));
+  if (attribute5_bin) attribute5_bin->add(point->get_attribute_as_float(5));
+  if (attribute6_bin) attribute6_bin->add(point->get_attribute_as_float(6));
+  if (attribute7_bin) attribute7_bin->add(point->get_attribute_as_float(7));
+  if (attribute8_bin) attribute8_bin->add(point->get_attribute_as_float(8));
+  if (attribute9_bin) attribute9_bin->add(point->get_attribute_as_float(9));
   if (wavepacket_index_bin) wavepacket_index_bin->add(point->wavepacket.getIndex());
   if (wavepacket_offset_bin) wavepacket_offset_bin->add((I64)point->wavepacket.getOffset());
   if (wavepacket_size_bin) wavepacket_size_bin->add((I32)point->wavepacket.getSize());
@@ -1252,6 +1288,11 @@ void LAShistogram::report(FILE* file) const
   if (attribute2_bin) attribute2_bin->report(file, "attribute 2");
   if (attribute3_bin) attribute3_bin->report(file, "attribute 3");
   if (attribute4_bin) attribute4_bin->report(file, "attribute 4");
+  if (attribute5_bin) attribute5_bin->report(file, "attribute 5");
+  if (attribute6_bin) attribute6_bin->report(file, "attribute 6");
+  if (attribute7_bin) attribute7_bin->report(file, "attribute 7");
+  if (attribute8_bin) attribute8_bin->report(file, "attribute 8");
+  if (attribute9_bin) attribute9_bin->report(file, "attribute 9");
   if (wavepacket_index_bin) wavepacket_index_bin->report(file, "wavepacket_index");
   if (wavepacket_offset_bin) wavepacket_offset_bin->report(file, "wavepacket_offset");
   if (wavepacket_size_bin) wavepacket_size_bin->report(file, "wavepacket_size");
@@ -1293,6 +1334,11 @@ void LAShistogram::reset()
   if (attribute2_bin) attribute2_bin->reset();
   if (attribute3_bin) attribute3_bin->reset();
   if (attribute4_bin) attribute4_bin->reset();
+  if (attribute5_bin) attribute5_bin->reset();
+  if (attribute6_bin) attribute6_bin->reset();
+  if (attribute7_bin) attribute7_bin->reset();
+  if (attribute8_bin) attribute8_bin->reset();
+  if (attribute9_bin) attribute9_bin->reset();
   if (wavepacket_index_bin) wavepacket_index_bin->reset();
   if (wavepacket_offset_bin) wavepacket_offset_bin->reset();
   if (wavepacket_size_bin) wavepacket_size_bin->reset();
@@ -1637,7 +1683,7 @@ LASoccupancyGrid::LASoccupancyGrid(F32 grid_spacing)
   this->grid_spacing = -grid_spacing;
   minus_ankers = 0;
   minus_minus_size = 0;
-  minus_minus = 0;
+  minus_minus = 0; 
   minus_minus_sizes = 0;
   minus_plus_size = 0;
   minus_plus = 0;
