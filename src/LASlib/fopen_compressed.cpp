@@ -2,13 +2,13 @@
 ===============================================================================
 
   FILE:  fopen_compressed.cpp
-  
+
   CONTENTS:
-      
+
   PROGRAMMERS:
-  
+
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-  
+
   COPYRIGHT:
 
     (c) 2003-2018, martin isenburg, rapidlasso - fast tools to catch reality
@@ -19,13 +19,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     27 December 2018 -- only act if the extension really is a file extension
     20 March 2011 -- added capability for *.zip, *.rar, and *.7z on Windows
     12 December 2003 -- adapted from Stefan Gumhold's SIGGRAPH submission hack
-  
+
 ===============================================================================
 */
 
@@ -38,6 +38,9 @@
 #include <process.h>
 #include <windows.h>
 #endif
+
+#define STRICT_R_HEADERS
+#include <R.h>
 
 enum PIPES { READ_HANDLE, WRITE_HANDLE }; /* Constants 0 and 1 for READ and WRITE */
 
@@ -87,7 +90,7 @@ static FILE* fopen7zipped(const char* filename, const char* mode)
 			return NULL;
 		}
 
-		// return redirected stdin 
+		// return redirected stdin
 		return stdin;
 	}
 	else
@@ -139,7 +142,7 @@ static FILE* fopenZIPped(const char* filename, const char* mode)
 			return NULL;
 		}
 
-		// return redirected stdin 
+		// return redirected stdin
 		return stdin;
 	}
 	else
@@ -265,7 +268,7 @@ static FILE* fopenGzippedNew(const char* filename, const char* mode)
 			return NULL;
 		}
 
-		// return redirected stdin 
+		// return redirected stdin
 		return stdin;
 	}
 	else
@@ -317,7 +320,7 @@ static FILE* fopenRARed(const char* filename, const char* mode)
 			return NULL;
 		}
 
-		// return redirected stdin 
+		// return redirected stdin
 		return stdin;
 	}
 	else
