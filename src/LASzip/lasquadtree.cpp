@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasquadtree.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasquadtree.hpp"
@@ -108,7 +108,7 @@ void LASquadtree::get_cell_bounding_box(const F64 x, const F64 y, U32 level, F32
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-  
+
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -161,7 +161,7 @@ void LASquadtree::get_cell_bounding_box(U32 level_index, U32 level, F32* min, F3
   volatile F32 cell_mid_y;
   F32 cell_min_x, cell_max_x;
   F32 cell_min_y, cell_max_y;
-  
+
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -210,7 +210,7 @@ void LASquadtree::get_cell_bounding_box(U32 level_index, U32 level, F64* min, F6
   volatile F64 cell_mid_y;
   F64 cell_min_x, cell_max_x;
   F64 cell_min_y, cell_max_y;
-  
+
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -279,7 +279,7 @@ U32 LASquadtree::get_level_index(const F64 x, const F64 y, U32 level) const
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-  
+
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -331,7 +331,7 @@ U32 LASquadtree::get_level_index(const F64 x, const F64 y, U32 level, F32* min, 
   volatile float cell_mid_y;
   float cell_min_x, cell_max_x;
   float cell_min_y, cell_max_y;
-  
+
   cell_min_x = min_x;
   cell_max_x = max_x;
   cell_min_y = min_y;
@@ -577,13 +577,13 @@ U32* LASquadtree::raster_occupancy(BOOL(*does_cell_exist)(I32)) const
 BOOL LASquadtree::read(ByteStreamIn* stream)
 {
   // read data in the following order
-  //     U32  levels          4 bytes 
+  //     U32  levels          4 bytes
   //     U32  level_index     4 bytes (default 0)
   //     U32  implicit_levels 4 bytes (only used when level_index != 0))
-  //     F32  min_x           4 bytes 
-  //     F32  max_x           4 bytes 
-  //     F32  min_y           4 bytes 
-  //     F32  max_y           4 bytes 
+  //     F32  min_x           4 bytes
+  //     F32  max_x           4 bytes
+  //     F32  min_y           4 bytes
+  //     F32  max_y           4 bytes
   // which totals 28 bytes
 
   char signature[4];
@@ -671,13 +671,13 @@ BOOL LASquadtree::read(ByteStreamIn* stream)
 BOOL LASquadtree::write(ByteStreamOut* stream) const
 {
   // which totals 28 bytes
-  //     U32  levels          4 bytes 
+  //     U32  levels          4 bytes
   //     U32  level_index     4 bytes (default 0)
   //     U32  implicit_levels 4 bytes (only used when level_index != 0))
-  //     F32  min_x           4 bytes 
-  //     F32  max_x           4 bytes 
-  //     F32  min_y           4 bytes 
-  //     F32  max_y           4 bytes 
+  //     F32  min_x           4 bytes
+  //     F32  max_x           4 bytes
+  //     F32  min_y           4 bytes
+  //     F32  max_y           4 bytes
   // which totals 28 bytes
 
   if (!stream->putBytes((const U8*)"LASS", 4))
@@ -746,7 +746,7 @@ BOOL LASquadtree::write(ByteStreamOut* stream) const
   return TRUE;
 }
 
-// create or finalize the cell (in the spatial hierarchy) 
+// create or finalize the cell (in the spatial hierarchy)
 BOOL LASquadtree::manage_cell(const U32 cell_index, const BOOL finalize)
 {
   U32 adaptive_pos = cell_index/32;
@@ -869,8 +869,8 @@ U32 LASquadtree::intersect_circle(const F64 center_x, const F64 center_y, const 
     ((my_cell_vector*)current_cells)->clear();
   }
 
-  F64 r_min_x = center_x - radius; 
-  F64 r_min_y = center_y - radius; 
+  F64 r_min_x = center_x - radius;
+  F64 r_min_y = center_y - radius;
   F64 r_max_x = center_x + radius;
   F64 r_max_y = center_y + radius;
 
@@ -1659,7 +1659,10 @@ LASquadtree::LASquadtree()
   level_offset[0] = 0;
   for (l = 0; l < 23; l++)
   {
-    level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
+    if (l < 16)
+      level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
+    else
+      level_offset[l+1] = level_offset[l];
   }
   current_cells = 0;
   adaptive_alloc = 0;

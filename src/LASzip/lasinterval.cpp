@@ -549,7 +549,7 @@ LASinterval::~LASinterval()
       previous_cell = cell;
       cell = cell->next;
     }
-    delete previous_cell;
+    delete ((LASintervalStartCell*)previous_cell);
     hash_element++;
   }
   delete ((my_cell_hash*)cells);
