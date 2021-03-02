@@ -3,6 +3,7 @@
 - Fix: build failure with GCC 4.x
 - Fix: gcc-asan signed integer overflow.
 - Fix: when reading an non supported extra bytes attribute rlas used to print a warning message. It now throws a real warning.
+- Fix: querying ROI using LAX files in LAS file > 2GB on Windows (see [#50](https://github.com/Jean-Romain/rlas/issues/50))
 - Change: use `tinytest` instead of `testthat`
 - New: `read.lasheader()` now reads the extended variable length record (EVLR)
 - New: `write.las()` now writes all GeoKeyDirectoryTag + GeoAsciiParamsTag + GeoDoubleParamsTag
