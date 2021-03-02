@@ -136,7 +136,7 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
       return 0;
     }
   }
-  else if (use_stdout)
+  /*else if (use_stdout)
   {
     if (format <= LAS_TOOLS_FORMAT_LAZ)
     {
@@ -201,7 +201,7 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
       REprintf("ERROR: unknown format %d\n", format);
       return 0;
     }
-  }
+  }*/
   else
   {
     REprintf("ERROR: no laswriter output specified\n");
