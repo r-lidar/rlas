@@ -36,7 +36,9 @@
 
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <boost/functional/hash.hpp>
+
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
