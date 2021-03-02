@@ -149,7 +149,7 @@ inline BOOL ByteStreamOutFile::seek(I64 position)
 #if defined _WIN32 && ! defined (__MINGW32__)
   return !(_fseeki64(file, position, SEEK_SET));
 #elif defined (__MINGW32__)
-  return !(fseeko64(file, (off_t)position, SEEK_SET));
+  return !(fseeko64(file, (off64_t)position, SEEK_SET));
 #else
   return !(fseeko(file, (off_t)position, SEEK_SET));
 #endif
@@ -160,7 +160,7 @@ inline BOOL ByteStreamOutFile::seekEnd()
 #if defined _WIN32 && ! defined (__MINGW32__)
   return !(_fseeki64(file, 0, SEEK_END));
 #elif defined (__MINGW32__)
-  return !(fseeko64(file, (off_t)0, SEEK_END));
+  return !(fseeko64(file, (off64_t)0, SEEK_END));
 #else
   return !(fseeko(file, (off_t)0, SEEK_END));
 #endif
