@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasfilter.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasfilter.hpp"
@@ -521,7 +521,7 @@ class LAScriterionKeepReturns : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_return_mask"; };
-  inline I32 get_command(CHAR* string) const { 
+  inline I32 get_command(CHAR* string) const {
     U32 i;
     U32 n = sprintf(string, "-keep_return ");
     U16 keep_return_mask = ~drop_return_mask;
@@ -539,7 +539,7 @@ class LAScriterionDropReturns : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_return_mask"; };
-  inline I32 get_command(CHAR* string) const { 
+  inline I32 get_command(CHAR* string) const {
     U32 i;
     U32 n = sprintf(string, "-drop_return ");
     for (i = 0; i < 16; i++) if ((1 << i) & drop_return_mask) n += sprintf(string + n, "%u ", i);
@@ -673,7 +673,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s%s %g %g ", name(), (NIR == 3 ? "" : (NIR == 1 ? "_green_is_NIR" : "_blue_is_NIR")),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { if (NIR == 3) return LASZIP_DECOMPRESS_SELECTIVE_RGB | LASZIP_DECOMPRESS_SELECTIVE_NIR; else return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->rgb[NIR] - point->get_R())) / ((F32)(point->rgb[NIR] + point->get_R()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -690,7 +690,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->get_R() - point->get_G())) / ((F32)(point->get_R() + point->get_G()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -706,7 +706,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g %g ", name(),  below_NDVI, above_NDVI); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_RGB | LASZIP_DECOMPRESS_SELECTIVE_INTENSITY; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     F32 NDVI = ((F32)(point->get_intensity() - point->get_R())) / ((F32)(point->get_intensity() + point->get_R()));
     return (NDVI < below_NDVI) || (above_NDVI < NDVI);
   };
@@ -839,7 +839,7 @@ class LAScriterionKeepClassifications : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "keep_classification_mask"; };
-  inline I32 get_command(CHAR* string) const { 
+  inline I32 get_command(CHAR* string) const {
     U32 i;
     U32 n = sprintf(string, "-keep_class ");
     U32 keep_classification_mask = ~drop_classification_mask;
@@ -858,7 +858,7 @@ class LAScriterionDropClassifications : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "drop_classification_mask"; };
-  inline I32 get_command(CHAR* string) const { 
+  inline I32 get_command(CHAR* string) const {
     U32 i;
     U32 n = sprintf(string, "-drop_class ");
     for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) n += sprintf(string + n, "%u ", i);
@@ -1307,8 +1307,9 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), fraction); };
   inline BOOL filter(const LASpoint* point)
   {
-    srand(seed);
-    seed = rand();
+    //srand(seed);
+    //seed = rand();
+    seed = R::runif(0, RAND_MAX);
     return ((F32)seed/(F32)RAND_MAX) > fraction;
   };
   void reset() { seed = requested_seed; };
@@ -1326,7 +1327,7 @@ public:
   inline const CHAR* name() const { return "thin_with_grid"; };
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %g ", name(), (grid_spacing > 0 ? grid_spacing : -grid_spacing)); };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     if (grid_spacing < 0)
     {
       grid_spacing = -grid_spacing;
@@ -1538,7 +1539,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     I64 pos_t = I64_FLOOR(point->get_gps_time() / time_spacing);
     my_I64_F64_map::iterator map_element = times.find(pos_t);
     if (map_element == times.end())
@@ -1576,7 +1577,7 @@ public:
   inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s %lf ", name(), (time_spacing > 0 ? time_spacing : -time_spacing)); };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_GPS_TIME; };
   inline BOOL filter(const LASpoint* point)
-  { 
+  {
     I64 pos_t = I64_FLOOR(point->get_gps_time() / time_spacing);
     my_I64_set::iterator map_element = times.find(pos_t);
     if (map_element == times.end())
@@ -1906,7 +1907,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxy(min_x, min_y, max_x, max_y));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_xyz") == 0)
         {
@@ -1952,7 +1953,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepxyz(min_x, min_y, min_z, max_x, max_y, max_z));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-keep_x") == 0)
         {
@@ -2090,7 +2091,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepXY(min_X, min_Y, max_X, max_Y));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-keep_X") == 0)
         {
@@ -2112,7 +2113,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepX(min_X, max_X));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
       }
       else if (strcmp(argv[i],"-keep_Y") == 0)
@@ -2135,7 +2136,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionKeepY(min_Y, max_Y));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
       }
       else if (strncmp(argv[i],"-keep_Z", 7) == 0)
       {
@@ -2159,7 +2160,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionKeepZ(min_Z, max_Z));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
         }
         else if (strcmp(argv[i],"-keep_Z_above") == 0)
         {
@@ -2220,7 +2221,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionKeepTile(llx, lly, size));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
       }
       else if (strcmp(argv[i],"-keep_circle") == 0)
       {
@@ -2692,7 +2693,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             criteria[num_criteria] = 0;
             add_criterion(filter_criterion);
             i+=1;
-          } 
+          }
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else if (strcmp(argv[i],"-keep_point_source_between") == 0)
@@ -3160,7 +3161,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionDropxy(min_x, min_y, max_x, max_y));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
         }
         else if (strcmp(argv[i],"-drop_xyz") == 0)
         {
@@ -3206,7 +3207,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           add_criterion(new LAScriterionDropxyz(min_x, min_y, min_z, max_x, max_y, max_z));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6; 
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
         }
         else if (strcmp(argv[i],"-drop_x") == 0)
         {
@@ -3842,7 +3843,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           }
           add_criterion(new LAScriterionDropScanAngleBelow(min));
           *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-        }    
+        }
         else if (strcmp(argv[i],"-drop_scan_angle_between") == 0)
         {
           if ((i+2) >= argc)
