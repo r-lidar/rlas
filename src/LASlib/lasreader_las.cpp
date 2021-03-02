@@ -48,7 +48,7 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: file name pointer is zero\n");
+    REprintf("ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -60,7 +60,7 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
     file = _wfopen(utf16_file_name, L"rb");
     if (file == 0)
     {
-      fprintf(stderr, "ERROR: cannot open file '%ws' for read\n", utf16_file_name);
+      REprintf( "ERROR: cannot open file '%ws' for read\n", utf16_file_name);
     }
     delete [] utf16_file_name;
   }
@@ -70,7 +70,7 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
 
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot open file '%s' for read\n", file_name);
+    REprintf( "ERROR: cannot open file '%s' for read\n", file_name);
     return FALSE;
   }
 
@@ -85,7 +85,7 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
+    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
   }
 
   // create input
@@ -102,7 +102,7 @@ BOOL LASreaderLAS::open(FILE* file, BOOL peek_only, U32 decompress_selective)
 {
   if (file == 0)
   {
-    fprintf(stderr,"ERROR: file pointer is zero\n");
+    REprintf("ERROR: file pointer is zero\n");
     return FALSE;
   }
 
@@ -111,7 +111,7 @@ BOOL LASreaderLAS::open(FILE* file, BOOL peek_only, U32 decompress_selective)
   {
     if(_setmode( _fileno( stdin ), _O_BINARY ) == -1 )
     {
-      fprintf(stderr, "ERROR: cannot set stdin to binary (untranslated) mode\n");
+      REprintf( "ERROR: cannot set stdin to binary (untranslated) mode\n");
       return FALSE;
     }
   }
@@ -145,7 +145,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
   if (stream == 0)
   {
-    fprintf(stderr,"ERROR: ByteStreamIn* pointer is zero\n");
+    REprintf("ERROR: ByteStreamIn* pointer is zero\n");
     return FALSE;
   }
 
@@ -159,165 +159,165 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
   try { stream->getBytes((U8*)header.file_signature, 4); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.file_signature\n");
+    REprintf("ERROR: reading header.file_signature\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.file_source_ID)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.file_source_ID\n");
+    REprintf("ERROR: reading header.file_source_ID\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.global_encoding)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.global_encoding\n");
+    REprintf("ERROR: reading header.global_encoding\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&(header.project_ID_GUID_data_1)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.project_ID_GUID_data_1\n");
+    REprintf("ERROR: reading header.project_ID_GUID_data_1\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.project_ID_GUID_data_2)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.project_ID_GUID_data_2\n");
+    REprintf("ERROR: reading header.project_ID_GUID_data_2\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.project_ID_GUID_data_3)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.project_ID_GUID_data_3\n");
+    REprintf("ERROR: reading header.project_ID_GUID_data_3\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)header.project_ID_GUID_data_4, 8); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.project_ID_GUID_data_4\n");
+    REprintf("ERROR: reading header.project_ID_GUID_data_4\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)&(header.version_major), 1); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.version_major\n");
+    REprintf("ERROR: reading header.version_major\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)&(header.version_minor), 1); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.version_minor\n");
+    REprintf("ERROR: reading header.version_minor\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)header.system_identifier, 32); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.system_identifier\n");
+    REprintf("ERROR: reading header.system_identifier\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)header.generating_software, 32); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.generating_software\n");
+    REprintf("ERROR: reading header.generating_software\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.file_creation_day)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.file_creation_day\n");
+    REprintf("ERROR: reading header.file_creation_day\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.file_creation_year)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.file_creation_year\n");
+    REprintf("ERROR: reading header.file_creation_year\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.header_size)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.header_size\n");
+    REprintf("ERROR: reading header.header_size\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&(header.offset_to_point_data)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.offset_to_point_data\n");
+    REprintf("ERROR: reading header.offset_to_point_data\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&(header.number_of_variable_length_records)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.number_of_variable_length_records\n");
+    REprintf("ERROR: reading header.number_of_variable_length_records\n");
     return FALSE;
   }
   try { stream->getBytes((U8*)&(header.point_data_format), 1); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.point_data_format\n");
+    REprintf("ERROR: reading header.point_data_format\n");
     return FALSE;
   }
   try { stream->get16bitsLE((U8*)&(header.point_data_record_length)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.point_data_record_length\n");
+    REprintf("ERROR: reading header.point_data_record_length\n");
     return FALSE;
   }
   try { stream->get32bitsLE((U8*)&(header.number_of_point_records)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.number_of_point_records\n");
+    REprintf("ERROR: reading header.number_of_point_records\n");
     return FALSE;
   }
   for (i = 0; i < 5; i++)
   {
     try { stream->get32bitsLE((U8*)&(header.number_of_points_by_return[i])); } catch(...)
     {
-      fprintf(stderr,"ERROR: reading header.number_of_points_by_return %d\n", i);
+      REprintf("ERROR: reading header.number_of_points_by_return %d\n", i);
       return FALSE;
     }
   }
   try { stream->get64bitsLE((U8*)&(header.x_scale_factor)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.x_scale_factor\n");
+    REprintf("ERROR: reading header.x_scale_factor\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.y_scale_factor)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.y_scale_factor\n");
+    REprintf("ERROR: reading header.y_scale_factor\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.z_scale_factor)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.z_scale_factor\n");
+    REprintf("ERROR: reading header.z_scale_factor\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.x_offset)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.x_offset\n");
+    REprintf("ERROR: reading header.x_offset\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.y_offset)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.y_offset\n");
+    REprintf("ERROR: reading header.y_offset\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.z_offset)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.z_offset\n");
+    REprintf("ERROR: reading header.z_offset\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.max_x)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.max_x\n");
+    REprintf("ERROR: reading header.max_x\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.min_x)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.min_x\n");
+    REprintf("ERROR: reading header.min_x\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.max_y)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.max_y\n");
+    REprintf("ERROR: reading header.max_y\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.min_y)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.min_y\n");
+    REprintf("ERROR: reading header.min_y\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.max_z)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.max_z\n");
+    REprintf("ERROR: reading header.max_z\n");
     return FALSE;
   }
   try { stream->get64bitsLE((U8*)&(header.min_z)); } catch(...)
   {
-    fprintf(stderr,"ERROR: reading header.min_z\n");
+    REprintf("ERROR: reading header.min_z\n");
     return FALSE;
   }
 
@@ -332,14 +332,14 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
   {
     if (header.header_size < 235)
     {
-      fprintf(stderr,"WARNING: for LAS 1.%d header_size should at least be 235 but it is only %d\n", header.version_minor, header.header_size);
+      REprintf("WARNING: for LAS 1.%d header_size should at least be 235 but it is only %d\n", header.version_minor, header.header_size);
       header.user_data_in_header_size = header.header_size - 227;
     }
     else
     {
       try { stream->get64bitsLE((U8*)&(header.start_of_waveform_data_packet_record)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.start_of_waveform_data_packet_record\n");
+        REprintf("ERROR: reading header.start_of_waveform_data_packet_record\n");
         return FALSE;
       }
       header.user_data_in_header_size = header.header_size - 235;
@@ -355,31 +355,31 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
   {
     if (header.header_size < 375)
     {
-      fprintf(stderr,"ERROR: for LAS 1.%d header_size should at least be 375 but it is only %d\n", header.version_minor, header.header_size);
+      REprintf("ERROR: for LAS 1.%d header_size should at least be 375 but it is only %d\n", header.version_minor, header.header_size);
       return FALSE;
     }
     else
     {
       try { stream->get64bitsLE((U8*)&(header.start_of_first_extended_variable_length_record)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.start_of_first_extended_variable_length_record\n");
+        REprintf("ERROR: reading header.start_of_first_extended_variable_length_record\n");
         return FALSE;
       }
       try { stream->get32bitsLE((U8*)&(header.number_of_extended_variable_length_records)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.number_of_extended_variable_length_records\n");
+        REprintf("ERROR: reading header.number_of_extended_variable_length_records\n");
         return FALSE;
       }
       try { stream->get64bitsLE((U8*)&(header.extended_number_of_point_records)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.extended_number_of_point_records\n");
+        REprintf("ERROR: reading header.extended_number_of_point_records\n");
         return FALSE;
       }
       for (i = 0; i < 15; i++)
       {
         try { stream->get64bitsLE((U8*)&(header.extended_number_of_points_by_return[i])); } catch(...)
         {
-          fprintf(stderr,"ERROR: reading header.extended_number_of_points_by_return[%d]\n", i);
+          REprintf("ERROR: reading header.extended_number_of_points_by_return[%d]\n", i);
           return FALSE;
         }
       }
@@ -394,7 +394,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
     try { stream->getBytes((U8*)header.user_data_in_header, header.user_data_in_header_size); } catch(...)
     {
-      fprintf(stderr,"ERROR: reading %d bytes of data into header.user_data_in_header\n", header.user_data_in_header_size);
+      REprintf("ERROR: reading %d bytes of data into header.user_data_in_header\n", header.user_data_in_header_size);
       return FALSE;
     }
   }
@@ -423,7 +423,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
       if (((int)header.offset_to_point_data - vlrs_size - header.header_size) < 54)
       {
-        fprintf(stderr,"WARNING: only %d bytes until point block after reading %d of %d vlrs. skipping remaining vlrs ...\n", (int)header.offset_to_point_data - vlrs_size - header.header_size, i, header.number_of_variable_length_records);
+        REprintf("WARNING: only %d bytes until point block after reading %d of %d vlrs. skipping remaining vlrs ...\n", (int)header.offset_to_point_data - vlrs_size - header.header_size, i, header.number_of_variable_length_records);
         header.number_of_variable_length_records = i;
         break;
       }
@@ -432,28 +432,28 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
       try { stream->get16bitsLE((U8*)&(header.vlrs[i].reserved)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].reserved\n", i);
+        REprintf("ERROR: reading header.vlrs[%d].reserved\n", i);
         return FALSE;
       }
 
       try { stream->getBytes((U8*)header.vlrs[i].user_id, 16); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].user_id\n", i);
+        REprintf("ERROR: reading header.vlrs[%d].user_id\n", i);
         return FALSE;
       }
       try { stream->get16bitsLE((U8*)&(header.vlrs[i].record_id)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].record_id\n", i);
+        REprintf("ERROR: reading header.vlrs[%d].record_id\n", i);
         return FALSE;
       }
       try { stream->get16bitsLE((U8*)&(header.vlrs[i].record_length_after_header)); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].record_length_after_header\n", i);
+        REprintf("ERROR: reading header.vlrs[%d].record_length_after_header\n", i);
         return FALSE;
       }
       try { stream->getBytes((U8*)header.vlrs[i].description, 32); } catch(...)
       {
-        fprintf(stderr,"ERROR: reading header.vlrs[%d].description\n", i);
+        REprintf("ERROR: reading header.vlrs[%d].description\n", i);
         return FALSE;
       }
 
@@ -466,7 +466,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 /*
       if (header.vlrs[i].reserved != 0xAABB)
       {
-        fprintf(stderr,"WARNING: wrong header.vlrs[%d].reserved: %d != 0xAABB\n", i, header.vlrs[i].reserved);
+        REprintf("WARNING: wrong header.vlrs[%d].reserved: %d != 0xAABB\n", i, header.vlrs[i].reserved);
       }
 */
 
@@ -474,7 +474,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
       if (((int)header.offset_to_point_data - vlrs_size - header.header_size) < header.vlrs[i].record_length_after_header)
       {
-        fprintf(stderr,"WARNING: only %d bytes until point block when trying to read %d bytes into header.vlrs[%d].data\n", (int)header.offset_to_point_data - vlrs_size - header.header_size, header.vlrs[i].record_length_after_header, i);
+        REprintf("WARNING: only %d bytes until point block when trying to read %d bytes into header.vlrs[%d].data\n", (int)header.offset_to_point_data - vlrs_size - header.header_size, header.vlrs[i].record_length_after_header, i);
         header.vlrs[i].record_length_after_header = (int)header.offset_to_point_data - vlrs_size - header.header_size;
       }
 
@@ -504,52 +504,52 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
           try { stream->get16bitsLE((U8*)&(header.laszip->compressor)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading compressor %d\n", (I32)header.laszip->compressor);
+            REprintf("ERROR: reading compressor %d\n", (I32)header.laszip->compressor);
             return FALSE;
           }
           try { stream->get16bitsLE((U8*)&(header.laszip->coder)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading coder %d\n", (I32)header.laszip->coder);
+            REprintf("ERROR: reading coder %d\n", (I32)header.laszip->coder);
             return FALSE;
           }
           try { stream->getBytes((U8*)&(header.laszip->version_major), 1); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading version_major %d\n", header.laszip->version_major);
+            REprintf("ERROR: reading version_major %d\n", header.laszip->version_major);
             return FALSE;
           }
           try { stream->getBytes((U8*)&(header.laszip->version_minor), 1); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading version_minor %d\n", header.laszip->version_minor);
+            REprintf("ERROR: reading version_minor %d\n", header.laszip->version_minor);
             return FALSE;
           }
           try { stream->get16bitsLE((U8*)&(header.laszip->version_revision)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading version_revision %d\n", header.laszip->version_revision);
+            REprintf("ERROR: reading version_revision %d\n", header.laszip->version_revision);
             return FALSE;
           }
           try { stream->get32bitsLE((U8*)&(header.laszip->options)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading options %d\n", (I32)header.laszip->options);
+            REprintf("ERROR: reading options %d\n", (I32)header.laszip->options);
             return FALSE;
           }
           try { stream->get32bitsLE((U8*)&(header.laszip->chunk_size)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading chunk_size %d\n", header.laszip->chunk_size);
+            REprintf("ERROR: reading chunk_size %d\n", header.laszip->chunk_size);
             return FALSE;
           }
           try { stream->get64bitsLE((U8*)&(header.laszip->number_of_special_evlrs)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading number_of_special_evlrs %d\n", (I32)header.laszip->number_of_special_evlrs);
+            REprintf("ERROR: reading number_of_special_evlrs %d\n", (I32)header.laszip->number_of_special_evlrs);
             return FALSE;
           }
           try { stream->get64bitsLE((U8*)&(header.laszip->offset_to_special_evlrs)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading offset_to_special_evlrs %d\n", (I32)header.laszip->offset_to_special_evlrs);
+            REprintf("ERROR: reading offset_to_special_evlrs %d\n", (I32)header.laszip->offset_to_special_evlrs);
             return FALSE;
           }
           try { stream->get16bitsLE((U8*)&(header.laszip->num_items)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading num_items %d\n", header.laszip->num_items);
+            REprintf("ERROR: reading num_items %d\n", header.laszip->num_items);
             return FALSE;
           }
           header.laszip->items = new LASitem[header.laszip->num_items];
@@ -558,17 +558,17 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             U16 type, size, version;
             try { stream->get16bitsLE((U8*)&type); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading type %d of item %d\n", type, j);
+              REprintf("ERROR: reading type %d of item %d\n", type, j);
               return FALSE;
             }
             try { stream->get16bitsLE((U8*)&size); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading size %d of item %d\n", size, j);
+              REprintf("ERROR: reading size %d of item %d\n", size, j);
               return FALSE;
             }
             try { stream->get16bitsLE((U8*)&version); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading version %d of item %d\n", version, j);
+              REprintf("ERROR: reading version %d of item %d\n", version, j);
               return FALSE;
             }
             header.laszip->items[j].type = (LASitem::Type)type;
@@ -594,43 +594,43 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->level)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->level %u\n", header.vlr_lastiling->level);
+              REprintf("ERROR: reading vlr_lastiling->level %u\n", header.vlr_lastiling->level);
               return FALSE;
             }
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->level_index)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->level_index %u\n", header.vlr_lastiling->level_index);
+              REprintf("ERROR: reading vlr_lastiling->level_index %u\n", header.vlr_lastiling->level_index);
               return FALSE;
             }
             try { stream->get32bitsLE(((U8*)header.vlr_lastiling)+8); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->implicit_levels %u\n", header.vlr_lastiling->implicit_levels);
+              REprintf("ERROR: reading vlr_lastiling->implicit_levels %u\n", header.vlr_lastiling->implicit_levels);
               return FALSE;
             }
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->min_x)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->min_x %g\n", header.vlr_lastiling->min_x);
+              REprintf("ERROR: reading vlr_lastiling->min_x %g\n", header.vlr_lastiling->min_x);
               return FALSE;
             }
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->max_x)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->max_x %g\n", header.vlr_lastiling->max_x);
+              REprintf("ERROR: reading vlr_lastiling->max_x %g\n", header.vlr_lastiling->max_x);
               return FALSE;
             }
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->min_y)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->min_y %g\n", header.vlr_lastiling->min_y);
+              REprintf("ERROR: reading vlr_lastiling->min_y %g\n", header.vlr_lastiling->min_y);
               return FALSE;
             }
             try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->max_y)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lastiling->max_y %g\n", header.vlr_lastiling->max_y);
+              REprintf("ERROR: reading vlr_lastiling->max_y %g\n", header.vlr_lastiling->max_y);
               return FALSE;
             }
           }
           else
           {
-            fprintf(stderr,"ERROR: record_length_after_header of VLR %s (%d) is %d instead of 28\n", header.vlrs[i].user_id, header.vlrs[i].record_id, header.vlrs[i].record_length_after_header);
+            REprintf("ERROR: record_length_after_header of VLR %s (%d) is %d instead of 28\n", header.vlrs[i].user_id, header.vlrs[i].record_id, header.vlrs[i].record_length_after_header);
             return FALSE;
           }
         }
@@ -645,51 +645,51 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->number_of_point_records)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->number_of_point_records %u\n", (U32)header.vlr_lasoriginal->number_of_point_records);
+              REprintf("ERROR: reading vlr_lasoriginal->number_of_point_records %u\n", (U32)header.vlr_lasoriginal->number_of_point_records);
               return FALSE;
             }
             for (j = 0; j < 15; j++)
             {
               try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->number_of_points_by_return[j])); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading vlr_lasoriginal->number_of_points_by_return[%d] %u\n", j, (U32)header.vlr_lasoriginal->number_of_points_by_return[j]);
+                REprintf("ERROR: reading vlr_lasoriginal->number_of_points_by_return[%d] %u\n", j, (U32)header.vlr_lasoriginal->number_of_points_by_return[j]);
                 return FALSE;
               }
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->min_x)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->min_x %g\n", header.vlr_lasoriginal->min_x);
+              REprintf("ERROR: reading vlr_lasoriginal->min_x %g\n", header.vlr_lasoriginal->min_x);
               return FALSE;
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->max_x)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->max_x %g\n", header.vlr_lasoriginal->max_x);
+              REprintf("ERROR: reading vlr_lasoriginal->max_x %g\n", header.vlr_lasoriginal->max_x);
               return FALSE;
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->min_y)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->min_y %g\n", header.vlr_lasoriginal->min_y);
+              REprintf("ERROR: reading vlr_lasoriginal->min_y %g\n", header.vlr_lasoriginal->min_y);
               return FALSE;
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->max_y)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->max_y %g\n", header.vlr_lasoriginal->max_y);
+              REprintf("ERROR: reading vlr_lasoriginal->max_y %g\n", header.vlr_lasoriginal->max_y);
               return FALSE;
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->min_z)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->min_z %g\n", header.vlr_lasoriginal->min_z);
+              REprintf("ERROR: reading vlr_lasoriginal->min_z %g\n", header.vlr_lasoriginal->min_z);
               return FALSE;
             }
             try { stream->get64bitsLE((U8*)&(header.vlr_lasoriginal->max_z)); } catch(...)
             {
-              fprintf(stderr,"ERROR: reading vlr_lasoriginal->max_z %g\n", header.vlr_lasoriginal->max_z);
+              REprintf("ERROR: reading vlr_lasoriginal->max_z %g\n", header.vlr_lasoriginal->max_z);
               return FALSE;
             }
           }
           else
           {
-            fprintf(stderr,"ERROR: record_length_after_header of VLR %s (%d) is %d instead of 176\n", header.vlrs[i].user_id, header.vlrs[i].record_id, header.vlrs[i].record_length_after_header);
+            REprintf("ERROR: record_length_after_header of VLR %s (%d) is %d instead of 176\n", header.vlrs[i].user_id, header.vlrs[i].record_id, header.vlrs[i].record_length_after_header);
             return FALSE;
           }
         }
@@ -699,7 +699,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
           try { stream->getBytes(header.vlrs[i].data, header.vlrs[i].record_length_after_header); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading %d bytes of data into header.vlrs[%d].data\n", header.vlrs[i].record_length_after_header, i);
+            REprintf("ERROR: reading %d bytes of data into header.vlrs[%d].data\n", header.vlrs[i].record_length_after_header, i);
             return FALSE;
           }
         }
@@ -723,7 +723,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_geo_keys)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one GeoKeyDirectoryTag\n");
+              REprintf("WARNING: variable length records contain more than one GeoKeyDirectoryTag\n");
             }
             header.vlr_geo_keys = (LASvlr_geo_keys*)header.vlrs[i].data;
 
@@ -731,15 +731,15 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
             if (header.vlr_geo_keys->key_directory_version != 1)
             {
-              fprintf(stderr,"WARNING: wrong vlr_geo_keys->key_directory_version: %d != 1\n",header.vlr_geo_keys->key_directory_version);
+              REprintf("WARNING: wrong vlr_geo_keys->key_directory_version: %d != 1\n",header.vlr_geo_keys->key_directory_version);
             }
             if (header.vlr_geo_keys->key_revision != 1)
             {
-              fprintf(stderr,"WARNING: wrong vlr_geo_keys->key_revision: %d != 1\n",header.vlr_geo_keys->key_revision);
+              REprintf("WARNING: wrong vlr_geo_keys->key_revision: %d != 1\n",header.vlr_geo_keys->key_revision);
             }
             if (header.vlr_geo_keys->minor_revision != 0)
             {
-              fprintf(stderr,"WARNING: wrong vlr_geo_keys->minor_revision: %d != 0\n",header.vlr_geo_keys->minor_revision);
+              REprintf("WARNING: wrong vlr_geo_keys->minor_revision: %d != 0\n",header.vlr_geo_keys->minor_revision);
             }
             header.vlr_geo_key_entries = (LASvlr_key_entry*)&header.vlr_geo_keys[1];
           }
@@ -747,7 +747,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_geo_double_params)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one GeoDoubleParamsTag\n");
+              REprintf("WARNING: variable length records contain more than one GeoDoubleParamsTag\n");
             }
             header.vlr_geo_double_params = (F64*)header.vlrs[i].data;
           }
@@ -755,7 +755,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_geo_ascii_params)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one GeoAsciiParamsTag\n");
+              REprintf("WARNING: variable length records contain more than one GeoAsciiParamsTag\n");
             }
             header.vlr_geo_ascii_params = (CHAR*)header.vlrs[i].data;
           }
@@ -763,7 +763,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_geo_ogc_wkt_math)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one WKT OGC MATH TRANSFORM\n");
+              REprintf("WARNING: variable length records contain more than one WKT OGC MATH TRANSFORM\n");
             }
             header.vlr_geo_ogc_wkt_math = (CHAR*)header.vlrs[i].data;
           }
@@ -771,18 +771,18 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_geo_ogc_wkt)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one WKT OGC COORDINATE SYSTEM\n");
+              REprintf("WARNING: variable length records contain more than one WKT OGC COORDINATE SYSTEM\n");
             }
             header.vlr_geo_ogc_wkt = (CHAR*)header.vlrs[i].data;
           }
           else
           {
-            fprintf(stderr,"WARNING: unknown LASF_Projection VLR with record_id %d.\n", header.vlrs[i].record_id);
+            REprintf("WARNING: unknown LASF_Projection VLR with record_id %d.\n", header.vlrs[i].record_id);
           } 
         }
         else
         {
-          fprintf(stderr,"WARNING: no payload for LASF_Projection VLR with record_id %d.\n", header.vlrs[i].record_id);
+          REprintf("WARNING: no payload for LASF_Projection VLR with record_id %d.\n", header.vlrs[i].record_id);
         }
       }
       else if (strcmp(header.vlrs[i].user_id, "LASF_Spec") == 0)
@@ -793,7 +793,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           {
             if (header.vlr_classification)
             {
-              fprintf(stderr,"WARNING: variable length records contain more than one ClassificationLookup\n");
+              REprintf("WARNING: variable length records contain more than one ClassificationLookup\n");
             }
             header.vlr_classification = (LASvlr_classification*)header.vlrs[i].data;
           }
@@ -810,7 +810,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.attributes[j].data_type > 10)
               {
-                fprintf(stderr,"WARNING: data type %d of attribute %d ('%s') is deprecated\n", header.attributes[j].data_type, j, header.attributes[j].name);
+                REprintf("WARNING: data type %d of attribute %d ('%s') is deprecated\n", header.attributes[j].data_type, j, header.attributes[j].name);
               }
             }
           }
@@ -825,28 +825,28 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             }
             if (header.vlr_wave_packet_descr[idx])
             {
-              fprintf(stderr,"WARNING: variable length records defines wave packet descr %d more than once\n", idx);
+              REprintf("WARNING: variable length records defines wave packet descr %d more than once\n", idx);
             }
             if (header.vlrs[i].record_length_after_header != 26)
             {
-              fprintf(stderr,"WARNING: variable length record payload for wave packet descr %d is %d instead of 26 bytes\n", idx, (I32)header.vlrs[i].record_length_after_header);
+              REprintf("WARNING: variable length record payload for wave packet descr %d is %d instead of 26 bytes\n", idx, (I32)header.vlrs[i].record_length_after_header);
             }
             header.vlr_wave_packet_descr[idx] = (LASvlr_wave_packet_descr*)header.vlrs[i].data;
             if ((header.vlr_wave_packet_descr[idx]->getBitsPerSample() != 8) && (header.vlr_wave_packet_descr[idx]->getBitsPerSample() != 16))
             {
-              fprintf(stderr,"WARNING: bits per sample for wave packet descr %d is %d instead of 8 or 16\n", idx, (I32)header.vlr_wave_packet_descr[idx]->getBitsPerSample());
+              REprintf("WARNING: bits per sample for wave packet descr %d is %d instead of 8 or 16\n", idx, (I32)header.vlr_wave_packet_descr[idx]->getBitsPerSample());
             }
             if (header.vlr_wave_packet_descr[idx]->getNumberOfSamples() == 0)
             {
-              fprintf(stderr,"WARNING: number of samples for wave packet descr %d is zero\n", idx);
+              REprintf("WARNING: number of samples for wave packet descr %d is zero\n", idx);
             }
             if (header.vlr_wave_packet_descr[idx]->getNumberOfSamples() > 8096)
             {
-              fprintf(stderr,"WARNING: number of samples of %u for wave packet descr %d is with unusually large\n", header.vlr_wave_packet_descr[idx]->getNumberOfSamples(), idx);
+              REprintf("WARNING: number of samples of %u for wave packet descr %d is with unusually large\n", header.vlr_wave_packet_descr[idx]->getNumberOfSamples(), idx);
             }
             if (header.vlr_wave_packet_descr[idx]->getTemporalSpacing() == 0)
             {
-              fprintf(stderr,"WARNING: temporal spacing for wave packet descr %d is zero\n", idx);
+              REprintf("WARNING: temporal spacing for wave packet descr %d is zero\n", idx);
             }
 /*
             // fix for RiPROCESS export error
@@ -862,7 +862,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
         }
         else
         {
-          fprintf(stderr,"WARNING: no payload for LASF_Spec (not specification-conform).\n");
+          REprintf("WARNING: no payload for LASF_Spec (not specification-conform).\n");
         }
       }
       else if ((strcmp(header.vlrs[i].user_id, "laszip encoded") == 0) || ((strcmp(header.vlrs[i].user_id, "LAStools") == 0) && (header.vlrs[i].record_id < 2000)) || (strcmp(header.vlrs[i].user_id, "lastools tile") == 0))
@@ -885,7 +885,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
     try { stream->getBytes((U8*)header.user_data_after_header, header.user_data_after_header_size); } catch(...)
     {
-      fprintf(stderr,"ERROR: reading %d bytes of data into header.user_data_after_header\n", header.user_data_after_header_size);
+      REprintf("ERROR: reading %d bytes of data into header.user_data_after_header\n", header.user_data_after_header_size);
       return FALSE;
     }
   }
@@ -897,7 +897,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
     {
       if (!stream->isSeekable())
       {
-        fprintf(stderr,"WARNING: LAS %d.%d file has %d EVLRs but stream is not seekable ...\n", header.version_major, header.version_minor, header.number_of_extended_variable_length_records);
+        REprintf("WARNING: LAS %d.%d file has %d EVLRs but stream is not seekable ...\n", header.version_major, header.version_minor, header.number_of_extended_variable_length_records);
       }
       else
       {
@@ -916,27 +916,27 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
           try { stream->get16bitsLE((U8*)&(header.evlrs[i].reserved)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading header.evlrs[%d].reserved\n", i);
+            REprintf("ERROR: reading header.evlrs[%d].reserved\n", i);
             return FALSE;
           }
           try { stream->getBytes((U8*)header.evlrs[i].user_id, 16); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading header.evlrs[%d].user_id\n", i);
+            REprintf("ERROR: reading header.evlrs[%d].user_id\n", i);
             return FALSE;
           }
           try { stream->get16bitsLE((U8*)&(header.evlrs[i].record_id)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading header.evlrs[%d].record_id\n", i);
+            REprintf("ERROR: reading header.evlrs[%d].record_id\n", i);
             return FALSE;
           }
           try { stream->get64bitsLE((U8*)&(header.evlrs[i].record_length_after_header)); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading header.evlrs[%d].record_length_after_header\n", i);
+            REprintf("ERROR: reading header.evlrs[%d].record_length_after_header\n", i);
             return FALSE;
           }
           try { stream->getBytes((U8*)header.evlrs[i].description, 32); } catch(...)
           {
-            fprintf(stderr,"ERROR: reading header.evlrs[%d].description\n", i);
+            REprintf("ERROR: reading header.evlrs[%d].description\n", i);
             return FALSE;
           }
 
@@ -949,7 +949,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 /*
           if (header.evlrs[i].reserved != 0)
           {
-            fprintf(stderr,"WARNING: wrong header.evlrs[%d].reserved: %d != 0\n", i, header.evlrs[i].reserved);
+            REprintf("WARNING: wrong header.evlrs[%d].reserved: %d != 0\n", i, header.evlrs[i].reserved);
           }
 */
 
@@ -979,52 +979,52 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
               try { stream->get16bitsLE((U8*)&(header.laszip->compressor)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading compressor %d\n", (I32)header.laszip->compressor);
+                REprintf("ERROR: reading compressor %d\n", (I32)header.laszip->compressor);
                 return FALSE;
               }
               try { stream->get16bitsLE((U8*)&(header.laszip->coder)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading coder %d\n", (I32)header.laszip->coder);
+                REprintf("ERROR: reading coder %d\n", (I32)header.laszip->coder);
                 return FALSE;
               }
               try { stream->getBytes((U8*)&(header.laszip->version_major), 1); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading version_major %d\n", header.laszip->version_major);
+                REprintf("ERROR: reading version_major %d\n", header.laszip->version_major);
                 return FALSE;
               }
               try { stream->getBytes((U8*)&(header.laszip->version_minor), 1); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading version_minor %d\n", header.laszip->version_minor);
+                REprintf("ERROR: reading version_minor %d\n", header.laszip->version_minor);
                 return FALSE;
               }
               try { stream->get16bitsLE((U8*)&(header.laszip->version_revision)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading version_revision %d\n", header.laszip->version_revision);
+                REprintf("ERROR: reading version_revision %d\n", header.laszip->version_revision);
                 return FALSE;
               }
               try { stream->get32bitsLE((U8*)&(header.laszip->options)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading options %d\n", (I32)header.laszip->options);
+                REprintf("ERROR: reading options %d\n", (I32)header.laszip->options);
                 return FALSE;
               }
               try { stream->get32bitsLE((U8*)&(header.laszip->chunk_size)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading chunk_size %d\n", header.laszip->chunk_size);
+                REprintf("ERROR: reading chunk_size %d\n", header.laszip->chunk_size);
                 return FALSE;
               }
               try { stream->get64bitsLE((U8*)&(header.laszip->number_of_special_evlrs)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading number_of_special_evlrs %d\n", (I32)header.laszip->number_of_special_evlrs);
+                REprintf("ERROR: reading number_of_special_evlrs %d\n", (I32)header.laszip->number_of_special_evlrs);
                 return FALSE;
               }
               try { stream->get64bitsLE((U8*)&(header.laszip->offset_to_special_evlrs)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading offset_to_special_evlrs %d\n", (I32)header.laszip->offset_to_special_evlrs);
+                REprintf("ERROR: reading offset_to_special_evlrs %d\n", (I32)header.laszip->offset_to_special_evlrs);
                 return FALSE;
               }
               try { stream->get16bitsLE((U8*)&(header.laszip->num_items)); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading num_items %d\n", header.laszip->num_items);
+                REprintf("ERROR: reading num_items %d\n", header.laszip->num_items);
                 return FALSE;
               }
               header.laszip->items = new LASitem[header.laszip->num_items];
@@ -1033,17 +1033,17 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
                 U16 type, size, version;
                 try { stream->get16bitsLE((U8*)&type); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading type %d of item %d\n", type, j);
+                  REprintf("ERROR: reading type %d of item %d\n", type, j);
                   return FALSE;
                 }
                 try { stream->get16bitsLE((U8*)&size); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading size %d of item %d\n", size, j);
+                  REprintf("ERROR: reading size %d of item %d\n", size, j);
                   return FALSE;
                 }
                 try { stream->get16bitsLE((U8*)&version); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading version %d of item %d\n", version, j);
+                  REprintf("ERROR: reading version %d of item %d\n", version, j);
                   return FALSE;
                 }
                 header.laszip->items[j].type = (LASitem::Type)type;
@@ -1069,43 +1069,43 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
               {
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->level)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->level %u\n", header.vlr_lastiling->level);
+                  REprintf("ERROR: reading vlr_lastiling->level %u\n", header.vlr_lastiling->level);
                   return FALSE;
                 }
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->level_index)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->level_index %u\n", header.vlr_lastiling->level_index);
+                  REprintf("ERROR: reading vlr_lastiling->level_index %u\n", header.vlr_lastiling->level_index);
                   return FALSE;
                 }
                 try { stream->get32bitsLE(((U8*)header.vlr_lastiling)+8); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->implicit_levels %u\n", header.vlr_lastiling->implicit_levels);
+                  REprintf("ERROR: reading vlr_lastiling->implicit_levels %u\n", header.vlr_lastiling->implicit_levels);
                   return FALSE;
                 }
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->min_x)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->min_x %g\n", header.vlr_lastiling->min_x);
+                  REprintf("ERROR: reading vlr_lastiling->min_x %g\n", header.vlr_lastiling->min_x);
                   return FALSE;
                 }
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->max_x)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->max_x %g\n", header.vlr_lastiling->max_x);
+                  REprintf("ERROR: reading vlr_lastiling->max_x %g\n", header.vlr_lastiling->max_x);
                   return FALSE;
                 }
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->min_y)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->min_y %g\n", header.vlr_lastiling->min_y);
+                  REprintf("ERROR: reading vlr_lastiling->min_y %g\n", header.vlr_lastiling->min_y);
                   return FALSE;
                 }
                 try { stream->get32bitsLE((U8*)&(header.vlr_lastiling->max_y)); } catch(...)
                 {
-                  fprintf(stderr,"ERROR: reading vlr_lastiling->max_y %g\n", header.vlr_lastiling->max_y);
+                  REprintf("ERROR: reading vlr_lastiling->max_y %g\n", header.vlr_lastiling->max_y);
                   return FALSE;
                 }
               }
               else
               {
-                fprintf(stderr,"ERROR: record_length_after_header of EVLR %s (%d) is %u instead of 28\n", header.evlrs[i].user_id, header.evlrs[i].record_id, (U32)header.evlrs[i].record_length_after_header);
+                REprintf("ERROR: record_length_after_header of EVLR %s (%d) is %u instead of 28\n", header.evlrs[i].user_id, header.evlrs[i].record_id, (U32)header.evlrs[i].record_length_after_header);
                 return FALSE;
               }
             }
@@ -1115,7 +1115,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
               try { stream->getBytes(header.evlrs[i].data, (U32)header.evlrs[i].record_length_after_header); } catch(...)
               {
-                fprintf(stderr,"ERROR: reading %d bytes of data into header.evlrs[%d].data\n", (I32)header.evlrs[i].record_length_after_header, i);
+                REprintf("ERROR: reading %d bytes of data into header.evlrs[%d].data\n", (I32)header.evlrs[i].record_length_after_header, i);
                 return FALSE;
               }
             }
@@ -1137,7 +1137,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_geo_keys)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one GeoKeyDirectoryTag\n");
+                REprintf("WARNING: extended variable length records contain more than one GeoKeyDirectoryTag\n");
               }
               header.vlr_geo_keys = (LASvlr_geo_keys*)header.evlrs[i].data;
 
@@ -1145,15 +1145,15 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
               if (header.vlr_geo_keys->key_directory_version != 1)
               {
-                fprintf(stderr,"WARNING: wrong evlr_geo_keys->key_directory_version: %d != 1\n",header.vlr_geo_keys->key_directory_version);
+                REprintf("WARNING: wrong evlr_geo_keys->key_directory_version: %d != 1\n",header.vlr_geo_keys->key_directory_version);
               }
               if (header.vlr_geo_keys->key_revision != 1)
               {
-                fprintf(stderr,"WARNING: wrong evlr_geo_keys->key_revision: %d != 1\n",header.vlr_geo_keys->key_revision);
+                REprintf("WARNING: wrong evlr_geo_keys->key_revision: %d != 1\n",header.vlr_geo_keys->key_revision);
               }
               if (header.vlr_geo_keys->minor_revision != 0)
               {
-                fprintf(stderr,"WARNING: wrong evlr_geo_keys->minor_revision: %d != 0\n",header.vlr_geo_keys->minor_revision);
+                REprintf("WARNING: wrong evlr_geo_keys->minor_revision: %d != 0\n",header.vlr_geo_keys->minor_revision);
               }
               header.vlr_geo_key_entries = (LASvlr_key_entry*)&header.vlr_geo_keys[1];
             }
@@ -1161,7 +1161,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_geo_double_params)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one GeoF64ParamsTag\n");
+                REprintf("WARNING: extended variable length records contain more than one GeoF64ParamsTag\n");
               }
               header.vlr_geo_double_params = (F64*)header.evlrs[i].data;
             }
@@ -1169,7 +1169,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_geo_ascii_params)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one GeoAsciiParamsTag\n");
+                REprintf("WARNING: extended variable length records contain more than one GeoAsciiParamsTag\n");
               }
               header.vlr_geo_ascii_params = (CHAR*)header.evlrs[i].data;
             }
@@ -1177,7 +1177,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_geo_ogc_wkt_math)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one WKT OGC MATH TRANSFORM\n");
+                REprintf("WARNING: extended variable length records contain more than one WKT OGC MATH TRANSFORM\n");
               }
               header.vlr_geo_ogc_wkt_math = (CHAR*)header.evlrs[i].data;
             }
@@ -1185,13 +1185,13 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_geo_ogc_wkt)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one WKT OGC COORDINATE SYSTEM\n");
+                REprintf("WARNING: extended variable length records contain more than one WKT OGC COORDINATE SYSTEM\n");
               }
               header.vlr_geo_ogc_wkt = (CHAR*)header.evlrs[i].data;
             }
             else
             {
-              fprintf(stderr,"WARNING: unknown LASF_Projection EVLR with record_id %d.\n", header.evlrs[i].record_id);
+              REprintf("WARNING: unknown LASF_Projection EVLR with record_id %d.\n", header.evlrs[i].record_id);
             }
           }
           else if (strcmp(header.evlrs[i].user_id, "LASF_Spec") == 0)
@@ -1200,7 +1200,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
             {
               if (header.vlr_classification)
               {
-                fprintf(stderr,"WARNING: extended variable length records contain more than one ClassificationLookup\n");
+                REprintf("WARNING: extended variable length records contain more than one ClassificationLookup\n");
               }
               header.vlr_classification = (LASvlr_classification*)header.evlrs[i].data;
             }
@@ -1225,7 +1225,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
               }
               if (header.vlr_wave_packet_descr[idx])
               {
-                fprintf(stderr,"WARNING: extended variable length records defines wave packet descr %d more than once\n", idx);
+                REprintf("WARNING: extended variable length records defines wave packet descr %d more than once\n", idx);
               }
               header.vlr_wave_packet_descr[idx] = (LASvlr_wave_packet_descr*)header.evlrs[i].data;
             }
@@ -1249,9 +1249,9 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
   {
     if (!header.laszip->check(header.point_data_record_length))
     {
-      fprintf(stderr,"ERROR: %s\n", header.laszip->get_error());
-      fprintf(stderr,"       please upgrade to the latest release of LAStools (with LASzip)\n");
-      fprintf(stderr,"       or contact 'martin.isenburg@rapidlasso.com' for assistance.\n");
+      REprintf("ERROR: %s\n", header.laszip->get_error());
+      REprintf("       please upgrade to the latest release of LAStools (with LASzip)\n");
+      REprintf("       or contact 'martin.isenburg@rapidlasso.com' for assistance.\n");
       return FALSE;
     }
   }
@@ -1262,8 +1262,8 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
   {
     if (!header.laszip)
     {
-      fprintf(stderr,"ERROR: this file was compressed with an experimental version of laszip\n");
-      fprintf(stderr,"ERROR: please contact 'martin.isenburg@rapidlasso.com' for assistance.\n");
+      REprintf("ERROR: this file was compressed with an experimental version of laszip\n");
+      REprintf("ERROR: please contact 'martin.isenburg@rapidlasso.com' for assistance.\n");
       return FALSE;
     }
     header.point_data_format &= 127;
@@ -1327,7 +1327,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
     }
     catch(...)
     {
-      fprintf(stderr,"ERROR: trying to read %u internal EVLRs. ignoring ...\n", (U32)header.laszip->number_of_special_evlrs);
+      REprintf("ERROR: trying to read %u internal EVLRs. ignoring ...\n", (U32)header.laszip->number_of_special_evlrs);
     }
     stream->seek(here);
   }
@@ -1372,15 +1372,15 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->warning())
       {
-        fprintf(stderr,"WARNING: '%s' for '%s'\n", reader->warning(), file_name);
+        REprintf("WARNING: '%s' for '%s'\n", reader->warning(), file_name);
       }
       if (reader->error())
       {
-        fprintf(stderr,"ERROR: '%s' after %u of %u points for '%s'\n", reader->error(), (U32)p_count, (U32)npoints, file_name);
+        REprintf("ERROR: '%s' after %u of %u points for '%s'\n", reader->error(), (U32)p_count, (U32)npoints, file_name);
       }
       else
       {
-        fprintf(stderr,"WARNING: end-of-file after %u of %u points for '%s'\n", (U32)p_count, (U32)npoints, file_name);
+        REprintf("WARNING: end-of-file after %u of %u points for '%s'\n", (U32)p_count, (U32)npoints, file_name);
       }
       return FALSE;
     }
@@ -1416,12 +1416,12 @@ BOOL LASreaderLAS::read_point_default()
     {
       if (reader->check_end() == FALSE)
       {
-        fprintf(stderr,"ERROR: '%s' when reaching end of encoding\n", reader->error());
+        REprintf("ERROR: '%s' when reaching end of encoding\n", reader->error());
         p_count--;
       }
       if (reader->warning())
       {
-        fprintf(stderr,"WARNING: '%s'\n", reader->warning());
+        REprintf("WARNING: '%s'\n", reader->warning());
       }
       checked_end = TRUE;
     }
@@ -1547,14 +1547,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only, U32 decompr
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for min_x\n", orig_x_scale_factor, header.x_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for min_x\n", orig_x_scale_factor, header.x_scale_factor);
       }
       // make sure rescale does not cause integer overflow for max_x
       temp_f = (orig_x_scale_factor*quantizer.get_X(header.max_x))/header.x_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for max_x\n", orig_x_scale_factor, header.x_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for max_x\n", orig_x_scale_factor, header.x_scale_factor);
       }
     }
 
@@ -1565,14 +1565,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only, U32 decompr
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for min_y\n", orig_y_scale_factor, header.y_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for min_y\n", orig_y_scale_factor, header.y_scale_factor);
       }
       // make sure rescale does not cause integer overflow for max_y
       temp_f = (orig_y_scale_factor*quantizer.get_Y(header.max_y))/header.y_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for max_y\n", orig_y_scale_factor, header.y_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for max_y\n", orig_y_scale_factor, header.y_scale_factor);
       }
     }
 
@@ -1583,14 +1583,14 @@ BOOL LASreaderLASrescale::open(ByteStreamIn* stream, BOOL peek_only, U32 decompr
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for min_z\n", orig_z_scale_factor, header.z_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for min_z\n", orig_z_scale_factor, header.z_scale_factor);
       }
       // make sure rescale does not cause integer overflow for max_z
       temp_f = (orig_z_scale_factor*quantizer.get_Z(header.max_z))/header.z_scale_factor;
       temp_i = I64_QUANTIZE(temp_f);
       if (I32_FITS_IN_RANGE(temp_i) == FALSE)
       {
-        fprintf(stderr,"WARNING: rescaling from %g to %g causes LAS integer overflow for max_z\n", orig_z_scale_factor, header.z_scale_factor);
+        REprintf("WARNING: rescaling from %g to %g causes LAS integer overflow for max_z\n", orig_z_scale_factor, header.z_scale_factor);
       }
     }
   }
@@ -1687,14 +1687,14 @@ BOOL LASreaderLASreoffset::open(ByteStreamIn* stream, BOOL peek_only, U32 decomp
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_x\n", orig_x_offset, header.x_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_x\n", orig_x_offset, header.x_offset);
     }
     // make sure reoffset_x does not cause integer overflow for max_x
     temp_f = ((header.x_scale_factor*quantizer.get_X(header.max_x))+orig_x_offset-header.x_offset)/header.x_scale_factor;
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_x\n", orig_x_offset, header.x_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_x\n", orig_x_offset, header.x_offset);
     }
   }
 
@@ -1705,14 +1705,14 @@ BOOL LASreaderLASreoffset::open(ByteStreamIn* stream, BOOL peek_only, U32 decomp
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_y\n", orig_y_offset, header.y_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_y\n", orig_y_offset, header.y_offset);
     }
     // make sure reoffset_y does not cause integer overflow for max_y
     temp_f = ((header.y_scale_factor*quantizer.get_Y(header.max_y))+orig_y_offset-header.y_offset)/header.y_scale_factor;
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_y\n", orig_y_offset, header.y_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_y\n", orig_y_offset, header.y_offset);
     }
   }
 
@@ -1723,14 +1723,14 @@ BOOL LASreaderLASreoffset::open(ByteStreamIn* stream, BOOL peek_only, U32 decomp
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_z\n", orig_z_offset, header.z_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for min_z\n", orig_z_offset, header.z_offset);
     }
     // make sure rescale does not cause integer overflow for max_z
     temp_f = ((header.z_scale_factor*quantizer.get_Z(header.max_z))+orig_z_offset-header.z_offset)/header.z_scale_factor;
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_z\n", orig_z_offset, header.z_offset);
+      REprintf("WARNING: reoffsetting from %g to %g causes LAS integer overflow for max_z\n", orig_z_offset, header.z_offset);
     }
   }
 
@@ -1843,7 +1843,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_x\n", orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_x\n", orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset);
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_x
@@ -1858,7 +1858,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_x\n", orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_x\n", orig_x_scale_factor, header.x_scale_factor, orig_x_offset, header.x_offset);
     }
   }
 
@@ -1876,7 +1876,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_y\n", orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_y\n", orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset);
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_y
@@ -1891,7 +1891,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_y\n", orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_y\n", orig_y_scale_factor, header.y_scale_factor, orig_y_offset, header.y_offset);
     }
   }
 
@@ -1909,7 +1909,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_z\n", orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for min_z\n", orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset);
     }
 
     // make sure rescale & reoffset do not cause integer overflow for max_z
@@ -1924,7 +1924,7 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream, BOOL peek_only, U32
     temp_i = I64_QUANTIZE(temp_f);
     if (I32_FITS_IN_RANGE(temp_i) == FALSE)
     {
-      fprintf(stderr,"WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_z\n", orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset);
+      REprintf("WARNING: rescaling from %g to %g and reoffsetting from %g to %g causes LAS integer overflow for max_z\n", orig_z_scale_factor, header.z_scale_factor, orig_z_offset, header.z_offset);
     }
   }
 

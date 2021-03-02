@@ -60,7 +60,7 @@ BOOL LASwriterLAS::open(const char* file_name, const LASheader* header, U32 comp
 {
   if (file_name == 0)
   {
-    fprintf(stderr,"ERROR: file name pointer is zero\n");
+    REprintf("ERROR: file name pointer is zero\n");
     return FALSE;
   }
 
@@ -72,7 +72,7 @@ BOOL LASwriterLAS::open(const char* file_name, const LASheader* header, U32 comp
     file = _wfopen(utf16_file_name, L"wb");
     if (file == 0)
     {
-      fprintf(stderr, "ERROR: cannot open file '%ws' for write\n", utf16_file_name);
+      REprintf( "ERROR: cannot open file '%ws' for write\n", utf16_file_name);
     }
     delete [] utf16_file_name;
   }
@@ -82,13 +82,13 @@ BOOL LASwriterLAS::open(const char* file_name, const LASheader* header, U32 comp
 
   if (file == 0)
   {
-    fprintf(stderr, "ERROR: cannot open file '%s' for write\n", file_name);
+    REprintf( "ERROR: cannot open file '%s' for write\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    fprintf(stderr, "WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
+    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
   }
 
   ByteStreamOut* out;
@@ -104,7 +104,7 @@ BOOL LASwriterLAS::open(FILE* file, const LASheader* header, U32 compressor, I32
 {
   if (file == 0)
   {
-    fprintf(stderr,"ERROR: file pointer is zero\n");
+    REprintf("ERROR: file pointer is zero\n");
     return FALSE;
   }
 
@@ -113,7 +113,7 @@ BOOL LASwriterLAS::open(FILE* file, const LASheader* header, U32 compressor, I32
   {
     if(_setmode( _fileno( stdout ), _O_BINARY ) == -1 )
     {
-      fprintf(stderr, "ERROR: cannot set stdout to binary (untranslated) mode\n");
+      REprintf( "ERROR: cannot set stdout to binary (untranslated) mode\n");
     }
   }
 #endif
@@ -144,14 +144,14 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
   if (stream == 0)
   {
-    fprintf(stderr,"ERROR: ByteStreamOut pointer is zero\n");
+    REprintf("ERROR: ByteStreamOut pointer is zero\n");
     return FALSE;
   }
   this->stream = stream;
 
   if (header == 0)
   {
-    fprintf(stderr,"ERROR: LASheader pointer is zero\n");
+    REprintf("ERROR: LASheader pointer is zero\n");
     return FALSE;
   }
 
@@ -190,7 +190,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   
   if (compressor && (point_data_format > 5) && (compressor != LASZIP_COMPRESSOR_LAYERED_CHUNKED))
   {
-    fprintf(stderr,"ERROR: point type %d requires using \"native LAS 1.4 extension\" of LASzip\n", point_data_format);
+    REprintf("ERROR: point type %d requires using \"native LAS 1.4 extension\" of LASzip\n", point_data_format);
     return FALSE;
   }
 
@@ -204,7 +204,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     laszip->setup(point.num_items, point.items, compressor);
     if (chunk_size > -1) laszip->set_chunk_size((U32)chunk_size);
     if (compressor == LASZIP_COMPRESSOR_NONE) laszip->request_version(0);
-    else if (chunk_size == 0 && (point_data_format <= 5)) { fprintf(stderr,"ERROR: adaptive chunking is depricated for point type %d.\n       only available for new LAS 1.4 point types 6 or higher.\n", point_data_format); return FALSE; }
+    else if (chunk_size == 0 && (point_data_format <= 5)) { REprintf("ERROR: adaptive chunking is depricated for point type %d.\n       only available for new LAS 1.4 point types 6 or higher.\n", point_data_format); return FALSE; }
     else if (requested_version) laszip->request_version(requested_version);
     else laszip->request_version(2);
     laszip_vlr_data_size = 34 + 6*laszip->num_items;
@@ -217,7 +217,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   {
     if (!writer->setup(laszip->num_items, laszip->items, laszip))
     {
-      fprintf(stderr,"ERROR: point type %d of size %d not supported (with LASzip)\n", header->point_data_format, header->point_data_record_length);
+      REprintf("ERROR: point type %d of size %d not supported (with LASzip)\n", header->point_data_format, header->point_data_record_length);
       return FALSE;
     }
   }
@@ -225,7 +225,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   {
     if (!writer->setup(point.num_items, point.items))
     {
-      fprintf(stderr,"ERROR: point type %d of size %d not supported\n", header->point_data_format, header->point_data_record_length);
+      REprintf("ERROR: point type %d of size %d not supported\n", header->point_data_format, header->point_data_record_length);
       return FALSE;
     }
   }
@@ -238,86 +238,86 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
   if (!stream->putBytes((U8*)&(header->file_signature), 4))
   {
-    fprintf(stderr,"ERROR: writing header->file_signature\n");
+    REprintf("ERROR: writing header->file_signature\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->file_source_ID)))
   {
-    fprintf(stderr,"ERROR: writing header->file_source_ID\n");
+    REprintf("ERROR: writing header->file_source_ID\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->global_encoding)))
   {
-    fprintf(stderr,"ERROR: writing header->global_encoding\n");
+    REprintf("ERROR: writing header->global_encoding\n");
     return FALSE;
   }
   if (!stream->put32bitsLE((U8*)&(header->project_ID_GUID_data_1)))
   {
-    fprintf(stderr,"ERROR: writing header->project_ID_GUID_data_1\n");
+    REprintf("ERROR: writing header->project_ID_GUID_data_1\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->project_ID_GUID_data_2)))
   {
-    fprintf(stderr,"ERROR: writing header->project_ID_GUID_data_2\n");
+    REprintf("ERROR: writing header->project_ID_GUID_data_2\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->project_ID_GUID_data_3)))
   {
-    fprintf(stderr,"ERROR: writing header->project_ID_GUID_data_3\n");
+    REprintf("ERROR: writing header->project_ID_GUID_data_3\n");
     return FALSE;
   }
   if (!stream->putBytes((U8*)header->project_ID_GUID_data_4, 8))
   {
-    fprintf(stderr,"ERROR: writing header->project_ID_GUID_data_4\n");
+    REprintf("ERROR: writing header->project_ID_GUID_data_4\n");
     return FALSE;
   }
   // check version major
   U8 version_major = header->version_major;
   if (header->version_major != 1)
   {
-    fprintf(stderr,"WARNING: header->version_major is %d. writing 1 instead.\n", header->version_major);
+    REprintf("WARNING: header->version_major is %d. writing 1 instead.\n", header->version_major);
     version_major = 1;
   }
   if (!stream->putByte(version_major))
   {
-    fprintf(stderr,"ERROR: writing header->version_major\n");
+    REprintf("ERROR: writing header->version_major\n");
     return FALSE;
   }
   // check version minor
   U8 version_minor = header->version_minor;
   if (version_minor > 4)
   {
-    fprintf(stderr,"WARNING: header->version_minor is %d. writing 4 instead.\n", version_minor);
+    REprintf("WARNING: header->version_minor is %d. writing 4 instead.\n", version_minor);
     version_minor = 4;
   }
   if (!stream->putByte(version_minor))
   {
-    fprintf(stderr,"ERROR: writing header->version_minor\n");
+    REprintf("ERROR: writing header->version_minor\n");
     return FALSE;
   }
   if (!stream->putBytes((U8*)header->system_identifier, 32))
   {
-    fprintf(stderr,"ERROR: writing header->system_identifier\n");
+    REprintf("ERROR: writing header->system_identifier\n");
     return FALSE;
   }
   if (!stream->putBytes((U8*)header->generating_software, 32))
   {
-    fprintf(stderr,"ERROR: writing header->generating_software\n");
+    REprintf("ERROR: writing header->generating_software\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->file_creation_day)))
   {
-    fprintf(stderr,"ERROR: writing header->file_creation_day\n");
+    REprintf("ERROR: writing header->file_creation_day\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->file_creation_year)))
   {
-    fprintf(stderr,"ERROR: writing header->file_creation_year\n");
+    REprintf("ERROR: writing header->file_creation_year\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->header_size)))
   {
-    fprintf(stderr,"ERROR: writing header->header_size\n");
+    REprintf("ERROR: writing header->header_size\n");
     return FALSE;
   }
   U32 offset_to_point_data = header->offset_to_point_data;
@@ -326,7 +326,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   if (header->vlr_lasoriginal) offset_to_point_data += (54 + 176);
   if (!stream->put32bitsLE((U8*)&offset_to_point_data))
   {
-    fprintf(stderr,"ERROR: writing header->offset_to_point_data\n");
+    REprintf("ERROR: writing header->offset_to_point_data\n");
     return FALSE;
   }
   U32 number_of_variable_length_records = header->number_of_variable_length_records;
@@ -335,91 +335,91 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
   if (header->vlr_lasoriginal) number_of_variable_length_records++;
   if (!stream->put32bitsLE((U8*)&(number_of_variable_length_records)))
   {
-    fprintf(stderr,"ERROR: writing header->number_of_variable_length_records\n");
+    REprintf("ERROR: writing header->number_of_variable_length_records\n");
     return FALSE;
   }
   if (compressor) point_data_format |= 128;
   if (!stream->putByte(point_data_format))
   {
-    fprintf(stderr,"ERROR: writing header->point_data_format\n");
+    REprintf("ERROR: writing header->point_data_format\n");
     return FALSE;
   }
   if (!stream->put16bitsLE((U8*)&(header->point_data_record_length)))
   {
-    fprintf(stderr,"ERROR: writing header->point_data_record_length\n");
+    REprintf("ERROR: writing header->point_data_record_length\n");
     return FALSE;
   }
   if (!stream->put32bitsLE((U8*)&(header->number_of_point_records)))
   {
-    fprintf(stderr,"ERROR: writing header->number_of_point_records\n");
+    REprintf("ERROR: writing header->number_of_point_records\n");
     return FALSE;
   }
   for (i = 0; i < 5; i++)
   {
     if (!stream->put32bitsLE((U8*)&(header->number_of_points_by_return[i])))
     {
-      fprintf(stderr,"ERROR: writing header->number_of_points_by_return[%d]\n", i);
+      REprintf("ERROR: writing header->number_of_points_by_return[%d]\n", i);
       return FALSE;
     }
   }
   if (!stream->put64bitsLE((U8*)&(header->x_scale_factor)))
   {
-    fprintf(stderr,"ERROR: writing header->x_scale_factor\n");
+    REprintf("ERROR: writing header->x_scale_factor\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->y_scale_factor)))
   {
-    fprintf(stderr,"ERROR: writing header->y_scale_factor\n");
+    REprintf("ERROR: writing header->y_scale_factor\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->z_scale_factor)))
   {
-    fprintf(stderr,"ERROR: writing header->z_scale_factor\n");
+    REprintf("ERROR: writing header->z_scale_factor\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->x_offset)))
   {
-    fprintf(stderr,"ERROR: writing header->x_offset\n");
+    REprintf("ERROR: writing header->x_offset\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->y_offset)))
   {
-    fprintf(stderr,"ERROR: writing header->y_offset\n");
+    REprintf("ERROR: writing header->y_offset\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->z_offset)))
   {
-    fprintf(stderr,"ERROR: writing header->z_offset\n");
+    REprintf("ERROR: writing header->z_offset\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->max_x)))
   {
-    fprintf(stderr,"ERROR: writing header->max_x\n");
+    REprintf("ERROR: writing header->max_x\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->min_x)))
   {
-    fprintf(stderr,"ERROR: writing header->min_x\n");
+    REprintf("ERROR: writing header->min_x\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->max_y)))
   {
-    fprintf(stderr,"ERROR: writing header->max_y\n");
+    REprintf("ERROR: writing header->max_y\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->min_y)))
   {
-    fprintf(stderr,"ERROR: writing header->min_y\n");
+    REprintf("ERROR: writing header->min_y\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->max_z)))
   {
-    fprintf(stderr,"ERROR: writing header->max_z\n");
+    REprintf("ERROR: writing header->max_z\n");
     return FALSE;
   }
   if (!stream->put64bitsLE((U8*)&(header->min_z)))
   {
-    fprintf(stderr,"ERROR: writing header->min_z\n");
+    REprintf("ERROR: writing header->min_z\n");
     return FALSE;
   }
 
@@ -430,15 +430,15 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     if (start_of_waveform_data_packet_record != 0)
     {
 #ifdef _WIN32
-      fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", start_of_waveform_data_packet_record);
+      REprintf("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", start_of_waveform_data_packet_record);
 #else
-      fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.\n", start_of_waveform_data_packet_record);
+      REprintf("WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.\n", start_of_waveform_data_packet_record);
 #endif
       start_of_waveform_data_packet_record = 0;
     }
     if (!stream->put64bitsLE((U8*)&start_of_waveform_data_packet_record))
     {
-      fprintf(stderr,"ERROR: writing start_of_waveform_data_packet_record\n");
+      REprintf("ERROR: writing start_of_waveform_data_packet_record\n");
       return FALSE;
     }
   }
@@ -458,13 +458,13 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     start_of_first_extended_variable_length_record = header->start_of_first_extended_variable_length_record;
     if (!stream->put64bitsLE((U8*)&(start_of_first_extended_variable_length_record)))
     {
-      fprintf(stderr,"ERROR: writing header->start_of_first_extended_variable_length_record\n");
+      REprintf("ERROR: writing header->start_of_first_extended_variable_length_record\n");
       return FALSE;
     }
     number_of_extended_variable_length_records = header->number_of_extended_variable_length_records;
     if (!stream->put32bitsLE((U8*)&(number_of_extended_variable_length_records)))
     {
-      fprintf(stderr,"ERROR: writing header->number_of_extended_variable_length_records\n");
+      REprintf("ERROR: writing header->number_of_extended_variable_length_records\n");
       return FALSE;
     }
     evlrs = header->evlrs;
@@ -475,7 +475,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
       extended_number_of_point_records = header->extended_number_of_point_records;
     if (!stream->put64bitsLE((U8*)&extended_number_of_point_records))
     {
-      fprintf(stderr,"ERROR: writing header->extended_number_of_point_records\n");
+      REprintf("ERROR: writing header->extended_number_of_point_records\n");
       return FALSE;
     }
     U64 extended_number_of_points_by_return;
@@ -487,7 +487,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
         extended_number_of_points_by_return = header->extended_number_of_points_by_return[i];
       if (!stream->put64bitsLE((U8*)&extended_number_of_points_by_return))
       {
-        fprintf(stderr,"ERROR: writing header->extended_number_of_points_by_return[%d]\n", i);
+        REprintf("ERROR: writing header->extended_number_of_points_by_return[%d]\n", i);
         return FALSE;
       }
     }
@@ -506,13 +506,13 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     {
       if (!stream->putBytes((U8*)header->user_data_in_header, header->user_data_in_header_size))
       {
-        fprintf(stderr,"ERROR: writing %d bytes of data from header->user_data_in_header\n", header->user_data_in_header_size);
+        REprintf("ERROR: writing %d bytes of data from header->user_data_in_header\n", header->user_data_in_header_size);
         return FALSE;
       }
     }
     else
     {
-      fprintf(stderr,"ERROR: there should be %d bytes of data in header->user_data_in_header\n", header->user_data_in_header_size);
+      REprintf("ERROR: there should be %d bytes of data in header->user_data_in_header\n", header->user_data_in_header_size);
       return FALSE;
     }
   }
@@ -525,34 +525,34 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
     if (header->vlrs[i].reserved != 0xAABB)
     {
-//      fprintf(stderr,"WARNING: wrong header->vlrs[%d].reserved: %d != 0xAABB\n", i, header->vlrs[i].reserved);
+//      REprintf("WARNING: wrong header->vlrs[%d].reserved: %d != 0xAABB\n", i, header->vlrs[i].reserved);
     }
 
     // write variable length records variable after variable (to avoid alignment issues)
 
     if (!stream->put16bitsLE((U8*)&(header->vlrs[i].reserved)))
     {
-      fprintf(stderr,"ERROR: writing header->vlrs[%d].reserved\n", i);
+      REprintf("ERROR: writing header->vlrs[%d].reserved\n", i);
       return FALSE;
     }
     if (!stream->putBytes((U8*)header->vlrs[i].user_id, 16))
     {
-      fprintf(stderr,"ERROR: writing header->vlrs[%d].user_id\n", i);
+      REprintf("ERROR: writing header->vlrs[%d].user_id\n", i);
       return FALSE;
     }
     if (!stream->put16bitsLE((U8*)&(header->vlrs[i].record_id)))
     {
-      fprintf(stderr,"ERROR: writing header->vlrs[%d].record_id\n", i);
+      REprintf("ERROR: writing header->vlrs[%d].record_id\n", i);
       return FALSE;
     }
     if (!stream->put16bitsLE((U8*)&(header->vlrs[i].record_length_after_header)))
     {
-      fprintf(stderr,"ERROR: writing header->vlrs[%d].record_length_after_header\n", i);
+      REprintf("ERROR: writing header->vlrs[%d].record_length_after_header\n", i);
       return FALSE;
     }
     if (!stream->putBytes((U8*)header->vlrs[i].description, 32))
     {
-      fprintf(stderr,"ERROR: writing header->vlrs[%d].description\n", i);
+      REprintf("ERROR: writing header->vlrs[%d].description\n", i);
       return FALSE;
     }
 
@@ -564,13 +564,13 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
       {
         if (!stream->putBytes((U8*)header->vlrs[i].data, header->vlrs[i].record_length_after_header))
         {
-          fprintf(stderr,"ERROR: writing %d bytes of data from header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
+          REprintf("ERROR: writing %d bytes of data from header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
           return FALSE;
         }
       }
       else
       {
-        fprintf(stderr,"ERROR: there should be %d bytes of data in header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
+        REprintf("ERROR: there should be %d bytes of data in header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
         return FALSE;
       }
     }
@@ -585,25 +585,25 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     U16 reserved = 0xAABB;
     if (!stream->put16bitsLE((U8*)&(reserved)))
     {
-      fprintf(stderr,"ERROR: writing reserved %d\n", (I32)reserved);
+      REprintf("ERROR: writing reserved %d\n", (I32)reserved);
       return FALSE;
     }
     U8 user_id[16] = "laszip encoded\0";
     if (!stream->putBytes((U8*)user_id, 16))
     {
-      fprintf(stderr,"ERROR: writing user_id %s\n", user_id);
+      REprintf("ERROR: writing user_id %s\n", user_id);
       return FALSE;
     }
     U16 record_id = 22204;
     if (!stream->put16bitsLE((U8*)&(record_id)))
     {
-      fprintf(stderr,"ERROR: writing record_id %d\n", (I32)record_id);
+      REprintf("ERROR: writing record_id %d\n", (I32)record_id);
       return FALSE;
     }
     U16 record_length_after_header = laszip_vlr_data_size;
     if (!stream->put16bitsLE((U8*)&(record_length_after_header)))
     {
-      fprintf(stderr,"ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
+      REprintf("ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
       return FALSE;
     }
     char description[32];
@@ -611,7 +611,7 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     sprintf(description, "by laszip of LAStools (%d)", LAS_TOOLS_VERSION);  
     if (!stream->putBytes((U8*)description, 32))
     {
-      fprintf(stderr,"ERROR: writing description %s\n", description);
+      REprintf("ERROR: writing description %s\n", description);
       return FALSE;
     }
     // write the data following the header of the variable length record
@@ -632,69 +632,69 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
     if (!stream->put16bitsLE((U8*)&(laszip->compressor)))
     {
-      fprintf(stderr,"ERROR: writing compressor %d\n", (I32)compressor);
+      REprintf("ERROR: writing compressor %d\n", (I32)compressor);
       return FALSE;
     }
     if (!stream->put16bitsLE((U8*)&(laszip->coder)))
     {
-      fprintf(stderr,"ERROR: writing coder %d\n", (I32)laszip->coder);
+      REprintf("ERROR: writing coder %d\n", (I32)laszip->coder);
       return FALSE;
     }
     if (!stream->putByte(laszip->version_major))
     {
-      fprintf(stderr,"ERROR: writing version_major %d\n", laszip->version_major);
+      REprintf("ERROR: writing version_major %d\n", laszip->version_major);
       return FALSE;
     }
     if (!stream->putByte(laszip->version_minor))
     {
-      fprintf(stderr,"ERROR: writing version_minor %d\n", laszip->version_minor);
+      REprintf("ERROR: writing version_minor %d\n", laszip->version_minor);
       return FALSE;
     }
     if (!stream->put16bitsLE((U8*)&(laszip->version_revision)))
     {
-      fprintf(stderr,"ERROR: writing version_revision %d\n", laszip->version_revision);
+      REprintf("ERROR: writing version_revision %d\n", laszip->version_revision);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(laszip->options)))
     {
-      fprintf(stderr,"ERROR: writing options %d\n", (I32)laszip->options);
+      REprintf("ERROR: writing options %d\n", (I32)laszip->options);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(laszip->chunk_size)))
     {
-      fprintf(stderr,"ERROR: writing chunk_size %d\n", laszip->chunk_size);
+      REprintf("ERROR: writing chunk_size %d\n", laszip->chunk_size);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(laszip->number_of_special_evlrs)))
     {
-      fprintf(stderr,"ERROR: writing number_of_special_evlrs %d\n", (I32)laszip->number_of_special_evlrs);
+      REprintf("ERROR: writing number_of_special_evlrs %d\n", (I32)laszip->number_of_special_evlrs);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(laszip->offset_to_special_evlrs)))
     {
-      fprintf(stderr,"ERROR: writing offset_to_special_evlrs %d\n", (I32)laszip->offset_to_special_evlrs);
+      REprintf("ERROR: writing offset_to_special_evlrs %d\n", (I32)laszip->offset_to_special_evlrs);
       return FALSE;
     }
     if (!stream->put16bitsLE((U8*)&(laszip->num_items)))
     {
-      fprintf(stderr,"ERROR: writing num_items %d\n", laszip->num_items);
+      REprintf("ERROR: writing num_items %d\n", laszip->num_items);
       return FALSE;
     }
     for (i = 0; i < laszip->num_items; i++)
     {
       if (!stream->put16bitsLE((U8*)&(laszip->items[i].type)))
       {
-        fprintf(stderr,"ERROR: writing type %d of item %d\n", laszip->items[i].type, i);
+        REprintf("ERROR: writing type %d of item %d\n", laszip->items[i].type, i);
         return FALSE;
       }
       if (!stream->put16bitsLE((U8*)&(laszip->items[i].size)))
       {
-        fprintf(stderr,"ERROR: writing size %d of item %d\n", laszip->items[i].size, i);
+        REprintf("ERROR: writing size %d of item %d\n", laszip->items[i].size, i);
         return FALSE;
       }
       if (!stream->put16bitsLE((U8*)&(laszip->items[i].version)))
       {
-        fprintf(stderr,"ERROR: writing version %d of item %d\n", laszip->items[i].version, i);
+        REprintf("ERROR: writing version %d of item %d\n", laszip->items[i].version, i);
         return FALSE;
       }
     }
@@ -712,32 +712,32 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     U16 reserved = 0xAABB;
     if (!stream->put16bitsLE((U8*)&(reserved)))
     {
-      fprintf(stderr,"ERROR: writing reserved %d\n", (I32)reserved);
+      REprintf("ERROR: writing reserved %d\n", (I32)reserved);
       return FALSE;
     }
     U8 user_id[16] = "LAStools\0\0\0\0\0\0\0";
     if (!stream->putBytes((U8*)user_id, 16))
     {
-      fprintf(stderr,"ERROR: writing user_id %s\n", user_id);
+      REprintf("ERROR: writing user_id %s\n", user_id);
       return FALSE;
     }
     U16 record_id = 10;
     if (!stream->put16bitsLE((U8*)&(record_id)))
     {
-      fprintf(stderr,"ERROR: writing record_id %d\n", (I32)record_id);
+      REprintf("ERROR: writing record_id %d\n", (I32)record_id);
       return FALSE;
     }
     U16 record_length_after_header = 28;
     if (!stream->put16bitsLE((U8*)&(record_length_after_header)))
     {
-      fprintf(stderr,"ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
+      REprintf("ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
       return FALSE;
     }
     CHAR description[33] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
     sprintf(description, "tile %s buffer %s", (header->vlr_lastiling->buffer ? "with" : "without"), (header->vlr_lastiling->reversible ? ", reversible" : ""));
     if (!stream->putBytes((U8*)description, 32))
     {
-      fprintf(stderr,"ERROR: writing description %s\n", description);
+      REprintf("ERROR: writing description %s\n", description);
       return FALSE;
     }
 
@@ -752,37 +752,37 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->level)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->level %u\n", header->vlr_lastiling->level);
+      REprintf("ERROR: writing header->vlr_lastiling->level %u\n", header->vlr_lastiling->level);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->level_index)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->level_index %u\n", header->vlr_lastiling->level_index);
+      REprintf("ERROR: writing header->vlr_lastiling->level_index %u\n", header->vlr_lastiling->level_index);
       return FALSE;
     }
     if (!stream->put32bitsLE(((U8*)header->vlr_lastiling)+8))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->implicit_levels %u\n", header->vlr_lastiling->implicit_levels);
+      REprintf("ERROR: writing header->vlr_lastiling->implicit_levels %u\n", header->vlr_lastiling->implicit_levels);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->min_x)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->min_x %g\n", header->vlr_lastiling->min_x);
+      REprintf("ERROR: writing header->vlr_lastiling->min_x %g\n", header->vlr_lastiling->min_x);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->max_x)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->max_x %g\n", header->vlr_lastiling->max_x);
+      REprintf("ERROR: writing header->vlr_lastiling->max_x %g\n", header->vlr_lastiling->max_x);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->min_y)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->min_y %g\n", header->vlr_lastiling->min_y);
+      REprintf("ERROR: writing header->vlr_lastiling->min_y %g\n", header->vlr_lastiling->min_y);
       return FALSE;
     }
     if (!stream->put32bitsLE((U8*)&(header->vlr_lastiling->max_y)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lastiling->max_y %g\n", header->vlr_lastiling->max_y);
+      REprintf("ERROR: writing header->vlr_lastiling->max_y %g\n", header->vlr_lastiling->max_y);
       return FALSE;
     }
   }
@@ -796,31 +796,31 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     U16 reserved = 0xAABB;
     if (!stream->put16bitsLE((U8*)&(reserved)))
     {
-      fprintf(stderr,"ERROR: writing reserved %d\n", (I32)reserved);
+      REprintf("ERROR: writing reserved %d\n", (I32)reserved);
       return FALSE;
     }
     U8 user_id[16] = "LAStools\0\0\0\0\0\0\0";
     if (!stream->putBytes((U8*)user_id, 16))
     {
-      fprintf(stderr,"ERROR: writing user_id %s\n", user_id);
+      REprintf("ERROR: writing user_id %s\n", user_id);
       return FALSE;
     }
     U16 record_id = 20;
     if (!stream->put16bitsLE((U8*)&(record_id)))
     {
-      fprintf(stderr,"ERROR: writing record_id %d\n", (I32)record_id);
+      REprintf("ERROR: writing record_id %d\n", (I32)record_id);
       return FALSE;
     }
     U16 record_length_after_header = 176;
     if (!stream->put16bitsLE((U8*)&(record_length_after_header)))
     {
-      fprintf(stderr,"ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
+      REprintf("ERROR: writing record_length_after_header %d\n", (I32)record_length_after_header);
       return FALSE;
     }
     U8 description[32] = "counters and bbox of original\0\0";
     if (!stream->putBytes((U8*)description, 32))
     {
-      fprintf(stderr,"ERROR: writing description %s\n", description);
+      REprintf("ERROR: writing description %s\n", description);
       return FALSE;
     }
 
@@ -832,45 +832,45 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
 
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->number_of_point_records)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->number_of_point_records %u\n", (U32)header->vlr_lasoriginal->number_of_point_records);
+      REprintf("ERROR: writing header->vlr_lasoriginal->number_of_point_records %u\n", (U32)header->vlr_lasoriginal->number_of_point_records);
       return FALSE;
     }
     for (j = 0; j < 15; j++)
     {
       if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->number_of_points_by_return[j])))
       {
-        fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->number_of_points_by_return[%u] %u\n", j, (U32)header->vlr_lasoriginal->number_of_points_by_return[j]);
+        REprintf("ERROR: writing header->vlr_lasoriginal->number_of_points_by_return[%u] %u\n", j, (U32)header->vlr_lasoriginal->number_of_points_by_return[j]);
         return FALSE;
       }
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->min_x)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->min_x %g\n", header->vlr_lasoriginal->min_x);
+      REprintf("ERROR: writing header->vlr_lasoriginal->min_x %g\n", header->vlr_lasoriginal->min_x);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->max_x)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->max_x %g\n", header->vlr_lasoriginal->max_x);
+      REprintf("ERROR: writing header->vlr_lasoriginal->max_x %g\n", header->vlr_lasoriginal->max_x);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->min_y)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->min_y %g\n", header->vlr_lasoriginal->min_y);
+      REprintf("ERROR: writing header->vlr_lasoriginal->min_y %g\n", header->vlr_lasoriginal->min_y);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->max_y)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->max_y %g\n", header->vlr_lasoriginal->max_y);
+      REprintf("ERROR: writing header->vlr_lasoriginal->max_y %g\n", header->vlr_lasoriginal->max_y);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->min_z)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->min_z %g\n", header->vlr_lasoriginal->min_z);
+      REprintf("ERROR: writing header->vlr_lasoriginal->min_z %g\n", header->vlr_lasoriginal->min_z);
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->vlr_lasoriginal->max_z)))
     {
-      fprintf(stderr,"ERROR: writing header->vlr_lasoriginal->max_z %g\n", header->vlr_lasoriginal->max_z);
+      REprintf("ERROR: writing header->vlr_lasoriginal->max_z %g\n", header->vlr_lasoriginal->max_z);
       return FALSE;
     }
   }
@@ -883,13 +883,13 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     {
       if (!stream->putBytes((U8*)header->user_data_after_header, header->user_data_after_header_size))
       {
-        fprintf(stderr,"ERROR: writing %d bytes of data from header->user_data_after_header\n", header->user_data_after_header_size);
+        REprintf("ERROR: writing %d bytes of data from header->user_data_after_header\n", header->user_data_after_header_size);
         return FALSE;
       }
     }
     else
     {
-      fprintf(stderr,"ERROR: there should be %d bytes of data in header->user_data_after_header\n", header->user_data_after_header_size);
+      REprintf("ERROR: there should be %d bytes of data in header->user_data_after_header\n", header->user_data_after_header_size);
       return FALSE;
     }
   }
@@ -920,17 +920,17 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
   I32 i;
   if (header == 0)
   {
-    fprintf(stderr,"ERROR: header pointer is zero\n");
+    REprintf("ERROR: header pointer is zero\n");
     return FALSE;
   }
   if (stream == 0)
   {
-    fprintf(stderr,"ERROR: stream pointer is zero\n");
+    REprintf("ERROR: stream pointer is zero\n");
     return FALSE;
   }
   if (!stream->isSeekable())
   {
-    fprintf(stderr,"WARNING: stream not seekable. cannot update header.\n");
+    REprintf("WARNING: stream not seekable. cannot update header.\n");
     return FALSE;
   }
   if (use_inventory)
@@ -949,7 +949,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       else
       {
-        fprintf(stderr,"WARNING: too many points in LAS %d.%d file. limit is %u.\n", header->version_major, header->version_minor, U32_MAX);
+        REprintf("WARNING: too many points in LAS %d.%d file. limit is %u.\n", header->version_major, header->version_minor, U32_MAX);
         number = U32_MAX;
       }
     }
@@ -959,7 +959,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
     }
     if (!stream->put32bitsLE((U8*)&number))
     {
-      fprintf(stderr,"ERROR: updating inventory.number_of_point_records\n");
+      REprintf("ERROR: updating inventory.number_of_point_records\n");
       return FALSE;
     }
     npoints = inventory.extended_number_of_point_records;
@@ -986,7 +986,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       if (!stream->put32bitsLE((U8*)&number))
       {
-        fprintf(stderr,"ERROR: updating inventory.number_of_points_by_return[%d]\n", i);
+        REprintf("ERROR: updating inventory.number_of_points_by_return[%d]\n", i);
         return FALSE;
       }
     }
@@ -995,37 +995,37 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
     value = quantizer.get_x(inventory.max_X);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.max_X\n");
+      REprintf("ERROR: updating inventory.max_X\n");
       return FALSE;
     }
     value = quantizer.get_x(inventory.min_X);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.min_X\n");
+      REprintf("ERROR: updating inventory.min_X\n");
       return FALSE;
     }
     value = quantizer.get_y(inventory.max_Y);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.max_Y\n");
+      REprintf("ERROR: updating inventory.max_Y\n");
       return FALSE;
     }
     value = quantizer.get_y(inventory.min_Y);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.min_Y\n");
+      REprintf("ERROR: updating inventory.min_Y\n");
       return FALSE;
     }
     value = quantizer.get_z(inventory.max_Z);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.max_Z\n");
+      REprintf("ERROR: updating inventory.max_Z\n");
       return FALSE;
     }
     value = quantizer.get_z(inventory.min_Z);
     if (!stream->put64bitsLE((U8*)&value))
     {
-      fprintf(stderr,"ERROR: updating inventory.min_Z\n");
+      REprintf("ERROR: updating inventory.min_Z\n");
       return FALSE;
     }
     // special handling for LAS 1.4 or higher.
@@ -1034,14 +1034,14 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       stream->seek(header_start_position+247);
       if (!stream->put64bitsLE((U8*)&(inventory.extended_number_of_point_records)))
       {
-        fprintf(stderr,"ERROR: updating header->extended_number_of_point_records\n");
+        REprintf("ERROR: updating header->extended_number_of_point_records\n");
         return FALSE;
       }
       for (i = 0; i < 15; i++)
       {
         if (!stream->put64bitsLE((U8*)&(inventory.extended_number_of_points_by_return[i+1])))
         {
-          fprintf(stderr,"ERROR: updating header->extended_number_of_points_by_return[%d]\n", i);
+          REprintf("ERROR: updating header->extended_number_of_points_by_return[%d]\n", i);
           return FALSE;
         }
       }
@@ -1061,7 +1061,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
     }
     if (!stream->put32bitsLE((U8*)&number))
     {
-      fprintf(stderr,"ERROR: updating header->number_of_point_records\n");
+      REprintf("ERROR: updating header->number_of_point_records\n");
       return FALSE;
     }
     npoints = header->number_of_point_records;
@@ -1077,39 +1077,39 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       if (!stream->put32bitsLE((U8*)&number))
       {
-        fprintf(stderr,"ERROR: updating header->number_of_points_by_return[%d]\n", i);
+        REprintf("ERROR: updating header->number_of_points_by_return[%d]\n", i);
         return FALSE;
       }
     }
     stream->seek(header_start_position+179);
     if (!stream->put64bitsLE((U8*)&(header->max_x)))
     {
-      fprintf(stderr,"ERROR: updating header->max_x\n");
+      REprintf("ERROR: updating header->max_x\n");
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->min_x)))
     {
-      fprintf(stderr,"ERROR: updating header->min_x\n");
+      REprintf("ERROR: updating header->min_x\n");
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->max_y)))
     {
-      fprintf(stderr,"ERROR: updating header->max_y\n");
+      REprintf("ERROR: updating header->max_y\n");
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->min_y)))
     {
-      fprintf(stderr,"ERROR: updating header->min_y\n");
+      REprintf("ERROR: updating header->min_y\n");
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->max_z)))
     {
-      fprintf(stderr,"ERROR: updating header->max_z\n");
+      REprintf("ERROR: updating header->max_z\n");
       return FALSE;
     }
     if (!stream->put64bitsLE((U8*)&(header->min_z)))
     {
-      fprintf(stderr,"ERROR: updating header->min_z\n");
+      REprintf("ERROR: updating header->min_z\n");
       return FALSE;
     }
     // special handling for LAS 1.3 or higher.
@@ -1119,14 +1119,14 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       if (header->start_of_waveform_data_packet_record != 0)
       {
 #ifdef _WIN32
-        fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", header->start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", header->start_of_waveform_data_packet_record);
 #else
-        fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.\n", header->start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.\n", header->start_of_waveform_data_packet_record);
 #endif
         U64 start_of_waveform_data_packet_record = 0;
         if (!stream->put64bitsLE((U8*)&start_of_waveform_data_packet_record))
         {
-          fprintf(stderr,"ERROR: updating start_of_waveform_data_packet_record\n");
+          REprintf("ERROR: updating start_of_waveform_data_packet_record\n");
           return FALSE;
         }
       }
@@ -1134,7 +1134,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       {
         if (!stream->put64bitsLE((U8*)&(header->start_of_waveform_data_packet_record)))
         {
-          fprintf(stderr,"ERROR: updating header->start_of_waveform_data_packet_record\n");
+          REprintf("ERROR: updating header->start_of_waveform_data_packet_record\n");
           return FALSE;
         }
       }
@@ -1145,12 +1145,12 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       stream->seek(header_start_position+235);
       if (!stream->put64bitsLE((U8*)&(header->start_of_first_extended_variable_length_record)))
       {
-        fprintf(stderr,"ERROR: updating header->start_of_first_extended_variable_length_record\n");
+        REprintf("ERROR: updating header->start_of_first_extended_variable_length_record\n");
         return FALSE;
       }
       if (!stream->put32bitsLE((U8*)&(header->number_of_extended_variable_length_records)))
       {
-        fprintf(stderr,"ERROR: updating header->number_of_extended_variable_length_records\n");
+        REprintf("ERROR: updating header->number_of_extended_variable_length_records\n");
         return FALSE;
       }
       U64 value;
@@ -1160,7 +1160,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
         value = header->extended_number_of_point_records;
       if (!stream->put64bitsLE((U8*)&value))
       {
-        fprintf(stderr,"ERROR: updating header->extended_number_of_point_records\n");
+        REprintf("ERROR: updating header->extended_number_of_point_records\n");
         return FALSE;
       }
       for (i = 0; i < 15; i++)
@@ -1171,7 +1171,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
           value = header->extended_number_of_points_by_return[i];
         if (!stream->put64bitsLE((U8*)&value))
         {
-          fprintf(stderr,"ERROR: updating header->extended_number_of_points_by_return[%d]\n", i);
+          REprintf("ERROR: updating header->extended_number_of_points_by_return[%d]\n", i);
           return FALSE;
         }
       }
@@ -1182,7 +1182,7 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
   {
     if (header == 0)
     {
-      fprintf(stderr,"ERROR: header pointer is zero\n");
+      REprintf("ERROR: header pointer is zero\n");
       return FALSE;
     }
     if (header->number_attributes)
@@ -1202,14 +1202,14 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       }
       if (i == (I32)header->number_of_variable_length_records)
       {
-        fprintf(stderr,"WARNING: could not find extra bytes VLR for update\n");
+        REprintf("WARNING: could not find extra bytes VLR for update\n");
       }
       else
       {
         stream->seek(start);
         if (!stream->putBytes((U8*)header->vlrs[i].data, header->vlrs[i].record_length_after_header))
         {
-          fprintf(stderr,"ERROR: writing %d bytes of data from header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
+          REprintf("ERROR: writing %d bytes of data from header->vlrs[%d].data\n", header->vlrs[i].record_length_after_header, i);
           return FALSE;
         }
       }
@@ -1228,9 +1228,9 @@ I64 LASwriterLAS::close(BOOL update_npoints)
     if (npoints || !update_npoints)
     {
 #ifdef _WIN32
-      fprintf(stderr,"WARNING: written %I64d points but expected %I64d points\n", p_count, npoints);
+      REprintf("WARNING: written %I64d points but expected %I64d points\n", p_count, npoints);
 #else
-      fprintf(stderr,"WARNING: written %lld points but expected %lld points\n", p_count, npoints);
+      REprintf("WARNING: written %lld points but expected %lld points\n", p_count, npoints);
 #endif
     }
   }
@@ -1254,34 +1254,34 @@ I64 LASwriterLAS::close(BOOL update_npoints)
 
       if (evlrs[i].reserved != 0xAABB)
       {
-  //      fprintf(stderr,"WARNING: wrong evlrs[%d].reserved: %d != 0xAABB\n", i, evlrs[i].reserved);
+  //      REprintf("WARNING: wrong evlrs[%d].reserved: %d != 0xAABB\n", i, evlrs[i].reserved);
       }
 
       // write variable length records variable after variable (to avoid alignment issues)
 
       if (!stream->put16bitsLE((U8*)&(evlrs[i].reserved)))
       {
-        fprintf(stderr,"ERROR: writing evlrs[%d].reserved\n", i);
+        REprintf("ERROR: writing evlrs[%d].reserved\n", i);
         return FALSE;
       }
       if (!stream->putBytes((U8*)evlrs[i].user_id, 16))
       {
-        fprintf(stderr,"ERROR: writing evlrs[%d].user_id\n", i);
+        REprintf("ERROR: writing evlrs[%d].user_id\n", i);
         return FALSE;
       }
       if (!stream->put16bitsLE((U8*)&(evlrs[i].record_id)))
       {
-        fprintf(stderr,"ERROR: writing evlrs[%d].record_id\n", i);
+        REprintf("ERROR: writing evlrs[%d].record_id\n", i);
         return FALSE;
       }
       if (!stream->put64bitsLE((U8*)&(evlrs[i].record_length_after_header)))
       {
-        fprintf(stderr,"ERROR: writing evlrs[%d].record_length_after_header\n", i);
+        REprintf("ERROR: writing evlrs[%d].record_length_after_header\n", i);
         return FALSE;
       }
       if (!stream->putBytes((U8*)evlrs[i].description, 32))
       {
-        fprintf(stderr,"ERROR: writing evlrs[%d].description\n", i);
+        REprintf("ERROR: writing evlrs[%d].description\n", i);
         return FALSE;
       }
 
@@ -1293,13 +1293,13 @@ I64 LASwriterLAS::close(BOOL update_npoints)
         {
           if (!stream->putBytes((U8*)evlrs[i].data, (U32)evlrs[i].record_length_after_header))
           {
-            fprintf(stderr,"ERROR: writing %u bytes of data from evlrs[%d].data\n", (U32)evlrs[i].record_length_after_header, i);
+            REprintf("ERROR: writing %u bytes of data from evlrs[%d].data\n", (U32)evlrs[i].record_length_after_header, i);
             return FALSE;
           }
         }
         else
         {
-          fprintf(stderr,"ERROR: there should be %u bytes of data in evlrs[%d].data\n", (U32)evlrs[i].record_length_after_header, i);
+          REprintf("ERROR: there should be %u bytes of data in evlrs[%d].data\n", (U32)evlrs[i].record_length_after_header, i);
           return FALSE;
         }
       }
@@ -1320,9 +1320,9 @@ I64 LASwriterLAS::close(BOOL update_npoints)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        fprintf(stderr, "WARNING: stream not seekable. cannot update header from %I64d to %I64d points.\n", npoints, p_count);
+        REprintf( "WARNING: stream not seekable. cannot update header from %I64d to %I64d points.\n", npoints, p_count);
 #else
-        fprintf(stderr, "WARNING: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
+        REprintf( "WARNING: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
 #endif
       }
       else

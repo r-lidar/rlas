@@ -1987,9 +1987,9 @@ demzip_prepare_point_for_write(
       if (start_of_waveform_data_packet_record != 0)
       {
 #ifdef _WIN32
-        fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", start_of_waveform_data_packet_record);
 #else
-        fprintf(stderr,"WARNING: header->start_of_waveform_data_packet_record is %llu. writing 0 instead.\n", start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %llu. writing 0 instead.\n", start_of_waveform_data_packet_record);
 #endif
         start_of_waveform_data_packet_record = 0;
       }
@@ -1998,9 +1998,9 @@ demzip_prepare_point_for_write(
       if (start_of_first_extended_variable_length_record != 0)
       {
 #ifdef _WIN32
-        fprintf(stderr,"WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %I64d. writing 0 instead.\n", start_of_first_extended_variable_length_record);
+        REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %I64d. writing 0 instead.\n", start_of_first_extended_variable_length_record);
 #else
-        fprintf(stderr,"WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %llu. writing 0 instead.\n", start_of_first_extended_variable_length_record);
+        REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %llu. writing 0 instead.\n", start_of_first_extended_variable_length_record);
 #endif
         start_of_first_extended_variable_length_record = 0;
       }
@@ -2008,7 +2008,7 @@ demzip_prepare_point_for_write(
       U32 number_of_extended_variable_length_records = demzip_dll->header.number_of_extended_variable_length_records;
       if (number_of_extended_variable_length_records != 0)
       {
-        fprintf(stderr,"WARNING: EVLRs not supported. header->number_of_extended_variable_length_records is %u. writing 0 instead.\n", number_of_extended_variable_length_records);
+        REprintf("WARNING: EVLRs not supported. header->number_of_extended_variable_length_records is %u. writing 0 instead.\n", number_of_extended_variable_length_records);
         number_of_extended_variable_length_records = 0;
       }
       out->put32bitsLE((U8*)&number_of_extended_variable_length_records);
@@ -4078,9 +4078,9 @@ demzip_read_header(
           if (start_of_waveform_data_packet_record != 0)
           {
 #ifdef _WIN32
-            fprintf(stderr,"WARNING: start_of_waveform_data_packet_record is %I64d. reading 0 instead.\n", start_of_waveform_data_packet_record);
+            REprintf("WARNING: start_of_waveform_data_packet_record is %I64d. reading 0 instead.\n", start_of_waveform_data_packet_record);
 #else
-            fprintf(stderr,"WARNING: start_of_waveform_data_packet_record is %llu. reading 0 instead.\n", start_of_waveform_data_packet_record);
+            REprintf("WARNING: start_of_waveform_data_packet_record is %llu. reading 0 instead.\n", start_of_waveform_data_packet_record);
 #endif
           }
           demzip_dll->header.start_of_waveform_data_packet_record = 0;
@@ -4089,9 +4089,9 @@ demzip_read_header(
           if (start_of_first_extended_variable_length_record != 0)
           {
 #ifdef _WIN32
-            fprintf(stderr,"WARNING: EVLRs not supported. start_of_first_extended_variable_length_record is %I64d. reading 0 instead.\n", start_of_first_extended_variable_length_record);
+            REprintf("WARNING: EVLRs not supported. start_of_first_extended_variable_length_record is %I64d. reading 0 instead.\n", start_of_first_extended_variable_length_record);
 #else
-            fprintf(stderr,"WARNING: EVLRs not supported. start_of_first_extended_variable_length_record is %llu. reading 0 instead.\n", start_of_first_extended_variable_length_record);
+            REprintf("WARNING: EVLRs not supported. start_of_first_extended_variable_length_record is %llu. reading 0 instead.\n", start_of_first_extended_variable_length_record);
 #endif
           }
           demzip_dll->header.start_of_first_extended_variable_length_record = 0;
@@ -4099,7 +4099,7 @@ demzip_read_header(
           in->get32bitsLE((U8*)&number_of_extended_variable_length_records);
           if (number_of_extended_variable_length_records != 0)
           {
-            fprintf(stderr,"WARNING: EVLRs not supported. number_of_extended_variable_length_records is %u. reading 0 instead.\n", number_of_extended_variable_length_records);
+            REprintf("WARNING: EVLRs not supported. number_of_extended_variable_length_records is %u. reading 0 instead.\n", number_of_extended_variable_length_records);
           }
           demzip_dll->header.number_of_extended_variable_length_records = 0;
           U64 extended_number_of_point_records = 0;
@@ -4107,9 +4107,9 @@ demzip_read_header(
           if (demzip_dll->header.number_of_point_records != 0 && ((U64)(demzip_dll->header.number_of_point_records)) != extended_number_of_point_records)
           {
 #ifdef _WIN32
-            fprintf(stderr,"WARNING: number_of_point_records is %u. but extended_number_of_point_records is %I64u.\n", demzip_dll->header.number_of_point_records, extended_number_of_point_records);
+            REprintf("WARNING: number_of_point_records is %u. but extended_number_of_point_records is %I64u.\n", demzip_dll->header.number_of_point_records, extended_number_of_point_records);
 #else
-            fprintf(stderr,"WARNING: number_of_point_records is %u. but extended_number_of_point_records is %llu.\n", demzip_dll->header.number_of_point_records, extended_number_of_point_records);
+            REprintf("WARNING: number_of_point_records is %u. but extended_number_of_point_records is %llu.\n", demzip_dll->header.number_of_point_records, extended_number_of_point_records);
 #endif
           }
           demzip_dll->header.extended_number_of_point_records = extended_number_of_point_records;
@@ -4120,9 +4120,9 @@ demzip_read_header(
             if ((r < 5) && demzip_dll->header.number_of_points_by_return[r] != 0 && ((U64)(demzip_dll->header.number_of_points_by_return[r])) != extended_number_of_points_by_return)
             {
 #ifdef _WIN32
-              fprintf(stderr,"WARNING: number_of_points_by_return[%u] is %u. but extended_number_of_points_by_return[%u] is %I64u.\n", r, demzip_dll->header.number_of_points_by_return[r], r, extended_number_of_points_by_return);
+              REprintf("WARNING: number_of_points_by_return[%u] is %u. but extended_number_of_points_by_return[%u] is %I64u.\n", r, demzip_dll->header.number_of_points_by_return[r], r, extended_number_of_points_by_return);
 #else
-              fprintf(stderr,"WARNING: number_of_points_by_return[%u] is %u. but extended_number_of_points_by_return[%u] is %llu.\n", r, demzip_dll->header.number_of_points_by_return[r], r, extended_number_of_points_by_return);
+              REprintf("WARNING: number_of_points_by_return[%u] is %u. but extended_number_of_points_by_return[%u] is %llu.\n", r, demzip_dll->header.number_of_points_by_return[r], r, extended_number_of_points_by_return);
 #endif
             }
             demzip_dll->header.extended_number_of_points_by_return[r] = extended_number_of_points_by_return;

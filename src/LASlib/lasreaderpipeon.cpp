@@ -43,7 +43,7 @@ BOOL LASreaderPipeOn::open(LASreader* lasreader)
 {
   if (lasreader == 0)
   {
-    fprintf(stderr, "ERROR: no lasreader\n");
+    REprintf( "ERROR: no lasreader\n");
     return FALSE;
   }
 
@@ -89,14 +89,14 @@ BOOL LASreaderPipeOn::open(LASreader* lasreader)
 
   if (laswriterlas == 0)
   {
-    fprintf(stderr, "ERROR: allocating laswriterlas\n");
+    REprintf( "ERROR: allocating laswriterlas\n");
     return FALSE;
   }
 
   if (!laswriterlas->open(stdout, &header))
   {
     delete laswriterlas;
-    fprintf(stderr, "ERROR: opening laswriterlas to stdout\n");
+    REprintf( "ERROR: opening laswriterlas to stdout\n");
     return FALSE;
   }
 
