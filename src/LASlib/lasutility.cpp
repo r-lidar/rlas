@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasutility.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,9 +21,9 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
 
 ===============================================================================
@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 LASinventory::LASinventory()
 {
@@ -1003,7 +1004,7 @@ BOOL LAShistogram::parse(int argc, char* argv[])
         return FALSE;
       }
       if (!histo(argv[i+1], step)) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2; 
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
     }
     else if (strcmp(argv[i],"-histo_avg") == 0)
     {
@@ -1019,7 +1020,7 @@ BOOL LAShistogram::parse(int argc, char* argv[])
         return FALSE;
       }
       if (!histo_avg(argv[i+1], step, argv[i+3])) return FALSE;
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3; 
+      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
     }
   }
   return TRUE;
@@ -1683,7 +1684,7 @@ LASoccupancyGrid::LASoccupancyGrid(F32 grid_spacing)
   this->grid_spacing = -grid_spacing;
   minus_ankers = 0;
   minus_minus_size = 0;
-  minus_minus = 0; 
+  minus_minus = 0;
   minus_minus_sizes = 0;
   minus_plus_size = 0;
   minus_plus = 0;
