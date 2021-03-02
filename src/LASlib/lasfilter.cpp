@@ -36,6 +36,7 @@
 
 #include <map>
 #include <set>
+#include <boost/functional/hash.hpp>
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
@@ -1532,6 +1533,56 @@ private:
   U16* plus_plus_sizes;
 };
 
+class LAScriterionThinWithVoxel : public LAScriterion
+{
+  typedef std::array<I32,3> Array;
+
+public:
+  inline const CHAR* name() const { return "thin_with_voxel"; };
+  inline I32 get_command(CHAR* string) const { return sprintf(string, "-%s ", name()); };
+  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY | LASZIP_DECOMPRESS_SELECTIVE_Z; };
+  inline BOOL filter(const LASpoint* point)
+  {
+    if(voxel_spacing < 0)
+    {
+      xoffset = point->get_x();
+      yoffset = point->get_y();
+      zoffset = point->get_z();
+      voxel_spacing = -voxel_spacing;
+    }
+
+    I32 nx = I32_FLOOR((point->get_x() - xoffset) / voxel_spacing);
+    I32 ny = I32_FLOOR((point->get_y() - yoffset) / voxel_spacing);
+    I32 nz = I32_FLOOR((point->get_z() - zoffset) / voxel_spacing);
+    Array key = {nx, ny, nz};
+
+    return !dynamic_registry.insert(key).second;
+  };
+  void reset()
+  {
+    voxel_spacing = -voxel_spacing;
+    xoffset = 0;
+    yoffset = 0;
+    zoffset = 0;
+    dynamic_registry.clear();
+  };
+  LAScriterionThinWithVoxel(F32 voxel_spacing)
+  {
+    this->voxel_spacing = voxel_spacing < 0 ? voxel_spacing : -voxel_spacing;
+    xoffset = 0;
+    yoffset = 0;
+    zoffset = 0;
+  };
+  ~LAScriterionThinWithVoxel(){ reset(); };
+
+private:
+  double voxel_spacing;
+  double xoffset;
+  double yoffset;
+  double zoffset;
+  std::unordered_set<Array, boost::hash<Array> > dynamic_registry;
+};
+
 class LAScriterionThinPulsesWithTime : public LAScriterion
 {
 public:
@@ -1722,6 +1773,7 @@ void LASfilter::usage() const
   REprintf("  -keep_random_fraction 0.1\n");
   REprintf("  -keep_random_fraction 0.1 4711\n");
   REprintf("  -thin_with_grid 1.0\n");
+  REprintf("  -thin_with_voxel 0.1\n");
   REprintf("  -thin_pulses_with_time 0.0001\n");
   REprintf("  -thin_points_with_time 0.000001\n");
   REprintf("Boolean combination of filters.\n");
@@ -4315,6 +4367,16 @@ BOOL LASfilter::parse(int argc, char* argv[])
           return FALSE;
         }
         add_criterion(new LAScriterionThinWithGrid(step));
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-thin_with_voxel") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: voxel_side_length\n", argv[i]);
+          return FALSE;
+        }
+        add_criterion(new LAScriterionThinWithVoxel((F32)atof(argv[i+1])));
         *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
       else if (strcmp(argv[i],"-thin_pulses_with_time") == 0 || strcmp(argv[i],"-thin_with_time") == 0)
