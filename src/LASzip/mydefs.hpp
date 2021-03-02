@@ -34,7 +34,7 @@
 #define MYDEFS_HPP
 
 #define STRICT_R_HEADERS
-#include <R.h>
+#include <Rcpp.h>
 
 #ifndef _WIN32
 #define LASLIB_DLL
