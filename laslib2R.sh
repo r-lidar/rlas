@@ -38,7 +38,7 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 #      level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
 #    else
 #      level_offset[l+1] = level_offset[l];
-
+# bytestreamin_file.hpp    l153,166   off_t -> off64_t (see #50)
 # CRAN is happy now!
 
 # In addition:
