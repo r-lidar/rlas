@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasdefinitions.hpp
-  
+
   CONTENTS:
-  
+
     Contains the Header and Point classes for reading and writing LiDAR points
     in the LAS format
 
@@ -28,22 +28,22 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
-    19 April 2017 -- support for selective decompression for new LAS 1.4 points 
+
+    19 April 2017 -- support for selective decompression for new LAS 1.4 points
     1 February 2017 -- better support for OGC WKT strings in VLRs or EVLRs
     22 June 2016 -- set default of VLR header "reserved" to 0 instead of 0xAABB
     1 August 2015 -- moving LASpoint, LASquantizer, and LASattributer to LASzip
     9 December 2013 -- bug fix and improved writing of new LAS 1.4 point types
-    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes 
+    21 December 2011 -- (limited) support for LAS 1.4 and attributed extra bytes
     10 January 2011 -- licensing change for LGPL release and liblas integration
     16 December 2010 -- updated to support generic LASitem point formats
     3 December 2010 -- updated to (somewhat) support LAS format 1.3
-    7 September 2008 -- updated to support LAS format 1.2 
+    7 September 2008 -- updated to support LAS format 1.2
     11 June 2007 -- number of return / scan direction bitfield order was wrong
     18 February 2007 -- created after repairing 2 vacuum cleaners in the garden
-  
+
 ===============================================================================
 */
 #ifndef LAS_DEFINITIONS_HPP
@@ -88,7 +88,7 @@ class LASvlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16]; 
+  CHAR user_id[16];
   U16 record_id;
   U16 record_length_after_header;
   CHAR description[32];
@@ -100,7 +100,7 @@ class LASevlr
 {
 public:
   U16 reserved;
-  CHAR user_id[16]; 
+  CHAR user_id[16];
   U16 record_id;
   I64 record_length_after_header;
   CHAR description[32];
@@ -500,7 +500,7 @@ public:
   };
 
   // note that data needs to be allocated with new [] and not malloc and that LASheader
-  // will become the owner over this and manage its deallocation 
+  // will become the owner over this and manage its deallocation
   BOOL add_vlr(const CHAR* user_id, const U16 record_id, const U16 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
   {
     U32 i = 0;
@@ -543,7 +543,9 @@ public:
     }
     memset(&(vlrs[i]), 0, sizeof(LASvlr));
     vlrs[i].reserved = 0; // used to be 0xAABB
-    strncpy(vlrs[i].user_id, user_id, 16);
+    //strncpy(vlrs[i].user_id, user_id, 16);
+    int len = 0 ; while(*(user_id+len) != '\0' && len < 16) len++;
+    memcpy(vlrs[i].user_id, user_id, len);
     vlrs[i].record_id = record_id;
     vlrs[i].record_length_after_header = record_length_after_header;
     if (keep_description && found_description)
@@ -629,7 +631,7 @@ public:
   };
 
   // note that data needs to be allocated with new [] and not malloc and that LASheader
-  // will become the owner over this and manage its deallocation 
+  // will become the owner over this and manage its deallocation
   void add_evlr(const CHAR* user_id, const U16 record_id, const I64 record_length_after_header, U8* data, const BOOL keep_description=FALSE, const CHAR* description=0, const BOOL keep_existing=FALSE)
   {
     U32 i = 0;

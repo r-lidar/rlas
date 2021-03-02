@@ -2,10 +2,10 @@
 ===============================================================================
 
   FILE:  lasattributer.hpp
-  
+
   CONTENTS:
-  
-    This class assists with handling the "extra bytes" that allow storing 
+
+    This class assists with handling the "extra bytes" that allow storing
     additional per point attributes.
 
   PROGRAMMERS:
@@ -22,12 +22,12 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     13 September 2018 -- removed tuples and triple support from attributes
     19 July 2015 -- created after FOSS4GE in the train back from Lake Como
-  
+
 ===============================================================================
 */
 #ifndef LAS_ATTRIBUTER_HPP
@@ -76,8 +76,13 @@ public:
     memset(this, 0, sizeof(LASattribute));
     scale[0] = scale[1] = scale[2] = 1.0;
     this->data_type = type+1;
-    strncpy(this->name, name, 32);
-    if (description) strncpy(this->description, description, 32);
+    int len = 0 ; while(*(name+len) != '\0' && len < 32) len++;
+    memcpy(this->name, name, len);
+    if (description)
+    {
+      int len = 0 ; while(*(description+len) != '\0' && len < 32) len++;
+      memcpy(this->description, description, len);
+    }
   };
 
   inline BOOL set_no_data(U8  no_data) { if (0 == get_type()) { this->no_data[0].u64 = no_data; options |= 0x01; return TRUE; } return FALSE; };
@@ -270,7 +275,7 @@ private:
   {
     return ((I32)data_type - 1)%10;
   };
-  inline I32 get_dim() const // compute dimension of deprecated tuple and triple attributes 
+  inline I32 get_dim() const // compute dimension of deprecated tuple and triple attributes
   {
     return ((I32)data_type - 1)/10 + 1;
   };
@@ -552,7 +557,7 @@ public:
   {
     I32 index = get_attribute_index(name);
     if (index != -1)
-    { 
+    {
       return remove_attribute(index);
     }
     return FALSE;

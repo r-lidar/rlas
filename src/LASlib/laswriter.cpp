@@ -1137,7 +1137,7 @@ void LASwriteOpener::cut_characters(U32 cut)
     }
     else
     {
-      strncpy(new_file_name, file_name, len-cut);
+      memcpy(new_file_name, file_name, len-cut);
       sprintf(&(new_file_name[len-cut]), "%s", &(file_name[len]));
     }
     free(file_name);
