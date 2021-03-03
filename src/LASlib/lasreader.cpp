@@ -1872,12 +1872,12 @@ BOOL LASreadOpener::parse(int argc, char* argv[], BOOL parse_ignore)
             REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid max_y.\n", argv[i], argv[i+4]);
             return FALSE;
           }
-          if (min_x >= max_x)
+          if ((min_x != 0 || max_x != 0) && min_x >= max_x)
           {
             REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_x / max_x pair.\n", argv[i], min_x, max_x);
             return FALSE;
           }
-          if (min_y >= max_y)
+          if ((min_y != 0 || max_y != 0) && min_y >= max_y)
           {
             REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_y / max_y pair.\n", argv[i], min_y, max_y);
             return FALSE;
