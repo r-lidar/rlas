@@ -276,7 +276,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
 
     // skip lines if we have to
 
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
 
     if (ipts)
     {
@@ -590,7 +590,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       header.extended_number_of_points_by_return[3] = 0;
       header.extended_number_of_points_by_return[4] = 0;
     }
-  
+
     // free the parse less string
 
     free(parse_less);
@@ -640,7 +640,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
   this->skip_lines = skip_lines;
   if (skip_lines)
   {
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
   }
   else if (ipts)
   {
@@ -1095,7 +1095,7 @@ BOOL LASreaderTXT::seek(const I64 p_index)
     fseek(file, 0, SEEK_SET);
     // skip lines if we have to
     int i;
-    for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+    for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
     // read the first line with full parse_string
     i = 0;
     while (fgets(line, 512, file))
@@ -1264,7 +1264,7 @@ BOOL LASreaderTXT::reopen(const char* file_name)
 
   // skip lines if we have to
 
-  for (i = 0; i < skip_lines; i++) fgets(line, 512, file);
+  for (i = 0; i < skip_lines; i++) if (fgets(line, 512, file));
 
   // read the first line with full parse_string
 

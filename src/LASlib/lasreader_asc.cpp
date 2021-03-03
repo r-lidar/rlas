@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader_asc.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_asc.hpp"
@@ -316,7 +316,7 @@ BOOL LASreaderASC::open(const CHAR* file_name, BOOL comma_not_point)
     header.max_z = 0;
   }
 
-  // add the VLR for Raster LAZ 
+  // add the VLR for Raster LAZ
 
   LASvlrRasterLAZ vlrRasterLAZ;
   vlrRasterLAZ.nbands = 1;
@@ -515,7 +515,7 @@ BOOL LASreaderASC::reopen(const CHAR* file_name)
   I32 i;
   for (i = 0; i < header_lines; i++)
   {
-    fgets(line, line_size, file);
+    if (fgets(line, line_size, file));
   }
 
   // special handling for European numbers
