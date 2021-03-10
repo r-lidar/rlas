@@ -57,6 +57,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
   header.header_size          = (int)LASheader["Header Size"];
   header.offset_to_point_data = header.header_size;
   header.file_creation_year   = (int)LASheader["File Creation Year"];
+  header.file_creation_day    = (int)LASheader["File Creation Day of Year"];
   header.point_data_format    = (int)LASheader["Point Data Format ID"];
   header.x_scale_factor       = (double)LASheader["X scale factor"];
   header.y_scale_factor       = (double)LASheader["Y scale factor"];
