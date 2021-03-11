@@ -85,10 +85,10 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
 
   std::vector<RLASExtrabyteAttributes> ExtraBytesAttr;
 
-  for(auto record : {"Variable Length Records", "Extended Variable Length Records"})
+  for(auto extended : {false, true})
   {
+    auto record = (!extended) ? "Variable Length Records" : "Extended Variable Length Records";
     bool is_set_record = LASheader.containsElementNamed(record);
-    bool extended = record == "Extended Variable Length Records";
 
     List vlrs = (is_set_record) ? LASheader[record] : List(0);
 
