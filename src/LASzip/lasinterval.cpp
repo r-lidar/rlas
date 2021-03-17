@@ -52,16 +52,23 @@ using namespace std;
 #     define UNORDERED_FOUND
 #    endif
 #  endif
-#  ifndef UNORDERED_FOUND
-#   include <tr1/unordered_map>
+#  ifdef HAVE_UNORDERED_MAP
+#     include <unordered_map>
+      using namespace std;
+#  elif defined(UNORDERED_FOUND)
+#    include <tr1/unordered_map>
     using namespace std;
     using namespace tr1;
-#   endif
-typedef unordered_map<I32, LASintervalStartCell*> my_cell_hash;
-#else
+#  endif
+typedef std::unordered_map<I32, LASintervalStartCell*> my_cell_hash;
+#elif defined(LZ_WIN32_VC6)
 #include <hash_map>
 using namespace std;
 typedef hash_map<I32, LASintervalStartCell*> my_cell_hash;
+#else
+#include <unordered_map>
+using namespace std;
+typedef unordered_map<I32, LASintervalStartCell*> my_cell_hash;
 #endif
 
 typedef multimap<U32, LASintervalCell*> my_cell_map;
@@ -294,7 +301,7 @@ void LASinterval::merge_intervals(U32 maximum_intervals, const BOOL verbose)
     }
     map_element++;
   }
-  REprintf("largest interval gap increased to %u\n", diff);
+  if (verbose) REprintf("largest interval gap increased to %u\n", diff);
 
   // update totals
 

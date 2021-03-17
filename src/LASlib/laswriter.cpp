@@ -47,6 +47,11 @@
 #define DIRECTORY_SLASH '/'
 #endif
 
+void LASwriter::dealloc()
+{
+  delete this;
+}
+
 BOOL LASwriteOpener::is_piped() const
 {
   return ((file_name == 0) && use_stdout);
@@ -1128,11 +1133,11 @@ void LASwriteOpener::cut_characters(U32 cut)
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
       len = (I32)strlen(file_name);
-      memcpy(new_file_name, file_name, (len-cut)*sizeof(CHAR));
+      memcpy(new_file_name, file_name, len-cut);
     }
     else
     {
-      memcpy(new_file_name, file_name, (len-cut)*sizeof(CHAR));
+      memcpy(new_file_name, file_name, len-cut);
       sprintf(&(new_file_name[len-cut]), "%s", &(file_name[len]));
     }
     free(file_name);

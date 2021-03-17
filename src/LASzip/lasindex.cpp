@@ -45,7 +45,7 @@
 #include "bytestreamout_file.hpp"
 
 #ifdef UNORDERED
-// Figure out whether <unordered_map> is in tr1
+   // Figure out whether <unordered_map> is in tr1
 #  ifdef __has_include
 #    if __has_include(<unordered_map>)
 #     include <unordered_map>
@@ -53,16 +53,23 @@
 #     define UNORDERED_FOUND
 #    endif
 #  endif
-#  ifndef UNORDERED_FOUND
-#   include <tr1/unordered_map>
+#  ifdef HAVE_UNORDERED_MAP
+#     include <unordered_map>
+      using namespace std;
+#  elif defined(UNORDERED_FOUND)
+#    include <tr1/unordered_map>
     using namespace std;
     using namespace tr1;
-#   endif
-typedef unordered_map<I32,U32> my_cell_hash;
-#else
+#  endif
+typedef std::unordered_map<I32,U32> my_cell_hash;
+#elif defined(LZ_WIN32_VC6)
 #include <hash_map>
 using namespace std;
 typedef hash_map<I32,U32> my_cell_hash;
+#else
+#include <unordered_map>
+using namespace std;
+typedef unordered_map<I32, U32> my_cell_hash;
 #endif
 
 LASindex::LASindex()
@@ -237,7 +244,6 @@ BOOL LASindex::intersect_rectangle(const F64 r_min_x, const F64 r_min_y, const F
 {
   have_interval = FALSE;
   cells = spatial->intersect_rectangle(r_min_x, r_min_y, r_max_x, r_max_y);
-//  REprintf("%d cells of %g/%g %g/%g intersect rect %g/%g %g/%g\n", num_cells, spatial->get_min_x(), spatial->get_min_y(), spatial->get_max_x(), spatial->get_max_y(), r_min_x, r_min_y, r_max_x, r_max_y);
   if (cells)
     return merge_intervals();
   return FALSE;
@@ -335,7 +341,17 @@ BOOL LASindex::read(const char* file_name)
     name[strlen(name)-2] = 'a';
     name[strlen(name)-1] = 'x';
   }
+#ifdef _MSC_VER
   FILE* file = fopen(name, "rb");
+  if (file == 0)
+  {
+    wchar_t* utf16_name = UTF8toUTF16(name);
+    file = _wfopen(utf16_name, L"rb");
+    delete [] utf16_name;
+  }
+#else
+  FILE* file = fopen(name, "rb");
+#endif
   if (file == 0)
   {
     free(name);
@@ -372,7 +388,21 @@ BOOL LASindex::append(const char* file_name) const
 
   lasreader->close();
 
+#ifdef _MSC_VER
   FILE* file = fopen(file_name, "rb");
+  if (file == 0)
+  {
+    wchar_t* utf16_file_name = UTF8toUTF16(file_name);
+    file = _wfopen(utf16_file_name, L"rb");
+    if (file == 0)
+    {
+      REprintf( "ERROR: cannot open file '%ws'\n", utf16_file_name);
+    }
+    delete [] utf16_file_name;
+  }
+#else
+  FILE* file = fopen(file_name, "rb");
+#endif
   ByteStreamIn* bytestreamin = 0;
   if (IS_LITTLE_ENDIAN())
     bytestreamin = new ByteStreamInFileLE(file);
@@ -436,7 +466,21 @@ BOOL LASindex::append(const char* file_name) const
   fclose(file);
 
   ByteStreamOut* bytestreamout;
+#ifdef _MSC_VER
   file = fopen(file_name, "rb+");
+  if (file == 0)
+  {
+    wchar_t* utf16_file_name = UTF8toUTF16(file_name);
+    file = _wfopen(utf16_file_name, L"rb+");
+    if (file == 0)
+    {
+      REprintf( "ERROR: cannot open file '%ws'\n", utf16_file_name);
+    }
+    delete [] utf16_file_name;
+  }
+#else
+  file = fopen(file_name, "rb+");
+#endif
   if (IS_LITTLE_ENDIAN())
     bytestreamout = new ByteStreamOutFileLE(file);
   else
@@ -510,16 +554,30 @@ BOOL LASindex::write(const char* file_name) const
     name[strlen(name)-2] = 'a';
     name[strlen(name)-1] = 'x';
   }
+#ifdef _MSC_VER
   FILE* file = fopen(name, "wb");
   if (file == 0)
   {
-    REprintf("ERROR (LASindex): cannot open '%s' for write\n", name);
+    wchar_t* utf16_file_name = UTF8toUTF16(name);
+    file = _wfopen(utf16_file_name, L"wb");
+    if (file == 0)
+    {
+      REprintf( "ERROR (LASindex): cannot open file '%ws' for write\n", utf16_file_name);
+    }
+    delete [] utf16_file_name;
+  }
+#else
+  FILE* file = fopen(name, "wb");
+#endif
+  if (file == 0)
+  {
+    REprintf("ERROR (LASindex): cannot open file '%s' for write\n", name);
     free(name);
     return FALSE;
   }
   if (!write(file))
   {
-    REprintf("ERROR (LASindex): cannot write '%s'\n", name);
+    REprintf("ERROR (LASindex): cannot write file '%s'\n", name);
     fclose(file);
     free(name);
     return FALSE;
@@ -656,7 +714,7 @@ BOOL LASindex::merge_intervals()
         used_cells++;
       }
     }
-//    REprintf("LASindex: used %d cells of total %d\n", used_cells, interval->get_number_cells());
+
     if (used_cells)
     {
       BOOL r = interval->merge();

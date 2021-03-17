@@ -13,7 +13,7 @@
 
   COPYRIGHT:
 
-    (c) 2005-2013, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2005-2019, martin isenburg, rapidlasso - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -33,6 +33,8 @@
 #include "lasindex.hpp"
 #include "lasfilter.hpp"
 #include "lastransform.hpp"
+
+#include "laskdtree.hpp"
 
 #include "lasreader_las.hpp"
 #include "lasreader_bin.hpp"
@@ -60,6 +62,7 @@ LASreader::LASreader()
   index = 0;
   filter = 0;
   transform = 0;
+  ignore = 0;
   inside = 0;
   t_ll_x = 0;
   t_ll_y = 0;
@@ -83,6 +86,12 @@ LASreader::LASreader()
 LASreader::~LASreader()
 {
   if (index) delete index;
+  if (transform) transform->check_for_overflow();
+}
+
+void LASreader::dealloc()
+{
+  delete this;
 }
 
 void LASreader::set_index(LASindex* index)
@@ -133,6 +142,11 @@ void LASreader::set_transform(LAStransform* transform)
     read_simple = &LASreader::read_point_default;
   }
   read_complex = &LASreader::read_point_default;
+}
+
+void LASreader::set_ignore(LASignore* ignore)
+{
+  this->ignore = ignore;
 }
 
 BOOL LASreader::inside_none()
@@ -365,9 +379,15 @@ BOOL LASreader::read_point_inside_rectangle()
 
 BOOL LASreader::read_point_inside_rectangle_indexed()
 {
+  bool inrect;
   while (index->seek_next((LASreader*)this))
   {
-    if (read_point_default() && point.inside_rectangle(r_min_x, r_min_y, r_max_x, r_max_y)) return TRUE;
+    inrect = point.get_x() >= r_min_x && point.get_x() <= r_max_x && point.get_y() >= r_min_y && point.get_y() <= r_max_y;
+
+    if (read_point_default() && point.inside_rectangle(r_min_x, r_min_y, r_max_x, r_max_y))
+    {
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -489,7 +509,7 @@ I32 LASreadOpener::unparse(CHAR* string) const
   }
   if (io_ibuffer_size != LAS_TOOLS_IO_IBUFFER_SIZE)
   {
-    n += sprintf(string + n, "-io_ibuffer %d ", io_ibuffer_size);
+    n += sprintf(string + n, "-io_ibuffer %u ", io_ibuffer_size);
   }
   if (temp_file_base)
   {
@@ -523,7 +543,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
   {
     use_stdin = FALSE;
     if (file_name_current == file_name_number && other_file_name == 0) return 0;
-    if ((file_name_number > 1) && merged)
+    if ((other_file_name == 0) && ((file_name_number > 1) || (file_names_ID)) && merged)
     {
       LASreaderMerged* lasreadermerged = new LASreaderMerged();
       lasreadermerged->set_scale_factor(scale_factor);
@@ -537,7 +557,14 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
       lasreadermerged->set_translate_scan_angle(translate_scan_angle);
       lasreadermerged->set_scale_scan_angle(scale_scan_angle);
       lasreadermerged->set_io_ibuffer_size(io_ibuffer_size);
-      for (file_name_current = 0; file_name_current < file_name_number; file_name_current++) lasreadermerged->add_file_name(file_names[file_name_current]);
+      if (file_names_ID)
+      {
+        for (file_name_current = 0; file_name_current < file_name_number; file_name_current++) lasreadermerged->add_file_name(file_names[file_name_current], file_names_ID[file_name_current]);
+      }
+      else
+      {
+        for (file_name_current = 0; file_name_current < file_name_number; file_name_current++) lasreadermerged->add_file_name(file_names[file_name_current]);
+      }
       if (!lasreadermerged->open())
       {
         REprintf("ERROR: cannot open lasreadermerged with %d file names\n", file_name_number);
@@ -548,6 +575,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
       if (apply_file_source_ID) lasreadermerged->set_apply_file_source_ID(TRUE);
       if (filter) lasreadermerged->set_filter(filter);
       if (transform) lasreadermerged->set_transform(transform);
+      if (ignore) lasreadermerged->set_ignore(ignore);
       if (inside_tile) lasreadermerged->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
       if (inside_circle) lasreadermerged->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
       if (inside_rectangle) lasreadermerged->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -586,19 +614,6 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
     else if ((buffer_size > 0) && ((file_name_number > 1) || (neighbor_file_name_number > 0)))
     {
       U32 i;
-      if (other_file_name)
-      {
-        file_name = other_file_name;
-        if (reset_after_other)
-        {
-          file_name_current = 0;
-        }
-      }
-      else
-      {
-        file_name = file_names[file_name_current];
-        file_name_current++;
-      }
       LASreaderBuffered* lasreaderbuffered = new LASreaderBuffered();
       lasreaderbuffered->set_buffer_size(buffer_size);
       lasreaderbuffered->set_scale_factor(scale_factor);
@@ -610,23 +625,102 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
       lasreaderbuffered->set_scale_intensity(scale_intensity);
       lasreaderbuffered->set_translate_scan_angle(translate_scan_angle);
       lasreaderbuffered->set_scale_scan_angle(scale_scan_angle);
-      lasreaderbuffered->set_file_name(file_name);
-      for (i = 0; i < file_name_number; i++)
+      if (other_file_name) // special case when other file name was specified
       {
-        if (file_name != file_names[i])
+        file_name = other_file_name;
+        lasreaderbuffered->set_file_name(other_file_name);
+        if (reset_after_other)
         {
-          lasreaderbuffered->add_neighbor_file_name(file_names[i]);
+          file_name_current = 0;
+        }
+        for (i = 0; i < file_name_number; i++)
+        {
+          if (strcmp(other_file_name, file_names[i]))
+          {
+            lasreaderbuffered->add_neighbor_file_name(file_names[i]);
+          }
+        }
+        if (neighbor_file_name_number)
+        {
+          for (i = 0; i < neighbor_file_name_number; i++)
+          {
+            if (strcmp(other_file_name, neighbor_file_names[i]))
+            {
+              lasreaderbuffered->add_neighbor_file_name(neighbor_file_names[i]);
+            }
+          }
         }
       }
-      for (i = 0; i < neighbor_file_name_number; i++)
+      else // usual case for processing on-the-fly buffered files
       {
-        if (strcmp(file_name, neighbor_file_names[i]))
+        file_name = file_names[file_name_current];
+        lasreaderbuffered->set_file_name(file_name);
+        if (kdtree_rectangles)
         {
-          lasreaderbuffered->add_neighbor_file_name(neighbor_file_names[i]);
+          if (!kdtree_rectangles->was_built())
+          {
+            kdtree_rectangles->build();
+          }
+          kdtree_rectangles->overlap(file_names_min_x[file_name_current]-buffer_size, file_names_min_y[file_name_current]-buffer_size, file_names_max_x[file_name_current]+buffer_size, file_names_max_y[file_name_current]+buffer_size);
+          if (kdtree_rectangles->has_overlaps())
+          {
+            U32 index;
+            while (kdtree_rectangles->get_overlap(index))
+            {
+              if (file_name != file_names[index])
+              {
+                lasreaderbuffered->add_neighbor_file_name(file_names[index]);
+              }
+            }
+          }
         }
+        else
+        {
+          for (i = 0; i < file_name_number; i++)
+          {
+            if (file_name != file_names[i])
+            {
+              lasreaderbuffered->add_neighbor_file_name(file_names[i]);
+            }
+          }
+        }
+        if (neighbor_file_name_number)
+        {
+          if (neighbor_kdtree_rectangles)
+          {
+            if (!neighbor_kdtree_rectangles->was_built())
+            {
+              neighbor_kdtree_rectangles->build();
+            }
+            neighbor_kdtree_rectangles->overlap(file_names_min_x[file_name_current]-buffer_size, file_names_min_y[file_name_current]-buffer_size, file_names_max_x[file_name_current]+buffer_size, file_names_max_y[file_name_current]+buffer_size);
+            if (neighbor_kdtree_rectangles->has_overlaps())
+            {
+              U32 index;
+              while (neighbor_kdtree_rectangles->get_overlap(index))
+              {
+                if (strcmp(file_name, neighbor_file_names[index]))
+                {
+                  lasreaderbuffered->add_neighbor_file_name(neighbor_file_names[index]);
+                }
+              }
+            }
+          }
+          else
+          {
+            for (i = 0; i < neighbor_file_name_number; i++)
+            {
+              if (strcmp(file_name, neighbor_file_names[i]))
+              {
+                lasreaderbuffered->add_neighbor_file_name(neighbor_file_names[i]);
+              }
+            }
+          }
+        }
+        file_name_current++;
       }
       if (filter) lasreaderbuffered->set_filter(filter);
       if (transform) lasreaderbuffered->set_transform(transform);
+      if (ignore) lasreaderbuffered->set_ignore(ignore);
       if (!lasreaderbuffered->open())
       {
         REprintf("ERROR: cannot open lasreaderbuffered with %d file names\n", file_name_number+neighbor_file_name_number);
@@ -729,6 +823,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         }
         if (filter) lasreaderlas->set_filter(filter);
         if (transform) lasreaderlas->set_transform(transform);
+        if (ignore) lasreaderlas->set_ignore(ignore);
         if (inside_rectangle) lasreaderlas->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
         else if (inside_tile) lasreaderlas->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         else if (inside_circle) lasreaderlas->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
@@ -789,6 +884,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderbin->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderbin->set_filter(filter);
         if (transform) lasreaderbin->set_transform(transform);
+        if (ignore) lasreaderbin->set_ignore(ignore);
         if (inside_tile) lasreaderbin->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderbin->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderbin->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -844,6 +940,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreadershp->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreadershp->set_filter(filter);
         if (transform) lasreadershp->set_transform(transform);
+        if (ignore) lasreadershp->set_ignore(ignore);
         if (inside_tile) lasreadershp->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreadershp->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreadershp->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -899,6 +996,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderasc->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderasc->set_filter(filter);
         if (transform) lasreaderasc->set_transform(transform);
+        if (ignore) lasreaderasc->set_ignore(ignore);
         if (inside_tile) lasreaderasc->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderasc->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderasc->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -954,6 +1052,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderbil->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderbil->set_filter(filter);
         if (transform) lasreaderbil->set_transform(transform);
+        if (ignore) lasreaderbil->set_ignore(ignore);
         if (inside_tile) lasreaderbil->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderbil->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderbil->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1009,6 +1108,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderdtm->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderdtm->set_filter(filter);
         if (transform) lasreaderdtm->set_transform(transform);
+        if (ignore) lasreaderdtm->set_ignore(ignore);
         if (inside_tile) lasreaderdtm->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderdtm->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderdtm->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1060,6 +1160,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderply->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderply->set_filter(filter);
         if (transform) lasreaderply->set_transform(transform);
+        if (ignore) lasreaderply->set_ignore(ignore);
         if (inside_tile) lasreaderply->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderply->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderply->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1120,6 +1221,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreaderqfit->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreaderqfit->set_filter(filter);
         if (transform) lasreaderqfit->set_transform(transform);
+        if (ignore) lasreaderqfit->set_ignore(ignore);
         if (inside_tile) lasreaderqfit->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreaderqfit->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreaderqfit->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1182,6 +1284,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
         if (files_are_flightlines) lasreadertxt->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
         if (filter) lasreadertxt->set_filter(filter);
         if (transform) lasreadertxt->set_transform(transform);
+        if (ignore) lasreadertxt->set_ignore(ignore);
         if (inside_tile) lasreadertxt->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
         if (inside_circle) lasreadertxt->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
         if (inside_rectangle) lasreadertxt->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1249,6 +1352,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
       if (files_are_flightlines) lasreadertxt->header.file_source_ID = file_name_current + files_are_flightlines + files_are_flightlines_index;
       if (filter) lasreadertxt->set_filter(filter);
       if (transform) lasreadertxt->set_transform(transform);
+      if (ignore) lasreadertxt->set_ignore(ignore);
       if (inside_tile) lasreadertxt->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
       if (inside_circle) lasreadertxt->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
       if (inside_rectangle) lasreadertxt->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1303,6 +1407,7 @@ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_oth
       }
       if (filter) lasreaderlas->set_filter(filter);
       if (transform) lasreaderlas->set_transform(transform);
+      if (ignore) lasreaderlas->set_ignore(ignore);
       if (inside_tile) lasreaderlas->inside_tile(inside_tile[0], inside_tile[1], inside_tile[2]);
       if (inside_circle) lasreaderlas->inside_circle(inside_circle[0], inside_circle[1], inside_circle[2]);
       if (inside_rectangle) lasreaderlas->inside_rectangle(inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
@@ -1611,7 +1716,7 @@ void LASreadOpener::usage() const
   REprintf("  -inside_circle center_x center_y radius\n");
 }
 
-BOOL LASreadOpener::parse(int argc, char* argv[])
+BOOL LASreadOpener::parse(int argc, char* argv[], BOOL parse_ignore)
 {
   int i;
   for (i = 1; i < argc; i++)
@@ -1624,78 +1729,519 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
     {
       LASfilter().usage();
       LAStransform().usage();
+      LASignore().usage();
       usage();
       return TRUE;
     }
-    else if (strcmp(argv[i],"-i") == 0)
+    else if (strncmp(argv[i], "-i", 2) == 0)
     {
-      if ((i+1) >= argc)
+      if (strcmp(argv[i],"-i") == 0)
       {
-        REprintf("ERROR: '%s' needs at least 1 argument: file_name or wild_card\n", argv[i]);
-        return FALSE;
-      }
-      *argv[i]='\0';
-      i+=1;
-      do
-      {
-        add_file_name(argv[i], unique);
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs at least 1 argument: file_name or wild_card\n", argv[i]);
+          return FALSE;
+        }
         *argv[i]='\0';
         i+=1;
-      } while ((i < argc) && (*argv[i] != '-') && (*argv[i] != '\0'));
-      i-=1;
+        do
+        {
+          add_file_name(argv[i], unique);
+          *argv[i]='\0';
+          i+=1;
+        } while ((i < argc) && (*argv[i] != '-') && (*argv[i] != '\0'));
+        i-=1;
+      }
+      else if (strncmp(argv[i],"-ignore_", 8) == 0)
+      {
+        if (parse_ignore)
+        {
+          if (ignore == 0)
+          {
+            ignore = new LASignore();
+          }
+          if (!ignore->parse(i, argc, argv))
+          {
+            delete ignore;
+            ignore = 0;
+            return FALSE;
+          }
+        }
+        else
+        {
+          REprintf("ERROR: this tool does not process '-ignore_xxxx' options\n");
+          return FALSE;
+        }
+      }
+      else if (strncmp(argv[i],"-inside", 7) == 0)
+      {
+        if (strcmp(argv[i],"-inside_tile") == 0)
+        {
+          if ((i+3) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: ll_x ll_y size\n", argv[i]);
+            return FALSE;
+          }
+          F32 ll_x;
+          if (sscanf(argv[i+1], "%f", &ll_x) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: ll_x ll_y size, but '%s' is not a valid ll_x.\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F32 ll_y;
+          if (sscanf(argv[i+2], "%f", &ll_y) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: ll_x ll_y size, but '%s' is not a valid ll_y.\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F32 size;
+          if (sscanf(argv[i+3], "%f", &size) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: ll_x ll_y size, but '%s' is not a valid size.\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          if (size <= 0.0f)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: ll_x ll_y size, but %f is not valid a size.\n", argv[i], size);
+            return FALSE;
+          }
+          set_inside_tile(ll_x, ll_y, size);
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        }
+        else if (strcmp(argv[i],"-inside_circle") == 0)
+        {
+          if ((i+3) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 3 arguments: center_x center_y radius\n", argv[i]);
+            return FALSE;
+          }
+          F64 center_x;
+          if (sscanf(argv[i+1], "%lf", &center_x) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: center_x center_y radius, but '%s' is not a valid center_x.\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 center_y;
+          if (sscanf(argv[i+2], "%lf", &center_y) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: center_x center_y radius, but '%s' is not a valid center_y.\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 radius;
+          if (sscanf(argv[i+3], "%lf", &radius) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: center_x center_y radius, but '%s' is not a valid radius.\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          if (radius <= 0.0f)
+          {
+            REprintf( "ERROR: '%s' needs 3 arguments: center_x center_y radius, but %lf is not valid a radius.\n", argv[i], radius);
+            return FALSE;
+          }
+          set_inside_circle(center_x, center_y, radius);
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        }
+        else if (strcmp(argv[i],"-inside") == 0 || strcmp(argv[i],"-inside_rectangle") == 0)
+        {
+          if ((i+4) >= argc)
+          {
+            REprintf("ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y\n", argv[i]);
+            return FALSE;
+          }
+          F64 min_x;
+          if (sscanf(argv[i+1], "%lf", &min_x) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid min_x.\n", argv[i], argv[i+1]);
+            return FALSE;
+          }
+          F64 min_y;
+          if (sscanf(argv[i+2], "%lf", &min_y) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid min_y.\n", argv[i], argv[i+2]);
+            return FALSE;
+          }
+          F64 max_x;
+          if (sscanf(argv[i+3], "%lf", &max_x) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid max_x.\n", argv[i], argv[i+3]);
+            return FALSE;
+          }
+          F64 max_y;
+          if (sscanf(argv[i+4], "%lf", &max_y) != 1)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid max_y.\n", argv[i], argv[i+4]);
+            return FALSE;
+          }
+          if ((min_x != 0 || max_x != 0) && min_x >= max_x)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_x / max_x pair.\n", argv[i], min_x, max_x);
+            return FALSE;
+          }
+          if ((min_y != 0 || max_y != 0) && min_y >= max_y)
+          {
+            REprintf( "ERROR: '%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_y / max_y pair.\n", argv[i], min_y, max_y);
+            return FALSE;
+          }
+          set_inside_rectangle(min_x, min_y, max_x, max_y);
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
+        }
+        else
+        {
+          REprintf("ERROR: unknown '-inside' option '%s'\n", argv[i]);
+          return FALSE;
+        }
+      }
+      else if (strcmp(argv[i],"-iadd_extra") == 0 || strcmp(argv[i],"-iadd_attribute") == 0)
+      {
+        if ((i+3) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: data_type name description\n", argv[i]);
+          return FALSE;
+        }
+        if (((i+4) < argc) && (atof(argv[i+4]) != 0.0))
+        {
+          if (((i+5) < argc) && ((atof(argv[i+5]) != 0.0) || (strcmp(argv[i+5], "0") == 0) || (strcmp(argv[i+5], "0.0") == 0)))
+          {
+            if (((i+6) < argc) && (atof(argv[i+6]) != 0.0))
+            {
+              if (((i+7) < argc) && ((atof(argv[i+7]) != 0.0) || (strcmp(argv[i+7], "0") == 0) || (strcmp(argv[i+7], "0.0") == 0)))
+              {
+                if (((i+8) < argc) && ((atof(argv[i+8]) != 0.0) || (strcmp(argv[i+8], "0") == 0) || (strcmp(argv[i+8], "0.0") == 0)))
+                {
+                  add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]), atof(argv[i+7]), atof(argv[i+8]));
+                  *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; *argv[i+7]='\0'; *argv[i+8]='\0'; i+=8;
+                }
+                else
+                {
+                  add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]), atof(argv[i+7]));
+                  *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; *argv[i+7]='\0'; i+=7;
+                }
+              }
+              else
+              {
+                add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]));
+                *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
+              }
+            }
+            else
+            {
+              add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]));
+              *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; i+=5;
+            }
+          }
+          else
+          {
+            add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]));
+            *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
+          }
+        }
+        else
+        {
+          add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3]);
+          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        }
+      }
+      else if (strcmp(argv[i],"-iparse") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: string\n", argv[i]);
+          return FALSE;
+        }
+        set_parse_string(argv[i+1]);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-iskip") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: number_of_lines\n", argv[i]);
+          return FALSE;
+        }
+        U32 number_of_lines;
+        if (sscanf(argv[i+1], "%u", &number_of_lines) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: number_of_lines but '%s' is not a valid number.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (number_of_lines == 0)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: number_of_lines but %u is not valid.\n", argv[i], number_of_lines);
+          return FALSE;
+        }
+        set_skip_lines(number_of_lines);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-io_ibuffer") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: size\n", argv[i]);
+          return FALSE;
+        }
+        U32 buffer_size;
+        if (sscanf(argv[i+1], "%u", &buffer_size) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: size but '%s' is not a valid size.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (buffer_size == 0)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: size but %u is not valid.\n", argv[i], buffer_size);
+          return FALSE;
+        }
+        set_io_ibuffer_size(buffer_size);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-itranslate_intensity") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: translation\n", argv[i]);
+          return FALSE;
+        }
+        F32 translation;
+        if (sscanf(argv[i+1], "%f", &translation) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: translation but '%s' is not valid.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (translation == 0.0f)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: translation but %f is not valid.\n", argv[i], translation);
+          return FALSE;
+        }
+        set_translate_intensity(translation);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-iscale_intensity") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: scale\n", argv[i]);
+          return FALSE;
+        }
+        F32 scale;
+        if (sscanf(argv[i+1], "%f", &scale) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: scale but '%s' is not valid.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (scale == 0.0f)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: scale but %f is not valid.\n", argv[i], scale);
+          return FALSE;
+        }
+        set_scale_intensity(scale);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-itranslate_scan_angle") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: translation\n", argv[i]);
+          return FALSE;
+        }
+        F32 translation;
+        if (sscanf(argv[i+1], "%f", &translation) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: translation but '%s' is not valid.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (translation == 0.0f)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: translation but %f is not valid.\n", argv[i], translation);
+          return FALSE;
+        }
+        set_translate_scan_angle(translation);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-iscale_scan_angle") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: scale\n", argv[i]);
+          return FALSE;
+        }
+        F32 scale;
+        if (sscanf(argv[i+1], "%f", &scale) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: scale but '%s' is not valid.\n", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (scale == 0.0f)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: scale but %f is not valid.\n", argv[i], scale);
+          return FALSE;
+        }
+        set_scale_scan_angle(scale);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-ipts") == 0)
+      {
+        itxt = TRUE;
+        ipts = TRUE;
+        *argv[i]='\0';
+      }
+      else if (strcmp(argv[i],"-iptx") == 0)
+      {
+        itxt = TRUE;
+        iptx = TRUE;
+        *argv[i]='\0';
+      }
+      else if (strcmp(argv[i],"-itxt") == 0)
+      {
+        itxt = TRUE;
+        *argv[i]='\0';
+      }
+    }
+    else if (strncmp(argv[i], "-r", 2) == 0)
+    {
+      if (strcmp(argv[i],"-rescale") == 0)
+      {
+        if ((i+3) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z\n", argv[i]);
+          return FALSE;
+        }
+        F64 scale_factor[3];
+        if (sscanf(argv[i+1], "%lf", &(scale_factor[0])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but '%s' is not a valid rescale_x", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (scale_factor[0] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but %lf is not a valid rescale_x", argv[i], scale_factor[0]);
+          return FALSE;
+        }
+        if (sscanf(argv[i+2], "%lf", &(scale_factor[1])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but '%s' is not a valid rescale_y", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (scale_factor[1] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but %lf is not a valid rescale_y", argv[i], scale_factor[1]);
+          return FALSE;
+        }
+        if (sscanf(argv[i+3], "%lf", &(scale_factor[2])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but '%s' is not a valid rescale_z", argv[i], argv[i+3]);
+          return FALSE;
+        }
+        if (scale_factor[2] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z, but %lf is not a valid rescale_z", argv[i], scale_factor[2]);
+          return FALSE;
+        }
+        set_scale_factor(scale_factor);
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+      }
+      else if (strcmp(argv[i],"-rescale_xy") == 0)
+      {
+        if ((i+2) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 2 argument: rescale_x rescale_y\n", argv[i]);
+          return FALSE;
+        }
+        F64 scale_factor[3];
+        if (sscanf(argv[i+1], "%lf", &(scale_factor[0])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y, but '%s' is not a valid rescale_x", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (scale_factor[0] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y, but %lf is not a valid rescale_x", argv[i], scale_factor[0]);
+          return FALSE;
+        }
+        if (sscanf(argv[i+2], "%lf", &(scale_factor[1])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y, but '%s' is not a valid rescale_y", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (scale_factor[1] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: rescale_x rescale_y, but %lf is not a valid rescale_y", argv[i], scale_factor[1]);
+          return FALSE;
+        }
+        scale_factor[2] = 0.0;
+        set_scale_factor(scale_factor);
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
+      }
+      else if (strcmp(argv[i],"-rescale_z") == 0)
+      {
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: rescale_z\n", argv[i]);
+          return FALSE;
+        }
+        F64 scale_factor[3];
+        scale_factor[0] = 0.0;
+        scale_factor[1] = 0.0;
+        if (sscanf(argv[i+1], "%lf", &(scale_factor[2])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: rescale_z, but '%s' is not a valid rescale_z", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (scale_factor[2] == 0.0)
+        {
+          REprintf( "ERROR: '%s' needs 1 argument: rescale_z, but %lf is not a valid rescale_z", argv[i], scale_factor[2]);
+          return FALSE;
+        }
+        set_scale_factor(scale_factor);
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+      }
+      else if (strcmp(argv[i],"-reoffset") == 0)
+      {
+        if ((i+3) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 3 arguments: reoffset_x, reoffset_y, reoffset_z\n", argv[i]);
+          return FALSE;
+        }
+        F64 offset[3];
+        if (sscanf(argv[i+1], "%lf", &(offset[0])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: reoffset_x, reoffset_y, reoffset_z, but '%s' is not a valid reoffset_x", argv[i], argv[i+1]);
+          return FALSE;
+        }
+        if (sscanf(argv[i+2], "%lf", &(offset[1])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: reoffset_x, reoffset_y, reoffset_z, but '%s' is not a valid reoffset_y", argv[i], argv[i+2]);
+          return FALSE;
+        }
+        if (sscanf(argv[i+3], "%lf", &(offset[2])) != 1)
+        {
+          REprintf( "ERROR: '%s' needs 3 arguments: reoffset_x, reoffset_y, reoffset_z, but '%s' is not a valid reoffset_z", argv[i], argv[i+3]);
+          return FALSE;
+        }
+        set_offset(offset);
+        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+      }
     }
     else if (strcmp(argv[i],"-unique") == 0)
     {
       unique = TRUE;
       *argv[i]='\0';
     }
-    else if (strncmp(argv[i],"-inside", 7) == 0)
-    {
-      if (strcmp(argv[i],"-inside_tile") == 0)
-      {
-        if ((i+3) >= argc)
-        {
-          REprintf("ERROR: '%s' needs 3 arguments: ll_x, ll_y, size\n", argv[i]);
-          return FALSE;
-        }
-        set_inside_tile((F32)atof(argv[i+1]), (F32)atof(argv[i+2]), (F32)atof(argv[i+3]));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
-      }
-      else if (strcmp(argv[i],"-inside_circle") == 0)
-      {
-        if ((i+3) >= argc)
-        {
-          REprintf("ERROR: '%s' needs 3 arguments: center_x, center_y, radius\n", argv[i]);
-          return FALSE;
-        }
-        set_inside_circle(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
-      }
-      else if (strcmp(argv[i],"-inside") == 0 || strcmp(argv[i],"-inside_rectangle") == 0)
-      {
-        if ((i+4) >= argc)
-        {
-          REprintf("ERROR: '%s' needs 4 arguments: min_x, min_y, max_x, max_y\n", argv[i]);
-          return FALSE;
-        }
-        set_inside_rectangle(atof(argv[i+1]), atof(argv[i+2]), atof(argv[i+3]), atof(argv[i+4]));
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
-      }
-      else
-      {
-        REprintf("ERROR: unknown '-inside' option '%s'\n", argv[i]);
-        return FALSE;
-      }
-    }
     else if (strcmp(argv[i],"-comma_not_point") == 0)
     {
       comma_not_point = TRUE;
       *argv[i]='\0';
     }
-    else if (strcmp(argv[i],"-stdin") == 0)
+    else if (strncmp(argv[i], "-s", 2) == 0)
     {
-      use_stdin = TRUE;
-      *argv[i]='\0';
+      if (strcmp(argv[i],"-stdin") == 0)
+      {
+        use_stdin = TRUE;
+        *argv[i]='\0';
+      }
+      else if (strcmp(argv[i],"-stored") == 0)
+      {
+        set_stored(TRUE);
+        *argv[i]='\0';
+      }
     }
     else if (strcmp(argv[i],"-lof") == 0)
     {
@@ -1711,223 +2257,69 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
       }
       *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
     }
-    else if (strcmp(argv[i],"-rescale") == 0)
+    else if (strncmp(argv[i], "-a", 2) == 0)
     {
-      if ((i+3) >= argc)
+      if (strcmp(argv[i],"-auto_reoffset") == 0)
       {
-        REprintf("ERROR: '%s' needs 3 arguments: rescale_x rescale_y rescale_z\n", argv[i]);
-        return FALSE;
+        set_auto_reoffset(TRUE);
+        *argv[i]='\0';
       }
-      F64 scale_factor[3];
-      scale_factor[0] = atof(argv[i+1]);
-      scale_factor[1] = atof(argv[i+2]);
-      scale_factor[2] = atof(argv[i+3]);
-      set_scale_factor(scale_factor);
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
-    }
-    else if (strcmp(argv[i],"-rescale_xy") == 0)
-    {
-      if ((i+2) >= argc)
+      else if (strcmp(argv[i],"-apply_file_source_ID") == 0)
       {
-        REprintf("ERROR: '%s' needs 2 argument: rescale_x rescale_y\n", argv[i]);
-        return FALSE;
-      }
-      F64 scale_factor[3];
-      scale_factor[0] = atof(argv[i+1]);
-      scale_factor[1] = atof(argv[i+2]);
-      scale_factor[2] = 0;
-      set_scale_factor(scale_factor);
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; i+=2;
-    }
-    else if (strcmp(argv[i],"-rescale_z") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: scale\n", argv[i]);
-        return FALSE;
-      }
-      F64 scale_factor[3];
-      scale_factor[0] = 0;
-      scale_factor[1] = 0;
-      scale_factor[2] = atof(argv[i+1]);
-      set_scale_factor(scale_factor);
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-reoffset") == 0)
-    {
-      if ((i+3) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 3 arguments: reoffset_x, reoffset_y, reoffset_z\n", argv[i]);
-        return FALSE;
-      }
-      F64 offset[3];
-			offset[0] = atof(argv[i+1]);
-			offset[1] = atof(argv[i+2]);
-			offset[2] = atof(argv[i+3]);
-      set_offset(offset);
-      *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
-    }
-    else if (strcmp(argv[i],"-auto_reoffset") == 0)
-    {
-      set_auto_reoffset(TRUE);
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-files_are_flightlines") == 0 || strcmp(argv[i],"-faf") == 0)
-    {
-      if (((i+1) < argc) && ('1' <= argv[i+1][0]) && (argv[i+1][0] <= '9'))
-      {
-        set_files_are_flightlines(atoi(argv[i+1]));
-        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-      }
-      else
-      {
-        set_files_are_flightlines(1);
+        set_apply_file_source_ID(TRUE);
         *argv[i]='\0';
       }
     }
-    else if (strcmp(argv[i],"-faf_index") == 0)
+    else if (strncmp(argv[i], "-f", 2) == 0)
     {
-      if ((i+1) >= argc)
+      if (strcmp(argv[i],"-files_are_flightlines") == 0 || strcmp(argv[i],"-faf") == 0)
       {
-        REprintf("ERROR: '%s' needs 1 argument: index\n", argv[i]);
-        return FALSE;
-      }
-      set_files_are_flightlines_index(atoi(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-apply_file_source_ID") == 0)
-    {
-      set_apply_file_source_ID(TRUE);
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-itranslate_intensity") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: offset\n", argv[i]);
-        return FALSE;
-      }
-      set_translate_intensity((F32)atof(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-iscale_intensity") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: scale\n", argv[i]);
-        return FALSE;
-      }
-      set_scale_intensity((F32)atof(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-itranslate_scan_angle") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: offset\n", argv[i]);
-        return FALSE;
-      }
-      set_translate_scan_angle((F32)atof(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-iscale_scan_angle") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: scale\n", argv[i]);
-        return FALSE;
-      }
-      set_scale_scan_angle((F32)atof(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-iadd_extra") == 0 || strcmp(argv[i],"-iadd_attribute") == 0)
-    {
-      if ((i+3) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 3 arguments: data_type name description\n", argv[i]);
-        return FALSE;
-      }
-      if (((i+4) < argc) && (atof(argv[i+4]) != 0.0))
-      {
-        if (((i+5) < argc) && ((atof(argv[i+5]) != 0.0) || (strcmp(argv[i+5], "0") == 0) || (strcmp(argv[i+5], "0.0") == 0)))
+        if (((i+1) < argc) && ('1' <= argv[i+1][0]) && (argv[i+1][0] <= '9'))
         {
-          if (((i+6) < argc) && (atof(argv[i+6]) != 0.0))
-          {
-            if (((i+7) < argc) && ((atof(argv[i+7]) != 0.0) || (strcmp(argv[i+7], "0") == 0) || (strcmp(argv[i+7], "0.0") == 0)))
-            {
-              if (((i+8) < argc) && ((atof(argv[i+8]) != 0.0) || (strcmp(argv[i+8], "0") == 0) || (strcmp(argv[i+8], "0.0") == 0)))
-              {
-                add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]), atof(argv[i+7]), atof(argv[i+8]));
-                *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; *argv[i+7]='\0'; *argv[i+8]='\0'; i+=8;
-              }
-              else
-              {
-                add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]), atof(argv[i+7]));
-                *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; *argv[i+7]='\0'; i+=7;
-              }
-            }
-            else
-            {
-              add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]), atof(argv[i+6]));
-              *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; *argv[i+6]='\0'; i+=6;
-            }
-          }
-          else
-          {
-            add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]), atof(argv[i+5]));
-            *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; *argv[i+5]='\0'; i+=5;
-          }
+          set_files_are_flightlines(atoi(argv[i+1]));
+          *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
         }
         else
         {
-          add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3], atof(argv[i+4]));
-          *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; *argv[i+4]='\0'; i+=4;
+          set_files_are_flightlines(1);
+          *argv[i]='\0';
         }
       }
-      else
+      else if (strcmp(argv[i],"-faf_index") == 0)
       {
-        add_attribute(atoi(argv[i+1]), argv[i+2], argv[i+3]);
-        *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs 1 argument: index\n", argv[i]);
+          return FALSE;
+        }
+        set_files_are_flightlines_index(atoi(argv[i+1]));
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
-    }
-    else if (strcmp(argv[i],"-iparse") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: string\n", argv[i]);
-        return FALSE;
-      }
-      set_parse_string(argv[i+1]);
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-iskip") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs 1 argument: number_of_lines\n", argv[i]);
-        return FALSE;
-      }
-      set_skip_lines(atoi(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
     }
     else if (strcmp(argv[i],"-merged") == 0)
     {
       set_merged(TRUE);
       *argv[i]='\0';
     }
-    else if (strcmp(argv[i],"-stored") == 0)
-    {
-      set_stored(TRUE);
-      *argv[i]='\0';
-    }
     else if (strcmp(argv[i],"-buffered") == 0)
     {
       if ((i+1) >= argc)
       {
-        REprintf("ERROR: '%s' needs 1 argument: size\n", argv[i]);
+        REprintf("ERROR: '%s' needs 1 argument: buffer_size\n", argv[i]);
         return FALSE;
       }
-      set_buffer_size((F32)atof(argv[i+1]));
+      F32 buffer_size;
+      if (sscanf(argv[i+1], "%f", &buffer_size) != 1)
+      {
+        REprintf( "ERROR: '%s' needs 1 argument: buffer_size. but '%s' is not a valid buffer_size", argv[i], argv[i+1]);
+        return FALSE;
+      }
+      if (buffer_size <= 0.0f)
+      {
+        REprintf( "ERROR: '%s' needs 1 argument: buffer_size, but %f is not valid", argv[i], buffer_size);
+        return FALSE;
+      }
+      set_buffer_size(buffer_size);
       *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
     }
     else if (strcmp(argv[i],"-temp_files") == 0)
@@ -1940,96 +2332,56 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
       temp_file_base = LASCopyString(argv[i+1]);
       *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
     }
-    else if (strcmp(argv[i],"-neighbors") == 0)
+    else if (strncmp(argv[i], "-n", 2) == 0)
     {
-      if ((i+1) >= argc)
+      if (strcmp(argv[i],"-neighbors") == 0)
       {
-        REprintf("ERROR: '%s' needs at least 1 argument: file_name or wild_card\n", argv[i]);
-        return FALSE;
-      }
-      *argv[i]='\0';
-      i+=1;
-      do
-      {
-        add_neighbor_file_name(argv[i]);
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs at least 1 argument: file_name or wild_card\n", argv[i]);
+          return FALSE;
+        }
         *argv[i]='\0';
         i+=1;
-      } while ((i < argc) && (*argv[i] != '-') && (*argv[i] != '\0'));
-      i-=1;
-    }
-    else if (strcmp(argv[i],"-neighbors_lof") == 0)
-    {
-      if ((i+1) >= argc)
-      {
-        REprintf("ERROR: '%s' needs at least 1 argument: file_name\n", argv[i]);
-        return FALSE;
-      }
-      FILE* file = fopen(argv[i+1], "r");
-      if (file == 0)
-      {
-        REprintf( "ERROR: cannot open '%s'\n", argv[i+1]);
-        return FALSE;
-      }
-      CHAR line[1024];
-      while (fgets(line, 1024, file))
-      {
-        // find end of line
-        I32 len = (I32)strlen(line) - 1;
-        // remove extra white spaces and line return at the end
-        while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
+        do
         {
-          line[len] = '\0';
-          len--;
-        }
-#ifdef _WIN32
-        add_neighbor_file_name_single(line);
-#else
-        add_neighbor_file_name(line);
-#endif
+          add_neighbor_file_name(argv[i]);
+          *argv[i]='\0';
+          i+=1;
+        } while ((i < argc) && (*argv[i] != '-') && (*argv[i] != '\0'));
+        i-=1;
       }
-      fclose(file);
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
-    }
-    else if (strcmp(argv[i],"-pipe_on") == 0)
-    {
-      set_pipe_on(TRUE);
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-populate") == 0)
-    {
-      set_populate_header(TRUE);
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-io_ibuffer") == 0)
-    {
-      if ((i+1) >= argc)
+      else if (strcmp(argv[i],"-neighbors_lof") == 0)
       {
-        REprintf("ERROR: '%s' needs 1 argument: size\n", argv[i]);
-        return FALSE;
+        if ((i+1) >= argc)
+        {
+          REprintf("ERROR: '%s' needs at least 1 argument: file_name\n", argv[i]);
+          return FALSE;
+        }
+        if (!add_neighbor_list_of_files(argv[i+1], unique))
+        {
+          REprintf( "ERROR: cannot load neighbor list of files '%s'\n", argv[i+1]);
+          return FALSE;
+        }
+        *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
       }
-      set_io_ibuffer_size((I32)atoi(argv[i+1]));
-      *argv[i]='\0'; *argv[i+1]='\0'; i+=1;
+    }
+    else if (strncmp(argv[i], "-p", 2) == 0)
+    {
+      if (strcmp(argv[i],"-pipe_on") == 0)
+      {
+        set_pipe_on(TRUE);
+        *argv[i]='\0';
+      }
+      else if (strcmp(argv[i],"-populate") == 0)
+      {
+        set_populate_header(TRUE);
+        *argv[i]='\0';
+      }
     }
     else if (strcmp(argv[i],"-do_not_populate") == 0)
     {
       set_populate_header(FALSE);
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-ipts") == 0)
-    {
-      itxt = TRUE;
-      ipts = TRUE;
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-iptx") == 0)
-    {
-      itxt = TRUE;
-      iptx = TRUE;
-      *argv[i]='\0';
-    }
-    else if (strcmp(argv[i],"-itxt") == 0)
-    {
-      itxt = TRUE;
       *argv[i]='\0';
     }
   }
@@ -2055,6 +2407,7 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
   if (!filter->parse(argc, argv))
   {
     delete filter;
+    filter = 0;
     return FALSE;
   }
   if (!filter->active())
@@ -2068,17 +2421,29 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
   if (!transform->parse(argc, argv))
   {
     delete transform;
+    transform = 0;
     return FALSE;
   }
   if (!transform->active())
   {
+    if (transform->filtered())
+    {
+      REprintf( "WARNING: no LAStransform specified. '-filtered_transform' has no effect.\n");
+    }
     delete transform;
     transform = 0;
   }
   else if (transform->filtered())
   {
-    transform->setFilter(filter);
-    filter = 0;
+    if (filter == 0)
+    {
+      REprintf( "WARNING: no LASfilter specified. '-filtered_transform' has no effect.\n");
+    }
+    else
+    {
+      transform->setFilter(filter);
+      filter = 0;
+    }
   }
 
   if (files_are_flightlines || apply_file_source_ID)
@@ -2154,6 +2519,24 @@ const CHAR* LASreadOpener::get_file_name_only() const
   return file_name_only;
 }
 
+const CHAR* LASreadOpener::get_file_extension_only() const
+{
+  const CHAR* file_extension_only = 0;
+  const CHAR* file_name_curr = get_file_name();
+
+  if (file_name_curr)
+  {
+    I32 len = (I32)strlen(file_name_curr);
+    while ((len > 0) && (file_name_curr[len] != '.')) len--;
+    if (len)
+    {
+      file_extension_only = file_name_curr + len + 1;
+    }
+  }
+
+  return file_extension_only;
+}
+
 const CHAR* LASreadOpener::get_file_name(U32 number) const
 {
   return file_names[number];
@@ -2179,6 +2562,24 @@ const CHAR* LASreadOpener::get_file_name_only(U32 number) const
   }
 
   return file_name_only;
+}
+
+const CHAR* LASreadOpener::get_file_extension_only(U32 number) const
+{
+  const CHAR* file_extension_only = 0;
+  const CHAR* file_name_curr = get_file_name(number);
+
+  if (file_name_curr)
+  {
+    I32 len = (I32)strlen(file_name_curr);
+    while ((len > 0) && (file_name_curr[len] != '.')) len--;
+    if (len)
+    {
+      file_extension_only = file_name_curr + len + 1;
+    }
+  }
+
+  return file_extension_only;
 }
 
 I32 LASreadOpener::get_file_format(U32 number) const
@@ -2219,6 +2620,38 @@ I32 LASreadOpener::get_file_format(U32 number) const
   {
     return LAS_TOOLS_FORMAT_TXT;
   }
+}
+
+CHAR* LASreadOpener::get_file_name_base() const
+{
+  CHAR* file_name_base = 0;
+
+  if (file_name)
+  {
+    file_name_base = LASCopyString(file_name);
+    // remove extension
+    I32 len = (I32)strlen(file_name_base);
+    while ((len > 0) && (file_name_base[len] != '\\') && (file_name_base[len] != '/') && (file_name_base[len] != ':')) len--;
+    file_name_base[len] = '\0';
+  }
+
+  return file_name_base;
+}
+
+CHAR* LASreadOpener::get_file_name_base(U32 number) const
+{
+  CHAR* file_name_base = 0;
+
+  if (get_file_name(number))
+  {
+    file_name_base = LASCopyString(get_file_name(number));
+    // remove extension
+    I32 len = (I32)strlen(file_name_base);
+    while ((len > 0) && (file_name_base[len] != '\\') && (file_name_base[len] != '/') && (file_name_base[len] != ':')) len--;
+    file_name_base[len] = '\0';
+  }
+
+  return file_name_base;
 }
 
 void LASreadOpener::set_merged(const BOOL merged)
@@ -2287,9 +2720,9 @@ void LASreadOpener::set_apply_file_source_ID(const BOOL apply_file_source_ID)
   this->apply_file_source_ID = apply_file_source_ID;
 }
 
-void LASreadOpener::set_io_ibuffer_size(I32 io_ibuffer_size)
+void LASreadOpener::set_io_ibuffer_size(const U32 buffer_size)
 {
-  this->io_ibuffer_size = io_ibuffer_size;
+  this->io_ibuffer_size = buffer_size;
 }
 
 void LASreadOpener::set_file_name(const CHAR* file_name, BOOL unique)
@@ -2373,6 +2806,145 @@ BOOL LASreadOpener::add_file_name(const CHAR* file_name, BOOL unique)
   return TRUE;
 }
 
+BOOL LASreadOpener::add_file_name(const CHAR* file_name, U32 ID, BOOL unique)
+{
+  if (unique)
+  {
+    U32 i;
+    for (i = 0; i < file_name_number; i++)
+    {
+      if (strcmp(file_names[i], file_name) == 0)
+      {
+        return FALSE;
+      }
+    }
+  }
+  if (file_name_number == file_name_allocated)
+  {
+    if (file_names)
+    {
+      file_name_allocated *= 2;
+      file_names = (CHAR**)realloc(file_names, sizeof(CHAR*)*file_name_allocated);
+      file_names_ID = (U32*)realloc(file_names_ID, sizeof(U32)*file_name_allocated);
+    }
+    else
+    {
+      file_name_allocated = 16;
+      file_names = (CHAR**)malloc(sizeof(CHAR*)*file_name_allocated);
+      file_names_ID = (U32*)malloc(sizeof(U32)*file_name_allocated);
+    }
+    if (file_names == 0)
+    {
+      REprintf( "ERROR: alloc for file_names pointer array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_ID == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_ID array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+  }
+  file_names[file_name_number] = LASCopyString(file_name);
+  file_names_ID[file_name_number] = ID;
+  file_name_number++;
+  return TRUE;
+}
+
+BOOL LASreadOpener::add_file_name(const CHAR* file_name, U32 ID, I64 npoints, F64 min_x, F64 min_y, F64 max_x, F64 max_y, BOOL unique)
+{
+  if (unique)
+  {
+    U32 i;
+    for (i = 0; i < file_name_number; i++)
+    {
+      if (strcmp(file_names[i], file_name) == 0)
+      {
+        return FALSE;
+      }
+    }
+  }
+  if (file_name_number == file_name_allocated)
+  {
+    if (file_names)
+    {
+      file_name_allocated *= 2;
+      file_names = (CHAR**)realloc(file_names, sizeof(CHAR*)*file_name_allocated);
+      file_names_ID = (U32*)realloc(file_names_ID, sizeof(U32)*file_name_allocated);
+      file_names_npoints = (I64*)realloc(file_names_npoints, sizeof(I64)*file_name_allocated);
+      file_names_min_x = (F64*)realloc(file_names_min_x, sizeof(F64)*file_name_allocated);
+      file_names_min_y = (F64*)realloc(file_names_min_y, sizeof(F64)*file_name_allocated);
+      file_names_max_x = (F64*)realloc(file_names_max_x, sizeof(F64)*file_name_allocated);
+      file_names_max_y = (F64*)realloc(file_names_max_y, sizeof(F64)*file_name_allocated);
+    }
+    else
+    {
+      file_name_allocated = 16;
+      file_names = (CHAR**)malloc(sizeof(CHAR*)*file_name_allocated);
+      file_names_ID = (U32*)malloc(sizeof(U32)*file_name_allocated);
+      file_names_npoints = (I64*)malloc(sizeof(I64)*file_name_allocated);
+      file_names_min_x = (F64*)malloc(sizeof(F64)*file_name_allocated);
+      file_names_min_y = (F64*)malloc(sizeof(F64)*file_name_allocated);
+      file_names_max_x = (F64*)malloc(sizeof(F64)*file_name_allocated);
+      file_names_max_y = (F64*)malloc(sizeof(F64)*file_name_allocated);
+      if (kdtree_rectangles == 0)
+      {
+        kdtree_rectangles = new LASkdtreeRectangles();
+        if (kdtree_rectangles == 0)
+        {
+          REprintf( "ERROR: alloc for LASkdtreeRectangles failed\n");
+          return FALSE;
+        }
+      }
+      kdtree_rectangles->init();
+    }
+    if (file_names == 0)
+    {
+      REprintf( "ERROR: alloc for file_names pointer array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_ID == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_ID array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_npoints == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_npoints array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_min_x == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_min_x array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_min_y == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_min_y array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_max_x == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_max_x array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+    if (file_names_max_y == 0)
+    {
+      REprintf( "ERROR: alloc for file_names_max_y array failed at %d\n", file_name_allocated);
+      return FALSE;
+    }
+  }
+  file_names[file_name_number] = LASCopyString(file_name);
+  file_names_ID[file_name_number] = ID;
+  file_names_npoints[file_name_number] = npoints;
+  file_names_min_x[file_name_number] = min_x;
+  file_names_min_y[file_name_number] = min_y;
+  file_names_max_x[file_name_number] = max_x;
+  file_names_max_y[file_name_number] = max_y;
+  kdtree_rectangles->add(min_x, min_y, max_x, max_y);
+  file_name_number++;
+  return TRUE;
+}
+
 BOOL LASreadOpener::add_list_of_files(const CHAR* list_of_files, BOOL unique)
 {
   FILE* file = fopen(list_of_files, "r");
@@ -2381,18 +2953,218 @@ BOOL LASreadOpener::add_list_of_files(const CHAR* list_of_files, BOOL unique)
     REprintf( "ERROR: cannot open '%s'\n", list_of_files);
     return FALSE;
   }
-  CHAR line[1024];
-  while (fgets(line, 1024, file))
+  CHAR line[2048];
+  CHAR name[2048];
+  U32 ID;
+  I64 npoints;
+  F64 min_x;
+  F64 min_y;
+  F64 max_x;
+  F64 max_y;
+  int num;
+  while (fgets(line, 2048, file))
   {
     // find end of line
     I32 len = (I32)strlen(line) - 1;
     // remove extra white spaces and line return at the end
-    while (len > 0 && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
+    while ((len > 0) && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
     {
       line[len] = '\0';
       len--;
     }
-    add_file_name(line, unique);
+    // try to parse number of points and xy bounds
+#ifdef _WIN32
+    num = sscanf(line, "%u,%I64d,%lf,%lf,%lf,%lf,", &ID, &npoints, &min_x, &min_y, &max_x, &max_y);
+#else
+    num = sscanf(line, "%u,%lld,%lf,%lf,%lf,%lf,", &ID, &npoints, &min_x, &min_y, &max_x, &max_y);
+#endif
+
+    if (num == 6)
+    {
+      // skip ID, number of points, and xy bounds
+      num = 0;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      // remove extra white spaces at the beginning
+      while ((num < len) && ((line[num] == ' ') || (line[num] == '\t')))  num++;
+      add_file_name(&line[num], ID, npoints, min_x, min_y, max_x, max_y, unique);
+    }
+    else
+    {
+      // try to parse number and file name
+      num = sscanf(line, "%u,%s", &ID, name);
+      if (num == 2)
+      {
+        // skip ID
+        num = 0;
+        while ((num < len) && (line[num] != ',')) num++;
+        num++;
+        // remove extra white spaces at the beginning
+        while ((num < len) && ((line[num] == ' ') || (line[num] == '\t')))  num++;
+        add_file_name(&line[num], ID, unique);
+      }
+      else
+      {
+        add_file_name(line, unique);
+      }
+    }
+  }
+  fclose(file);
+  return TRUE;
+}
+
+BOOL LASreadOpener::add_neighbor_file_name(const CHAR* neighbor_file_name, I64 npoints, F64 min_x, F64 min_y, F64 max_x, F64 max_y, BOOL unique)
+{
+  if (unique)
+  {
+    U32 i;
+    for (i = 0; i < neighbor_file_name_number; i++)
+    {
+      if (strcmp(neighbor_file_names[i], neighbor_file_name) == 0)
+      {
+        return FALSE;
+      }
+    }
+  }
+  if (neighbor_file_name_number == neighbor_file_name_allocated)
+  {
+    if (neighbor_file_names)
+    {
+      neighbor_file_name_allocated *= 2;
+      neighbor_file_names = (CHAR**)realloc(neighbor_file_names, sizeof(CHAR*)*neighbor_file_name_allocated);
+      neighbor_file_names_npoints = (I64*)realloc(neighbor_file_names_npoints, sizeof(I64)*neighbor_file_name_allocated);
+      neighbor_file_names_min_x = (F64*)realloc(neighbor_file_names_min_x, sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_min_y = (F64*)realloc(neighbor_file_names_min_y, sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_max_x = (F64*)realloc(neighbor_file_names_max_x, sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_max_y = (F64*)realloc(neighbor_file_names_max_y, sizeof(F64)*neighbor_file_name_allocated);
+    }
+    else
+    {
+      neighbor_file_name_allocated = 16;
+      neighbor_file_names = (CHAR**)malloc(sizeof(CHAR*)*neighbor_file_name_allocated);
+      neighbor_file_names_npoints = (I64*)malloc(sizeof(I64)*neighbor_file_name_allocated);
+      neighbor_file_names_min_x = (F64*)malloc(sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_min_y = (F64*)malloc(sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_max_x = (F64*)malloc(sizeof(F64)*neighbor_file_name_allocated);
+      neighbor_file_names_max_y = (F64*)malloc(sizeof(F64)*neighbor_file_name_allocated);
+      if (neighbor_kdtree_rectangles == 0)
+      {
+        neighbor_kdtree_rectangles = new LASkdtreeRectangles();
+        if (neighbor_kdtree_rectangles == 0)
+        {
+          REprintf( "ERROR: alloc for neighbor LASkdtreeRectangles failed\n");
+          return FALSE;
+        }
+      }
+      kdtree_rectangles->init();
+    }
+    if (neighbor_file_names == 0)
+    {
+      REprintf( "ERROR: alloc for neighbor_file_names pointer array failed at %d\n", neighbor_file_name_allocated);
+      return FALSE;
+    }
+    if (neighbor_file_names_min_x == 0)
+    {
+      REprintf( "ERROR: alloc for neighbor_file_names_min_x array failed at %d\n", neighbor_file_name_allocated);
+      return FALSE;
+    }
+    if (neighbor_file_names_min_y == 0)
+    {
+      REprintf( "ERROR: alloc for neighbor_file_names_min_y array failed at %d\n", neighbor_file_name_allocated);
+      return FALSE;
+    }
+    if (neighbor_file_names_max_x == 0)
+    {
+      REprintf( "ERROR: alloc for neighbor_file_names_max_x array failed at %d\n", neighbor_file_name_allocated);
+      return FALSE;
+    }
+    if (neighbor_file_names_max_y == 0)
+    {
+      REprintf( "ERROR: alloc for neighbor_file_names_max_y array failed at %d\n", neighbor_file_name_allocated);
+      return FALSE;
+    }
+  }
+  neighbor_file_names[neighbor_file_name_number] = LASCopyString(neighbor_file_name);
+  neighbor_file_names_npoints[neighbor_file_name_number] = npoints;
+  neighbor_file_names_min_x[neighbor_file_name_number] = min_x;
+  neighbor_file_names_min_y[neighbor_file_name_number] = min_y;
+  neighbor_file_names_max_x[neighbor_file_name_number] = max_x;
+  neighbor_file_names_max_y[neighbor_file_name_number] = max_y;
+  neighbor_kdtree_rectangles->add(min_x, min_y, max_x, max_y);
+  neighbor_file_name_number++;
+  return TRUE;
+}
+
+BOOL LASreadOpener::add_neighbor_list_of_files(const CHAR* neighbor_list_of_files, BOOL unique)
+{
+  FILE* file = fopen(neighbor_list_of_files, "r");
+  if (file == 0)
+  {
+    REprintf( "ERROR: cannot open '%s'\n", neighbor_list_of_files);
+    return FALSE;
+  }
+  CHAR line[2048];
+  U32 ID;
+  I64 npoints;
+  F64 min_x;
+  F64 min_y;
+  F64 max_x;
+  F64 max_y;
+  int num;
+  while (fgets(line, 2048, file))
+  {
+    // find end of line
+    I32 len = (I32)strlen(line) - 1;
+    // remove extra white spaces and line return at the end
+    while ((len > 0) && ((line[len] == '\n') || (line[len] == ' ') || (line[len] == '\t') || (line[len] == '\012')))
+    {
+      line[len] = '\0';
+      len--;
+    }
+    // try to parse number of points and xy bounds
+#ifdef _WIN32
+    num = sscanf(line, "%u,%I64d,%lf,%lf,%lf,%lf,", &ID, &npoints, &min_x, &min_y, &max_x, &max_y);
+#else
+    num = sscanf(line, "%u,%lld,%lf,%lf,%lf,%lf,", &ID, &npoints, &min_x, &min_y, &max_x, &max_y);
+#endif
+    if (num == 6)
+    {
+      // skip number of points and xy bounds
+      num = 0;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      while ((num < len) && (line[num] != ',')) num++;
+      num++;
+      // remove extra white spaces at the beginning
+      while ((num < len) && ((line[num] == ' ') || (line[num] == '\t')))  num++;
+      add_neighbor_file_name(&line[num], npoints, min_x, min_y, max_x, max_y, unique);
+    }
+    else
+    {
+#ifdef _WIN32
+      add_neighbor_file_name_single(line);
+#else
+      add_neighbor_file_name(line);
+#endif
+    }
   }
   fclose(file);
   return TRUE;
@@ -2559,24 +3331,24 @@ void LASreadOpener::set_offset(const F64* offset)
   }
 }
 
-void LASreadOpener::set_translate_intensity(F32 translate_intensity)
+void LASreadOpener::set_translate_intensity(const F32 translation)
 {
-  this->translate_intensity = translate_intensity;
+  this->translate_intensity = translation;
 }
 
-void LASreadOpener::set_scale_intensity(F32 scale_intensity)
+void LASreadOpener::set_scale_intensity(const F32 scale)
 {
-  this->scale_intensity = scale_intensity;
+  this->scale_intensity = scale;
 }
 
-void LASreadOpener::set_translate_scan_angle(F32 translate_scan_angle)
+void LASreadOpener::set_translate_scan_angle(const F32 translation)
 {
-  this->translate_scan_angle = translate_scan_angle;
+  this->translate_scan_angle = translation;
 }
 
-void LASreadOpener::set_scale_scan_angle(F32 scale_scan_angle)
+void LASreadOpener::set_scale_scan_angle(const F32 scale)
 {
-  this->scale_scan_angle = scale_scan_angle;
+  this->scale_scan_angle = scale;
 }
 
 void LASreadOpener::add_attribute(I32 data_type, const CHAR* name, const CHAR* description, F64 scale, F64 offset, F64 pre_scale, F64 pre_offset, F64 no_data)
@@ -2592,9 +3364,9 @@ void LASreadOpener::add_attribute(I32 data_type, const CHAR* name, const CHAR* d
   number_attributes++;
 }
 
-void LASreadOpener::set_skip_lines(I32 skip_lines)
+void LASreadOpener::set_skip_lines(const U32 number_of_lines)
 {
-  this->skip_lines = skip_lines;
+  this->skip_lines = number_of_lines;
 }
 
 void LASreadOpener::set_populate_header(BOOL populate_header)
@@ -2622,6 +3394,10 @@ void LASreadOpener::set_decompress_selective(U32 decompress_selective)
   if (transform)
   {
     this->decompress_selective |= transform->get_decompress_selective();
+  }
+  if (ignore)
+  {
+    this->decompress_selective |= ignore->get_decompress_selective();
   }
 }
 
@@ -2658,9 +3434,22 @@ BOOL LASreadOpener::active() const
 LASreadOpener::LASreadOpener()
 {
   io_ibuffer_size = LAS_TOOLS_IO_IBUFFER_SIZE;
-  file_names = 0;
   file_name = 0;
+  file_names = 0;
+  file_names_ID = 0;
+  file_names_npoints = 0;
+  file_names_min_x = 0;
+  file_names_min_y = 0;
+  file_names_max_x = 0;
+  file_names_max_y = 0;
+  kdtree_rectangles = 0;
   neighbor_file_names = 0;
+  neighbor_file_names_npoints = 0;
+  neighbor_file_names_min_x = 0;
+  neighbor_file_names_min_y = 0;
+  neighbor_file_names_max_x = 0;
+  neighbor_file_names_max_y = 0;
+  neighbor_kdtree_rectangles = 0;
   merged = FALSE;
   stored = FALSE;
   use_stdin = FALSE;
@@ -2709,6 +3498,7 @@ LASreadOpener::LASreadOpener()
   inside_rectangle = 0;
   filter = 0;
   transform = 0;
+  ignore = 0;
   temp_file_base = 0;
 }
 
@@ -2719,12 +3509,33 @@ LASreadOpener::~LASreadOpener()
     U32 i;
     for (i = 0; i < file_name_number; i++) free(file_names[i]);
     free(file_names);
+    if (file_names_ID)
+    {
+      free(file_names_ID);
+      if (file_names_npoints)
+      {
+        free(file_names_npoints);
+        free(file_names_min_x);
+        free(file_names_min_y);
+        free(file_names_max_x);
+        free(file_names_max_y);
+      }
+    }
   }
+  if (kdtree_rectangles) delete kdtree_rectangles;
   if (neighbor_file_names)
   {
     U32 i;
     for (i = 0; i < neighbor_file_name_number; i++) free(neighbor_file_names[i]);
     free(neighbor_file_names);
+    if (neighbor_file_names_npoints)
+    {
+      free(neighbor_file_names_npoints);
+      free(neighbor_file_names_min_x);
+      free(neighbor_file_names_min_y);
+      free(neighbor_file_names_max_x);
+      free(neighbor_file_names_max_y);
+    }
   }
   if (parse_string) free(parse_string);
   if (scale_factor) delete [] scale_factor;
@@ -2734,5 +3545,6 @@ LASreadOpener::~LASreadOpener()
   if (inside_rectangle) delete [] inside_rectangle;
   if (filter) delete filter;
   if (transform) delete transform;
+  if (ignore) delete ignore;
   if (temp_file_base) free(temp_file_base);
 }

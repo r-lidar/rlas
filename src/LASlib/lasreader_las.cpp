@@ -52,12 +52,36 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
     return FALSE;
   }
 
+#ifdef _MSC_VER
   file = fopen(file_name, "rb");
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s'\n", file_name);
+    wchar_t* utf16_file_name = UTF8toUTF16(file_name);
+    file = _wfopen(utf16_file_name, L"rb");
+    if (file == 0)
+    {
+      REprintf( "ERROR: cannot open file '%ws' for read\n", utf16_file_name);
+    }
+    delete [] utf16_file_name;
+  }
+#else
+  file = fopen(file_name, "rb");
+#endif
+
+  if (file == 0)
+  {
+    REprintf( "ERROR: cannot open file '%s' for read\n", file_name);
     return FALSE;
   }
+
+  // save file name for better ERROR message
+
+  if (this->file_name)
+  {
+    free(this->file_name);
+    this->file_name = 0;
+  }
+  this->file_name = LASCopyString(file_name);
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
@@ -1346,13 +1370,17 @@ BOOL LASreaderLAS::read_point_default()
   {
     if (reader->read(point.point) == FALSE)
     {
+      if (reader->warning())
+      {
+        REprintf("WARNING: '%s' for '%s'\n", reader->warning(), file_name);
+      }
       if (reader->error())
       {
-        REprintf("ERROR: '%s' after %u of %u points\n", reader->error(), (U32)p_count, (U32)npoints);
+        REprintf("ERROR: '%s' after %u of %u points for '%s'\n", reader->error(), (U32)p_count, (U32)npoints, file_name);
       }
       else
       {
-        REprintf("WARNING: end-of-file after %u of %u points\n", (U32)p_count, (U32)npoints);
+        REprintf("WARNING: end-of-file after %u of %u points for '%s'\n", (U32)p_count, (U32)npoints, file_name);
       }
       return FALSE;
     }
@@ -1429,12 +1457,18 @@ void LASreaderLAS::close(BOOL close_stream)
       fclose(file);
       file = 0;
     }
+    if (file_name)
+    {
+      free(file_name);
+      file_name = 0;
+    }
   }
 }
 
 LASreaderLAS::LASreaderLAS()
 {
   file = 0;
+  file_name = 0;
   stream = 0;
   delete_stream = TRUE;
   reader = 0;

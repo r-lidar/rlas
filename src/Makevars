@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -I. -I../inst/include/
+PKG_CPPFLAGS = -DNDEBUG -DUNORDERED -DHAVE_UNORDERED_MAP -I./ -I./LASlib/ -I./LASzip/
 
 SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/fopen_compressed.cpp \
@@ -18,6 +18,8 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/lasutility.cpp \
 					LASlib/lasreader_dtm.cpp \
 					LASlib/lasfilter.cpp \
+					LASlib/lasignore.cpp \
+					LASlib/laskdtree.cpp \
 					LASlib/laswriter_qfit.cpp \
 					LASlib/lasreader_qfit.cpp \
 					LASlib/laswriter.cpp  \
@@ -43,10 +45,8 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/lasquadtree.cpp \
 					LASzip/laswritepoint.cpp \
 					LASzip/lasreadpoint.cpp \
-					LASzip/lasunzipper.cpp \
 					LASzip/integercompressor.cpp \
 					LASzip/lasinterval.cpp \
-					LASzip/laszipper.cpp \
 					./rlasstreamer.cpp \
 					./rlasextrabytesattributes.cpp \
 					./readLAS.cpp \
