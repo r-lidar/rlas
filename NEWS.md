@@ -1,5 +1,9 @@
 ### rlas v1.4.0 (Release date: )
 
+- Misc: removed `LazyData` in `DESCRIPTION`
+
+### rlas v1.4.0 (Release date: 2021-03-23)
+
 - Fix: build failure with GCC 4.x
 - Fix: gcc-asan signed integer overflow.
 - Fix: when reading a non supported extra bytes attribute rlas used to print a warning message. It now throws a real warning.

@@ -1,8 +1,8 @@
 Package: rlas
 Type: Package
 Title: Read and Write 'las' and 'laz' Binary File Formats Used for Remote Sensing Data
-Version: 1.4.0
-Date: 2021-03-21
+Version: 1.4.1
+Date: 2021-04-03
 Authors@R: c(
     person("Jean-Romain", "Roussel", email = "jean-romain.roussel.1@ulaval.ca", role = c("aut", "cre", "cph")),
     person("Florian", "De Boissieu", email = "", role = c("aut", "ctb"), comment = "Enable the support of .lax file and extra byte attributes"),
@@ -16,7 +16,6 @@ BugReports: https://github.com/Jean-Romain/rlas/issues
 License: GPL-3
 Depends: R (>= 3.4.0)
 Imports: Rcpp, data.table
-LazyData: true
 RoxygenNote: 7.1.1
 LinkingTo: Rcpp,BH
 Suggests: 
