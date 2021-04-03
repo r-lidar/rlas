@@ -1,6 +1,7 @@
 ### rlas v1.4.0 (Release date: )
 
 - Misc: removed `LazyData` in `DESCRIPTION`
+- Misc: Update `Description` in `DESCRIPTION` to include format 1.4 in reading capabilities. 
 
 ### rlas v1.4.0 (Release date: 2021-03-23)
 
