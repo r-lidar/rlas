@@ -1,7 +1,8 @@
-### rlas v1.4.0 (Release date: )
+### rlas v1.4.1 (Release date: )
 
 - Misc: removed `LazyData` in `DESCRIPTION`
 - Misc: Update `Description` in `DESCRIPTION` to include format 1.4 in reading capabilities. 
+- Enhance: `header_create()` creates a v1.4 header if the point source format is detected to be 6 or more
 
 ### rlas v1.4.0 (Release date: 2021-03-23)
 

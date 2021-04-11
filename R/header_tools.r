@@ -98,6 +98,9 @@ header_create = function(data)
   header[["Point Data Format ID"]] <- guess_las_format(data)
   header[["Point Data Record Length"]] <- get_data_record_length(header[["Point Data Format ID"]])
 
+  if (header[["Point Data Format ID"]] >= 6L)
+    header[["Version Minor"]] = 4L
+
   header[["Variable Length Records"]] = list()
 
   return(header)
