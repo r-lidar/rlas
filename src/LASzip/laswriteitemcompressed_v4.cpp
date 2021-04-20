@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  laswriteitemcompressed_v4.cpp
-
+  
   CONTENTS:
-
+  
     see corresponding header file
-
+  
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+  
   CHANGE HISTORY:
-
+  
     see corresponding header file
-
+  
 ===============================================================================
 */
 
@@ -84,7 +84,7 @@ typedef struct LASpoint14
 #define LASZIP_GPSTIME_MULTI_MINUS -10
 #define LASZIP_GPSTIME_MULTI_CODE_FULL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 1)
 
-#define LASZIP_GPSTIME_MULTI_TOTAL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 5)
+#define LASZIP_GPSTIME_MULTI_TOTAL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 5) 
 
 LASwriteItemCompressed_POINT14_v4::LASwriteItemCompressed_POINT14_v4(ArithmeticEncoder* enc)
 {
@@ -125,7 +125,7 @@ LASwriteItemCompressed_POINT14_v4::LASwriteItemCompressed_POINT14_v4(ArithmeticE
   current_context = 0;
 
   /* number of bytes per layer */
-
+  
   num_bytes_channel_returns_XY = 0;
   num_bytes_Z = 0;
   num_bytes_classification = 0;
@@ -299,7 +299,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::createAndInitModelsAndCompressors
     contexts[context].last_X_diff_median5[i].init();
     contexts[context].last_Y_diff_median5[i].init();
   }
-
+  
   /* for the Z layer */
 
   contexts[context].ic_Z->initCompressor();
@@ -471,7 +471,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   U8* last_item = contexts[current_context].last_item;
 
   ////////////////////////////////////////
-  // compress returns_XY layer
+  // compress returns_XY layer 
   ////////////////////////////////////////
 
   // create single (3) / first (1) / last (2) / intermediate (0) context from last point return
@@ -633,7 +633,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   contexts[current_context].last_Y_diff_median5[(m<<1) | gps_time_change].add(diff);
 
   ////////////////////////////////////////
-  // compress Z layer
+  // compress Z layer 
   ////////////////////////////////////////
 
   k_bits = (contexts[current_context].ic_dX->getK() + contexts[current_context].ic_dY->getK()) / 2;
@@ -641,7 +641,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   contexts[current_context].last_Z[l] = ((LASpoint14*)item)->Z;
 
   ////////////////////////////////////////
-  // compress classifications layer
+  // compress classifications layer 
   ////////////////////////////////////////
 
   U32 last_classification = ((LASpoint14*)last_item)->classification;
@@ -661,7 +661,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   enc_classification->encodeSymbol(contexts[current_context].m_classification[ccc], classification);
 
   ////////////////////////////////////////
-  // compress flags layer
+  // compress flags layer 
   ////////////////////////////////////////
 
   U32 last_flags = (((LASpoint14*)last_item)->edge_of_flight_line << 5) | (((LASpoint14*)last_item)->scan_direction_flag << 4) | ((LASpoint14*)last_item)->classification_flags;
@@ -680,7 +680,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   enc_flags->encodeSymbol(contexts[current_context].m_flags[last_flags], flags);
 
   ////////////////////////////////////////
-  // compress intensity layer
+  // compress intensity layer 
   ////////////////////////////////////////
 
   if (((LASpoint14*)item)->intensity != ((LASpoint14*)last_item)->intensity)
@@ -689,9 +689,9 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   }
   contexts[current_context].ic_intensity->compress(contexts[current_context].last_intensity[(cpr<<1) | gps_time_change], ((LASpoint14*)item)->intensity, cpr);
   contexts[current_context].last_intensity[(cpr<<1) | gps_time_change] = ((LASpoint14*)item)->intensity;
-
+  
   ////////////////////////////////////////
-  // compress scan_angle layer
+  // compress scan_angle layer 
   ////////////////////////////////////////
 
   if (scan_angle_change)
@@ -701,7 +701,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   }
 
   ////////////////////////////////////////
-  // compress user_data layer
+  // compress user_data layer 
   ////////////////////////////////////////
 
   if (((LASpoint14*)item)->user_data != ((LASpoint14*)last_item)->user_data)
@@ -716,7 +716,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   enc_user_data->encodeSymbol(contexts[current_context].m_user_data[((LASpoint14*)last_item)->user_data/4], ((LASpoint14*)item)->user_data);
 
   ////////////////////////////////////////
-  // compress point_source layer
+  // compress point_source layer 
   ////////////////////////////////////////
 
   if (point_source_change)
@@ -726,7 +726,7 @@ inline BOOL LASwriteItemCompressed_POINT14_v4::write(const U8* item, U32& contex
   }
 
   ////////////////////////////////////////
-  // compress gps_time layer
+  // compress gps_time layer 
   ////////////////////////////////////////
 
   if (gps_time_change) // if the GPS time has changed
@@ -973,7 +973,7 @@ void LASwriteItemCompressed_POINT14_v4::write_gps_time(const U64I64F64 gps_time)
       enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_0diff, 0); // the difference can be represented with 32 bits
       contexts[current_context].ic_gpstime->compress(0, curr_gpstime_diff, 0);
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = curr_gpstime_diff;
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
     }
     else // the difference is huge
     {
@@ -985,20 +985,20 @@ void LASwriteItemCompressed_POINT14_v4::write_gps_time(const U64I64F64 gps_time)
         I32 other_gpstime_diff = (I32)other_gpstime_diff_64;
         if (other_gpstime_diff_64 == (I64)(other_gpstime_diff))
         {
-          enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_0diff, i+1); // it belongs to another sequence
+          enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_0diff, i+1); // it belongs to another sequence 
           contexts[current_context].last = (contexts[current_context].last+i)&3;
           write_gps_time(gps_time);
           return;
         }
       }
       // no other sequence found. start new sequence.
-      enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_0diff, 1);
+      enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_0diff, 1); 
       contexts[current_context].ic_gpstime->compress((I32)(contexts[current_context].last_gpstime[contexts[current_context].last].u64 >> 32), (I32)(gps_time.u64 >> 32), 8);
       enc_gps_time->writeInt((U32)(gps_time.u64));
       contexts[current_context].next = (contexts[current_context].next+1)&3;
       contexts[current_context].last = contexts[current_context].next;
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = 0;
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
     }
     contexts[current_context].last_gpstime[contexts[current_context].last].i64 = gps_time.i64;
   }
@@ -1021,7 +1021,7 @@ void LASwriteItemCompressed_POINT14_v4::write_gps_time(const U64I64F64 gps_time)
         // this is the case we assume we get most often for regular spaced pulses
         enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_multi, 1);
         contexts[current_context].ic_gpstime->compress(contexts[current_context].last_gpstime_diff[contexts[current_context].last], curr_gpstime_diff, 1);
-        contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
+        contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
       }
       else if (multi > 0)
       {
@@ -1086,7 +1086,7 @@ void LASwriteItemCompressed_POINT14_v4::write_gps_time(const U64I64F64 gps_time)
         I32 other_gpstime_diff = (I32)other_gpstime_diff_64;
         if (other_gpstime_diff_64 == (I64)(other_gpstime_diff))
         {
-          // it belongs to this sequence
+          // it belongs to this sequence 
           enc_gps_time->encodeSymbol(contexts[current_context].m_gpstime_multi, LASZIP_GPSTIME_MULTI_CODE_FULL+i);
           contexts[current_context].last = (contexts[current_context].last+i)&3;
           write_gps_time(gps_time);
@@ -1100,7 +1100,7 @@ void LASwriteItemCompressed_POINT14_v4::write_gps_time(const U64I64F64 gps_time)
       contexts[current_context].next = (contexts[current_context].next+1)&3;
       contexts[current_context].last = contexts[current_context].next;
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = 0;
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
     }
     contexts[current_context].last_gpstime[contexts[current_context].last].i64 = gps_time.i64;
   }
@@ -1235,7 +1235,7 @@ BOOL LASwriteItemCompressed_RGB14_v4::init(const U8* item, U32& context)
 
     outstream_RGB->seek(0);
   }
-
+  
   /* init layer encoders */
 
   enc_RGB->init(outstream_RGB);
@@ -1530,7 +1530,7 @@ BOOL LASwriteItemCompressed_RGBNIR14_v4::init(const U8* item, U32& context)
     outstream_RGB->seek(0);
     outstream_NIR->seek(0);
   }
-
+  
   /* init layer encoders */
 
   enc_RGB->init(outstream_RGB);
@@ -1648,7 +1648,7 @@ inline BOOL LASwriteItemCompressed_RGBNIR14_v4::write(const U8* item, U32& conte
   {
     changed_NIR = TRUE;
   }
-
+  
   memcpy(last_item, item, 8);
   return TRUE;
 }
@@ -1857,7 +1857,7 @@ BOOL LASwriteItemCompressed_WAVEPACKET14_v4::init(const U8* item, U32& context)
 
     outstream_wavepacket->seek(0);
   }
-
+  
   /* init layer encoders */
 
   enc_wavepacket->init(outstream_wavepacket);
@@ -2024,7 +2024,7 @@ LASwriteItemCompressed_BYTE14_v4::LASwriteItemCompressed_BYTE14_v4(ArithmeticEnc
   enc_Bytes = 0;
 
   /* number of bytes per layer */
-
+  
   num_bytes_Bytes = new U32[number];
 
   changed_Bytes = new BOOL[number];
@@ -2177,7 +2177,7 @@ BOOL LASwriteItemCompressed_BYTE14_v4::init(const U8* item, U32& context)
       outstream_Bytes[i]->seek(0);
     }
   }
-
+  
   /* init layer encoders */
 
   for (i = 0; i < number; i++)

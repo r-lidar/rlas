@@ -35,11 +35,13 @@
 
 #include "lasreader.hpp"
 #include "lasfilter.hpp"
+#include "lastransform.hpp"
 
 
 using namespace Rcpp;
 
 List vlrsreader(LASheader*);
+List evlrsreader(LASheader*);
 List globalencodingreader(LASheader*);
 inline std::string nullterminate(CHAR*, int);
 
@@ -131,6 +133,7 @@ List lasheaderreader(CharacterVector file)
     head.push_back(lasheader->max_z);
     head.push_back(lasheader->min_z);
     head.push_back(vlrsreader(lasheader));
+    head.push_back(evlrsreader(lasheader));
 
     CharacterVector names(0);
     names.push_back("File Signature");
@@ -163,6 +166,7 @@ List lasheaderreader(CharacterVector file)
     names.push_back("Max Z");
     names.push_back("Min Z");
     names.push_back("Variable Length Records");
+    names.push_back("Extended Variable Length Records");
 
     head.names() = names;
 
@@ -412,6 +416,208 @@ List vlrsreader(LASheader* lasheader)
   return lvlrs;
 }
 
+List evlrsreader(LASheader* lasheader)
+{
+  int nvlrs = (int)lasheader->number_of_extended_variable_length_records;
+
+  List lvlrs;
+  List lvlrsnames;
+
+  for (int i = 0; i < nvlrs; i++)
+  {
+    LASevlr vlr    = lasheader->evlrs[i];
+    List lvlr      = List::create(vlr.reserved, vlr.user_id, vlr.record_id, vlr.record_length_after_header, vlr.description);
+    List lvlrnames = List::create("reserved", "user ID", "record ID", "length after header", "description");
+
+    if (strcmp(vlr.user_id, "LASF_Projection") == 0 && vlr.data != 0)
+    {
+      if (vlr.record_id == 34735) // GeoKeyDirectoryTag
+      {
+        List GeoKeys(0);
+
+        for (int j = 0; j < lasheader->vlr_geo_keys->number_of_keys; j++)
+        {
+          List GeoKey = List::create(Named("key") = lasheader->vlr_geo_key_entries[j].key_id,
+                                     Named("tiff tag location") =  lasheader->vlr_geo_key_entries[j].tiff_tag_location,
+                                     Named("count") = lasheader->vlr_geo_key_entries[j].count,
+                                     Named("value offset") = lasheader->vlr_geo_key_entries[j].value_offset);
+
+          GeoKeys.push_back(GeoKey);
+        }
+
+        lvlr.push_back(GeoKeys);
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoKeyDirectoryTag");
+      }
+      else if (vlr.record_id == 34736) // GeoDoubleParamsTag
+      {
+        int n = vlr.record_length_after_header/8;
+        NumericVector GeoDouble(n);
+
+        for (int j = 0; j < n; j++)
+        {
+          GeoDouble(j) = lasheader->vlr_geo_double_params[j];
+        }
+
+        lvlr.push_back(GeoDouble);
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoDoubleParamsTag");
+      }
+      else if (vlr.record_id == 34737) // GeoAsciiParamsTag
+      {
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ascii_params, vlr.record_length_after_header));
+        lvlrnames.push_back("tags");
+        lvlrsnames.push_back("GeoAsciiParamsTag");
+      }
+      else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
+      {
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt_math, vlr.record_length_after_header));
+        lvlrnames.push_back("WKT OGC MATH TRANSFORM");
+        lvlrsnames.push_back("WKT OGC MT");
+      }
+      else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
+      {
+        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt, vlr.record_length_after_header));
+        lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
+        lvlrsnames.push_back("WKT OGC CS");
+      }
+    }
+    else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
+    {
+      if (vlr.record_id == 4) // ExtraBytes
+      {
+        lvlrsnames.push_back("Extra_Bytes");
+        lvlrnames.push_back("Extra Bytes Description");
+
+        List ExtraBytes(0);
+        List ExtraBytesnames(0);
+
+        for (int j = 0; j < lasheader->number_attributes; j++)
+        {
+          LASattribute attemp(lasheader->attributes[j]);
+
+          if (attemp.data_type)
+          {
+            int data_type = ((I32)(attemp.data_type)-1)%10;
+            //int dim = ((I32)(attemp.data_type)-1)/10+1;
+
+            List ExtraByte(0);
+            List ExtraBytenames(0);
+            ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
+            ExtraBytenames.push_back("reserved");
+            ExtraByte.push_back((I32)(attemp.data_type));
+            ExtraBytenames.push_back("data_type");
+            ExtraByte.push_back((I32)(attemp.options));
+            ExtraBytenames.push_back("options");
+            ExtraByte.push_back(attemp.name);
+            ExtraBytenames.push_back("name");
+
+            // 2 and 3 dimensional arrays are deprecated in LASlib
+            // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
+            double scale = 1.0;
+            if(attemp.has_scale())
+            {
+              scale = attemp.scale[0];
+              ExtraByte.push_back(scale);
+              ExtraBytenames.push_back("scale");
+            }
+
+            double offset = 0.0;
+            if(attemp.has_offset())
+            {
+              offset = attemp.offset[0];
+              ExtraByte.push_back(offset);
+              ExtraBytenames.push_back("offset");
+            }
+
+            if (data_type < 8)
+            {
+              I64* temp; // as R does not support long long int it is converted to double
+
+              if (attemp.has_no_data())
+              {
+                temp = ((I64*)(attemp.no_data));
+                ExtraByte.push_back(*temp);
+                ExtraBytenames.push_back("no_data");
+              }
+
+              if (attemp.has_min())
+              {
+                temp = ((I64*)(attemp.min));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("min");
+              }
+
+              if (attemp.has_max())
+              {
+                temp = ((I64*)(attemp.max));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("max");
+              }
+            }
+            else
+            {
+              F64* temp;
+
+              if (attemp.has_no_data())
+              {
+                temp = ((F64*)(attemp.no_data));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("no_data");
+              }
+
+              if (attemp.has_min())
+              {
+                temp = ((F64*)(attemp.min));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("min");
+              }
+
+              if (attemp.has_max())
+              {
+                temp = ((F64*)(attemp.max));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("max");
+              }
+            }
+
+            ExtraByte.push_back(attemp.description);
+            ExtraBytenames.push_back("description");
+
+            ExtraByte.names() =  ExtraBytenames;
+            ExtraBytes.push_back(ExtraByte);
+            ExtraBytesnames.push_back(attemp.name);
+          }
+          else
+          {
+            Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
+          }
+        }
+
+        ExtraBytes.names() = ExtraBytesnames;
+        lvlr.push_back(ExtraBytes);
+      }
+      else
+      {
+        // not supported yet
+        lvlrsnames.push_back(vlr.user_id);
+      }
+    }
+    else
+    {
+      // not supported yet
+      lvlrsnames.push_back(vlr.user_id);
+    }
+
+    lvlr.names() = lvlrnames;
+    lvlrs.push_back(lvlr);
+  }
+
+  lvlrs.names() = lvlrsnames;
+  return lvlrs;
+}
+
+
 // [[Rcpp::export]]
 void lasfilterusage()
 {
@@ -419,6 +625,20 @@ void lasfilterusage()
   {
     LASfilter filter;
     filter.usage();
+  }
+  catch (std::exception const& e)
+  {
+    Rcerr << "Error: " << e.what() << std::endl;
+  }
+}
+
+// [[Rcpp::export]]
+void lastransformusage()
+{
+  try
+  {
+    LAStransform transform;
+    transform.usage();
   }
   catch (std::exception const& e)
   {

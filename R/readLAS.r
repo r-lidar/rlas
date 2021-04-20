@@ -29,9 +29,9 @@
 
 #' Read data from a .las or .laz file
 #'
-#' Reads data from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads data from .las or .laz files according to LAS specifications and returns
 #' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
-#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #' The optional parameters enable the user to save memory by choosing to load only the
 #' fields they need. Moreover, the function provides a streaming filter to load only the points of
 #' interest into the memory and hence avoids allocating any superfluous memory.
@@ -50,32 +50,50 @@
 #' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 #' to read the binary files. Thus the package inherits the filter commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
-#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{rlas:::lasfilterusage()}
-#' to display the \code{LASlib} documentation and the available filters.
+#' common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{read.las(filter = "-help")}
+#' to display the \code{LASlib} documentation and the available filters.\cr\cr
+#' \strong{Transform:} the 'transform' argument allows transformation of the point cloud while reading files.
+#' \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
+#' to read the binary files. Thus the package inherits the tranform commands available in
+#' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these transformations the user can pass the
+#' common commands from \code{LAStools} into the parameter \code{'transform'}. Type \code{read.las(transform = "-help")}
+#' to display the \code{LASlib} documentation and the available transformations
+#'
 #'
 #' @param files array of characters
 #' @param select character. select only columns of interest to save memory (see details)
 #' @param filter character. streaming filters - filter data while reading the file (see details)
+#' @param transform character. streaming transformation - transform data while reading the file (see details)
 #' @return A \code{data.table}
 #' @export
 #' @examples
-#' lazfile <- system.file("extdata", "example.laz", package="rlas")
+#' lasfile <- system.file("extdata", "example.las", package="rlas")
 #'
-#' lasdata <- read.las(lazfile)
-#' lasdata <- read.las(lazfile, filter = "-keep_first")
-#' lasdata <- read.las(lazfile, filter = "-drop_intensity_below 80")
-#' lasdata <- read.las(lazfile, select = "xyzia")
+#' lasdata <- read.las(lasfile)
+#' lasdata <- read.las(lasfile, filter = "-keep_first")
+#' lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
+#' lasdata <- read.las(lasfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
-read.las = function(files, select = "*", filter = "")
+read.las = function(files, select = "*", filter = "", transform = "")
 {
+    if (filter == "-h" | filter == "-help")
+      lasfilterusage()
+
+    if (transform == "-h" | transform == "-help")
+      lastransformusage()
+
+    if (filter == "-h" | transform == "-h" | filter == "-help" | transform == "-help")
+      return(invisible())
+
+  filter = paste(filter, transform)
   stream.las(files, select = select, filter = filter)
 }
 
 #' Read header from a .las or .laz file
 #'
-#' Reads header from .las or .laz files in format 1 to 4 according to LAS specifications and returns
+#' Reads header from .las or .laz files according to LAS specifications and returns
 #' a \code{list} labeled according to LAS specifications. See the ASPRS documentation for the
-#' \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+#' \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #'
 #' @param file filepath character string to the .las or .laz file
 #' @family rlas
@@ -83,7 +101,7 @@ read.las = function(files, select = "*", filter = "")
 #' @importFrom Rcpp sourceCpp
 #' @export
 #' @examples
-#' lazfile   <- system.file("extdata", "example.laz", package="rlas")
+#' lazfile   <- system.file("extdata", "example.las", package="rlas")
 #' lasheader <- read.lasheader(lazfile)
 read.lasheader = function(file)
 {

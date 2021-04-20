@@ -29,7 +29,7 @@ Allowed names are "X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "Number
 "R", "G", "B", "NIR". All other extra columns will be written in extra bytes attributes only if the
 header specifically states these data should be saved into extra bytes attributes. To use the full
 potential of the function \code{write.las} it is recommended users read the complete specifications of
-the \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS file format}.
+the \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 Otherwise users can rely on automated procedures that are expected to be sufficient for most usages.
 }
 \examples{
@@ -48,11 +48,12 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
                      PointSourceID = c(17L, 17L, 17L))
 
 lasheader = header_create(lasdata)
-file = file.path(tempdir(), "temp.laz")
+file = file.path(tempdir(), "temp.las")
 
 write.las(file, lasheader, lasdata)
 }
 \seealso{
-Other rlas: \code{\link{read.lasheader}}
+Other rlas: 
+\code{\link{read.lasheader}()}
 }
 \concept{rlas}

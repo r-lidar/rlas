@@ -1,9 +1,61 @@
-### rlas v1.3.4
+### rlas v1.4.1 (Release date: )
+
+- Misc: removed `LazyData` in `DESCRIPTION`
+- Misc: Update `Description` in `DESCRIPTION` to include format 1.4 in reading capabilities. 
+- Enhance: `header_create()` creates a v1.4 header if the point source format is detected to be 6 or more
+- Enhance: `header_create()` uses `floor(min(X|Y|Z))` instead of `min(X|Y|Z)` as offsets.
+- Enhance: `header_create()` infers the scale factor from the data instead of setting hard coded value 0.01
+
+### rlas v1.4.0 (Release date: 2021-03-23)
+
+- Fix: build failure with GCC 4.x
+- Fix: gcc-asan signed integer overflow.
+- Fix: when reading a non supported extra bytes attribute rlas used to print a warning message. It now throws a real warning.
+- Fix: querying ROI using LAX files in LAS file > 2GB on Windows (see [#50](https://github.com/Jean-Romain/rlas/issues/50))
+- Fix: file creation day is now written (see [#51](https://github.com/Jean-Romain/rlas/issues/50))
+- New: `read.lasheader()` now reads the extended variable length record (EVLR)
+- New: `write.las()` now writes all GeoKeyDirectoryTag + GeoAsciiParamsTag + GeoDoubleParamsTag
+- New: `write.las()` can now write WKT OGC CS in EVLR
+- Enhance: full update of LASlib (fix [#43](https://github.com/Jean-Romain/rlas/issues/43))
+- Change: use `tinytest` instead of `testthat`
+
+### rlas v1.3.9 (Release date: 2021-01-11)
+
+- Fix gcc-asan new-delete-type-mismatch error when reading las/laz with lax files that appeared with C++14 and later standard.
+
+### rlas v1.3.8 (Release date: 2020-12-14)
+
+- Switch to C++14 to use boost 1.75.0 (see [#49](https://github.com/Jean-Romain/rlas/issues/49))
+
+### rlas v1.3.7 (Release date: 2020-11-11)
+
+- Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` incorrectly set the epsg code when the key 3072 is missing but the VLR is not empty
+
+### rlas v1.3.6 (Release date: 2020-06-02)
+
+- Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. It missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/Jean-Romain/rlas/pull/45)
+- Fix: The function `is_empty_point_cloud()` did not actually test what it was expected to test.
+- Fix: `is_valid_scalefactors()` does not trigger any report for very fine scale factors such as 0.000001 that is a valid scale of long/lat coordinates.
+- Fix: `is_valid_returnnumber()` does not complain for ReturnNumber = 0. This is valid but not compliant to the specs. 
+- Fix: formats 5, 7 and 10 were missing in the list of formats valid for storing RGB
+- Fix: format 10 was missing in the list of formats valid for storing NIR
+- Fix: more tests and fixes relative to asprs specification
+- New: new parameter transform to apply streaming transformations
+- New: list of filters and transformations are available via `read.las(filter = "-h")` and  `read.las(transform = "-h")`
+- Enhancement: las specification tests now check for NAs
+
+### rlas v1.3.5 (Release date: 2020-02-04)
+
+- Change: defunc deprecated functions `check_data`, `check_header` and `check_data_vs_header`.
+- Fix: `is_valid_ScanAngle()` triggers an error if |a| > 196.6 instead of 180. 196.6 is the maximum writable angle but is not compliant with the specs ([#44](https://github.com/Jean-Romain/rlas/issues/44)).
+- New: function `is_compliant_ScanAngle()` to check the compliance of the Scan Angle.
+
+### rlas v1.3.4 (Release date: 2019-09-19)
 
 - Fix: One Definition Rule (ODR) violation in LASzip (LTO issue)
 - Note: use the function `tabulate()` instead of home made C++ code to count the return numbers. 
 
-### rlas v1.3.3
+### rlas v1.3.3 (Release date: 2019-08-30)
 
 * New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).
 * New: verbose option in `writelax()`.

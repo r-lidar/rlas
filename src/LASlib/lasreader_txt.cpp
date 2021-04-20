@@ -231,11 +231,10 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
 
   this->point_type = header.point_data_format;
 
-  // maybe attributes in extra bytes
+  // maybe update point size with extra bytes
 
   if (header.number_attributes)
   {
-    header.update_extra_bytes_vlr();
     header.point_data_record_length += header.get_attributes_size();
   }
 
@@ -591,6 +590,9 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       header.extended_number_of_points_by_return[3] = 0;
       header.extended_number_of_points_by_return[4] = 0;
     }
+
+    // free the parse less string
+
     free(parse_less);
 
     // close the input file
@@ -919,6 +921,13 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
     }
   }
 
+  // maybe attributes in extra bytes
+
+  if (header.number_attributes)
+  {
+    header.update_extra_bytes_vlr();
+  }
+
   // read the first line with full parse_string
 
   i = 0;
@@ -1176,9 +1185,9 @@ BOOL LASreaderTXT::read_point_default()
     }
   }
   // compute the quantized x, y, and z values
-  point.set_X(header.get_X(point.coordinates[0]));
-  point.set_Y(header.get_Y(point.coordinates[1]));
-  point.set_Z(header.get_Z(point.coordinates[2]));
+  point.set_X((I32)header.get_X(point.coordinates[0]));
+  point.set_Y((I32)header.get_Y(point.coordinates[1]));
+  point.set_Z((I32)header.get_Z(point.coordinates[2]));
   p_count++;
   if (!populated_header)
   {
@@ -1715,14 +1724,35 @@ BOOL LASreaderTXT::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';')) l++; // first skip white spaces
       if (l[0] == 0) return FALSE;
       if (sscanf(l, "%d", &temp_i) != 1) return FALSE;
-      if (temp_i < 0 || temp_i > 255)
+      if (temp_i < 0)
       {
-        REprintf( "WARNING: classification %d is out of range of unsigned char\n", temp_i);
-        point.set_classification(U8_CLAMP(temp_i));
+        REprintf( "WARNING: classification %d is negative. zeroing ...\n", temp_i);
+        point.set_classification(0);
+        point.set_extended_classification(0);
+      }
+      else if (point.extended_point_type)
+      {
+        if (temp_i > 255)
+        {
+          REprintf( "WARNING: extended classification %d is larger than 255. clamping ...\n", temp_i);
+          point.set_extended_classification(255);
+        }
+        else
+        {
+          point.set_extended_classification((U8)temp_i);
+        }
       }
       else
       {
-        point.set_classification((U8)temp_i);
+        if (temp_i > 31)
+        {
+          REprintf( "WARNING: classification %d is larger than 31. clamping ...\n", temp_i);
+          point.set_classification(31);
+        }
+        else
+        {
+          point.set_classification((U8)temp_i);
+        }
       }
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
     }
@@ -1805,13 +1835,13 @@ BOOL LASreaderTXT::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
       hex_string[0] = l[0]; hex_string[1] = l[1];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[0] = hex_value;
       hex_string[0] = l[2]; hex_string[1] = l[3];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[1] = hex_value;
       hex_string[0] = l[4]; hex_string[1] = l[5];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[2] = hex_value;
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1821,7 +1851,7 @@ BOOL LASreaderTXT::parse(const char* parse_string)
       I32 hex_value;
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
-      sscanf(l,"%d",&hex_value);
+      sscanf(l,"%x",&hex_value);
       point.intensity = U8_CLAMP(((F64)hex_value/(F64)0xFFFFFF)*255);
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1999,12 +2029,12 @@ void LASreaderTXT::populate_bounding_box()
 {
   // compute quantized and then unquantized bounding box
 
-  F64 dequant_min_x = header.get_x(header.get_X(header.min_x));
-  F64 dequant_max_x = header.get_x(header.get_X(header.max_x));
-  F64 dequant_min_y = header.get_y(header.get_Y(header.min_y));
-  F64 dequant_max_y = header.get_y(header.get_Y(header.max_y));
-  F64 dequant_min_z = header.get_z(header.get_Z(header.min_z));
-  F64 dequant_max_z = header.get_z(header.get_Z(header.max_z));
+  F64 dequant_min_x = header.get_x((I32)(header.get_X(header.min_x)));
+  F64 dequant_max_x = header.get_x((I32)(header.get_X(header.max_x)));
+  F64 dequant_min_y = header.get_y((I32)(header.get_Y(header.min_y)));
+  F64 dequant_max_y = header.get_y((I32)(header.get_Y(header.max_y)));
+  F64 dequant_min_z = header.get_z((I32)(header.get_Z(header.min_z)));
+  F64 dequant_max_z = header.get_z((I32)(header.get_Z(header.max_z)));
 
   // make sure there is not sign flip
 

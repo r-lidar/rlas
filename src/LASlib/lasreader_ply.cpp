@@ -66,7 +66,7 @@ BOOL LASreaderPLY::open(const CHAR* file_name, U8 point_type, BOOL populate_head
 
 BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL populate_header)
 {
-  int i;
+  int i,j;
 
   if (file == 0)
   {
@@ -383,10 +383,10 @@ BOOL LASreaderPLY::open(FILE* file, const CHAR* file_name, U8 point_type, BOOL p
       // update the min and max of attributes in extra bytes
       if (number_attributes)
       {
-        for (i = 0; i < number_attributes; i++)
+        for (j = 0; j < number_attributes; j++)
         {
-          header.attributes[i].update_min(point.extra_bytes + header.attribute_starts[i]);
-          header.attributes[i].update_max(point.extra_bytes + header.attribute_starts[i]);
+          header.attributes[j].update_min(point.extra_bytes + header.attribute_starts[j]);
+          header.attributes[j].update_max(point.extra_bytes + header.attribute_starts[j]);
         }
       }
     }
@@ -678,9 +678,9 @@ BOOL LASreaderPLY::read_point_default()
     }
 
     // compute the quantized x, y, and z values
-    point.set_X(header.get_X(point.coordinates[0]));
-    point.set_Y(header.get_Y(point.coordinates[1]));
-    point.set_Z(header.get_Z(point.coordinates[2]));
+    point.set_X((I32)header.get_X(point.coordinates[0]));
+    point.set_Y((I32)header.get_Y(point.coordinates[1]));
+    point.set_Z((I32)header.get_Z(point.coordinates[2]));
     p_count++;
     if (!populated_header)
     {
@@ -1015,7 +1015,7 @@ F64 LASreaderPLY::read_binary_value(CHAR type)
   }
   else if (type == 'd')
   {
-    streamin->get32bitsLE((U8*)&value);
+    streamin->get64bitsLE((U8*)&value);
   }
   else if (type == 'C')
   {
@@ -1487,13 +1487,13 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
       hex_string[0] = l[0]; hex_string[1] = l[1];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[0] = hex_value;
       hex_string[0] = l[2]; hex_string[1] = l[3];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[1] = hex_value;
       hex_string[0] = l[4]; hex_string[1] = l[5];
-      sscanf(hex_string,"%d",&hex_value);
+      sscanf(hex_string,"%x",&hex_value);
       point.rgb[2] = hex_value;
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1503,7 +1503,7 @@ BOOL LASreaderPLY::parse(const char* parse_string)
       I32 hex_value;
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
-      sscanf(l,"%d",&hex_value);
+      sscanf(l,"%x",&hex_value);
       point.intensity = U8_CLAMP(((F64)hex_value/(F64)0xFFFFFF)*255);
       l+=6;
       while (l[0] && l[0] != ' ' && l[0] != ',' && l[0] != '\t' && l[0] != ';') l++; // then advance to next white space
@@ -1578,6 +1578,10 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
     else if (strncmp(line, "comment", 7) == 0)
     {
       // ignore comments
+    }
+    else if (strncmp(line, "obj_info", 8) == 0)
+    {
+      // ignore obj_info
     }
     else if (strncmp(line, "element", 7) == 0)
     {
@@ -1688,19 +1692,19 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
         if (strncmp(&line[offset], "x", 1) == 0)
         {
           parse_string[items] = 'x';
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else if (strncmp(&line[offset], "y", 1) == 0)
         {
           parse_string[items] = 'y';
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else if (strncmp(&line[offset], "z", 1) == 0)
         {
           parse_string[items] = 'z';
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else if (strncmp(&line[offset], "nx", 2) == 0)
@@ -1708,7 +1712,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
           I32 num = number_attributes;
           add_attribute(LAS_ATTRIBUTE_I16, "nx", "normal x coordinate", 0.00005);
           parse_string[items] = '0' + num;
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else if (strncmp(&line[offset], "ny", 2) == 0)
@@ -1716,7 +1720,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
           I32 num = number_attributes;
           add_attribute(LAS_ATTRIBUTE_I16, "ny", "normal y coordinate", 0.00005);
           parse_string[items] = '0' + num;
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else if (strncmp(&line[offset], "nz", 2) == 0)
@@ -1724,7 +1728,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
           I32 num = number_attributes;
           add_attribute(LAS_ATTRIBUTE_I16, "nz", "normal z coordinate", 0.00005);
           parse_string[items] = '0' + num;
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
         else
@@ -1736,9 +1740,9 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
           memset(description, 0, 32);
           sscanf(&line[offset], "%15s", name);
           sscanf(&line[offset], "%31s", description);
-          add_attribute(LAS_ATTRIBUTE_F32, name, description);
+          add_attribute(LAS_ATTRIBUTE_F64, name, description);
           parse_string[items] = '0' + num;
-          type_string[items] = 'f';
+          type_string[items] = 'd';
           items++;
         }
       }
@@ -1782,6 +1786,34 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
           type_string[items] = 'f';
           items++;
         }
+      }
+      else if (strncmp(&line[9], "int", 3) == 0)
+      {
+        I32 num = number_attributes;
+        CHAR name[16];
+        CHAR description[32];
+        memset(name, 0, 16);
+        memset(description, 0, 32);
+        sscanf(&line[13], "%15s", name);
+        sscanf(&line[13], "%31s", description);
+        add_attribute(LAS_ATTRIBUTE_I32, name, description);
+        parse_string[items] = '0' + num;
+        type_string[items] = 'i';
+        items++;
+      }
+      else if (strncmp(&line[9], "uint", 4) == 0)
+      {
+        I32 num = number_attributes;
+        CHAR name[16];
+        CHAR description[32];
+        memset(name, 0, 16);
+        memset(description, 0, 32);
+        sscanf(&line[13], "%15s", name);
+        sscanf(&line[13], "%31s", description);
+        add_attribute(LAS_ATTRIBUTE_I32, name, description);
+        parse_string[items] = '0' + num;
+        type_string[items] = 'I';
+        items++;
       }
       else
       {
@@ -1855,12 +1887,12 @@ void LASreaderPLY::populate_bounding_box()
 {
   // compute quantized and then unquantized bounding box
 
-  F64 dequant_min_x = header.get_x(header.get_X(header.min_x));
-  F64 dequant_max_x = header.get_x(header.get_X(header.max_x));
-  F64 dequant_min_y = header.get_y(header.get_Y(header.min_y));
-  F64 dequant_max_y = header.get_y(header.get_Y(header.max_y));
-  F64 dequant_min_z = header.get_z(header.get_Z(header.min_z));
-  F64 dequant_max_z = header.get_z(header.get_Z(header.max_z));
+  F64 dequant_min_x = header.get_x((I32)header.get_X(header.min_x));
+  F64 dequant_max_x = header.get_x((I32)header.get_X(header.max_x));
+  F64 dequant_min_y = header.get_y((I32)header.get_Y(header.min_y));
+  F64 dequant_max_y = header.get_y((I32)header.get_Y(header.max_y));
+  F64 dequant_min_z = header.get_z((I32)header.get_Z(header.min_z));
+  F64 dequant_max_z = header.get_z((I32)header.get_Z(header.max_z));
 
   // make sure there is not sign flip
 

@@ -21,8 +21,9 @@ amplitude normalized by the maximum value possible (i.e 2 power the number of bi
 the full waveform)
 }
 \seealso{
-Other header_tools: \code{\link{crs_tools}},
-  \code{\link{extra_bytes_attribute_tools}},
-  \code{\link{public_header_block_tools}}
+Other header_tools: 
+\code{\link{crs_tools}},
+\code{\link{extra_bytes_attribute_tools}},
+\code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

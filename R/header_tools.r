@@ -25,7 +25,7 @@
 #'                      ScanDirectionFlag = c(1L, 1L, 1L),
 #'                      EdgeOfFlightline = c(1L, 0L, 0L),
 #'                      Classification = c(1L, 1L, 1L),
-#'                      ScanAngle = c(-21L, -21L, -21L),
+#'                      ScanAngleRank = c(-21L, -21L, -21L),
 #'                      UserData = c(32L, 32L, 32L),
 #'                      PointSourceID = c(17L, 17L, 17L),
 #'                      treeID = c(1L, 1L, 1L))
@@ -74,8 +74,8 @@ header_create = function(data)
   header[["Generating Software"]] = "rlas R package"
   header[["File Creation Day of Year"]] = as.numeric(strftime(Sys.time(), format = "%j"))
   header[["File Creation Year"]] = as.numeric(strftime(Sys.time(), format = "%Y"))
-  header[["Header Size"]] = 227
-  header[["Offset to point data"]] = 227
+  header[["Header Size"]] = 227L
+  header[["Offset to point data"]] = 227L
   header[["Number of point records"]] = npts
   header[["Min X"]] = minx
   header[["Min Y"]] = miny
@@ -83,47 +83,37 @@ header_create = function(data)
   header[["Max X"]] = maxx
   header[["Max Y"]] = maxy
   header[["Max Z"]] = maxz
-  header[["X offset"]] = header[["Min X"]]
-  header[["Y offset"]] = header[["Min Y"]]
-  header[["Z offset"]] = header[["Min Z"]]
+  header[["X offset"]] = floor(header[["Min X"]])
+  header[["Y offset"]] = floor(header[["Min Y"]])
+  header[["Z offset"]] = floor(header[["Min Z"]])
   header[["X scale factor"]] = 0.01
   header[["Y scale factor"]] = 0.01
   header[["Z scale factor"]] = 0.01
+
+
+  scalex <- guess_scale_factor(data$X)
+  scaley <- guess_scale_factor(data$Y)
+  scalez <- guess_scale_factor(data$Z)
+  if (scalex == scaley && scalex == scalez)
+  {
+    header[["X scale factor"]] <- scalex
+    header[["Y scale factor"]] <- scaley
+    header[["Z scale factor"]] <- scalez
+  }
 
   if ("ReturnNumber" %in% fields)
     header[["Number of points by return"]] <- tabulate(data$ReturnNumber, 5L)
   else
     header[["Number of points by return"]] <- rep(0L,5)
 
-  if ("NIR" %in% fields) # format 8
+  header[["Point Data Format ID"]] <- guess_las_format(data)
+  header[["Point Data Record Length"]] <- get_data_record_length(header[["Point Data Format ID"]])
+
+  if (header[["Point Data Format ID"]] >= 6L)
   {
-    header[["Point Data Format ID"]] = 8
-    header[["Point Data Record Length"]] = 38
-  }
-  else if ("gpstime" %in% fields) # format 1, 3, 6, 7
-  {
-    if (all(c("R", "G", "B") %in% fields))  # format 3 (6 not supported)
-    {
-      header[["Point Data Format ID"]] = 3
-      header[["Point Data Record Length"]] = 34
-    }
-    else # format 1 (7 not supported)
-    {
-      header[["Point Data Format ID"]] = 1
-      header[["Point Data Record Length"]] = 28
-    }
-  }
-  else # format 0 or 2
-  {
-    if (all(c("R", "G", "B") %in% fields))
-    {
-      header[["Point Data Format ID"]] = 2
-      header[["Point Data Record Length"]] = 26
-    }
-    else {
-      header[["Point Data Format ID"]] = 0
-      header[["Point Data Record Length"]] = 20
-    }
+    header[["Version Minor"]] = 4L
+    header[["Header Size"]] = 375L
+    header[["Offset to point data"]] = 375L
   }
 
   header[["Variable Length Records"]] = list()
@@ -178,7 +168,7 @@ header_update = function(header, data)
 #' Extra Bytes Attributes Tools
 #'
 #' Functions that update a header to describe Extra Bytes Attributes according to the
-#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#' \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 #'
 #' @param header list
 #' @param name character. The name of the extrabytes attributes to add in the file.
@@ -202,7 +192,7 @@ header_update = function(header, data)
 #'                   ScanDirectionFlag = c(1L, 1L, 1L),
 #'                   EdgeOfFlightline = c(1L, 0L, 0L),
 #'                   Classification = c(1L, 1L, 1L),
-#'                   ScanAngle = c(-21L, -21L, -21L),
+#'                   ScanAngleRank = c(-21L, -21L, -21L),
 #'                   UserData = c(32L, 32L, 32L),
 #'                   PointSourceID = c(17L, 17L, 17L),
 #'                   treeID = c(1L, 1L, 1L))
@@ -331,7 +321,7 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
 #' Coordinate Reference System Tools
 #'
 #' Functions that update a header to describe coordinates reference system according to the
-#' \href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+#' \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 #'
 #' @param header list
 #' @param epsg integer. An EPSG code
@@ -344,7 +334,7 @@ header_get_epsg = function(header)
 {
   pos <- where_is_epsg(header)
 
-  if (pos == 0)
+  if (pos == 0L)
     return(0)
   else
     return(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]][[pos]][["value offset"]])
@@ -366,11 +356,11 @@ header_set_epsg = function(header, epsg)
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["length after header"]] <- 40
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["description"]]         <- "Geo Key Directory Tag"
       header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]                <- vector("list", 1)
-      pos <- 1
+      pos <- 1L
     }
     else
     {
-      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]]) + 1
+      pos <- length(header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]) + 1
     }
   }
 
@@ -384,28 +374,43 @@ header_get_wktcs = function(header)
 {
   wkt = header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]]
 
-  if (is.null(wkt))
-    return("")
-  else
+  if (!is.null(wkt))
     return(wkt)
+
+  wkt = header[["Extended Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]]
+
+  if (!is.null(wkt))
+    return(wkt)
+
+  return("")
 }
 
 #' @export
 #' @rdname crs_tools
 header_set_wktcs = function(header, WKT)
 {
-  if (is.null(header[["Variable Length Records"]]))
-    header[["Variable Length Records"]] <- list()
+  vlrs <- length(header[["Variable Length Records"]]) > 0L
+  evlrs <- length(header[["Extended Variable Length Records"]]) > 0L
+  attr <- "Variable Length Records"
 
-  if (is.null(header[["Variable Length Records"]][["WKT OGC CS"]]))
-    header[["Variable Length Records"]][["WKT OGC CS"]] <- list()
+  if (!vlrs && evlrs)
+    attr <- "Extended Variable Length Records"
+
+  if (is.null(header[[attr]]))
+    header[[attr]] <- list()
+
+  if (is.null(header[[attr]][["WKT OGC CS"]]))
+  {
+    attr <- "Variable Length Records"
+    header[[attr]][["WKT OGC CS"]] <- list()
+  }
 
 
-  header[["Variable Length Records"]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
-  header[["Variable Length Records"]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
-  header[["Variable Length Records"]][["WKT OGC CS"]][["record ID"]]                 <- 2112
-  header[["Variable Length Records"]][["WKT OGC CS"]][["description"]]               <- "WKT Information"
-  header[["Variable Length Records"]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]] <- WKT
+  header[[attr]][["WKT OGC CS"]][["reserved"]]                  <- 43707L
+  header[[attr]][["WKT OGC CS"]][["user ID"]]                   <-  "LASF_Projection"
+  header[[attr]][["WKT OGC CS"]][["record ID"]]                 <- 2112
+  header[[attr]][["WKT OGC CS"]][["description"]]               <- "WKT Information"
+  header[[attr]][["WKT OGC CS"]][["WKT OGC COORDINATE SYSTEM"]] <- WKT
   header[["Global Encoding"]][["WKT"]] <- TRUE
   return(header)
 }
@@ -420,7 +425,51 @@ where_is_epsg = function(header)
       return(i)
   }
 
-  return(0)
+  return(0L)
 }
+
+guess_las_format <- function(data)
+{
+  fields <- names(data)
+
+  if ("NIR" %in% fields) # format 8 or 10
+    return(8L) # Format 10 is not supported
+
+  if ("gpstime" %in% fields) # format 1, 3:10
+  {
+    if (all(c("R", "G", "B") %in% fields))  # format 3, 5, 7, 8
+    {
+     if ("ScanAngle" %in% fields)
+        return(7L) # It is not 8 because NIR has already been tested
+      else
+        return(3L)
+    }
+    else # format 1
+      return(1L)
+  }
+  else # format 0 or 2
+  {
+    if (all(c("R", "G", "B") %in% fields))
+      return(2L)
+    else
+      return(0L)
+  }
+}
+
+guess_scale_factor <- function(x)
+{
+  u <- fast_decimal_count(x)
+  u <- tabulate(u)
+  n <- which.max(u)
+  scale = 1/10^n
+  return(scale)
+}
+
+get_data_record_length <- function(format)
+{
+  bytes <- c(20L, 28L, 26L, 34L, 57L, 63L, 30L, 36L, 38L, 59L, 67L)
+  return(bytes[format + 1])
+}
+
 
 #allowed_fields = c("X", "Y", "Z", "gpstime", "Intensity", "ReturnNumber", "NumberOfReturns", "ScanDirectionFlag", "EdgeOfFlightline", "Classification", "ScanAngle", "UserData", "PointSourceID", "R", "G", "B", "NIR")

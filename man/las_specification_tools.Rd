@@ -43,6 +43,7 @@
 \alias{is_compliant_NumberOfReturns}
 \alias{is_compliant_ReturnNumber_vs_NumberOfReturns}
 \alias{is_compliant_RGB}
+\alias{is_compliant_ScanAngle}
 \alias{is_compliant_ScanAngleRank}
 \alias{is_NIR_in_valid_format}
 \alias{is_gpstime_in_valid_format}
@@ -139,6 +140,8 @@ is_compliant_ReturnNumber_vs_NumberOfReturns(data, behavior = "bool")
 
 is_compliant_RGB(data, behavior = "bool")
 
+is_compliant_ScanAngle(data, behavior = "bool")
+
 is_compliant_ScanAngleRank(data, behavior = "bool")
 
 is_NIR_in_valid_format(header, data, behavior = "bool")
@@ -157,11 +160,13 @@ is_XY_smaller_than_bbox(header, data, behavior = "bool")
 
 is_Z_in_bbox(header, data, behavior = "bool")
 
-is_number_of_points_in_accordance_with_header(header, data,
-  behavior = "bool")
+is_number_of_points_in_accordance_with_header(header, data, behavior = "bool")
 
-is_number_of_points_by_return_in_accordance_with_header(header, data,
-  behavior = "bool")
+is_number_of_points_by_return_in_accordance_with_header(
+  header,
+  data,
+  behavior = "bool"
+)
 
 is_extrabytes_in_accordance_with_data(header, data, behavior = "bool")
 }
@@ -175,7 +180,6 @@ character vector of each warning but does not thrown any warning.}
 \item{data}{a data.frame or a data.table containing a point cloud}
 }
 \description{
-A set of function to test conformance with \href{http://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specification}.
 Tools reserved to developpers and not intended to be used by regular users. The functions return TRUE
 or FALSE by default without more information. If behavior is 'warning' functions throw a warning
 for each fail and return FALSE if any warning TRUE otherwise. If behavior is 'stop' functions throw

@@ -1,26 +1,5 @@
 #include "rlasstreamer.h"
 
-RLASstreamer::RLASstreamer()
-{
-  initialize_bool();
-}
-
-RLASstreamer::RLASstreamer(CharacterVector ifiles)
-{
-  initialize_bool();
-  setinputfiles(ifiles);
-  initialize();
-}
-
-
-RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector filter)
-{
-  initialize_bool();
-  setinputfiles(ifiles);
-  setfilter(filter);
-  initialize();
-}
-
 RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter)
 {
   initialize_bool();
@@ -33,10 +12,10 @@ RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, Charac
 RLASstreamer::~RLASstreamer()
 {
   if (!ended)
-    terminate();
+    terminate(); // # nocov
 
   if(0 != lasreader && NULL != lasreader)
-    delete lasreader;
+    delete lasreader; // # nocov
 
   if(0 != laswriter && NULL != laswriter)
     delete laswriter;
@@ -104,8 +83,8 @@ void RLASstreamer::setfilter(CharacterVector filter)
 
   if (!lasreadopener.parse_str(filterchar))
   {
-    lasreadopener.set_filter(0);
-    stop("Filter error see message above.");
+    lasreadopener.set_filter(0); // # nocov
+    stop("Filter error see message above."); // # nocov
   }
 
   useFilter = true;
@@ -235,7 +214,7 @@ void RLASstreamer::initialize()
   laswaveform13reader = lasreadopener.open_waveform13(&lasreader->header);
 
   if (0 == lasreader || NULL == lasreader)
-    stop("LASlib internal error. See message above.");
+    stop("LASlib internal error. See message above."); // # nocov
 
   // Initilize the writer if write in file
   if (!inR)
@@ -244,7 +223,7 @@ void RLASstreamer::initialize()
     laswriter = laswriteopener.open(&lasreader->header);
 
     if(0 == laswriter || NULL == laswriter)
-      stop("LASlib internal error. See message above.");
+      stop("LASlib internal error. See message above."); // # nocov
   }
   else
   {
@@ -368,7 +347,10 @@ void RLASstreamer::allocation()
         extra_bytes_attr.push_back(extrabyte);
       }
       else
-        Rprintf("WARNING: data type %d of attribute %d not implemented.\n", extrabyte.data_type, extrabyte.id);
+      {
+        std::string msg = std::string("data type ") + std::to_string(extrabyte.data_type) + std::string(" of extra bytes attribute ") + std::to_string(extrabyte.id) + std::string(" is deprecated and not supported by rlas.");
+        Rf_warningcall(R_NilValue, msg.c_str());
+      }
     }
   }
 }

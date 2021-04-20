@@ -17,7 +17,6 @@
 #'
 #' @param data a data.frame or a data.table containing a point cloud
 #' @param header a list containing the header of a las file
-#' @param ... internal use only
 #'
 #' @export
 #' @rdname check
@@ -29,6 +28,7 @@ check_las_validity = function(header, data)
   is_defined_version(header, "stop")
   is_defined_globalencoding(header, "stop")
   is_defined_date(header, "stop")
+  is_defined_pointformat(header, "stop")
 
   is_defined_coordinates(data, "stop")
 
@@ -38,11 +38,12 @@ check_las_validity = function(header, data)
   is_valid_date(header, "stop")
   is_valid_pointformat(header, "stop")
   is_valid_extrabytes(header, "stop")
+  is_valid_filesourceid(header, "stop")
 
   is_valid_XYZ(data, "stop")
   is_valid_Intensity(data, "stop")
-  is_valid_ReturnNumber(header, data, "stop")
-  is_valid_NumberOfReturns(header, data, "stop")
+  is_valid_ReturnNumber(data, header, "stop")
+  is_valid_NumberOfReturns(data, header, "stop")
   is_valid_ScanDirectionFlag(data, "stop")
   is_valid_EdgeOfFlightline(data, "stop")
   is_valid_Classification(data, header, "stop")
@@ -85,6 +86,7 @@ check_las_compliance = function(header, data)
   is_compliant_ReturnNumber(data, "warning")
   is_compliant_NumberOfReturns(data, "warning")
   is_compliant_RGB(data, "warning")
+  is_compliant_ScanAngle(data, "warning")
   is_compliant_ScanAngleRank(data, "warning")
   is_compliant_ReturnNumber_vs_NumberOfReturns(data, "warning")
   is_XY_larger_than_bbox(header, data, "warning")
@@ -99,4 +101,34 @@ check_las_compliance = function(header, data)
   is_ScanAngle_in_valid_format(header, data, "warning")
 
   return(invisible())
+}
+
+check_output_file = function(file)
+{
+  islas = tools::file_ext(file) %in% c("las", "laz")
+
+  if (length(file) > 1)
+    stop("Write only one file at a time.")
+
+  if (!islas)
+    stop("File not supported. Extension should be 'las' or 'laz'")
+}
+
+check_file = function(file)
+{
+  valid = file.exists(file)
+  islas = tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+  file = normalizePath(file)
+
+  if (!all(valid))
+    stop("File not found.")
+
+  if (!all(islas))
+    stop("File not supported.")
+}
+
+check_filter = function(filter)
+{
+  if (!is.character(filter) & length(filter) > 1)
+    stop("Incorrect argument 'filter'. A string is expected.")
 }

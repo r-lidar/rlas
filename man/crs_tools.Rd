@@ -25,11 +25,12 @@ header_set_wktcs(header, WKT)
 }
 \description{
 Functions that update a header to describe coordinates reference system according to the
-\href{https://www.asprs.org/a/society/committees/standards/LAS_1_4_r13.pdf}{LAS specifications}
+\href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
 }
 \seealso{
-Other header_tools: \code{\link{extra_bytes_attribute_tools}},
-  \code{\link{fwf_interpreter}},
-  \code{\link{public_header_block_tools}}
+Other header_tools: 
+\code{\link{extra_bytes_attribute_tools}},
+\code{\link{fwf_interpreter}()},
+\code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

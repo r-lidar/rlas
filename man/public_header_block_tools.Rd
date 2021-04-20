@@ -39,7 +39,7 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
                      ScanDirectionFlag = c(1L, 1L, 1L),
                      EdgeOfFlightline = c(1L, 0L, 0L),
                      Classification = c(1L, 1L, 1L),
-                     ScanAngle = c(-21L, -21L, -21L),
+                     ScanAngleRank = c(-21L, -21L, -21L),
                      UserData = c(32L, 32L, 32L),
                      PointSourceID = c(17L, 17L, 17L),
                      treeID = c(1L, 1L, 1L))
@@ -47,8 +47,9 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
 lasheader = header_create(lasdata)
 }
 \seealso{
-Other header_tools: \code{\link{crs_tools}},
-  \code{\link{extra_bytes_attribute_tools}},
-  \code{\link{fwf_interpreter}}
+Other header_tools: 
+\code{\link{crs_tools}},
+\code{\link{extra_bytes_attribute_tools}},
+\code{\link{fwf_interpreter}()}
 }
 \concept{header_tools}
