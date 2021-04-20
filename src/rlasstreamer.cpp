@@ -368,9 +368,20 @@ void RLASstreamer::write_waveform()
     wavePacketOffset.push_back((U32)lasreader->point.wavepacket.getOffset());
     wavePacketSize.push_back(lasreader->point.wavepacket.getSize());
     wavePacketLocation.push_back(lasreader->point.wavepacket.getLocation());
+
     Xt.push_back(lasreader->point.wavepacket.getXt());
     Yt.push_back(lasreader->point.wavepacket.getYt());
     Zt.push_back(lasreader->point.wavepacket.getZt());
+
+    // If the wavePacketLocation already exists it means that we already read it once
+    // and we are pointing to the same data again. No need to create a copy of data
+    // already read all this stuff is already heavy for R.
+    if (!wavePacketRegistry.insert(lasreader->point.wavepacket.getOffset()).second)
+    {
+      std::vector<int> wave{0};
+      fullwaveform.push_back(wave);
+      return;
+    }
 
     if (laswaveform13reader->nbits == 8)
     {

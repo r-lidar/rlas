@@ -83,6 +83,7 @@ class RLASstreamer
     std::vector<F32> Yt;
     std::vector<F32> Zt;
     std::vector< std::vector<int> >fullwaveform;
+    std::unordered_set<U64> wavePacketRegistry;
 
     LASreadOpener lasreadopener;
     LASwriteOpener laswriteopener;
