@@ -74,8 +74,8 @@ header_create = function(data)
   header[["Generating Software"]] = "rlas R package"
   header[["File Creation Day of Year"]] = as.numeric(strftime(Sys.time(), format = "%j"))
   header[["File Creation Year"]] = as.numeric(strftime(Sys.time(), format = "%Y"))
-  header[["Header Size"]] = 227
-  header[["Offset to point data"]] = 227
+  header[["Header Size"]] = 227L
+  header[["Offset to point data"]] = 227L
   header[["Number of point records"]] = npts
   header[["Min X"]] = minx
   header[["Min Y"]] = miny
@@ -99,7 +99,11 @@ header_create = function(data)
   header[["Point Data Record Length"]] <- get_data_record_length(header[["Point Data Format ID"]])
 
   if (header[["Point Data Format ID"]] >= 6L)
+  {
     header[["Version Minor"]] = 4L
+    header[["Header Size"]] = 375L
+    header[["Offset to point data"]] = 375L
+  }
 
   header[["Variable Length Records"]] = list()
 
