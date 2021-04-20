@@ -2,7 +2,7 @@
 % Please edit documentation in R/fwf_interpreter.r
 \name{fwf_interpreter}
 \alias{fwf_interpreter}
-\title{Full Waveform interpreter}
+\title{Full Waveform Interpreter}
 \usage{
 fwf_interpreter(header, data)
 }
@@ -12,13 +12,14 @@ fwf_interpreter(header, data)
 \item{data}{data.frame or data.table}
 }
 \value{
-A list containing a \code{data.frame} per points
+A list containing a \code{data.frame} per pulse with the XYZ coordinates of the
+waveform and the Voltage \code{Volts} of the record.
 }
 \description{
-Full waveform data read from las files might be cryptic even with a good understanding of the LAS
-specifications. This function interpret the Full waveform data in a set of XYZ coordinates and and
-amplitude normalized by the maximum value possible (i.e 2 power the number of bits used to store
-the full waveform)
+!! This is an experimental function that may change !!
+Raw full waveform data read from LAS files might be cryptic even with a good understanding
+of the LAS specifications. This function interpret the full waveform data as a set of
+XYZ coordinates and an amplitude which is the digitized voltage.
 }
 \seealso{
 Other header_tools: 

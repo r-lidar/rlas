@@ -155,3 +155,13 @@ las <- read.las(lazfile, select = "* -0")
 expect_false("Pulse width" %in% names(las))
 expect_false("Amplitude" %in% names(las))
 expect_equal(ncol(las), 16)
+
+if ( !(identical(Sys.getenv("NOT_CRAN"), "true") || (isTRUE(unname(Sys.info()["user"]) == "jr"))) ) exit_file("Skip on CRAN")
+
+ifile <- system.file("extdata", "fwf.laz", package = "rlas")
+las <- read.las(ifile)
+
+expect_true(is.data.frame(las))
+expect_equal(dim(las), c(2250, 24))
+expect_true(all(c("WDPIndex", "WDPOffset", "WDPSize", "WDPLocation", "Xt", "Yt", "Zt", "FWF") %in% names(las)))
+expect_true(is.list(las$FWF))

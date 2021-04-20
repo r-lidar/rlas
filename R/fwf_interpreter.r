@@ -1,21 +1,25 @@
-#' Full Waveform interpreter
+#' Full Waveform Interpreter
 #'
-#' Full waveform data read from las files might be cryptic even with a good understanding of the LAS
-#' specifications. This function interpret the Full waveform data in a set of XYZ coordinates and and
-#' amplitude normalized by the maximum value possible (i.e 2 power the number of bits used to store
-#' the full waveform)
+#' !! This is an experimental function that may change !!
+#' Raw full waveform data read from LAS files might be cryptic even with a good understanding
+#' of the LAS specifications. This function interpret the full waveform data as a set of
+#' XYZ coordinates and an amplitude which is the digitized voltage.
 #'
 #' @param data data.frame or data.table
 #' @param header list. A header
 #' @family header_tools
-#' @return A list containing a \code{data.frame} per points
+#' @return A list containing a \code{data.frame} per pulse with the XYZ coordinates of the
+#' waveform and the Voltage \code{Volts} of the record.
 #' @export
 fwf_interpreter = function(header, data)
 {
   ts    <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Temporal Spacing"]]
   nbits <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Bits per sample"]]
   nsamp <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Number of sample"]]
+  gain  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Gain"]]
+  offs  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Offset"]]
 
+  keep  <- !duplicated(data, by = "WDPLocation")
   X     <- data[["X"]]
   Y     <- data[["Y"]]
   Z     <- data[["Z"]]
@@ -25,8 +29,11 @@ fwf_interpreter = function(header, data)
   dz    <- data[["Zt"]]
   loc   <- data[["WDPLocation"]]
 
-  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc)
+  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc, keep)
   {
+    if (keep == FALSE)
+      return(NULL)
+
     Xstart <- X + loc * dx
     Ystart <- Y + loc * dy
     Zstart <- Z + loc * dz
@@ -37,9 +44,9 @@ fwf_interpreter = function(header, data)
     Py <- Ystart - t * dy
     Pz <- Zstart - t * dz
 
-    return(data.frame(X = Px, Y = Py, Z = Pz, t = t, Amplitude = W/2^nbits))
+    return(data.frame(X = Px, Y = Py, Z = Pz, Volts = gain*W +offs))
   },
-  X, Y, Z, W, dz, dy, dz, loc,
+  X, Y, Z, W, dz, dy, dz, loc, keep,
   SIMPLIFY = FALSE)
 
   return(FWF)

@@ -31,9 +31,10 @@ interest into the memory and hence avoids allocating any superfluous memory.
 'xyzia' means that the x, y, and z coordinates, the intensity and the scan angle will be loaded.
 The supported entries are t - gpstime, a - scan angle, i - intensity, n - number of returns,
 r - return number, c - classification, s - synthetic flag, k - keypoint flag, w - withheld flag,
-o - overlap flag (format 6+) u - user data, p - point source ID, e - edge of flight line flag,
+o - overlap flag (format 6+), u - user data, p - point source ID, e - edge of flight line flag,
 d - direction of scan flag, R - red channel of RGB color, G - green channel of RGB color,
-B - blue channel of RGB color, N - near-infrared channel. C - scanner channel (format 6+).
+B - blue channel of RGB color, N - near-infrared channel, C - scanner channel (format 6+),
+W - Full waveform.
 Also numbers from 1 to 9 for the extra bytes data numbers 1 to 9. 0 enables all extra bytes to be
 loaded and '*' is the wildcard that enables everything to be loaded from the LAS file. \cr
 Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.\cr\cr
