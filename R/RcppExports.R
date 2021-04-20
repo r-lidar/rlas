@@ -13,6 +13,10 @@ fast_countover <- function(x, t) {
     .Call(`_rlas_fast_countover`, x, t)
 }
 
+fast_decimal_count <- function(x) {
+    .Call(`_rlas_fast_decimal_count`, x)
+}
+
 C_reader <- function(ifiles, ofile, select, filter, filter_wkt) {
     .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, filter_wkt)
 }

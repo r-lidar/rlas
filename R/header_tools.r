@@ -90,6 +90,17 @@ header_create = function(data)
   header[["Y scale factor"]] = 0.01
   header[["Z scale factor"]] = 0.01
 
+
+  scalex <- guess_scale_factor(data$X)
+  scaley <- guess_scale_factor(data$Y)
+  scalez <- guess_scale_factor(data$Z)
+  if (scalex == scaley && scalex == scalez)
+  {
+    header[["X scale factor"]] <- scalex
+    header[["Y scale factor"]] <- scaley
+    header[["Z scale factor"]] <- scalez
+  }
+
   if ("ReturnNumber" %in% fields)
     header[["Number of points by return"]] <- tabulate(data$ReturnNumber, 5L)
   else
@@ -443,6 +454,15 @@ guess_las_format <- function(data)
     else
       return(0L)
   }
+}
+
+guess_scale_factor <- function(x)
+{
+  u <- fast_decimal_count(x)
+  u <- tabulate(u)
+  n <- which.max(u)
+  scale = 1/10^n
+  return(scale)
 }
 
 get_data_record_length <- function(format)

@@ -41,6 +41,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fast_decimal_count
+IntegerVector fast_decimal_count(NumericVector x);
+RcppExport SEXP _rlas_fast_decimal_count(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_decimal_count(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_reader
 List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt);
 RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP filter_wktSEXP) {
@@ -113,6 +124,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
+    {"_rlas_fast_decimal_count", (DL_FUNC) &_rlas_fast_decimal_count, 1},
     {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
