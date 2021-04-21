@@ -43,6 +43,10 @@ void set_global_enconding(LASheader&, List);
 void C_writer(CharacterVector file, List LASheader, DataFrame data)
 {
 
+  int format = (int)LASheader["Point Data Format ID"];
+  if (format == 4 || format == 5 || format == 9 || format == 10)
+    Rcpp::stop("Point format with full waveform are not supported yet");
+
   class LASheader header;
 
   // ===========================

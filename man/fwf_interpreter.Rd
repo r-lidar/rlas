@@ -13,10 +13,10 @@ fwf_interpreter(header, data)
 }
 \value{
 A list containing a \code{data.frame} per pulse with the XYZ coordinates of the
-waveform and the Voltage \code{Volts} of the record.
+waveform and the voltage of the record (\code{Amplitude}).
 }
 \description{
-!! This is an experimental function that may change !!
+\bold{This is an experimental function that may change}\cr
 Raw full waveform data read from LAS files might be cryptic even with a good understanding
 of the LAS specifications. This function interpret the full waveform data as a set of
 XYZ coordinates and an amplitude which is the digitized voltage.

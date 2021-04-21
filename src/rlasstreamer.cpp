@@ -20,10 +20,8 @@ RLASstreamer::~RLASstreamer()
   if(0 != laswriter && NULL != laswriter)
     delete laswriter;
 
-  if (0 != laswaveform13reader)
-  {
-    delete laswaveform13reader;
-  }
+  if (0 != laswaveform13reader && NULL != laswaveform13reader)
+    delete laswaveform13reader; // # nocov
 }
 
 void RLASstreamer::setinputfiles(CharacterVector ifiles)
@@ -375,7 +373,7 @@ void RLASstreamer::write_waveform()
 
     // If the wavePacketLocation already exists it means that we already read it once
     // and we are pointing to the same data again. No need to create a copy of data
-    // already read all this stuff is already heavy for R.
+    // already read. All this stuff is already heavy for R!
     if (!wavePacketRegistry.insert(lasreader->point.wavepacket.getOffset()).second)
     {
       std::vector<int> wave{0};

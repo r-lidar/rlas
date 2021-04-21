@@ -30,10 +30,10 @@
 #' Read data from a .las or .laz file
 #'
 #' Reads data from .las or .laz files according to LAS specifications and returns
-#' a \code{data.table} labeled according to LAS specifications. See the ASPRS documentation for the
+#' a \code{data.table} labelled according to LAS specifications. See the ASPRS documentation for the
 #' \href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS file format}.
 #' The optional parameters enable the user to save memory by choosing to load only the
-#' fields they need. Moreover, the function provides a streaming filter to load only the points of
+#' attributes they need. Moreover, the function provides a streaming filter to load only the points of
 #' interest into the memory and hence avoids allocating any superfluous memory.
 #'
 #' \strong{Select:} the 'select' argument specifies the data that will actually be loaded. For example,
@@ -58,7 +58,15 @@
 #' to read the binary files. Thus the package inherits the tranform commands available in
 #' \href{https://rapidlasso.com/lastools/}{LAStools}. To use these transformations the user can pass the
 #' common commands from \code{LAStools} into the parameter \code{'transform'}. Type \code{read.las(transform = "-help")}
-#' to display the \code{LASlib} documentation and the available transformations
+#' to display the \code{LASlib} documentation and the available transformations.
+#'
+#' @section Full Waveform:
+#' The support of full waveform is still in development. The version 1.4.1 introduced the
+#' support of point formats 4, 5, 9 and 10. The current state consists in reading the raw data.
+#' We also introduced the function \link{fwf_interpreter} to interpret the raw data into something
+#' easier to manipulate (but that uses more memory). The current behaviour is not set
+#' in stone and is prone to design modification until version 1.5.0 where we aims to
+#' get enough insight to lock our engineering choices to something that suit best the needs.
 #'
 #'
 #' @param files array of characters
