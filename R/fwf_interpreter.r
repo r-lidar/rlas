@@ -19,7 +19,6 @@ fwf_interpreter = function(header, data)
   gain  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Gain"]]
   offs  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Offset"]]
 
-  keep  <- !duplicated(data, by = "WDPLocation")
   X     <- data[["X"]]
   Y     <- data[["Y"]]
   Z     <- data[["Z"]]
@@ -29,9 +28,9 @@ fwf_interpreter = function(header, data)
   dz    <- data[["Zt"]]
   loc   <- data[["WDPLocation"]]
 
-  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc, keep)
+  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc)
   {
-    if (keep == FALSE)
+    if (length(W) == 1 && W == 0)
       return(NULL)
 
     Xstart <- X + loc * dx
@@ -44,9 +43,9 @@ fwf_interpreter = function(header, data)
     Py <- Ystart - t * dy
     Pz <- Zstart - t * dz
 
-    return(data.frame(X = Px, Y = Py, Z = Pz, Volts = gain*W +offs))
+    return(data.frame(X = Px, Y = Py, Z = Pz, Volts = gain*W + offs))
   },
-  X, Y, Z, W, dz, dy, dz, loc, keep,
+  X, Y, Z, W, dx, dy, dz, loc,
   SIMPLIFY = FALSE)
 
   return(FWF)
