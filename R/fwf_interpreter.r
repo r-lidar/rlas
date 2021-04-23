@@ -26,43 +26,32 @@ fwf_interpreter = function(header, data)
   gain  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Gain"]]
   offs  <- header[["Variable Length Records"]][["Full WaveForm Description"]][["Full WaveForm"]][["Digitizer Offset"]]
 
-  X     <- data[["X"]]
-  Y     <- data[["Y"]]
-  Z     <- data[["Z"]]
-  W     <- data[["FWF"]]
-  dx    <- data[["Xt"]]
-  dy    <- data[["Yt"]]
-  dz    <- data[["Zt"]]
-  loc   <- data[["WDPLocation"]]
-
   if (is.null(ts) | is.null(gain) | is.null(offs))
     stop("The header is incomplete and does not contain the VLR data required to interpret the waveform.", call. = FALSE)
 
-  if (is.null(loc) | is.null(dx) | is.null(dy) | is.null(dz))
+  if (is.null(data[["Xt"]]) | is.null(data[["Yt"]]) | is.null(data[["Zt"]]) | is.null(data[["WDPLocation"]]))
     stop("The wave data packet descriptors are incomplete and do not contain the data required to interpret the waveform.", call. = FALSE)
 
-  if (is.null(W))
+  if ( is.null(data[["FWF"]]))
     stop("The raw waveform is missing.", call. = FALSE)
 
-  FWF <- mapply(function(X, Y, Z, W, dx, dy, dz, loc)
+  FWF <- apply(data, 1, function(P)
   {
-    if (length(W) == 1 && W == 0)
+    if (length(P$FWF) == 1 && P$FWF == 0)
       return(NULL)
 
-    Xstart <- X + loc * dx
-    Ystart <- Y + loc * dy
-    Zstart <- Z + loc * dz
+    Xstart <- P$X + P$WDPLocation * P$Xt
+    Ystart <- P$Y + P$WDPLocation * P$Yt
+    Zstart <- P$Z + P$WDPLocation * P$Zt
 
-    t <- 0:(length(W) - 1)*ts
+    t <- 0:(length(P$FWF) - 1)*ts
 
-    Px <- Xstart - t * dx
-    Py <- Ystart - t * dy
-    Pz <- Zstart - t * dz
+    Px <- Xstart - t * P$Xt
+    Py <- Ystart - t * P$Yt
+    Pz <- Zstart - t * P$Zt
 
-    return(data.frame(X = Px, Y = Py, Z = Pz, Amplitude = gain*W + offs))
-  },
-  X, Y, Z, W, dx, dy, dz, loc,
-  SIMPLIFY = FALSE)
+    return(data.frame(X = Px, Y = Py, Z = Pz, Amplitude = gain * P$FWF + offs))
+  })
 
   return(FWF)
 }
