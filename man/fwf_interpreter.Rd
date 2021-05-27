@@ -13,13 +13,21 @@ fwf_interpreter(header, data)
 }
 \value{
 A list containing a \code{data.frame} per pulse with the XYZ coordinates of the
-waveform and the voltage of the record (\code{Amplitude}).
+waveform and the voltage of the record (\code{Amplitude})
 }
 \description{
 \bold{This is an experimental function that may change}\cr
 Raw full waveform data read from LAS files might be cryptic even with a good understanding
 of the LAS specifications. This function interpret the full waveform data as a set of
 XYZ coordinates and an amplitude which is the digitized voltage.
+}
+\examples{
+\dontrun{
+f <- system.file("extdata", "fwf.laz", package="rlas")
+head <- read.lasheader(f)
+data <- read.las(f)
+fwf <- fwf_interpreter(head, data)
+}
 }
 \seealso{
 Other header_tools: 
