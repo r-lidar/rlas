@@ -1,6 +1,6 @@
-### rlas v1.4.1 (Release date: )
+### rlas v1.5.0 (Release date: )
 
-- New: Full waveform support (still experimental and incomplete). `read.las()` can read full waveform but `write.las()` can't write yet. The current read mode reads raw data without interpretation. A function `fwf_interpretation()` can parse the raw data into something more manageable by users. Everything is experimental and prone to modification. For example we might change our mind and read interpreted waveform instead of raw data in the future. The format of the output of `fwf_interpretation()` may also change if we find that this current design is not relevant. In short the FWF support is not mature yet and we hope to provide a more mature API in v1.5.0.
+- New: Full waveform support (still experimental and incomplete). `read.las()` can read full waveform but `write.las()` can't write yet. The current read mode reads raw data without interpretation. A function `fwf_interpretation()` can parse the raw data into something more manageable by users. Everything is experimental and prone to modification. For example we might change our mind and read interpreted waveform instead of raw data in the future. The format of the output of `fwf_interpretation()` may also change if we find that this current design is not relevant. In short the FWF support is not mature yet and we hope to provide a more mature API in v1.6.0.
 - Misc: removed `LazyData` in `DESCRIPTION`
 - Misc: Update `Description` in `DESCRIPTION` to include format 1.4 in reading capabilities. 
 - Enhance: `header_create()` creates a v1.4 header if the point source format is detected to be 6 or more
