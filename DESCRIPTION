@@ -18,7 +18,5 @@ Depends: R (>= 3.4.0)
 Imports: Rcpp, data.table
 RoxygenNote: 7.1.1
 LinkingTo: Rcpp,BH
-Suggests: 
-    tinytest,
-    covr
+Suggests: tinytest
 Encoding: UTF-8
