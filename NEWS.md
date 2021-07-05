@@ -1,3 +1,7 @@
+### rlas v1.5.1
+
+- Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/Jean-Romain/rlas/issues/53))
+
 ### rlas v1.5.0 (Release date: 2021-06-02)
 
 - New: Full waveform support (still experimental and incomplete). `read.las()` can read full waveform but `write.las()` can't write yet. The current read mode reads raw data without interpretation. A function `fwf_interpretation()` can parse the raw data into something more manageable by users. Everything is experimental and prone to modification. For example we might change our mind and read interpreted waveform instead of raw data in the future. The format of the output of `fwf_interpretation()` may also change if we find that this current design is not relevant. In short the FWF support is not mature yet and we plan to provide a mature and stable API in v1.6.0.

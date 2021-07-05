@@ -364,10 +364,15 @@ List vlrsreader(LASheader* lasheader)
                 }
               }
 
-              ExtraByte.push_back(attemp.description);
+              // Fix #53
+              int len = 0 ; while(len < 32 && attemp.description[len] != '\0') len++;
+              std::string desc("\0", len);
+              memcpy(&desc[0], &attemp.description, len);
+
+              ExtraByte.push_back(desc);
               ExtraBytenames.push_back("description");
 
-              ExtraByte.names() =  ExtraBytenames;
+              ExtraByte.names() = ExtraBytenames;
               ExtraBytes.push_back(ExtraByte);
               ExtraBytesnames.push_back(attemp.name);
             }
