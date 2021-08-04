@@ -1,6 +1,7 @@
 ### rlas v1.5.1
 
 - Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/Jean-Romain/rlas/issues/53))
+- Fix: value -128 can be read in `ScanAngleRank` attribute. The value -128 previously triggered a false positive error (fix [#54](https://github.com/Jean-Romain/rlas/issues/54))
 
 ### rlas v1.5.0 (Release date: 2021-06-02)
 

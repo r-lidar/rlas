@@ -64,7 +64,7 @@ is_no_na_integer_on_n_bits <- function(x, nbits, name, signed = TRUE, behavior =
   }
   else
   {
-    if (min(x, na.rm = na.rm) < -2L^(nbits - 1) + 1)
+    if (min(x, na.rm = na.rm) < -2L^(nbits - 1))
       errors = append(errors, paste("Invalid data:", name, "is not an integer on", nbits, "bits"))
   }
 
