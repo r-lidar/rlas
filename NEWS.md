@@ -1,8 +1,8 @@
-### rlas v1.5.1 (Release date: )
+### rlas v1.5.1 (Release date: 2022-02-08)
 
 - Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/Jean-Romain/rlas/issues/53))
 - Fix: value -128 can be read in `ScanAngleRank` attribute. The value -128 previously triggered a false positive error (fix [#54](https://github.com/Jean-Romain/rlas/issues/54))
-- Fix: `header_update()` know populates the `Number of points by return` with 0 in absence of `ReturnNumber` 
+- Fix: `header_update()` now populates the `Number of points by return` with 0 in absence of `ReturnNumber` 
 
 ### rlas v1.5.0 (Release date: 2021-06-02)
 
