@@ -152,7 +152,7 @@
 ### rlas v1.1.3 (Release date: 2017-06-09)
 
 * Fix  [[#4](https://github.com/r-lidar/rlas/issues/4)] bug of computer precision when writing files 
-* Fix  [[#61](https://github.com/Jean-Romain/lidR/issues/61)] wrong header size for files version 1.3
+* Fix  [[#61](https://github.com/r-lidar/lidR/issues/61)] wrong header size for files version 1.3
 * Change: update LASlib and LASzip
 * Change: better integration of LASlib and LASzip in R
 
