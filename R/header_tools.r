@@ -148,11 +148,13 @@ header_update = function(header, data)
     maxz = 0
   }
 
+  n <- 5
+  if (!is.null(header[["Version Minor"]]) && header[["Version Minor"]] >= 4) n <- 15L
+
   if ("ReturnNumber" %in% fields)
-  {
-    n <- if (header[["Version Minor"]] < 4) 5L else 15L
     header[["Number of points by return"]] <- tabulate(data$ReturnNumber, n)
-  }
+  else
+    header[["Number of points by return"]] <- integer(n)
 
   header[["Number of point records"]] = npts
   header[["Min X"]] = minx
