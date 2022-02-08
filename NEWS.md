@@ -1,7 +1,7 @@
 ### rlas v1.5.1 (Release date: 2022-02-08)
 
-- Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/Jean-Romain/rlas/issues/53))
-- Fix: value -128 can be read in `ScanAngleRank` attribute. The value -128 previously triggered a false positive error (fix [#54](https://github.com/Jean-Romain/rlas/issues/54))
+- Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/r-lidar/rlas/issues/53))
+- Fix: value -128 can be read in `ScanAngleRank` attribute. The value -128 previously triggered a false positive error (fix [#54](https://github.com/r-lidar/rlas/issues/54))
 - Fix: `header_update()` now populates the `Number of points by return` with 0 in absence of `ReturnNumber` 
 
 ### rlas v1.5.0 (Release date: 2021-06-02)
@@ -18,12 +18,12 @@
 - Fix: build failure with GCC 4.x
 - Fix: gcc-asan signed integer overflow.
 - Fix: when reading a non supported extra bytes attribute rlas used to print a warning message. It now throws a real warning.
-- Fix: querying ROI using LAX files in LAS file > 2GB on Windows (see [#50](https://github.com/Jean-Romain/rlas/issues/50))
-- Fix: file creation day is now written (see [#51](https://github.com/Jean-Romain/rlas/issues/50))
+- Fix: querying ROI using LAX files in LAS file > 2GB on Windows (see [#50](https://github.com/r-lidar/rlas/issues/50))
+- Fix: file creation day is now written (see [#51](https://github.com/r-lidar/rlas/issues/50))
 - New: `read.lasheader()` now reads the extended variable length record (EVLR)
 - New: `write.las()` now writes all GeoKeyDirectoryTag + GeoAsciiParamsTag + GeoDoubleParamsTag
 - New: `write.las()` can now write WKT OGC CS in EVLR
-- Enhance: full update of LASlib (fix [#43](https://github.com/Jean-Romain/rlas/issues/43))
+- Enhance: full update of LASlib (fix [#43](https://github.com/r-lidar/rlas/issues/43))
 - Change: use `tinytest` instead of `testthat`
 
 ### rlas v1.3.9 (Release date: 2021-01-11)
@@ -32,15 +32,15 @@
 
 ### rlas v1.3.8 (Release date: 2020-12-14)
 
-- Switch to C++14 to use boost 1.75.0 (see [#49](https://github.com/Jean-Romain/rlas/issues/49))
+- Switch to C++14 to use boost 1.75.0 (see [#49](https://github.com/r-lidar/rlas/issues/49))
 
 ### rlas v1.3.7 (Release date: 2020-11-11)
 
-- Fix [#48](https://github.com/Jean-Romain/rlas/issues/48). `header_set_epsg()` incorrectly set the epsg code when the key 3072 is missing but the VLR is not empty
+- Fix [#48](https://github.com/r-lidar/rlas/issues/48). `header_set_epsg()` incorrectly set the epsg code when the key 3072 is missing but the VLR is not empty
 
 ### rlas v1.3.6 (Release date: 2020-06-02)
 
-- Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. It missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/Jean-Romain/rlas/pull/45)
+- Fix: The function `is_valid_ReturnNumber()` wrongly triggered errors when checking if the ReturnNumber attribute is correct. It missed errors for LAS < 1.4 and triggered wrong errors for LAS 1.4 prf > 6. [#45](https://github.com/r-lidar/rlas/pull/45)
 - Fix: The function `is_empty_point_cloud()` did not actually test what it was expected to test.
 - Fix: `is_valid_scalefactors()` does not trigger any report for very fine scale factors such as 0.000001 that is a valid scale of long/lat coordinates.
 - Fix: `is_valid_returnnumber()` does not complain for ReturnNumber = 0. This is valid but not compliant to the specs. 
@@ -54,7 +54,7 @@
 ### rlas v1.3.5 (Release date: 2020-02-04)
 
 - Change: defunc deprecated functions `check_data`, `check_header` and `check_data_vs_header`.
-- Fix: `is_valid_ScanAngle()` triggers an error if |a| > 196.6 instead of 180. 196.6 is the maximum writable angle but is not compliant with the specs ([#44](https://github.com/Jean-Romain/rlas/issues/44)).
+- Fix: `is_valid_ScanAngle()` triggers an error if |a| > 196.6 instead of 180. 196.6 is the maximum writable angle but is not compliant with the specs ([#44](https://github.com/r-lidar/rlas/issues/44)).
 - New: function `is_compliant_ScanAngle()` to check the compliance of the Scan Angle.
 
 ### rlas v1.3.4 (Release date: 2019-09-19)
@@ -64,16 +64,16 @@
 
 ### rlas v1.3.3 (Release date: 2019-08-30)
 
-* New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/Jean-Romain/rlas/issues/40)).
+* New: unlock reading `.ply` files in `read.las` and `read.lasheader`. This is an undocumented feature not actually intended to be used. ([#39](https://github.com/r-lidar/rlas/issues/40)).
 * New: verbose option in `writelax()`.
-* Fix: ([#40](https://github.com/Jean-Romain/rlas/issues/40)) in `read.las` and `read.lasheader` modifications in string encoding in R 3.5.0 generated issues with path containing special characters. Native encoding is now enforced.
+* Fix: ([#40](https://github.com/r-lidar/rlas/issues/40)) in `read.las` and `read.lasheader` modifications in string encoding in R 3.5.0 generated issues with path containing special characters. Native encoding is now enforced.
 
 ### rlas v1.3.2 (Release date: 2019-04-26)
 
-* Fix: [#33](https://github.com/Jean-Romain/rlas/issues/33) it is now allowed to write `ScanAngleRank` above 90 degrees but not above 127 degrees.
-* Fix: [#34](https://github.com/Jean-Romain/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
-* Fix: [#35](https://github.com/Jean-Romain/rlas/issues/35) Erreur reading a specific laz file. The actual problem is unknown. This has been fixed by updating `LASlib`
-* Fix: [#36](https://github.com/Jean-Romain/rlas/issues/35) Classification was zeroed when writing LAS1.4 prf 6. The actual problem is not known. This has been fixed by updating `LASlib`
+* Fix: [#33](https://github.com/r-lidar/rlas/issues/33) it is now allowed to write `ScanAngleRank` above 90 degrees but not above 127 degrees.
+* Fix: [#34](https://github.com/r-lidar/rlas/issues/34) fix a misinterpretation of the LAS specification. Offset can be negative.
+* Fix: [#35](https://github.com/r-lidar/rlas/issues/35) Erreur reading a specific laz file. The actual problem is unknown. This has been fixed by updating `LASlib`
+* Fix: [#36](https://github.com/r-lidar/rlas/issues/35) Classification was zeroed when writing LAS1.4 prf 6. The actual problem is not known. This has been fixed by updating `LASlib`
 * Fix: `ScanAngle` was rounded to integer for LAS 1.4 prf >= 6 before to be written. With the 0.006 factor conversion this lead to unrelated values when reading back a written file.
 * Change: `header_create()` does not generates random UUID. The UUID is set to `"00000000-0000-0000-0000-000000000000"`. Dependence to `uuid` has been removed.
 * Change: Dependancies to `sp`, `sf` and `rgeos` were no longer useful. `rlas` only depends on `data.table + Rcpp`.
@@ -87,10 +87,10 @@
 ### rlas v1.3.0 (Release date: 2019-02-03)
 
 * New: `write.las` is 25% faster
-* New: [#27](https://github.com/Jean-Romain/rlas/issues/27) improved support of LAS specifications including LAS 1.4.
+* New: [#27](https://github.com/r-lidar/rlas/issues/27) improved support of LAS specifications including LAS 1.4.
 * New: introduction of a set of 50+ functions to test compliance with LAS specifications
 * New: introduction of a set of 5+ functions to modify a header easily repecting LAS specifications
-* Fix: [#26](https://github.com/Jean-Romain/rlas/issues/26) segfault in `read.las` when using an inappropriated filter such as -keep_class 123.
+* Fix: [#26](https://github.com/r-lidar/rlas/issues/26) segfault in `read.las` when using an inappropriated filter such as -keep_class 123.
 
 ### rlas v1.2.9 (Release date: 2018-10-26)
 
@@ -112,13 +112,13 @@
 
 * New: read the classification flags in fields `Synthetic_flag`, `Keypoint_flag` and `Withheld_flag`.
 * Fix: point in polygon includes the points that define the polygon.
-* Fix: [[#21](https://github.com/Jean-Romain/rlas/issues/21)] writing a vector that contains only NAs in extra bytes
+* Fix: [[#21](https://github.com/r-lidar/rlas/issues/21)] writing a vector that contains only NAs in extra bytes
 * Fix: additional warnings on CRAN with gcc 8+
-* Fix: [[#19](https://github.com/Jean-Romain/rlas/issues/19)] additional errors on CRAN with valgrind
+* Fix: [[#19](https://github.com/r-lidar/rlas/issues/19)] additional errors on CRAN with valgrind
 
 ### rlas v1.2.1 (Release date: 2018-04-13)
 
-* Fix: [[#18](https://github.com/Jean-Romain/rlas/issues/18)] additional errors on CRAN with ASAN and USBAN
+* Fix: [[#18](https://github.com/r-lidar/rlas/issues/18)] additional errors on CRAN with ASAN and USBAN
 
 ### rlas v1.2.0 (Release date: 2018-04-10)
 
@@ -128,7 +128,7 @@
 * New: function `read.lasheader` that replaces `readlasheader`, which is now deprecated. This change was made only for naming consistency.
 * New: functions `header_*` that allows the user to make valid headers and thus properly write the las files.
 * New: functions `check_*` that check data integrity.
-* Fix: [[#9](https://github.com/Jean-Romain/rlas/issues/9)] with valgrind: uninitialized value(s)
+* Fix: [[#9](https://github.com/r-lidar/rlas/issues/9)] with valgrind: uninitialized value(s)
 
 ### rlas v1.1.9 (Release date: 2018-01-17)
 
@@ -151,7 +151,7 @@
 
 ### rlas v1.1.3 (Release date: 2017-06-09)
 
-* Fix  [[#4](https://github.com/Jean-Romain/rlas/issues/4)] bug of computer precision when writing files 
+* Fix  [[#4](https://github.com/r-lidar/rlas/issues/4)] bug of computer precision when writing files 
 * Fix  [[#61](https://github.com/Jean-Romain/lidR/issues/61)] wrong header size for files version 1.3
 * Change: update LASlib and LASzip
 * Change: better integration of LASlib and LASzip in R
@@ -162,13 +162,13 @@
 
 ### rlas v1.1.1 (Release date: 2017-03-15)
 
-* Fix: [[#3](https://github.com/Jean-Romain/rlas/issues/3)] `readlasdata()` is able to read file when LAS specifications are not respected.
+* Fix: [[#3](https://github.com/r-lidar/rlas/issues/3)] `readlasdata()` is able to read file when LAS specifications are not respected.
 * Change: `writelas` performs tests on the header before entering C++ code (enable to fail with informative errors).
 
 ### rlas v1.1.0 (Release date: 2017-02-04)
 
 * New: `readlasdata()` gains a parameter `filter` enabling use of memory-optimized streaming filters.
-* New: `readlasdata()` supports .lax files for faster filter (thanks to Florian de Boissieu [#2](https://github.com/Jean-Romain/rlas/pull/2))
+* New: `readlasdata()` supports .lax files for faster filter (thanks to Florian de Boissieu [#2](https://github.com/r-lidar/rlas/pull/2))
 * Change: All the default options for `readlasdata()` are now `TRUE`
 * Fix: `readlasheader()` is now able to read the `Variable Length Records`
 

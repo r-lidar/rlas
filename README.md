@@ -1,6 +1,6 @@
 ![licence](https://img.shields.io/badge/Licence-GPL--3-blue.svg)
-[![R build status](https://github.com/Jean-Romain/rlas/workflows/R-CMD-check/badge.svg)](https://github.com/Jean-Romain/rlas/actions)
-[![Codecov test coverage](https://codecov.io/gh/Jean-Romain/rlas/branch/master/graph/badge.svg)](https://codecov.io/gh/Jean-Romain/rlas?branch=master)
+[![R build status](https://github.com/r-lidar/rlas/workflows/R-CMD-check/badge.svg)](https://github.com/r-lidar/rlas/actions)
+[![Codecov test coverage](https://codecov.io/gh/r-lidar/rlas/branch/master/graph/badge.svg)](https://codecov.io/gh/r-lidar/rlas?branch=master)
 
 R package to read and write `.las` and `.laz` binary files used to store LiDAR data.
 
