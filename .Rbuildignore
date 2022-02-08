@@ -9,3 +9,4 @@
 ^\.covrignore$
 ^\.github$
 ^CRAN-RELEASE$
+^CRAN-SUBMISSION$
