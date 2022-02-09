@@ -1,3 +1,7 @@
+### rlas v1.5.2
+
+- Fix gcc-asan AddressSanitizer: global-buffer-overflow on CRAN when reading las/laz with extrabytes attributes.
+
 ### rlas v1.5.1 (Release date: 2022-02-08)
 
 - Fix: read of a 32 characters extra bytes description string that is not null-terminated (fix [#53](https://github.com/r-lidar/rlas/issues/53))
