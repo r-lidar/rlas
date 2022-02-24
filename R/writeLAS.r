@@ -73,5 +73,16 @@ write.las = function(file, header, data)
   file <- path.expand(file)
   check_output_file(file)
   check_las_validity(header, data)
+
+  # If the attribute is a compact ALTREP it contains only a single value
+  # No need to handle that with Rcpp, it is difficult. Instead we pass a single value to initialize
+  # LASpoints
+  data <- as.list(data)
+  for (name in names(data)) {
+    val <- data[[name]][1]
+    if (R_is_altrep(data[[name]]) & val != 0)  data[[name]] = val
+  }
+
+  # Compact ALTREP with values other than 0 will be materialize in C_writer. This need to be handled.
   C_writer(file, header, data)
 }

@@ -1,3 +1,7 @@
+### rlas v1.6.0
+
+The ALTREP framework is now used to load compact representation of non populated attributes. For example `UserData` is usually populated with zeros (not populated). Yet it takes 32 bits per point to store each 0. It now uses 644 bits no matter the number of points if it is not populated. This optimization is enabled for `*_flags`, `UserData`, `PointSourceID`, `ScanDirectionFlag`, and `EdgeOfFlightline`. This enables to save approximately 30% of memory usage depending on the number of non-populated attribute.
+
 ### rlas v1.5.2
 
 - Fix gcc-asan AddressSanitizer: global-buffer-overflow on CRAN when reading las/laz with extrabytes attributes.

@@ -40,7 +40,7 @@ void set_guid(LASheader&, const char*);
 void set_global_enconding(LASheader&, List);
 
 // [[Rcpp::export]]
-void C_writer(CharacterVector file, List LASheader, DataFrame data)
+void C_writer(CharacterVector file, List LASheader, List data)
 {
 
   int format = (int)LASheader["Point Data Format ID"];
@@ -222,7 +222,7 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
   if(0 == laswriter || NULL == laswriter)
     stop("LASlib internal error. See message above.");
 
-#define ISSET(NAME) data.containsElementNamed(NAME)
+  #define ISSET(NAME) data.containsElementNamed(NAME)
 
   bool i = ISSET("Intensity");
   bool r = ISSET("ReturnNumber");
@@ -268,6 +268,19 @@ void C_writer(CharacterVector file, List LASheader, DataFrame data)
   IntegerVector SAR = (sar) ? data["ScanAngleRank"] : IntegerVector(0);
   NumericVector ESA = (esa) ? data["ScanAngle"] : NumericVector(0);
   IntegerVector CHA = (cha) ? data["ScannerChannel"] : IntegerVector(0);
+
+  // The following attributes can be ALTREPed at R level to be represented as compact
+  // repetition. If they were ALTREPed then we received a single value instead of a vector
+  // of n times the same value. In this case we initialize the LASpoint with the value and we
+  // declare the attribute as missing to avoid looping through undefined indices.
+  if (D.size() == 1) { d = false; point.set_scan_direction_flag((U8)D[0]); }
+  if (E.size() == 1) { e = false; point.set_edge_of_flight_line((U8)E[0]); }
+  if (S.size() == 1) { s = false; point.set_synthetic_flag((U8)S[0]); }
+  if (K.size() == 1) { k = false; point.set_keypoint_flag((U8)K[0]); }
+  if (W.size() == 1) { w = false; point.set_withheld_flag((U8)W[0]); }
+  if (O.size() == 1) { o = false; point.set_extended_overlap_flag((U8)O[0]); }
+  if (U.size() == 1) { u = false; point.set_user_data((U8)U[0]); }
+  if (P.size() == 1) { p = false; point.set_point_source_ID((U16)P[0]); }
 
   for(int j = 0 ; j < X.length() ; j++)
   {

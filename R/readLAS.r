@@ -139,10 +139,21 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt 
 
   check_filter(filter)
 
-  data <- C_reader(ifiles, ofile, select, filter, filter_wkt)
+  raw_list <- C_reader(ifiles, ofile, select, filter, filter_wkt)
+
+  data <- raw_list[1:3]
   data.table::setDT(data)
+  n <- nrow(data)
+  for (name in names(raw_list)[-(1:3)])
+  {
+    attr <- raw_list[[name]]
+    if (n > 1L && length(attr) == 1L) attr <- R_compact_rep(n, attr)
+    data[[name]] <- attr
+  }
 
   if (stream) return(invisible())
 
   return(data)
 }
+
+
