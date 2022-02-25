@@ -36,7 +36,7 @@ true_size <- function(x)
 
   if (length(gz) == 1)
   {
-    size <- if (isTRUE(gz)) 644 else object.size(x)
+    size <- if (isTRUE(gz)) 644 else utils::object.size(x)
   }
   else
   {
