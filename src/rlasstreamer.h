@@ -131,12 +131,17 @@ class RLASstreamer
     // Optimization for attribute likely not populated. We do no need to grow vectors with
     // typically only zeros. So we store only one value in a size 1 vector. If we detect another
     // value we can grow the vector. The following variable allow to handle such optimization.
+    bool is_RN_populated;
+    bool is_NoR_populated;
     bool is_SDF_populated;
     bool is_EoF_populated;
+    bool is_C_populated;
     bool is_Synthetic_populated;
     bool is_Keypoint_populated;
     bool is_Withheld_populated;
     bool is_Overlap_populated;
+    bool is_SAR_populated;
+    bool is_SA_populated;
     bool is_UD_populated;
     bool is_PSI_populated;
 };

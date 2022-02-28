@@ -248,12 +248,17 @@ void RLASstreamer::initialize()
       nalloc = npoints;
   }
 
+  is_RN_populated = false;
+  is_NoR_populated = false;
   is_SDF_populated = false;
   is_EoF_populated = false;
+  is_C_populated = false;
   is_Synthetic_populated = false;
   is_Keypoint_populated = false;
   is_Withheld_populated = false;
   is_Overlap_populated = false;
+  is_SAR_populated = false;
+  is_SA_populated = false;
   is_UD_populated = false;
   is_PSI_populated = false;
   point_count = 0;
@@ -275,15 +280,15 @@ void RLASstreamer::allocation()
     Z.reserve(nalloc);
     if(t) T.reserve(nalloc);
     if(i) I.reserve(nalloc);
-    if(r) RN.reserve(nalloc);
-    if(n) NoR.reserve(nalloc);
+    if(r) RN.reserve(1);
+    if(n) NoR.reserve(1);
     if(d) SDF.reserve(1);
     if(e) EoF.reserve(1);
-    if(c) C.reserve(nalloc);
+    if(c) C.reserve(1);
     if(s) Synthetic.reserve(1);
     if(k) Keypoint.reserve(1);
     if(w) Withheld.reserve(1);
-    if(a) SA.reserve(nalloc);
+    if(a) SA.reserve(1);
     if(u) UD.reserve(1);
     if(p) PSI.reserve(1);
     if(rgb)
@@ -436,22 +441,46 @@ void RLASstreamer::write_point()
   }
   else
   {
-    // Initialization the attributes that are likely not populated using the first point read
-    // We won't grow vectors that are likely not populated. If we detect that one point have a value
-    // different than the first point it means the attribute is populated. Otherwise we are working
-    // with length 1 vectors that will never grow. Later those vectors will be ALTREPed
+    // Initialization the attributes that are potentially not populated using the first point read
+    // We won't grow vectors that are potentially not populated if they are not populated.
+    // If we detect that one point have a value different than the first point it means the attribute
+    // is populated. Otherwise we are working with length 1 vectors that will never grow. Later those
+    // vectors will be ALTREPed.
     // At the beginning the guess is that the following attributes are not populated which is very
-    // often true
+    // often true for SDF, EoF, Synthetic, Keypoint, Withheld, UD and PSI
     if (X.size() == 0)
     {
       SDF.push_back(lasreader->point.get_scan_direction_flag());
       EoF.push_back(lasreader->point.get_edge_of_flight_line());
+      if (!extended) {
+        RN.push_back(lasreader->point.get_return_number());
+        NoR.push_back(lasreader->point.get_number_of_returns());
+        C.push_back(lasreader->point.get_classification());
+        SAR.push_back(lasreader->point.get_scan_angle());
+      } else {
+        RN.push_back(lasreader->point.get_extended_return_number());
+        NoR.push_back(lasreader->point.get_extended_number_of_returns());
+        C.push_back(lasreader->point.get_extended_classification());
+        SA.push_back(lasreader->point.get_scan_angle());
+      }
       Synthetic.push_back(lasreader->point.get_synthetic_flag());
       Keypoint.push_back(lasreader->point.get_keypoint_flag());
       Withheld.push_back(lasreader->point.get_withheld_flag());
       Overlap.push_back(lasreader->point.get_extended_overlap_flag());
       UD.push_back(lasreader->point.get_user_data());
       PSI.push_back(lasreader->point.get_point_source_ID());
+    }
+
+    #define SMART_POPULATOR(name, lasname) {                              \
+    if (!is_##name##_populated && lasreader->point.lasname() != name[0])  \
+    {                                                                     \
+      is_##name##_populated = true;                                       \
+      name.reserve(X.capacity());                                         \
+      name.insert(name.end(), X.size()-2, name[0]);                       \
+    }                                                                     \
+                                                                          \
+    if (is_##name##_populated)                                            \
+      name.push_back(lasreader->point.lasname());                         \
     }
 
     X.push_back(lasreader->point.get_x());
@@ -461,138 +490,43 @@ void RLASstreamer::write_point()
     if (t) T.push_back(lasreader->point.get_gps_time());
     if (i) I.push_back(lasreader->point.get_intensity());
 
-    if (r && !extended)
-      RN.push_back(lasreader->point.get_return_number());
-    else if (r && extended)
-      RN.push_back(lasreader->point.get_extended_return_number());
-
-    if (n && !extended)
-      NoR.push_back(lasreader->point.get_number_of_returns());
-    else if (n && extended)
-      NoR.push_back(lasreader->point.get_extended_number_of_returns());
-
-    if (d)
-    {
-      // If we still think that ScanDirectionFlag flag is not populated but we find a new value
-      // it means it is actually populated. We change the state of the guess, we grow the vector
-      // to reach the size of the coordinates.
-      if (!is_SDF_populated && lasreader->point.get_scan_direction_flag() != SDF[0])
-      {
-        is_SDF_populated = true;
-        SDF.reserve(X.capacity());
-        SDF.insert(SDF.end(), X.size()-2, SDF[0]);
-      }
-
-      // If we are sure that ScanDirectionFlag attribute is populated we grow the vector. Otherwise the
-      // vector will will never grow and keep a size of 1
-      if (is_SDF_populated)
-        SDF.push_back(lasreader->point.get_scan_direction_flag());
+    if (r && !extended) {
+      SMART_POPULATOR(RN, get_return_number)
+    } else if (r && extended) {
+      SMART_POPULATOR(RN, get_extended_return_number)
     }
 
-    if (e)
-    {
-      if (!is_EoF_populated && lasreader->point.get_edge_of_flight_line() != EoF[0])
-      {
-        is_EoF_populated = true;
-        EoF.reserve(X.capacity());
-        EoF.insert(EoF.end(), X.size()-2, EoF[0]);
-      }
-
-      if (is_EoF_populated)
-        EoF.push_back(lasreader->point.get_edge_of_flight_line());
+    if (n && !extended) {
+      SMART_POPULATOR(NoR, get_number_of_returns)
+    } else if (n && extended) {
+      SMART_POPULATOR(NoR, get_extended_number_of_returns)
     }
 
-    if (c && !extended)
-      C.push_back(lasreader->point.get_classification());
-    else if (c && extended)
-      C.push_back(lasreader->point.get_extended_classification());
+    if (d) { SMART_POPULATOR(SDF, get_scan_direction_flag) }
+    if (e) { SMART_POPULATOR(EoF, get_edge_of_flight_line) }
+
+    if (c && !extended) {
+      SMART_POPULATOR(C, get_classification)
+    } else if (c && extended) {
+      SMART_POPULATOR(C, get_extended_classification)
+    }
 
     if (cha && extended)
       Channel.push_back(lasreader->point.get_extended_scanner_channel());
 
-    if (s)
-    {
-      if (!is_Synthetic_populated && lasreader->point.get_synthetic_flag() != Synthetic[0])
-      {
-        is_Synthetic_populated = true;
-        Synthetic.reserve(X.capacity());
-        Synthetic.insert(Synthetic.end(), X.size()-2, Synthetic[0]);
-      }
+    if (s) { SMART_POPULATOR(Synthetic, get_synthetic_flag) }
+    if (k) { SMART_POPULATOR(Keypoint, get_keypoint_flag) }
+    if (w) { SMART_POPULATOR(Withheld, get_withheld_flag) }
+    if (o && extended) { SMART_POPULATOR(Overlap, get_extended_overlap_flag) }
 
-      if (is_Synthetic_populated)
-        Synthetic.push_back(lasreader->point.get_synthetic_flag());
+    if (a && !extended) {
+      SMART_POPULATOR(SAR, get_scan_angle)
+    } else if (a && extended) {
+      SMART_POPULATOR(SA, get_scan_angle)
     }
 
-    if (k)
-    {
-      if (!is_Keypoint_populated && lasreader->point.get_keypoint_flag() != Keypoint[0])
-      {
-        is_Keypoint_populated = true;
-        Keypoint.reserve(X.capacity());
-        Keypoint.insert(Keypoint.end(), X.size()-2, Keypoint[0]);
-      }
-
-      if (is_Keypoint_populated)
-        Keypoint.push_back(lasreader->point.get_keypoint_flag());
-    }
-
-    if (w)
-    {
-      if (!is_Withheld_populated && lasreader->point.get_withheld_flag() != Withheld[0])
-      {
-        is_Withheld_populated = true;
-        Withheld.reserve(X.capacity());
-        Withheld.insert(Withheld.end(), X.size()-2, Withheld[0]);
-      }
-
-      if (is_Withheld_populated)
-        Withheld.push_back(lasreader->point.get_withheld_flag());
-    }
-
-
-    if (o && extended)
-    {
-      if (!is_Overlap_populated && lasreader->point.get_extended_overlap_flag() != Overlap[0])
-      {
-        is_Overlap_populated = true;
-        Overlap.reserve(X.capacity());
-        Overlap.insert(Overlap.end(), X.size()-2, Overlap[0]);
-      }
-
-      if (is_Overlap_populated)
-        Overlap.push_back(lasreader->point.get_extended_overlap_flag());
-    }
-
-    if (a && !extended)
-      SAR.push_back(lasreader->point.get_scan_angle());
-    else if (a && extended)
-      SA.push_back(lasreader->point.get_scan_angle());
-
-    if (u)
-    {
-      if (!is_UD_populated && lasreader->point.get_user_data() != UD[0])
-      {
-        is_UD_populated = true;
-        UD.reserve(X.capacity());
-        UD.insert(UD.end(), X.size()-2, UD[0]);
-      }
-
-      if (is_UD_populated)
-        UD.push_back(lasreader->point.get_user_data());
-    }
-
-    if (p)
-    {
-      if (!is_PSI_populated && lasreader->point.get_point_source_ID() != PSI[0])
-      {
-        is_PSI_populated = true;
-        PSI.reserve(X.capacity());
-        PSI.insert(PSI.end(), X.size()-2, PSI[0]);
-      }
-
-      if (is_PSI_populated)
-        PSI.push_back(lasreader->point.get_point_source_ID());
-    }
+    if (u) { SMART_POPULATOR(UD, get_user_data) }
+    if (p) { SMART_POPULATOR(PSI, get_point_source_ID) }
 
     if (rgb)
     {
@@ -602,8 +536,7 @@ void RLASstreamer::write_point()
     }
     if (nir) NIR.push_back(lasreader->point.get_NIR());
 
-    if (W)
-      write_waveform();
+    if (W) write_waveform();
 
     for(auto& extra_byte : extra_bytes_attr)
       extra_byte.push_back(&lasreader->point);

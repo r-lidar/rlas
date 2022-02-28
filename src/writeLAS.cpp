@@ -1,32 +1,3 @@
-/*
- ===============================================================================
-
- PROGRAMMERS:
-
- jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
-
- COPYRIGHT:
-
- Copyright 2016-2019 Jean-Romain Roussel
-
- This file is part of rlas R package.
-
- rlas is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>
-
- ===============================================================================
- */
-
 #include <Rcpp.h>
 #include <string.h>
 
@@ -273,6 +244,20 @@ void C_writer(CharacterVector file, List LASheader, List data)
   // repetition. If they were ALTREPed then we received a single value instead of a vector
   // of n times the same value. In this case we initialize the LASpoint with the value and we
   // declare the attribute as missing to avoid looping through undefined indices.
+  if (!extended)
+  {
+    if (RN.size() == 1) { r = false; point.set_return_number((U8)RN[0]); }
+    if (NR.size() == 1) { n = false; point.set_number_of_returns((U8)NR[0]); }
+    if (C.size() == 1)  { c = false; point.set_classification((U8)C[0]); }
+    if (SAR.size() == 1){ sar = false; point.set_scan_angle_rank((U8)SAR[0]); }
+  }
+  else
+  {
+    if (RN.size() == 1) { r = false; point.set_extended_return_number((U8)RN[0]); }
+    if (NR.size() == 1) { n = false; point.set_extended_number_of_returns((U8)NR[0]); }
+    if (C.size() == 1)  { c = false; point.set_extended_classification((U8)C[0]); }
+    if (ESA.size() == 1){ esa = false; point.set_extended_scan_angle((I16)((ESA[0]/0.006f))); }
+  }
   if (D.size() == 1) { d = false; point.set_scan_direction_flag((U8)D[0]); }
   if (E.size() == 1) { e = false; point.set_edge_of_flight_line((U8)E[0]); }
   if (S.size() == 1) { s = false; point.set_synthetic_flag((U8)S[0]); }
