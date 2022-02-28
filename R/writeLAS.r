@@ -80,11 +80,7 @@ write.las = function(file, header, data)
   data <- as.list(data)
   for (name in names(data)) {
     val <- data[[name]][1]
-<<<<<<< HEAD
     if (is_compressed(data[[name]]))  data[[name]] = val[1]
-=======
-    if (R_is_altrep(data[[name]]) & val != 0)  data[[name]] = val
->>>>>>> altrep
   }
 
   # Compact ALTREP with values other than 0 will be materialize in C_writer. This need to be handled.
