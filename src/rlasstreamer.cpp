@@ -462,7 +462,7 @@ void RLASstreamer::write_point()
       Overlap.push_back(lasreader->point.get_extended_overlap_flag());
 
     if (a && !extended)
-      SAR.push_back(lasreader->point.get_scan_angle());
+      SAR.push_back(lasreader->point.get_scan_angle_rank());
     else if (a && extended)
       SA.push_back(lasreader->point.get_scan_angle());
 

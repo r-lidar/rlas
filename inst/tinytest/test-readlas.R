@@ -4,10 +4,23 @@ stream.las <- rlas:::stream.las
 # "read returns good values", {
 
 las <- read.las(lazfile)
+header <- read.lasheader(lazfile)
 
 expect_true(is.data.frame(las))
 expect_equal(dim(las), c(30, 16))
-
+expect_equal(mean(las$X), 339008.1, tolerance = 0.001)
+expect_equal(mean(las$Y), 5248000, tolerance = 0.001)
+expect_equal(mean(las$Z), 975.899, tolerance = 0.001)
+expect_equal(mean(las$Z), 975.899, tolerance = 0.001)
+expect_equal(mean(las$Intensity), 78.6, tolerance = 0.001)
+expect_equal(tabulate(las$ReturnNumber, 5), header$`Number of points by return`)
+expect_equal(tabulate(las$NumberOfReturns, 5), c(24,6,0,0,0))
+expect_equal(unique(las$ScanDirectionFlag), c(1,0))
+expect_equal(as.numeric(table(las$ScanDirectionFlag)), c(7, 23))
+expect_true(is.integer(las$ScanAngleRank))
+expect_equal(unique(las$ScanAngleRank), c(-21,-22))
+expect_equal(as.numeric(table(las$ScanAngleRank)), c(20, 10))
+expect_equal(unique(las$PointSourceID), 17)
 
 # "filter returns good values", {
 
