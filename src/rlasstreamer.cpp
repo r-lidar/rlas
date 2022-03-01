@@ -520,7 +520,7 @@ void RLASstreamer::write_point()
     if (o && extended) { SMART_POPULATOR(Overlap, get_extended_overlap_flag) }
 
     if (a && !extended) {
-      SMART_POPULATOR(SAR, get_scan_angle)
+      SMART_POPULATOR(SAR, get_scan_angle_rank)
     } else if (a && extended) {
       SMART_POPULATOR(SA, get_scan_angle)
     }
