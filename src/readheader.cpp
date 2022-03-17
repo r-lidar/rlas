@@ -364,24 +364,15 @@ List vlrsreader(LASheader* lasheader)
                 }
               }
 
-              // Fix #53 >>>>
-              // The if else is only a hack to avoid USBAN-ASAN error on CRAN
-              // because I don't know how to fix it
+              // Fix #53
               int len = 0 ; while(len < 32 && attemp.description[len] != '\0') len++;
+              std::string desc;
+              desc.resize(len);
+              memcpy(&desc[0], &attemp.description, len);
 
-              if (len == 32)
-              {
-                std::string desc("\0", len);
-                memcpy(&desc[0], &attemp.description, len);
-                ExtraByte.push_back(desc);
-              }
-              else
-              {
-                ExtraByte.push_back(attemp.description);
-              }
-              // <<<<<<
-
+              ExtraByte.push_back(desc);
               ExtraBytenames.push_back("description");
+
               ExtraByte.names() = ExtraBytenames;
               ExtraBytes.push_back(ExtraByte);
               ExtraBytesnames.push_back(attemp.name);
