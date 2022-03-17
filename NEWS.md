@@ -1,3 +1,8 @@
+### rlas v1.5.3
+
+- Fix gcc-asan AddressSanitizer: global-buffer-overflow on CRAN when reading las/laz with extrabytes attributes.
+- Fix warning: array subscript 32 is outside array bounds of ‘const char [2]’ [-Warray-bounds] 
+
 ### rlas v1.5.2
 
 - Fix gcc-asan AddressSanitizer: global-buffer-overflow on CRAN when reading las/laz with extrabytes attributes.
