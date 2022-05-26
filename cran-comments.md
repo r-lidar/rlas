@@ -1,10 +1,10 @@
 ## Test environments
 
-* Linux Mint, R 4.1.2, with g++ 7.3.0 -std=gnu++11
-* Windows, R 4.1.2, via CRAN builder
+* Linux Mint, R 4.2
 * Debian Linux, R-devel, GCC ASAN/UBSAN (via R-hub)
 * Debian Linux, R-release (via R-hub)
-* Mac OS, , R-release (via CRAN builder)
+* Mac OS, R-release (via CRAN builder)
+* Windows, R-release (via CRAN builder)
 * Oracle Solaris 10, x86, 32 bit, R-release (via R-hub)
 
 ## R CMD check results
@@ -17,7 +17,7 @@ Found the following (possibly) invalid URLs:
     Message: Internal Server Error
 
 This url is valid but for an unknown reason the server seems to reject wget's user agent. It works
-with curl by the way. According to some stackoverflow anwsers it is a bug in the webpage>
+with curl by the way. According to some stackoverflow anwsers it is a bug in the webpage.
 
 ## Downstream dependencies
 

@@ -10,6 +10,51 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// R_compact_rep
+SEXP R_compact_rep(int n, SEXP v);
+RcppExport SEXP _rlas_R_compact_rep(SEXP nSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(R_compact_rep(n, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// R_is_altrep
+bool R_is_altrep(SEXP x);
+RcppExport SEXP _rlas_R_is_altrep(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(R_is_altrep(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// R_is_materialized
+bool R_is_materialized(SEXP x);
+RcppExport SEXP _rlas_R_is_materialized(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(R_is_materialized(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// R_altrep_full_class
+SEXP R_altrep_full_class(SEXP x);
+RcppExport SEXP _rlas_R_altrep_full_class(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(R_altrep_full_class(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fast_countequal
 int fast_countequal(IntegerVector x, int t);
 RcppExport SEXP _rlas_fast_countequal(SEXP xSEXP, SEXP tSEXP) {
@@ -102,13 +147,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_writer
-void C_writer(CharacterVector file, List LASheader, DataFrame data);
+void C_writer(CharacterVector file, List LASheader, List data);
 RcppExport SEXP _rlas_C_writer(SEXP fileSEXP, SEXP LASheaderSEXP, SEXP dataSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type file(fileSEXP);
     Rcpp::traits::input_parameter< List >::type LASheader(LASheaderSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
     C_writer(file, LASheader, data);
     return R_NilValue;
 END_RCPP
@@ -126,6 +171,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_rlas_R_compact_rep", (DL_FUNC) &_rlas_R_compact_rep, 2},
+    {"_rlas_R_is_altrep", (DL_FUNC) &_rlas_R_is_altrep, 1},
+    {"_rlas_R_is_materialized", (DL_FUNC) &_rlas_R_is_materialized, 1},
+    {"_rlas_R_altrep_full_class", (DL_FUNC) &_rlas_R_altrep_full_class, 1},
     {"_rlas_fast_countequal", (DL_FUNC) &_rlas_fast_countequal, 2},
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
@@ -139,7 +188,9 @@ static const R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
+void init_alt_rep(DllInfo* dll);
 RcppExport void R_init_rlas(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    init_alt_rep(dll);
 }
