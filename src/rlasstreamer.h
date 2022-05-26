@@ -98,7 +98,6 @@ class RLASstreamer
     int nsynthetic;
     int nwithheld;
 
-    unsigned int npoints;
     unsigned int point_count;
 
     bool inR;
