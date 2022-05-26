@@ -481,7 +481,23 @@ void RLASstreamer::write_point()
                                                                           \
     if (is_##name##_populated)                                            \
       name.push_back(lasreader->point.lasname());                         \
-    }
+    }                                                                     \
+
+    // Hacky solution because previous macro is failing on ARM64 (MacOS)
+    // for flag attributes that are returned by LASlib as U8 but stored as
+    // bool. error: call to member function 'insert' is ambiguous
+    // Consequently we created a specialized macro for boolean flags
+    #define SMART_POPULATOR_BOOL(name, lasname) {                         \
+    if (!is_##name##_populated && lasreader->point.lasname() != name[0])  \
+    {                                                                     \
+      is_##name##_populated = true;                                       \
+      name.reserve(X.capacity());                                         \
+      name.insert(name.end(), X.size()-2, (bool) name[0]);                \
+    }                                                                     \
+                                                                          \
+    if (is_##name##_populated)                                            \
+      name.push_back(lasreader->point.lasname());                         \
+  }
 
     X.push_back(lasreader->point.get_x());
     Y.push_back(lasreader->point.get_y());
@@ -514,10 +530,10 @@ void RLASstreamer::write_point()
     if (cha && extended)
       Channel.push_back(lasreader->point.get_extended_scanner_channel());
 
-    if (s) { SMART_POPULATOR(Synthetic, get_synthetic_flag) }
-    if (k) { SMART_POPULATOR(Keypoint, get_keypoint_flag) }
-    if (w) { SMART_POPULATOR(Withheld, get_withheld_flag) }
-    if (o && extended) { SMART_POPULATOR(Overlap, get_extended_overlap_flag) }
+    if (s) { SMART_POPULATOR_BOOL(Synthetic, get_synthetic_flag) }
+    if (k) { SMART_POPULATOR_BOOL(Keypoint, get_keypoint_flag) }
+    if (w) { SMART_POPULATOR_BOOL(Withheld, get_withheld_flag) }
+    if (o && extended) { SMART_POPULATOR_BOOL(Overlap, get_extended_overlap_flag) }
 
     if (a && !extended) {
       SMART_POPULATOR(SAR, get_scan_angle_rank)
