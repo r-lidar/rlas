@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreadpoint.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 
@@ -104,10 +104,10 @@ BOOL LASreadPoint::setup(U32 num_items, const LASitem* items, const LASzip* lasz
       // entropy decoder not supported
       return FALSE;
     }
-    // maybe layered compression for LAS 1.4 
+    // maybe layered compression for LAS 1.4
     layered_las14_compression = (laszip->compressor == LASZIP_COMPRESSOR_LAYERED_CHUNKED);
   }
- 
+
   // initizalize the readers
   readers = 0;
   num_readers = num_items;
@@ -498,7 +498,7 @@ BOOL LASreadPoint::read(U8* const * point)
       }
     }
   }
-  catch (I32 exception) 
+  catch (I32 exception)
   {
     // create error string
     if (last_error == 0) last_error = new CHAR[128];
@@ -764,9 +764,9 @@ BOOL LASreadPoint::read_chunk_table()
       else
       {
 #ifdef _WIN32
-        sprintf(last_warning, "chunk table and %I64d bytes are missing. LAZ file truncated during copy or transfer?", chunk_table_start_position - last_position);
+        sprintf(last_warning, "chunk table and bytes are missing. LAZ file truncated during copy or transfer?");//, chunk_table_start_position - last_position);
 #else
-        sprintf(last_warning, "chunk table and %lld bytes are missing. LAZ file truncated during copy or transfer?", chunk_table_start_position - last_position);
+        sprintf(last_warning, "chunk table and bytes are missing. LAZ file truncated during copy or transfer?");//, chunk_table_start_position - last_position);
 #endif
       }
     }
