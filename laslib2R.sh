@@ -41,6 +41,7 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 # bytestreamin_file.hpp    l153,166   off_t -> off64_t (see #50)
 # bytestreamout_file.hpp   l152,163   off_t -> off64_t (see #50)
 # lasreader.cpp            l1875,1880  add (min_y != 0 || max_y != 0) to allow -inside 0 0 0 0 in lidR
+# Fix various -Wempty-body caused by if(fget(...)); with clang++
 # CRAN is happy now!
 
 # In addition:

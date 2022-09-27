@@ -1526,7 +1526,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
 
   // first header line containing "ply"
 
-  if (fgets(line, 512, file));
+  if (fgets(line, 512, file) == NULL) {}
   if (strncmp(line, "ply", 3) != 0)
   {
     return FALSE;
@@ -1545,7 +1545,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
   while (true)
   {
     // next line
-    if (fgets(line, 512, file));
+    if (fgets(line, 512, file) == NULL) {}
 
     if (strncmp(line, "end_header", 10) == 0)
     {
