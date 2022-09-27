@@ -1,6 +1,7 @@
 ### rlas v1.6.1
 
-- Fix -Wempty-body on CRAN demand
+- Fix -Wempty-body on CRAN request
+- Fix -Wformat on CRAN request
 
 ### rlas v1.6.0
 

@@ -1482,7 +1482,7 @@ BOOL LASreaderPLY::parse(const char* parse_string)
     }
     else if (p[0] == 'H') // we expect a hexadecimal coded RGB color
     {
-      I32 hex_value;
+      U32 hex_value;
       char hex_string[3] = "__";
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;

@@ -2729,7 +2729,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
           while (((i+2) < argc) && ('0' <= argv[i+2][0]) && (argv[i+2][0] <= '9'))
           {
             *argv[i]='\0';
-            if (sscanf(argv[i+2], "%d", &ID) != 1)
+            if (sscanf(argv[i+2], "%u", &ID) != 1)
             {
               REprintf("ERROR: '-keep_point_source' takes one or more IDs but '%s' is no valid ID\n", argv[i+2]);
               return FALSE;
@@ -4144,7 +4144,7 @@ BOOL LASfilter::parse(int argc, char* argv[])
             return FALSE;
           }
           U32 max_ID;
-          if (sscanf(argv[i+2], "%d", &max_ID) != 1)
+          if (sscanf(argv[i+2], "%u", &max_ID) != 1)
           {
             REprintf("ERROR: '%s' needs 2 arguments: min_ID max_ID but '%s' is no valid max_ID\n", argv[i], argv[i+2]);
             return FALSE;
