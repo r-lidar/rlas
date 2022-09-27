@@ -515,7 +515,7 @@ BOOL LASreaderASC::reopen(const CHAR* file_name)
   I32 i;
   for (i = 0; i < header_lines; i++)
   {
-    if (fgets(line, line_size, file));
+    if (fgets(line, line_size, file) == NULL) {};
   }
 
   // special handling for European numbers

@@ -1,3 +1,8 @@
+### rlas v1.6.1
+
+- Fix -Wempty-body on CRAN request
+- Fix -Wformat on CRAN request
+
 ### rlas v1.6.0
 
 The ALTREP framework is now used to load compact representation of non populated attributes. For example `UserData` is usually populated with zeros (not populated). Yet it takes 32 bits per point to store each 0. It now uses 644 bits no matter the number of points if it is not populated. This optimization is automatically applied to each attribute that contain a single repeated value. This enables to save approximately 30 to 40% of memory usage depending on the number of non-populated attributes.

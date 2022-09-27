@@ -1482,7 +1482,7 @@ BOOL LASreaderPLY::parse(const char* parse_string)
     }
     else if (p[0] == 'H') // we expect a hexadecimal coded RGB color
     {
-      I32 hex_value;
+      U32 hex_value;
       char hex_string[3] = "__";
       while (l[0] && (l[0] == ' ' || l[0] == ',' || l[0] == '\t' || l[0] == ';' || l[0] == '\"')) l++; // first skip white spaces and quotes
       if (l[0] == 0) return FALSE;
@@ -1526,7 +1526,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
 
   // first header line containing "ply"
 
-  if (fgets(line, 512, file));
+  if (fgets(line, 512, file) == NULL) {}
   if (strncmp(line, "ply", 3) != 0)
   {
     return FALSE;
@@ -1545,7 +1545,7 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
   while (true)
   {
     // next line
-    if (fgets(line, 512, file));
+    if (fgets(line, 512, file) == NULL) {}
 
     if (strncmp(line, "end_header", 10) == 0)
     {
