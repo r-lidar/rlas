@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <array>
 #include <map>
 #include <set>
 #include <unordered_set>
