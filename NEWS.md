@@ -1,3 +1,7 @@
+### rlas v1.6.2
+
+- Fix compilation with g++-12 thanks to Dirk Eddelbuettel [#57](https://github.com/r-lidar/rlas/pull/57)
+
 ### rlas v1.6.1
 
 - Fix -Wempty-body on CRAN request
