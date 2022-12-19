@@ -1,4 +1,4 @@
-This release aims to fix an issue with g++-12 that will prevent the package BH to be uploaded. New sprintf error has not been fixed yet. This change implies 784 occurrences spread in 20.000 lines of code from a third party library that is not mine. Occurrences if sprintf are not all trivial to fix and it represents a significant job. I'll fixed that but I need more time.
+This release aims to fix an issue with g++-12 that will prevent the package BH to be uploaded. New sprintf error has not been fixed yet. This change implies 784 occurrences spread in 20.000 lines of code from a third party library that is not mine. Occurrences if sprintf are not all trivial to fix and it represents a significant job. I'll fixed that but I need. more time.
 
 ## Test environments
 
