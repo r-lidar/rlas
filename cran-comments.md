@@ -1,3 +1,5 @@
+This release aims to fix an issue with g++-12 that will prevent the package BH to be uploaded. New sprintf error has not been fixed yet. This change implies 784 occurrences spread in 20.000 lines of code from a third party library that is not mine. Occurrences if sprintf are not all trivial to fix and it represents a significant job. I'll fixed that but I need more time.
+
 ## Test environments
 
 * Linux Mint, R 4.2
@@ -8,16 +10,7 @@
 * Oracle Solaris 10, x86, 32 bit, R-release (via R-hub)
 
 ## R CMD check results
-0 ERRORs | 0 WARNINGs | 1 NOTE
-
-Found the following (possibly) invalid URLs:
-  URL: https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities
-    From: DESCRIPTION
-    Status: 500
-    Message: Internal Server Error
-
-This url is valid but for an unknown reason the server seems to reject wget's user agent. It works
-with curl by the way. According to some stackoverflow anwsers it is a bug in the webpage.
+0 ERRORs | 0 WARNINGs | 0 NOTE
 
 ## Downstream dependencies
 
