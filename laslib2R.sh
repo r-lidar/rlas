@@ -13,9 +13,9 @@ perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $fi
 
 # 2022 dec 20 new sprintf issues on CRAN
 
-grep -lr "return sprintf(string" | xargs sed -i 's/return sprintf(string/return snprintf(string, 256/g'
-
-
+grep -lr "return sprintf(string" src/*/*[hc]pp | xargs sed -i 's/return sprintf(string/return snprintf(string, 256/g'
+grep -lr "sprintf(last_warning" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_warning/snprintf(last_warning, 128/g'
+grep -lr "sprintf(last_error" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_error/snprintf(last_error, 128/g'
 
 # Some extra changes were done manually:
 
@@ -37,7 +37,7 @@ grep -lr "return sprintf(string" | xargs sed -i 's/return sprintf(string/return 
 # lasfilter.cpp            l1310      R::runif(0, RAND_MAX);
 # lasutility.cpp                      #include <stdexcept>
 # lasinterval.cpp          l552       delete ((LASintervalStartCell*)previous_cell); for gcc-asan fix in lax files
-# lasquadtree.cpp          l1662      for interger overflow
+# lasquadtree.cpp          l1662      for integer overflow
 #    if (l < 16)
 #      level_offset[l+1] = level_offset[l] + ((1<<l)*(1<<l));
 #    else
