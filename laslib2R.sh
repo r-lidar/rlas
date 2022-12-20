@@ -6,12 +6,16 @@
 # The following regex enable to automatically correct some problems:
 
 files=`grep -lr "fprintf" src/`
-
 perl -pi -w -e 's/fprintf\(stderr,/REprintf(/g;' $files
 
 files=`grep -lr "exit(1)" src/`
-
 perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $files
+
+# 2022 dec 20 new sprintf issues on CRAN
+
+grep -lr "return sprintf(string" | xargs sed -i 's/return sprintf(string/return snprintf(string, 256/g'
+
+
 
 # Some extra changes were done manually:
 
