@@ -26,7 +26,14 @@ grep -lr "sprintf(lax_evlr.description" src/*/*[hc]pp | xargs sed -i 's/sprintf(
 sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_wrl.cpp
 sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_txt.cpp
 sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/lasutility.cpp
-# occurences in laszip.dll must be done by hand
+
+# put 0 in unparse() functions because I don't know what to put. Unused anyway.
+sed -i 's/sprintf(\&string\[n\]/snprintf(\&string\[n\], 0/g' src/LASlib/lasutility.cpp
+sed -i 's/sprintf(\&string\[n\]/snprintf(\&string\[n\], 0/g' src/LASlib/lasignore.cpp
+sed -i 's/n += sprintf(string + n/n += snprintf(string + n, 0/g' src/LASlib/lasreader.cpp
+sed -i 's/n = sprintf(string/n = snprintf(string, 0/g' src/LASlib/lasreader.cpp
+
+# occurences in laszip.dll must be done by hand (easy)
 
 # Some extra changes were done manually:
 

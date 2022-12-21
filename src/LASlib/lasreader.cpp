@@ -441,38 +441,38 @@ I32 LASreadOpener::unparse(CHAR* string) const
   I32 n = 0;
   if (inside_tile)
   {
-    n = sprintf(string, "-inside_tile %g %g %g ", inside_tile[0], inside_tile[1], inside_tile[2]);
+    n = snprintf(string, 0, "-inside_tile %g %g %g ", inside_tile[0], inside_tile[1], inside_tile[2]);
   }
   else if (inside_circle)
   {
-    n = sprintf(string, "-inside_circle %lf %lf %lf ", inside_circle[0], inside_circle[1], inside_circle[2]);
+    n = snprintf(string, 0, "-inside_circle %lf %lf %lf ", inside_circle[0], inside_circle[1], inside_circle[2]);
   }
   else if (inside_rectangle)
   {
-    n = sprintf(string, "-inside_rectangle %lf %lf %lf %lf ", inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
+    n = snprintf(string, 0, "-inside_rectangle %lf %lf %lf %lf ", inside_rectangle[0], inside_rectangle[1], inside_rectangle[2], inside_rectangle[3]);
   }
   if (stored)
   {
-    n += sprintf(string + n, "-stored ");
+    n += snprintf(string + n, 0, "-stored ");
   }
   if (merged)
   {
-    n += sprintf(string + n, "-merged ");
+    n += snprintf(string + n, 0, "-merged ");
   }
   if (files_are_flightlines)
   {
     if (files_are_flightlines == 1)
     {
-      n += sprintf(string + n, "-faf ");
+      n += snprintf(string + n, 0, "-faf ");
     }
     else
     {
-      n += sprintf(string + n, "-faf %d ", files_are_flightlines);
+      n += snprintf(string + n, 0, "-faf %d ", files_are_flightlines);
     }
   }
   if (apply_file_source_ID)
   {
-    n += sprintf(string + n, "-apply_file_source_ID ");
+    n += snprintf(string + n, 0, "-apply_file_source_ID ");
   }
   if (scale_factor)
   {
@@ -480,40 +480,40 @@ I32 LASreadOpener::unparse(CHAR* string) const
     {
       if ((scale_factor[0] != 0.0) && (scale_factor[1] != 0.0))
       {
-        n += sprintf(string + n, "-rescale_xy %lf %lf ", scale_factor[0], scale_factor[1]);
+        n += snprintf(string + n, 0, "-rescale_xy %lf %lf ", scale_factor[0], scale_factor[1]);
       }
     }
     else
     {
       if ((scale_factor[0] == 0.0) && (scale_factor[1] == 0.0))
       {
-        n += sprintf(string + n, "-rescale_z %lf ", scale_factor[2]);
+        n += snprintf(string + n, 0, "-rescale_z %lf ", scale_factor[2]);
       }
       else
       {
-        n += sprintf(string + n, "-rescale %lf %lf %lf ", scale_factor[0], scale_factor[1], scale_factor[2]);
+        n += snprintf(string + n, 0, "-rescale %lf %lf %lf ", scale_factor[0], scale_factor[1], scale_factor[2]);
       }
     }
   }
   if (offset)
   {
-    n += sprintf(string + n, "-reoffset %lf %lf %lf ", offset[0], offset[1], offset[2]);
+    n += snprintf(string + n, 0, "-reoffset %lf %lf %lf ", offset[0], offset[1], offset[2]);
   }
   else if (auto_reoffset)
   {
-    n += sprintf(string + n, "-auto_reoffset ");
+    n += snprintf(string + n, 0, "-auto_reoffset ");
   }
   if (populate_header)
   {
-    n += sprintf(string + n, "-populate ");
+    n += snprintf(string + n, 0, "-populate ");
   }
   if (io_ibuffer_size != LAS_TOOLS_IO_IBUFFER_SIZE)
   {
-    n += sprintf(string + n, "-io_ibuffer %u ", io_ibuffer_size);
+    n += snprintf(string + n, 0, "-io_ibuffer %u ", io_ibuffer_size);
   }
   if (temp_file_base)
   {
-    n += sprintf(string + n, "-temp_files \"%s\" ", temp_file_base);
+    n += snprintf(string + n, 0, "-temp_files \"%s\" ", temp_file_base);
   }
   return n;
 }

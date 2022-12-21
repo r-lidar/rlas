@@ -192,7 +192,7 @@ I32 LASignore::unparse(CHAR* string) const
   {
     if (ignore_mask & LASIGNORE_CLASSIFICATIONS)
     {
-      n += sprintf(&string[n], "-ignore_class ");
+      n += snprintf(&string[n], 0, "-ignore_class ");
       for (int i = 0; i < 8; i++)
       {
         if (ignore_mask & (1u << i))
@@ -201,7 +201,7 @@ I32 LASignore::unparse(CHAR* string) const
           {
             if (ignore_classification_mask[i] & (1u << j))
             {
-              n += sprintf(&string[n], "%d ", 32*i + j);
+              n += snprintf(&string[n], 0, "%d ", 32*i + j);
             }
           }
         }
@@ -215,51 +215,51 @@ I32 LASignore::unparse(CHAR* string) const
         {
           if (ignore_mask & LASIGNORE_FIRST_OF_MANY)
           {
-            n += sprintf(&string[n], "-ignore_first ");
+            n += snprintf(&string[n], 0, "-ignore_first ");
           }
           if (ignore_mask & LASIGNORE_LAST_OF_MANY)
           {
-            n += sprintf(&string[n], "-ignore_last ");
+            n += snprintf(&string[n], 0, "-ignore_last ");
           }
         }
         else
         {
-          n += sprintf(&string[n], "-ignore_single ");
+          n += snprintf(&string[n], 0, "-ignore_single ");
         }
       }
       else
       {
         if (ignore_mask & LASIGNORE_FIRST_OF_MANY)
         {
-          n += sprintf(&string[n], "-ignore_first_of_many ");
+          n += snprintf(&string[n], 0, "-ignore_first_of_many ");
         }
         if (ignore_mask & LASIGNORE_LAST_OF_MANY)
         {
-          n += sprintf(&string[n], "-ignore_last_of_many ");
+          n += snprintf(&string[n], 0, "-ignore_last_of_many ");
         }
       }
       if (ignore_mask & LASIGNORE_INTERMEDIATE)
       {
-        n += sprintf(&string[n], "-ignore_intermediate ");
+        n += snprintf(&string[n], 0, "-ignore_intermediate ");
       }
     }
     if (ignore_mask & LASIGNORE_FLAGS)
     {
       if (ignore_mask & LASIGNORE_SYNTHETIC)
       {
-        n += sprintf(&string[n], "-ignore_snthetic ");
+        n += snprintf(&string[n], 0, "-ignore_snthetic ");
       }
       if (ignore_mask & LASIGNORE_KEYPOINT)
       {
-        n += sprintf(&string[n], "-ignore_keypoint ");
+        n += snprintf(&string[n], 0, "-ignore_keypoint ");
       }
       if (ignore_mask & LASIGNORE_WITHHELD)
       {
-        n += sprintf(&string[n], "-ignore_withheld ");
+        n += snprintf(&string[n], 0, "-ignore_withheld ");
       }
       if (ignore_mask & LASIGNORE_OVERLAP)
       {
-        n += sprintf(&string[n], "-ignore_overlap ");
+        n += snprintf(&string[n], 0, "-ignore_overlap ");
       }
     }
   }
