@@ -63,12 +63,12 @@ LASzip::~LASzip()
 }
 
 // the data of the LASzip VLR
-//     U16  compressor         2 bytes 
-//     U16  coder              2 bytes 
-//     U8   version_major      1 byte 
+//     U16  compressor         2 bytes
+//     U16  coder              2 bytes
+//     U8   version_major      1 byte
 //     U8   version_minor      1 byte
 //     U16  version_revision   2 bytes
-//     U32  options            4 bytes 
+//     U32  options            4 bytes
 //     U32  chunk_size         4 bytes
 //     I64  num_points         8 bytes
 //     I64  num_bytes          8 bytes
@@ -83,7 +83,7 @@ bool LASzip::unpack(const U8* bytes, const I32 num)
 {
   // check input
   if (num < 34) return return_error("too few bytes to unpack");
-  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack"); 
+  if (((num - 34) % 6) != 0) return return_error("wrong number bytes to unpack");
   if (((num - 34) / 6) == 0) return return_error("zero items to unpack");
   num_items = (num - 34) / 6;
 
@@ -196,7 +196,7 @@ bool LASzip::return_error(const char* error)
 #define CopyString strdup
 #endif
   char err[256];
-  sprintf(err, "%s (LASzip v%d.%dr%d)", error, LASZIP_VERSION_MAJOR, LASZIP_VERSION_MINOR, LASZIP_VERSION_REVISION);
+  snprintf(err, 256, "%s (LASzip v%d.%dr%d)", error, LASZIP_VERSION_MAJOR, LASZIP_VERSION_MINOR, LASZIP_VERSION_REVISION);
   if (error_string) free(error_string);
   error_string = CopyString(err);
   return false;
@@ -206,7 +206,7 @@ bool LASzip::check_compressor(const U16 compressor)
 {
   if (compressor < LASZIP_COMPRESSOR_TOTAL_NUMBER_OF) return true;
   char error[64];
-  sprintf(error, "compressor %d not supported", compressor);
+  snprintf(error, 64, "compressor %d not supported", compressor);
   return return_error(error);
 }
 
@@ -214,7 +214,7 @@ bool LASzip::check_coder(const U16 coder)
 {
   if (coder < LASZIP_CODER_TOTAL_NUMBER_OF) return true;
   char error[64];
-  sprintf(error, "coder %d not supported", coder);
+  snprintf(error, 64, "coder %d not supported", coder);
   return return_error(error);
 }
 
@@ -266,7 +266,7 @@ bool LASzip::check_item(const LASitem* item)
     if (1)
     {
       char error[64];
-      sprintf(error, "item unknown (%d,%d,%d)", item->type, item->size, item->version);
+      snprintf(error, 64, "item unknown (%d,%d,%d)", item->type, item->size, item->version);
       return return_error(error);
     }
   }
@@ -287,7 +287,7 @@ bool LASzip::check_items(const U16 num_items, const LASitem* items, const U16 po
   if (point_size && (point_size != size))
   {
     CHAR temp[66];
-    sprintf(temp, "point has size of %d but items only add up to %d bytes", point_size, size);
+    snprintf(temp, 66, "point has size of %d but items only add up to %d bytes", point_size, size);
     return return_error(temp);
   }
   return true;
@@ -424,7 +424,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
   BOOL have_wavepacket = FALSE;
   I32 extra_bytes_number = 0;
 
-  // turns on LAS 1.4 compatibility mode 
+  // turns on LAS 1.4 compatibility mode
 
   if (options & 1) compatible = TRUE;
 
@@ -489,7 +489,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
     if (1)
     {
       char error[64];
-      sprintf(error, "point type %d unknown", point_type);
+      snprintf(error, 64, "point type %d unknown", point_type);
       return return_error(error);
     }
   }
@@ -512,7 +512,7 @@ bool LASzip::setup(U16* num_items, LASitem** items, const U8 point_type, const U
     // if we have NIR ...
     if (have_nir)
     {
-      // we need another 2 extra bytes 
+      // we need another 2 extra bytes
       extra_bytes_number += 2;
       // we do not use the NIR item
       have_nir = FALSE;
@@ -754,7 +754,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 57);
               return true;
             }
-            else 
+            else
             {
               if (items[3].is_type(LASitem::BYTE))
               {
@@ -860,7 +860,7 @@ bool LASzip::is_standard(const U16 num_items, const LASitem* items, U8* point_ty
               if (record_length) assert(*record_length == 67);
               return true;
             }
-            else 
+            else
             {
               if (items[3].is_type(LASitem::BYTE) || items[3].is_type(LASitem::BYTE14))
               {
