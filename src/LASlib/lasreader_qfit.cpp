@@ -188,8 +188,8 @@ BOOL LASreaderQFIT::open(ByteStreamIn* stream)
 
   // populate the header as much as possible
 
-  sprintf(header.system_identifier, "LAStools (c) by rapidlasso GmbH");
-  sprintf(header.generating_software, "via LASreaderQFIT (%d)", LAS_TOOLS_VERSION);
+  snprintf(header.system_identifier, 32, "LAStools (c) by rapidlasso GmbH");
+  snprintf(header.generating_software, 32, "via LASreaderQFIT (%d)", LAS_TOOLS_VERSION);
 
   header.number_of_point_records = (U32)npoints;
   header.number_of_points_by_return[0] = header.number_of_point_records;

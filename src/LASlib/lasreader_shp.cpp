@@ -124,8 +124,8 @@ BOOL LASreaderSHP::open(const char* file_name)
 
   // populate the header as much as it makes sense
 
-  sprintf(header.system_identifier, "LAStools (c) by rapidlasso GmbH");
-  sprintf(header.generating_software, "via LASreaderSHP (%d)", LAS_TOOLS_VERSION);
+  snprintf(header.system_identifier, 32, "LAStools (c) by rapidlasso GmbH");
+  snprintf(header.generating_software, 32, "via LASreaderSHP (%d)", LAS_TOOLS_VERSION);
 
   // maybe set creation date
 

@@ -554,11 +554,11 @@ public:
     }
     else if (description)
     {
-      sprintf(vlrs[i].description, "%.31s", description);
+      snprintf(vlrs[i].description, 32, "%.31s", description);
     }
     else
     {
-      sprintf(vlrs[i].description, "by LAStools of rapidlasso GmbH");
+      snprintf(vlrs[i].description, 32, "by LAStools of rapidlasso GmbH");
     }
     if (record_length_after_header)
     {
@@ -679,11 +679,11 @@ public:
     }
     else if (description)
     {
-      sprintf(evlrs[i].description, "%.31s", description);
+      snprintf(evlrs[i].description, 32, "%.31s", description);
     }
     else
     {
-      sprintf(evlrs[i].description, "by LAStools of rapidlasso GmbH");
+      snprintf(evlrs[i].description, 32, "by LAStools of rapidlasso GmbH");
     }
     if (record_length_after_header)
     {

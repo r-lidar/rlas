@@ -12,11 +12,17 @@ files=`grep -lr "exit(1)" src/`
 perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $files
 
 # 2022 dec 20 new sprintf issues on CRAN
-
 grep -lr "return sprintf(string" src/*/*[hc]pp | xargs sed -i 's/return sprintf(string/return snprintf(string, 256/g'
 grep -lr "sprintf(last_warning" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_warning/snprintf(last_warning, 128/g'
 grep -lr "sprintf(last_error" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_error/snprintf(last_error, 128/g'
-
+grep -lr "sprintf(header.system_identifier" src/*/*[hc]pp | xargs sed -i 's/sprintf(header.system_identifier/snprintf(header.system_identifier, 32/g'
+grep -lr "sprintf(header.system_identifier" src/*/*[hc]pp | xargs sed -i 's/sprintf(header.system_identifier/snprintf(header.system_identifier, 32/g'
+grep -lr "sprintf(header.generating_software" src/*/*[hc]pp | xargs sed -i 's/sprintf(header.generating_software/snprintf(header.generating_software, 32/g'
+grep -lr "sprintf(description" src/*/*[hc]pp | xargs sed -i 's/sprintf(description/snprintf(description, 32/g'
+grep -lr "sprintf(vlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf(vlrs\[i\].description/snprintf(vlrs\[i\].description, 32/g'
+grep -lr "sprintf(evlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf(evlrs\[i\].description/snprintf(evlrs\[i\].description, 32/g'
+grep -lr "sprintf(lax_evlr.user_id" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.user_id/snprintf(lax_evlr.user_id, 16/g'
+grep -lr "sprintf(lax_evlr.description" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.description/snprintf(lax_evlr.description, 32/g'
 # Some extra changes were done manually:
 
 # Compile with g++7 and -flto -Wlto-type-mismatch -Wodr -Wall -pedantic -mtune=native -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-parentheses

@@ -121,8 +121,8 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
 
   // populate the header as much as it makes sense
 
-  sprintf(header.system_identifier, "LAStools (c) by rapidlasso GmbH");
-  sprintf(header.generating_software, "via LASreaderTXT (%d)", LAS_TOOLS_VERSION);
+  snprintf(header.system_identifier, 32, "LAStools (c) by rapidlasso GmbH");
+  snprintf(header.generating_software, 32, "via LASreaderTXT (%d)", LAS_TOOLS_VERSION);
 
   // maybe set creation date
 
