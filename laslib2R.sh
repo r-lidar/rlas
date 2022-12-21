@@ -23,6 +23,11 @@ grep -lr "sprintf(vlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf
 grep -lr "sprintf(evlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf(evlrs\[i\].description/snprintf(evlrs\[i\].description, 32/g'
 grep -lr "sprintf(lax_evlr.user_id" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.user_id/snprintf(lax_evlr.user_id, 16/g'
 grep -lr "sprintf(lax_evlr.description" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.description/snprintf(lax_evlr.description, 32/g'
+sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_wrl.cpp
+sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_txt.cpp
+sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/lasutility.cpp
+# occurences in laszip.dll must be done by hand
+
 # Some extra changes were done manually:
 
 # Compile with g++7 and -flto -Wlto-type-mismatch -Wodr -Wall -pedantic -mtune=native -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-parentheses
