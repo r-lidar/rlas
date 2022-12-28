@@ -12,6 +12,7 @@ files=`grep -lr "exit(1)" src/`
 perl -pi -w -e 's/exit\(1\)/throw std::runtime_error\("Internal error"\)/g;' $files
 
 # 2022 dec 20 new sprintf issues on CRAN
+# =======================================
 grep -lr "return sprintf(string" src/*/*[hc]pp | xargs sed -i 's/return sprintf(string/return snprintf(string, 256/g'
 grep -lr "sprintf(last_warning" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_warning/snprintf(last_warning, 128/g'
 grep -lr "sprintf(last_error" src/*/*[hc]pp | xargs sed -i 's/sprintf(last_error/snprintf(last_error, 128/g'
@@ -34,6 +35,8 @@ sed -i 's/n += sprintf(string + n/n += snprintf(string + n, 0/g' src/LASlib/lasr
 sed -i 's/n = sprintf(string/n = snprintf(string, 0/g' src/LASlib/lasreader.cpp
 
 # occurences in laszip.dll must be done by hand (easy)
+# some remaining occurences in lasfilter.cpp done by hand
+# =================================================
 
 # Some extra changes were done manually:
 

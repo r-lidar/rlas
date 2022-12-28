@@ -49,7 +49,7 @@ class LAScriterionAnd : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "filter_and"; };
-  inline I32 get_command(CHAR* string) const { int n = 0; n += one->get_command(&string[n]); n += two->get_command(&string[n]); n += sprintf(&string[n], "-%s ", name()); return n; };
+  inline I32 get_command(CHAR* string) const { int n = 0; n += one->get_command(&string[n]); n += two->get_command(&string[n]); n += snprintf(&string[n], 256, "-%s ", name()); return n; };
   inline U32 get_decompress_selective() const { return (one->get_decompress_selective() | two->get_decompress_selective()); };
   inline BOOL filter(const LASpoint* point) { return one->filter(point) && two->filter(point); };
   LAScriterionAnd(LAScriterion* one, LAScriterion* two) { this->one = one; this->two = two; };
@@ -62,7 +62,7 @@ class LAScriterionOr : public LAScriterion
 {
 public:
   inline const CHAR* name() const { return "filter_or"; };
-  inline I32 get_command(CHAR* string) const { int n = 0; n += one->get_command(&string[n]); n += two->get_command(&string[n]); n += sprintf(&string[n], "-%s ", name()); return n; };
+  inline I32 get_command(CHAR* string) const { int n = 0; n += one->get_command(&string[n]); n += two->get_command(&string[n]); n += snprintf(&string[n], 256, "-%s ", name()); return n; };
   inline U32 get_decompress_selective() const { return (one->get_decompress_selective() | two->get_decompress_selective()); };
   inline BOOL filter(const LASpoint* point) { return one->filter(point) || two->filter(point); };
   LAScriterionOr(LAScriterion* one, LAScriterion* two) { this->one = one; this->two = two; };
@@ -527,9 +527,9 @@ public:
   inline const CHAR* name() const { return "keep_return_mask"; };
   inline I32 get_command(CHAR* string) const {
     U32 i;
-    U32 n = sprintf(string, "-keep_return ");
+    U32 n = snprintf(string, 256, "-keep_return ");
     U16 keep_return_mask = ~drop_return_mask;
-    for (i = 0; i < 16; i++) if ((1 << i) & keep_return_mask) n += sprintf(string + n, "%u ", i);
+    for (i = 0; i < 16; i++) if ((1 << i) & keep_return_mask) n += snprintf(string + n, 256, "%u ", i);
     return n;
   };
   inline BOOL filter(const LASpoint* point) { return ((1 << point->get_return_number()) & drop_return_mask); };
@@ -545,8 +545,8 @@ public:
   inline const CHAR* name() const { return "drop_return_mask"; };
   inline I32 get_command(CHAR* string) const {
     U32 i;
-    U32 n = sprintf(string, "-drop_return ");
-    for (i = 0; i < 16; i++) if ((1 << i) & drop_return_mask) n += sprintf(string + n, "%u ", i);
+    U32 n = snprintf(string, 256, "-drop_return ");
+    for (i = 0; i < 16; i++) if ((1 << i) & drop_return_mask) n += snprintf(string + n, 256, "%u ", i);
     return n;
   };
   inline BOOL filter(const LASpoint* point) { return ((1 << point->get_return_number()) & drop_return_mask); };
@@ -845,9 +845,9 @@ public:
   inline const CHAR* name() const { return "keep_classification_mask"; };
   inline I32 get_command(CHAR* string) const {
     U32 i;
-    U32 n = sprintf(string, "-keep_class ");
+    U32 n = snprintf(string, 256, "-keep_class ");
     U32 keep_classification_mask = ~drop_classification_mask;
-    for (i = 0; i < 32; i++) if ((1u << i) & keep_classification_mask) n += sprintf(string + n, "%u ", i);
+    for (i = 0; i < 32; i++) if ((1u << i) & keep_classification_mask) n += snprintf(string + n, 256, "%u ", i);
     return n;
   };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CLASSIFICATION; };
@@ -864,8 +864,8 @@ public:
   inline const CHAR* name() const { return "drop_classification_mask"; };
   inline I32 get_command(CHAR* string) const {
     U32 i;
-    U32 n = sprintf(string, "-drop_class ");
-    for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) n += sprintf(string + n, "%u ", i);
+    U32 n = snprintf(string, 256, "-drop_class ");
+    for (i = 0; i < 32; i++) if ((1 << i) & drop_classification_mask) n += snprintf(string + n, 256, "%u ", i);
     return n;
   };
   inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CLASSIFICATION; };
