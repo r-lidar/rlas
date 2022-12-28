@@ -1063,7 +1063,7 @@ void LASreaderTXT::add_attribute(I32 data_type, const char* name, const char* de
   else
   {
     char temp[32];
-    sprintf(temp, "attribute %d", number_attributes);
+    snprintf(temp, 32, "attribute %d", number_attributes);
     attribute_names[number_attributes] = LASCopyString(temp);
   }
   if (description)

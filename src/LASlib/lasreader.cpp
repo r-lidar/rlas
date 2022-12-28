@@ -2750,7 +2750,7 @@ BOOL LASreadOpener::add_file_name(const CHAR* file_name, BOOL unique)
       strncpy(full_file_name, file_name, len);
 	    do
 	    {
-        sprintf(&full_file_name[len], "%s", info.cFileName);
+        snprintf(&full_file_name[len], 512, "%s", info.cFileName);
         if (add_file_name_single(full_file_name, unique)) r = TRUE;
   	  } while (FindNextFile(h, &info));
     }
@@ -3215,7 +3215,7 @@ BOOL LASreadOpener::add_neighbor_file_name(const CHAR* neighbor_file_name, BOOL 
       strncpy(full_neighbor_file_name, neighbor_file_name, len);
 	    do
 	    {
-        sprintf(&full_neighbor_file_name[len], "%s", info.cFileName);
+        snprintf(&full_neighbor_file_name[len], 512, "%s", info.cFileName);
         if (add_neighbor_file_name_single(full_neighbor_file_name, unique)) r = TRUE;
   	  } while (FindNextFile(h, &info));
     }

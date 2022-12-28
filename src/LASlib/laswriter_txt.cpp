@@ -269,7 +269,7 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
 static void lidardouble2string(CHAR* string, double value)
 {
   int len;
-  len = snprintf(string, 4096, "%.15f", value) - 1;
+  len = snprintf(string, 512, "%.15f", value) - 1;
   while (string[len] == '0') len--;
   if (string[len] != '.') len++;
   string[len] = '\0';
@@ -278,23 +278,23 @@ static void lidardouble2string(CHAR* string, double value)
 static void lidardouble2string(CHAR* string, double value, double precision)
 {
   if (precision == 0.1)
-    snprintf(string, 4096, "%.1f", value);
+    snprintf(string, 512, "%.1f", value);
   else if (precision == 0.01)
-    snprintf(string, 4096, "%.2f", value);
+    snprintf(string, 512, "%.2f", value);
   else if (precision == 0.001)
-    snprintf(string, 4096, "%.3f", value);
+    snprintf(string, 512, "%.3f", value);
   else if (precision == 0.0001)
-    snprintf(string, 4096, "%.4f", value);
+    snprintf(string, 512, "%.4f", value);
   else if (precision == 0.00001)
-    snprintf(string, 4096, "%.5f", value);
+    snprintf(string, 512, "%.5f", value);
   else if (precision == 0.000001)
-    snprintf(string, 4096, "%.6f", value);
+    snprintf(string, 512, "%.6f", value);
   else if (precision == 0.0000001)
-    snprintf(string, 4096, "%.7f", value);
+    snprintf(string, 512, "%.7f", value);
   else if (precision == 0.00000001)
-    snprintf(string, 4096, "%.8f", value);
+    snprintf(string, 512, "%.8f", value);
   else if (precision == 0.000000001)
-    snprintf(string, 4096, "%.9f", value);
+    snprintf(string, 512, "%.9f", value);
   else
     lidardouble2string(string, value);
 }
@@ -451,7 +451,7 @@ BOOL LASwriterTXT::write_point(const LASpoint* point)
       else if (optx)
       {
         int len;
-        len = sprintf(printstring, "%.3f", 1.0f/4095.0f * point->get_intensity()) - 1;
+        len = snprintf(printstring, 512, "%.3f", 1.0f/4095.0f * point->get_intensity()) - 1;
         while (printstring[len] == '0') len--;
         if (printstring[len] != '.') len++;
         printstring[len] = '\0';

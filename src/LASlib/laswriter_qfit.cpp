@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  laswriter_qfit.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "laswriter_qfit.hpp"
@@ -135,7 +135,7 @@ BOOL LASwriterQFIT::open(ByteStreamOut* stream, const LASheader* header, I32 ver
   {
     rescale_reoffset = TRUE;
   }
-  
+
   if (header->x_offset != 0.0 || header->y_offset != 0.0 || header->z_offset != 0.0)
   {
     rescale_reoffset = TRUE;
@@ -181,7 +181,7 @@ BOOL LASwriterQFIT::open(ByteStreamOut* stream, const LASheader* header, I32 ver
   // populate some ASCII into the remainder of first header record
 
   memset(buffer, 0, 48);
-  sprintf((char*)buffer, "via LASwriterQFIT (version %d)", LAS_TOOLS_VERSION);
+  snprintf((char*)buffer, 48, "via LASwriterQFIT (version %d)", LAS_TOOLS_VERSION);
 
   if (!stream->putBytes((U8*)buffer, version-4))
   {
@@ -208,7 +208,7 @@ BOOL LASwriterQFIT::open(ByteStreamOut* stream, const LASheader* header, I32 ver
   // populate some ASCII into the remainder of second header record
 
   memset(buffer, 0, 48);
-  sprintf((char*)buffer, "LAStools by Martin Isenburg");
+  snprintf((char*)buffer, 48, "LAStools by Martin Isenburg");
   if (!stream->putBytes((U8*)buffer, version-8))
   {
     REprintf("ERROR: writing second header record of QFIT header\n");
@@ -272,7 +272,7 @@ BOOL LASwriterQFIT::update_header(const LASheader* header, BOOL use_inventory, B
 I64 LASwriterQFIT::close(BOOL update_header)
 {
   I64 bytes = 0;
-  
+
   if (stream)
   {
     bytes = stream->tell();

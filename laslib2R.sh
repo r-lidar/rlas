@@ -33,9 +33,16 @@ sed -i 's/sprintf(\&string\[n\]/snprintf(\&string\[n\], 0/g' src/LASlib/lasutili
 sed -i 's/sprintf(\&string\[n\]/snprintf(\&string\[n\], 0/g' src/LASlib/lasignore.cpp
 sed -i 's/n += sprintf(string + n/n += snprintf(string + n, 0/g' src/LASlib/lasreader.cpp
 sed -i 's/n = sprintf(string/n = snprintf(string, 0/g' src/LASlib/lasreader.cpp
+sed -i 's/sprintf(temp/snprintf(temp, 32/g' src/LASlib/lasreader_ply.cpp
+sed -i 's/sprintf(temp/snprintf(temp, 32/g' src/LASlib/lasreader_txt.cpp
 
 # occurences in laszip.dll must be done by hand (easy)
-# some remaining occurences in lasfilter.cpp done by hand
+# some remaining occurencesdone by hand in lasfilter.cpp
+# two occurences done by hand in lasreader.cpp
+# one occurence done by hand in lastransform.cpp
+# one occurence done by hand in laswaveform13writer.cpp
+# five occurences done by hand in laswriter.cpp (no trivial)
+# fe occurences done by hand in laswrite_qfit.cpp and laswriter_txt.cpp
 # =================================================
 
 # Some extra changes were done manually:

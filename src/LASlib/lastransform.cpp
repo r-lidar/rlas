@@ -6169,7 +6169,7 @@ I32 LAStransform::unparse(CHAR* string) const
   if (filter)
   {
     n += filter->unparse(&string[n]);
-    n += sprintf(&string[n], "-filtered_transform ");
+    n += snprintf(&string[n], 256, "-filtered_transform ");
   }
   for (i = 0; i < num_operations; i++)
   {

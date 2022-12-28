@@ -206,7 +206,7 @@ BOOL LASwaveform13writer::open(const char* file_name, const LASvlr_wave_packet_d
   // write waveform descriptor cross-check
 
   char magic[25];
-  sprintf(magic, "LAStools waveform %d", LAS_TOOLS_VERSION);
+  snprintf(magic, 25, "LAStools waveform %d", LAS_TOOLS_VERSION);
 
   if (!stream->putBytes((U8*)magic, 24))
   {

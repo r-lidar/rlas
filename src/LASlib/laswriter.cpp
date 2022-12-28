@@ -955,7 +955,7 @@ CHAR* LASwriteOpener::get_file_name_base() const
   {
     I32 len = (I32)strlen(directory);
     file_name_base = (CHAR*)malloc(len+2);
-    sprintf(file_name_base, "%s\\", directory);
+    snprintf(file_name_base, len+2, "%s\\", directory);
   }
 
   return file_name_base;
@@ -1090,7 +1090,7 @@ void LASwriteOpener::add_directory(const CHAR* directory)
     while ((len > 0) && (file_name[len] != '\\') && (file_name[len] != '/') && (file_name[len] != ':')) len--;
     if (len > 0) len++;
     CHAR* new_file_name = (CHAR*)malloc(strlen(directory) + strlen(&(file_name[len])) + 5);
-    sprintf(new_file_name, "%s%c%s", directory, DIRECTORY_SLASH, &(file_name[len]));
+    snprintf(new_file_name, strlen(directory) + strlen(&(file_name[len])) + 5, "%s%c%s", directory, DIRECTORY_SLASH, &(file_name[len]));
     free(file_name);
     file_name = new_file_name;
   }
@@ -1108,12 +1108,12 @@ void LASwriteOpener::add_appendix(const CHAR* appendix)
 
     if ((len == 0) || (file_name[len] == '\\') || (file_name[len] == '/') || (file_name[len] == ':'))
     {
-      sprintf(new_file_name, "%s%s", file_name, appendix);
+      snprintf(new_file_name, len + strlen(appendix) + 5, "%s%s", file_name, appendix);
     }
     else
     {
       strncpy(new_file_name, file_name, len);
-      sprintf(&(new_file_name[len]), "%s%s", appendix, &(file_name[len]));
+      snprintf(&(new_file_name[len]), len + strlen(appendix) + 5, "%s%s", appendix, &(file_name[len]));
     }
     free(file_name);
     file_name = new_file_name;
@@ -1138,7 +1138,7 @@ void LASwriteOpener::cut_characters(U32 cut)
     else
     {
       memcpy(new_file_name, file_name, len-cut);
-      sprintf(&(new_file_name[len-cut]), "%s", &(file_name[len]));
+      snprintf(&(new_file_name[len-cut]), len - cut + 5, "%s", &(file_name[len]));
     }
     free(file_name);
     file_name = new_file_name;
