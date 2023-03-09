@@ -59,5 +59,3 @@ SOURCES = LASlib/lasreader_txt.cpp \
 
 TEMP1   =  $(SOURCES:.cpp=.o)
 OBJECTS =  $(TEMP1:.c=.o)
-
-CXX_STD = CXX14
