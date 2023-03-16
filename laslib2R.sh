@@ -53,8 +53,10 @@ sed -i 's/sprintf(temp/snprintf(temp, 32/g' src/LASlib/lasreader_txt.cpp
 # mydefs.hpp                          #include <R.h> and #define STRICT_R_HEADERS
 # lasreaderpipeon.cpp      l96-101    comment lines because of stdout
 # laswriter.cpp            l139-204   comment lines because of stdout (I guess)
-# laswriter.cpp            l1130,1135 for gcc 8+ replace strncpy by memcpy
-# lasattributer.hpp        l79-80     for gcc 8+ replace strncpy by memcpy - requires to get the char* length:
+
+# laswriter.cpp            l1130,1135 for gcc 8+ replace strncpy by memcpy - requires to get the char* length:
+# lasattributer.hpp        l79-80
+# lasdefinitions.hpp       l673 (#61)
 #     int len = 0 ; while(*(description+len) != '\0' && len < 32) len++;
 #     memcpy(this->description, description, len);
 # lasdefinition.hpp        l570       cast to void* : memset((void*)&(vlrs[i]), 0, sizeof(LASvlr));
