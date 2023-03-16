@@ -745,7 +745,7 @@ void LASbin::add(F64 item, F64 value)
 static void lidardouble2string(CHAR* string, F64 value)
 {
   int len;
-  len = snprintf(string, 4096, "%.15f", value) - 1;
+  len = snprintf(string, 512, "%.15f", value) - 1;
   while (string[len] == '0') len--;
   if (string[len] != '.') len++;
   string[len] = '\0';
@@ -754,23 +754,23 @@ static void lidardouble2string(CHAR* string, F64 value)
 static void lidardouble2string(CHAR* string, F64 value, F64 precision)
 {
   if (precision == 0.1 || precision == 0.2 || precision == 0.3 || precision == 0.4 || precision == 0.5)
-    snprintf(string, 4096, "%.1f", value);
+    snprintf(string, 512, "%.1f", value);
   else if (precision == 0.01 || precision == 0.02 || precision == 0.03 || precision == 0.04 || precision == 0.05 || precision == 0.25)
-    snprintf(string, 4096, "%.2f", value);
+    snprintf(string, 512, "%.2f", value);
   else if (precision == 0.001 || precision == 0.002 || precision == 0.003 || precision == 0.004 || precision == 0.005 || precision == 0.025 || precision == 0.125)
-    snprintf(string, 4096, "%.3f", value);
+    snprintf(string, 512, "%.3f", value);
   else if (precision == 0.0001 || precision == 0.0002 || precision == 0.0005 || precision == 0.0025 || precision == 0.0125)
-    snprintf(string, 4096, "%.4f", value);
+    snprintf(string, 512, "%.4f", value);
   else if (precision == 0.00001 || precision == 0.00002 || precision == 0.00005 || precision == 0.00025 || precision == 0.00125)
-    snprintf(string, 4096, "%.5f", value);
+    snprintf(string, 512, "%.5f", value);
   else if (precision == 0.000001 || precision == 0.000002 || precision == 0.000005 || precision == 0.000025 || precision == 0.000125)
-    snprintf(string, 4096, "%.6f", value);
+    snprintf(string, 512, "%.6f", value);
   else if (precision == 0.0000001)
-    snprintf(string, 4096, "%.7f", value);
+    snprintf(string, 512, "%.7f", value);
   else if (precision == 0.00000001)
-    snprintf(string, 4096, "%.8f", value);
+    snprintf(string, 512, "%.8f", value);
   else if (precision == 0.000000001)
-    snprintf(string, 4096, "%.9f", value);
+    snprintf(string, 512, "%.9f", value);
   else
     lidardouble2string(string, value);
 }

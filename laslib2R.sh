@@ -24,9 +24,9 @@ grep -lr "sprintf(vlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf
 grep -lr "sprintf(evlrs\[i\].description" src/*/*[hc]pp | xargs sed -i 's/sprintf(evlrs\[i\].description/snprintf(evlrs\[i\].description, 32/g'
 grep -lr "sprintf(lax_evlr.user_id" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.user_id/snprintf(lax_evlr.user_id, 16/g'
 grep -lr "sprintf(lax_evlr.description" src/*/*[hc]pp | xargs sed -i 's/sprintf(lax_evlr.description/snprintf(lax_evlr.description, 32/g'
-sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_wrl.cpp
-sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/laswriter_txt.cpp
-sed -i 's/sprintf(string/snprintf(string, 4096/g' src/LASlib/lasutility.cpp
+sed -i 's/sprintf(string/snprintf(string, 512/g' src/LASlib/laswriter_wrl.cpp
+sed -i 's/sprintf(string/snprintf(string, 512/g' src/LASlib/laswriter_txt.cpp
+sed -i 's/sprintf(string/snprintf(string, 512/g' src/LASlib/lasutility.cpp
 
 # put 0 in unparse() functions because I don't know what to put. Unused anyway.
 sed -i 's/sprintf(\&string\[n\]/snprintf(\&string\[n\], 0/g' src/LASlib/lasutility.cpp
