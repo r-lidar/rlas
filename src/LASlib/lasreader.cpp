@@ -28,6 +28,10 @@
 
 ===============================================================================
 */
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "lasreader.hpp"
 
 #include "lasindex.hpp"
