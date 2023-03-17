@@ -167,11 +167,12 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     }
     if (header->version_minor >= 4)
     {
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
       fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #else
       fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
-#endif
+#endif*/
     }
     else
     {
@@ -222,11 +223,12 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
       REprintf( "         outputting PTS instead ...\n");
       if (header->version_minor >= 4)
       {
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
         fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #else
         fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
-#endif
+#endif*/
       }
       else
       {
@@ -518,18 +520,20 @@ BOOL LASwriterTXT::write_point(const LASpoint* point)
         fprintf(file, "%d", point->get_B());
       break;
     case 'm': // the index of the point (count starts at 0)
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
       fprintf(file, "%" PRId64 "", p_count-1);
 #else
       fprintf(file, "%" PRId64 "", p_count-1);
-#endif
+#endif*/
       break;
     case 'M': // the index of the point (count starts at 1)
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
       fprintf(file, "%" PRId64 "", p_count);
 #else
       fprintf(file, "%" PRId64 "", p_count);
-#endif
+#endif*/
       break;
     case 'w': // the wavepacket descriptor index
       fprintf(file, "%d", point->wavepacket.getIndex());

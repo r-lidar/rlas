@@ -282,11 +282,12 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
     {
       if (fgets(line, 512, file))
       {
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
         if (sscanf(line, "%" PRId64 "", &npoints) != 1)
 #else
         if (sscanf(line, "%" PRId64 "", &npoints) != 1)
-#endif
+#endif*/
         {
           REprintf( "ERROR: parsing number of points for '-itps'\n");
           return FALSE;
@@ -648,11 +649,12 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
     {
       if (!populated_header)
       {
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
         if (sscanf(line, "%" PRId64 "", &npoints) != 1)
 #else
         if (sscanf(line, "%" PRId64 "", &npoints) != 1)
-#endif
+#endif*/
         {
           REprintf( "ERROR: parsing number of points for '-itps'\n");
           return FALSE;

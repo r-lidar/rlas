@@ -1587,11 +1587,12 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
     {
       if (strncmp(&line[8], "vertex", 6) == 0)
       {
-#ifdef _WIN32
+// temporarily comment this portion that is not useful in rlas. See #62
+/*#ifdef _WIN32
         if (sscanf(&line[15], "%" PRId64 "", &npoints) != 1)
 #else
         if (sscanf(&line[15], "%" PRId64 "", &npoints) != 1)
-#endif
+#endif*/
         {
           REprintf( "element vertex: %scannot parse number of points. contact martin@rapidlasso.com\n", &line[15]);
           return FALSE;
