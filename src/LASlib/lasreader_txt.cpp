@@ -283,7 +283,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       if (fgets(line, 512, file))
       {
 #ifdef _WIN32
-        if (sscanf(line, "%lld", &npoints) != 1)
+        if (sscanf(line, "%I64d", &npoints) != 1)
 #else
         if (sscanf(line, "%lld", &npoints) != 1)
 #endif
@@ -292,7 +292,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
           return FALSE;
         }
 #ifdef _WIN32
-        REprintf( "PTS header states %lld points. ignoring ...\n", npoints);
+        REprintf( "PTS header states %I64d points. ignoring ...\n", npoints);
 #else
         REprintf( "PTS header states %lld points. ignoring ...\n", npoints);
 #endif
@@ -336,7 +336,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       }
       npoints = (I64)ncols*(I64)nrows;
 #ifdef _WIN32
-      REprintf( "PTX header states %d cols by %d rows aka %lld points. ignoring ...\n", ncols, nrows, npoints);
+      REprintf( "PTX header states %d cols by %d rows aka %I64d points. ignoring ...\n", ncols, nrows, npoints);
 #else
       REprintf( "PTX header states %d cols by %d rows aka %lld points. ignoring ...\n", ncols, nrows, npoints);
 #endif
@@ -554,7 +554,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
     }
 
 #ifdef _WIN32
-    REprintf( "counted %lld points in populate pass.\n", npoints);
+    REprintf( "counted %I64d points in populate pass.\n", npoints);
 #else
     REprintf( "counted %lld points in populate pass.\n", npoints);
 #endif
@@ -649,7 +649,7 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       if (!populated_header)
       {
 #ifdef _WIN32
-        if (sscanf(line, "%lld", &npoints) != 1)
+        if (sscanf(line, "%I64d", &npoints) != 1)
 #else
         if (sscanf(line, "%lld", &npoints) != 1)
 #endif
@@ -1158,7 +1158,7 @@ BOOL LASreaderTXT::read_point_default()
           if (p_count != npoints)
           {
 #ifdef _WIN32
-            REprintf("WARNING: end-of-file after %lld of %lld points\n", p_count, npoints);
+            REprintf("WARNING: end-of-file after %I64d of %I64d points\n", p_count, npoints);
 #else
             REprintf("WARNING: end-of-file after %lld of %lld points\n", p_count, npoints);
 #endif
@@ -1171,7 +1171,7 @@ BOOL LASreaderTXT::read_point_default()
             if (p_count != npoints)
             {
 #ifdef _WIN32
-              REprintf("WARNING: end-of-file after %lld of %lld points\n", p_count, npoints);
+              REprintf("WARNING: end-of-file after %I64d of %I64d points\n", p_count, npoints);
 #else
               REprintf("WARNING: end-of-file after %lld of %lld points\n", p_count, npoints);
 #endif
