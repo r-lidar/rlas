@@ -36,6 +36,18 @@ sed -i 's/n = sprintf(string/n = snprintf(string, 0/g' src/LASlib/lasreader.cpp
 sed -i 's/sprintf(temp/snprintf(temp, 32/g' src/LASlib/lasreader_ply.cpp
 sed -i 's/sprintf(temp/snprintf(temp, 32/g' src/LASlib/lasreader_txt.cpp
 
+# 2023 mar  17 new %I64 issues on CRAN
+# No longer use __int64 windows type for I64. Instead in mydefs.hpp use int64_t
+# include <inttypes.h>
+# typedef uint64_t           U64;
+# typedef int64_t            I64;
+sed -i 's/"%I64d"/"%" PRId64/g' src/*/*.[ch]pp
+sed -i 's/"%I64d/"%" PRId64 "/g' src/*/*.[ch]pp
+sed -i 's/%I64d/%" PRId64 "/g' src/*/*.[ch]pp
+sed -i 's/"%lld"/"%" PRId64/g' src/*/*.[ch]pp
+sed -i 's/"%lld/"%" PRId64 "/g' src/*/*.[ch]pp
+sed -i 's/%lld/%" PRId64 "/g' src/*/*.[ch]pp
+
 # occurences in laszip.dll must be done by hand (easy)
 # some remaining occurencesdone by hand in lasfilter.cpp
 # two occurences done by hand in lasreader.cpp

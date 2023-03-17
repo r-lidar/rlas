@@ -847,17 +847,18 @@ void LASbin::report(FILE* file, const CHAR* name, const CHAR* name_avg) const
   if (count)
   {
     lidardouble2string(temp1, total/count, step);
-#ifdef _WIN32
+// Commented to please CRAN: ISO C++11 does not support the 'I64' ms_printf length modifier [-Wformat=]
+/*#ifdef _WIN32
     if (name)
-      fprintf(file, "  average %s %s for %I64d element(s)\012", name, temp1, count);
+      fprintf(file, "  average %s %s for %" PRId64 " element(s)\012", name, temp1, count);
     else
-      fprintf(file, "  average %s for %I64d element(s)\012", temp1, count);
+      fprintf(file, "  average %s for %" PRId64 " element(s)\012", temp1, count);
 #else
     if (name)
-      fprintf(file, "  average %s %s for %lld element(s)\012", name, temp1, count);
+      fprintf(file, "  average %s %s for %" PRId64 " element(s)\012", name, temp1, count);
     else
-      fprintf(file, "  average %s for %lld element(s)\012", temp1, count);
-#endif
+      fprintf(file, "  average %s for %" PRId64 " element(s)\012", temp1, count);
+#endif*/
   }
 }
 
