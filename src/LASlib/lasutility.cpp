@@ -849,14 +849,14 @@ void LASbin::report(FILE* file, const CHAR* name, const CHAR* name_avg) const
     lidardouble2string(temp1, total/count, step);
 #ifdef _WIN32
     if (name)
-      fprintf(file, "  average %s %s for %"PRId64" element(s)\012", name, temp1, count);
+      fprintf(file, "  average %s %s for %" PRId64 " element(s)\012", name, temp1, count);
     else
-      fprintf(file, "  average %s for %"PRId64" element(s)\012", temp1, count);
+      fprintf(file, "  average %s for %" PRId64 " element(s)\012", temp1, count);
 #else
     if (name)
-      fprintf(file, "  average %s %s for %"PRId64" element(s)\012", name, temp1, count);
+      fprintf(file, "  average %s %s for %" PRId64 " element(s)\012", name, temp1, count);
     else
-      fprintf(file, "  average %s for %"PRId64" element(s)\012", temp1, count);
+      fprintf(file, "  average %s for %" PRId64 " element(s)\012", temp1, count);
 #endif
   }
 }

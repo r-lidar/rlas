@@ -430,9 +430,9 @@ BOOL LASwriterLAS::open(ByteStreamOut* stream, const LASheader* header, U32 comp
     if (start_of_waveform_data_packet_record != 0)
     {
 #ifdef _WIN32
-      REprintf("WARNING: header->start_of_waveform_data_packet_record is %"PRId64". writing 0 instead.\n", start_of_waveform_data_packet_record);
+      REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", start_of_waveform_data_packet_record);
 #else
-      REprintf("WARNING: header->start_of_waveform_data_packet_record is %"PRId64". writing 0 instead.\n", start_of_waveform_data_packet_record);
+      REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", start_of_waveform_data_packet_record);
 #endif
       start_of_waveform_data_packet_record = 0;
     }
@@ -1119,9 +1119,9 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
       if (header->start_of_waveform_data_packet_record != 0)
       {
 #ifdef _WIN32
-        REprintf("WARNING: header->start_of_waveform_data_packet_record is %"PRId64". writing 0 instead.\n", header->start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", header->start_of_waveform_data_packet_record);
 #else
-        REprintf("WARNING: header->start_of_waveform_data_packet_record is %"PRId64". writing 0 instead.\n", header->start_of_waveform_data_packet_record);
+        REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", header->start_of_waveform_data_packet_record);
 #endif
         U64 start_of_waveform_data_packet_record = 0;
         if (!stream->put64bitsLE((U8*)&start_of_waveform_data_packet_record))
@@ -1228,9 +1228,9 @@ I64 LASwriterLAS::close(BOOL update_npoints)
     if (npoints || !update_npoints)
     {
 #ifdef _WIN32
-      REprintf("WARNING: written %"PRId64" points but expected %"PRId64" points\n", p_count, npoints);
+      REprintf("WARNING: written %" PRId64 " points but expected %" PRId64 " points\n", p_count, npoints);
 #else
-      REprintf("WARNING: written %"PRId64" points but expected %"PRId64" points\n", p_count, npoints);
+      REprintf("WARNING: written %" PRId64 " points but expected %" PRId64 " points\n", p_count, npoints);
 #endif
     }
   }
@@ -1320,9 +1320,9 @@ I64 LASwriterLAS::close(BOOL update_npoints)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        REprintf( "WARNING: stream not seekable. cannot update header from %"PRId64" to %"PRId64" points.\n", npoints, p_count);
+        REprintf( "WARNING: stream not seekable. cannot update header from %" PRId64 " to %" PRId64 " points.\n", npoints, p_count);
 #else
-        REprintf( "WARNING: stream not seekable. cannot update header from %"PRId64" to %"PRId64" points.\n", npoints, p_count);
+        REprintf( "WARNING: stream not seekable. cannot update header from %" PRId64 " to %" PRId64 " points.\n", npoints, p_count);
 #endif
       }
       else

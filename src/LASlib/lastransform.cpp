@@ -2524,9 +2524,9 @@ void LAStransform::check_for_overflow() const
       CHAR command[256];
       operations[i]->get_command(command);
 #ifdef _WIN32
-      REprintf( "WARNING: total of %"PRId64" overflows caused by '%s'\n", operations[i]->get_overflow(), command);
+      REprintf( "WARNING: total of %" PRId64 " overflows caused by '%s'\n", operations[i]->get_overflow(), command);
 #else
-      REprintf( "WARNING: total of  %"PRId64" overflows caused by '%s'\n", operations[i]->get_overflow(), command);
+      REprintf( "WARNING: total of  %" PRId64 " overflows caused by '%s'\n", operations[i]->get_overflow(), command);
 #endif
     }
   }

@@ -168,9 +168,9 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
     if (header->version_minor >= 4)
     {
 #ifdef _WIN32
-      fprintf(file, "%"PRId64"       \012", header->extended_number_of_point_records);
+      fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #else
-      fprintf(file, "%"PRId64"       \012", header->extended_number_of_point_records);
+      fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #endif
     }
     else
@@ -223,9 +223,9 @@ BOOL LASwriterTXT::open(FILE* file, const LASheader* header, const CHAR* parse_s
       if (header->version_minor >= 4)
       {
 #ifdef _WIN32
-        fprintf(file, "%"PRId64"       \012", header->extended_number_of_point_records);
+        fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #else
-        fprintf(file, "%"PRId64"       \012", header->extended_number_of_point_records);
+        fprintf(file, "%" PRId64 "       \012", header->extended_number_of_point_records);
 #endif
       }
       else
@@ -519,16 +519,16 @@ BOOL LASwriterTXT::write_point(const LASpoint* point)
       break;
     case 'm': // the index of the point (count starts at 0)
 #ifdef _WIN32
-      fprintf(file, "%"PRId64"", p_count-1);
+      fprintf(file, "%" PRId64 "", p_count-1);
 #else
-      fprintf(file, "%"PRId64"", p_count-1);
+      fprintf(file, "%" PRId64 "", p_count-1);
 #endif
       break;
     case 'M': // the index of the point (count starts at 1)
 #ifdef _WIN32
-      fprintf(file, "%"PRId64"", p_count);
+      fprintf(file, "%" PRId64 "", p_count);
 #else
-      fprintf(file, "%"PRId64"", p_count);
+      fprintf(file, "%" PRId64 "", p_count);
 #endif
       break;
     case 'w': // the wavepacket descriptor index
