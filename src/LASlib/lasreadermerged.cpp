@@ -933,7 +933,7 @@ BOOL LASreaderMerged::open()
     if (0) // (auto_upgrade)
     {
 #ifdef _WIN32
-      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d). upgrading to LAS 1.4\n", header.version_minor, npoints);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld). upgrading to LAS 1.4\n", header.version_minor, npoints);
 #else
       REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld). upgrading to LAS 1.4\n", header.version_minor, npoints);
 #endif
@@ -952,7 +952,7 @@ BOOL LASreaderMerged::open()
     else
     {
 #ifdef _WIN32
-      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%I64d) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
+      REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
 #else
       REprintf("WARNING: on-the-fly merged LAS 1.%d files contain too many points (%lld) for single LAS 1.%d file.\n", header.version_minor, npoints, header.version_minor);
 #endif

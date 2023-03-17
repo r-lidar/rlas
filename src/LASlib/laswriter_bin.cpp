@@ -258,7 +258,7 @@ I64 LASwriterBIN::close(BOOL update_npoints)
       if (!stream->isSeekable())
       {
 #ifdef _WIN32
-        REprintf( "ERROR: stream not seekable. cannot update header from %I64d to %I64d points.\n", npoints, p_count);
+        REprintf( "ERROR: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
 #else
         REprintf( "ERROR: stream not seekable. cannot update header from %lld to %lld points.\n", npoints, p_count);
 #endif

@@ -676,7 +676,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elevation, 4, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -690,7 +690,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 4, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -708,7 +708,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 2, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -723,7 +723,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)&elev, 2, 1, file) != 1)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -741,7 +741,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)rgb, 1, nbands, file) != (U32)nbands)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -756,7 +756,7 @@ BOOL LASreaderBIL::read_point_default()
         if (fread((void*)rgb, 1, nbands, file) != (U32)nbands)
         {
 #ifdef _WIN32
-          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %I64d points\n", row, nrows, col, ncols, p_count);
+          REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #else
           REprintf("WARNING: end-of-file after %d of %d rows and %d of %d cols. read %lld points\n", row, nrows, col, ncols, p_count);
 #endif
@@ -803,7 +803,7 @@ void LASreaderBIL::close(BOOL close_stream)
   if (overflow_I32_x)
   {
 #ifdef _WIN32
-    REprintf( "WARNING: total of %I64d integer overflows in x\n", overflow_I32_x);
+    REprintf( "WARNING: total of %lld integer overflows in x\n", overflow_I32_x);
 #else
     REprintf( "WARNING: total of %lld integer overflows in x\n", overflow_I32_x);
 #endif
@@ -812,7 +812,7 @@ void LASreaderBIL::close(BOOL close_stream)
   if (overflow_I32_y)
   {
 #ifdef _WIN32
-    REprintf( "WARNING: total of %I64d integer overflows in y\n", overflow_I32_y);
+    REprintf( "WARNING: total of %lld integer overflows in y\n", overflow_I32_y);
 #else
     REprintf( "WARNING: total of %lld integer overflows in y\n", overflow_I32_y);
 #endif
@@ -821,7 +821,7 @@ void LASreaderBIL::close(BOOL close_stream)
   if (overflow_I32_z)
   {
 #ifdef _WIN32
-    REprintf( "WARNING: total of %I64d integer overflows in z\n", overflow_I32_z);
+    REprintf( "WARNING: total of %lld integer overflows in z\n", overflow_I32_z);
 #else
     REprintf( "WARNING: total of %lld integer overflows in z\n", overflow_I32_z);
 #endif
