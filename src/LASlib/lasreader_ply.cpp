@@ -660,9 +660,9 @@ BOOL LASreaderPLY::read_point_default()
             if (p_count != npoints)
             {
 #ifdef _WIN32
-              REprintf("WARNING: end-of-file after %I64d of %I64d points\n", p_count, npoints);
+              REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
 #else
-              REprintf("WARNING: end-of-file after %lld of %lld points\n", p_count, npoints);
+              REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
 #endif
 
               npoints = p_count;
@@ -1588,9 +1588,9 @@ BOOL LASreaderPLY::parse_header(BOOL quiet)
       if (strncmp(&line[8], "vertex", 6) == 0)
       {
 #ifdef _WIN32
-        if (sscanf(&line[15], "%I64d", &npoints) != 1)
+        if (sscanf(&line[15], "%" PRId64 "", &npoints) != 1)
 #else
-        if (sscanf(&line[15], "%lld", &npoints) != 1)
+        if (sscanf(&line[15], "%" PRId64 "", &npoints) != 1)
 #endif
         {
           REprintf( "element vertex: %scannot parse number of points. contact martin@rapidlasso.com\n", &line[15]);

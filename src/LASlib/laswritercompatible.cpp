@@ -105,9 +105,9 @@ BOOL LASwriterCompatibleDown::open(LASheader* header, LASwriteOpener* laswriteop
   if (start_of_waveform_data_packet_record != 0)
   {
 #ifdef _WIN32
-    REprintf("WARNING: header->start_of_waveform_data_packet_record is %I64d. writing 0 instead.\n", start_of_waveform_data_packet_record);
+    REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", start_of_waveform_data_packet_record);
 #else
-    REprintf("WARNING: header->start_of_waveform_data_packet_record is %lld. writing 0 instead.\n", start_of_waveform_data_packet_record);
+    REprintf("WARNING: header->start_of_waveform_data_packet_record is %" PRId64 ". writing 0 instead.\n", start_of_waveform_data_packet_record);
 #endif
     start_of_waveform_data_packet_record = 0;
   }
@@ -116,9 +116,9 @@ BOOL LASwriterCompatibleDown::open(LASheader* header, LASwriteOpener* laswriteop
   if (start_of_first_extended_variable_length_record != 0)
   {
 #ifdef _WIN32
-    REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %I64d. writing 0 instead.\n", start_of_first_extended_variable_length_record);
+    REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %" PRId64 ". writing 0 instead.\n", start_of_first_extended_variable_length_record);
 #else
-    REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %lld. writing 0 instead.\n", start_of_first_extended_variable_length_record);
+    REprintf("WARNING: EVLRs not supported. header->start_of_first_extended_variable_length_record is %" PRId64 ". writing 0 instead.\n", start_of_first_extended_variable_length_record);
 #endif
     start_of_first_extended_variable_length_record = 0;
   }
@@ -229,9 +229,9 @@ BOOL LASwriterCompatibleDown::open(LASheader* header, LASwriteOpener* laswriteop
           else
           {
 #ifdef _WIN32
-            REprintf("large EVLR with user ID '%s' and record ID %d with payload size %I64d not moved to VLRs.\n", header->evlrs[i].user_id, header->evlrs[i].record_id, header->evlrs[i].record_length_after_header);
+            REprintf("large EVLR with user ID '%s' and record ID %d with payload size %" PRId64 " not moved to VLRs.\n", header->evlrs[i].user_id, header->evlrs[i].record_id, header->evlrs[i].record_length_after_header);
 #else
-            REprintf("large EVLR with user ID '%s' and record ID %d with payload size %lld not moved to VLRs.\n", header->evlrs[i].user_id, header->evlrs[i].record_id, header->evlrs[i].record_length_after_header);
+            REprintf("large EVLR with user ID '%s' and record ID %d with payload size %" PRId64 " not moved to VLRs.\n", header->evlrs[i].user_id, header->evlrs[i].record_id, header->evlrs[i].record_length_after_header);
 #endif
           }
         }
