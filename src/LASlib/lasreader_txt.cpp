@@ -283,18 +283,18 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       if (fgets(line, 512, file))
       {
 #ifdef _WIN32
-        if (sscanf(line, "%" PRId64 "", &npoints) != 1)
+        if (sscanf(line, "%"PRId64"", &npoints) != 1)
 #else
-        if (sscanf(line, "%" PRId64 "", &npoints) != 1)
+        if (sscanf(line, "%"PRId64"", &npoints) != 1)
 #endif
         {
           REprintf( "ERROR: parsing number of points for '-itps'\n");
           return FALSE;
         }
 #ifdef _WIN32
-        REprintf( "PTS header states %" PRId64 " points. ignoring ...\n", npoints);
+        REprintf( "PTS header states %"PRId64" points. ignoring ...\n", npoints);
 #else
-        REprintf( "PTS header states %" PRId64 " points. ignoring ...\n", npoints);
+        REprintf( "PTS header states %"PRId64" points. ignoring ...\n", npoints);
 #endif
         npoints = 0;
       }
@@ -336,9 +336,9 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       }
       npoints = (I64)ncols*(I64)nrows;
 #ifdef _WIN32
-      REprintf( "PTX header states %d cols by %d rows aka %" PRId64 " points. ignoring ...\n", ncols, nrows, npoints);
+      REprintf( "PTX header states %d cols by %d rows aka %"PRId64" points. ignoring ...\n", ncols, nrows, npoints);
 #else
-      REprintf( "PTX header states %d cols by %d rows aka %" PRId64 " points. ignoring ...\n", ncols, nrows, npoints);
+      REprintf( "PTX header states %d cols by %d rows aka %"PRId64" points. ignoring ...\n", ncols, nrows, npoints);
 #endif
       F64 translation[3];
       if (fgets(line, 512, file))
@@ -554,9 +554,9 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
     }
 
 #ifdef _WIN32
-    REprintf( "counted %" PRId64 " points in populate pass.\n", npoints);
+    REprintf( "counted %"PRId64" points in populate pass.\n", npoints);
 #else
-    REprintf( "counted %" PRId64 " points in populate pass.\n", npoints);
+    REprintf( "counted %"PRId64" points in populate pass.\n", npoints);
 #endif
 
     if (point.extended_point_type || (npoints > U32_MAX) || header.extended_number_of_points_by_return[5] || header.extended_number_of_points_by_return[6] || header.extended_number_of_points_by_return[7] || header.extended_number_of_points_by_return[8] || header.extended_number_of_points_by_return[9] || header.extended_number_of_points_by_return[10] || header.extended_number_of_points_by_return[11] || header.extended_number_of_points_by_return[12] || header.extended_number_of_points_by_return[13] || header.extended_number_of_points_by_return[14])
@@ -649,9 +649,9 @@ BOOL LASreaderTXT::open(FILE* file, const CHAR* file_name, U8 point_type, const 
       if (!populated_header)
       {
 #ifdef _WIN32
-        if (sscanf(line, "%" PRId64 "", &npoints) != 1)
+        if (sscanf(line, "%"PRId64"", &npoints) != 1)
 #else
-        if (sscanf(line, "%" PRId64 "", &npoints) != 1)
+        if (sscanf(line, "%"PRId64"", &npoints) != 1)
 #endif
         {
           REprintf( "ERROR: parsing number of points for '-itps'\n");
@@ -1158,9 +1158,9 @@ BOOL LASreaderTXT::read_point_default()
           if (p_count != npoints)
           {
 #ifdef _WIN32
-            REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
+            REprintf("WARNING: end-of-file after %"PRId64" of %"PRId64" points\n", p_count, npoints);
 #else
-            REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
+            REprintf("WARNING: end-of-file after %"PRId64" of %"PRId64" points\n", p_count, npoints);
 #endif
           }
         }
@@ -1171,9 +1171,9 @@ BOOL LASreaderTXT::read_point_default()
             if (p_count != npoints)
             {
 #ifdef _WIN32
-              REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
+              REprintf("WARNING: end-of-file after %"PRId64" of %"PRId64" points\n", p_count, npoints);
 #else
-              REprintf("WARNING: end-of-file after %" PRId64 " of %" PRId64 " points\n", p_count, npoints);
+              REprintf("WARNING: end-of-file after %"PRId64" of %"PRId64" points\n", p_count, npoints);
 #endif
             }
           }
