@@ -267,146 +267,153 @@ List vlrsreader(LASheader* lasheader)
     }
     else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
     {
-        if (vlr.record_id == 4) // ExtraBytes
+      if (vlr.record_id == 3) // TextArea
+      {
+        CHAR* text_area_description = (CHAR*) vlr.data;
+        lvlr.push_back(nullterminate(text_area_description, vlr.record_length_after_header));
+        lvlrnames.push_back("Text Area Description");
+        lvlrsnames.push_back("TextArea");
+      }
+      else if (vlr.record_id == 4) // ExtraBytes
+      {
+        lvlrsnames.push_back("Extra_Bytes");
+        lvlrnames.push_back("Extra Bytes Description");
+
+        List ExtraBytes(0);
+        List ExtraBytesnames(0);
+
+        for (int j = 0; j < lasheader->number_attributes; j++)
         {
-          lvlrsnames.push_back("Extra_Bytes");
-          lvlrnames.push_back("Extra Bytes Description");
+          LASattribute attemp(lasheader->attributes[j]);
 
-          List ExtraBytes(0);
-          List ExtraBytesnames(0);
-
-          for (int j = 0; j < lasheader->number_attributes; j++)
+          if (attemp.data_type)
           {
-            LASattribute attemp(lasheader->attributes[j]);
+            int data_type = ((I32)(attemp.data_type)-1)%10;
+            //int dim = ((I32)(attemp.data_type)-1)/10+1;
 
-            if (attemp.data_type)
+            List ExtraByte(0);
+            List ExtraBytenames(0);
+            ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
+            ExtraBytenames.push_back("reserved");
+            ExtraByte.push_back((I32)(attemp.data_type));
+            ExtraBytenames.push_back("data_type");
+            ExtraByte.push_back((I32)(attemp.options));
+            ExtraBytenames.push_back("options");
+            ExtraByte.push_back(attemp.name);
+            ExtraBytenames.push_back("name");
+
+            // 2 and 3 dimensional arrays are deprecated in LASlib
+            // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
+            double scale = 1.0;
+            if(attemp.has_scale())
             {
-              int data_type = ((I32)(attemp.data_type)-1)%10;
-              //int dim = ((I32)(attemp.data_type)-1)/10+1;
+              scale = attemp.scale[0];
+              ExtraByte.push_back(scale);
+              ExtraBytenames.push_back("scale");
+            }
 
-              List ExtraByte(0);
-              List ExtraBytenames(0);
-              ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
-              ExtraBytenames.push_back("reserved");
-              ExtraByte.push_back((I32)(attemp.data_type));
-              ExtraBytenames.push_back("data_type");
-              ExtraByte.push_back((I32)(attemp.options));
-              ExtraBytenames.push_back("options");
-              ExtraByte.push_back(attemp.name);
-              ExtraBytenames.push_back("name");
+            double offset = 0.0;
+            if(attemp.has_offset())
+            {
+              offset = attemp.offset[0];
+              ExtraByte.push_back(offset);
+              ExtraBytenames.push_back("offset");
+            }
 
-              // 2 and 3 dimensional arrays are deprecated in LASlib
-              // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-              double scale = 1.0;
-              if(attemp.has_scale())
+            if (data_type < 8)
+            {
+              I64* temp; // as R does not support long long int it is converted to double
+
+              if (attemp.has_no_data())
               {
-                scale = attemp.scale[0];
-                ExtraByte.push_back(scale);
-                ExtraBytenames.push_back("scale");
+                temp = ((I64*)(attemp.no_data));
+                ExtraByte.push_back(*temp);
+                ExtraBytenames.push_back("no_data");
               }
 
-              double offset = 0.0;
-              if(attemp.has_offset())
+              if (attemp.has_min())
               {
-                offset = attemp.offset[0];
-                ExtraByte.push_back(offset);
-                ExtraBytenames.push_back("offset");
+                temp = ((I64*)(attemp.min));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("min");
               }
 
-              if (data_type < 8)
+              if (attemp.has_max())
               {
-                I64* temp; // as R does not support long long int it is converted to double
-
-                if (attemp.has_no_data())
-                {
-                  temp = ((I64*)(attemp.no_data));
-                  ExtraByte.push_back(*temp);
-                  ExtraBytenames.push_back("no_data");
-                }
-
-                if (attemp.has_min())
-                {
-                  temp = ((I64*)(attemp.min));
-                  ExtraByte.push_back(*temp*scale+offset);
-                  ExtraBytenames.push_back("min");
-                }
-
-                if (attemp.has_max())
-                {
-                  temp = ((I64*)(attemp.max));
-                  ExtraByte.push_back(*temp*scale+offset);
-                  ExtraBytenames.push_back("max");
-                }
+                temp = ((I64*)(attemp.max));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("max");
               }
-              else
-              {
-                F64* temp;
-
-                if (attemp.has_no_data())
-                {
-                  temp = ((F64*)(attemp.no_data));
-                  ExtraByte.push_back(*temp*scale+offset);
-                  ExtraBytenames.push_back("no_data");
-                }
-
-                if (attemp.has_min())
-                {
-                  temp = ((F64*)(attemp.min));
-                  ExtraByte.push_back(*temp*scale+offset);
-                  ExtraBytenames.push_back("min");
-                }
-
-                if (attemp.has_max())
-                {
-                  temp = ((F64*)(attemp.max));
-                  ExtraByte.push_back(*temp*scale+offset);
-                  ExtraBytenames.push_back("max");
-                }
-              }
-
-              // Fix #53
-              int len = 0 ; while(len < 32 && attemp.description[len] != '\0') len++;
-              std::string desc;
-              desc.resize(len);
-              memcpy(&desc[0], &attemp.description, len);
-
-              ExtraByte.push_back(desc);
-              ExtraBytenames.push_back("description");
-
-              ExtraByte.names() = ExtraBytenames;
-              ExtraBytes.push_back(ExtraByte);
-              ExtraBytesnames.push_back(attemp.name);
             }
             else
             {
-              Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
+              F64* temp;
+
+              if (attemp.has_no_data())
+              {
+                temp = ((F64*)(attemp.no_data));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("no_data");
+              }
+
+              if (attemp.has_min())
+              {
+                temp = ((F64*)(attemp.min));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("min");
+              }
+
+              if (attemp.has_max())
+              {
+                temp = ((F64*)(attemp.max));
+                ExtraByte.push_back(*temp*scale+offset);
+                ExtraBytenames.push_back("max");
+              }
             }
+
+            // Fix #53
+            int len = 0 ; while(len < 32 && attemp.description[len] != '\0') len++;
+            std::string desc;
+            desc.resize(len);
+            memcpy(&desc[0], &attemp.description, len);
+
+            ExtraByte.push_back(desc);
+            ExtraBytenames.push_back("description");
+
+            ExtraByte.names() = ExtraBytenames;
+            ExtraBytes.push_back(ExtraByte);
+            ExtraBytesnames.push_back(attemp.name);
           }
-
-          ExtraBytes.names() = ExtraBytesnames;
-          lvlr.push_back(ExtraBytes);
+          else
+          {
+            Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
+          }
         }
-        else if (vlr.record_id >= 100 &&  vlr.record_id < 355) // FWF
-        {
-          LASvlr_wave_packet_descr* vlr_wave_packet_descr = (LASvlr_wave_packet_descr*) vlr.data;
 
-          List FWF = List::create(
-            Named("Bits per sample") = (U32)(vlr_wave_packet_descr->getBitsPerSample()),
-            Named("Waveform compression type") = (U32)(vlr_wave_packet_descr->getCompressionType()),
-            Named("Number of sample") = vlr_wave_packet_descr->getNumberOfSamples(),
-            Named("Temporal Spacing") = vlr_wave_packet_descr->getTemporalSpacing(),
-            Named("Digitizer Gain") = vlr_wave_packet_descr->getDigitizerGain(),
-            Named("Digitizer Offset") = vlr_wave_packet_descr->getDigitizerOffset());
+        ExtraBytes.names() = ExtraBytesnames;
+        lvlr.push_back(ExtraBytes);
+      }
+      else if (vlr.record_id >= 100 &&  vlr.record_id < 355) // FWF
+      {
+        LASvlr_wave_packet_descr* vlr_wave_packet_descr = (LASvlr_wave_packet_descr*) vlr.data;
 
-          lvlrsnames.push_back("Full WaveForm Description");
-          lvlrnames.push_back("Full WaveForm");
-          lvlr.push_back(FWF);
-        }
-        else
-        {
-          // not supported yet
-          lvlrsnames.push_back(vlr.user_id);
-        }
+        List FWF = List::create(
+          Named("Bits per sample") = (U32)(vlr_wave_packet_descr->getBitsPerSample()),
+          Named("Waveform compression type") = (U32)(vlr_wave_packet_descr->getCompressionType()),
+          Named("Number of sample") = vlr_wave_packet_descr->getNumberOfSamples(),
+          Named("Temporal Spacing") = vlr_wave_packet_descr->getTemporalSpacing(),
+          Named("Digitizer Gain") = vlr_wave_packet_descr->getDigitizerGain(),
+          Named("Digitizer Offset") = vlr_wave_packet_descr->getDigitizerOffset());
+
+        lvlrsnames.push_back("Full WaveForm Description");
+        lvlrnames.push_back("Full WaveForm");
+        lvlr.push_back(FWF);
+      }
+      else
+      {
+        // not supported yet
+        lvlrsnames.push_back(vlr.user_id);
+      }
     }
     else
     {
@@ -490,7 +497,14 @@ List evlrsreader(LASheader* lasheader)
     }
     else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
     {
-      if (vlr.record_id == 4) // ExtraBytes
+      if (vlr.record_id == 3) // TextArea
+      {
+        CHAR* text_area_description = (CHAR*) vlr.data;
+        lvlr.push_back(nullterminate(text_area_description, vlr.record_length_after_header));
+        lvlrnames.push_back("Text Area Description");
+        lvlrsnames.push_back("TextArea");
+      }
+      else if (vlr.record_id == 4) // ExtraBytes
       {
         lvlrsnames.push_back("Extra_Bytes");
         lvlrnames.push_back("Extra Bytes Description");
