@@ -185,7 +185,7 @@ void C_writer(CharacterVector file, List LASheader, List data)
           {
             CHAR* vlr_ascii = new CHAR[sascii_size];
             memcpy(vlr_ascii, sascii.c_str(), sizeof(CHAR)*sascii_size);
-            header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*sascii_size), (U8*)vlr_ascii, FALSE, sdesc.c_str()); // "ASCII PTX header"
+            header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*sascii_size), (U8*)vlr_ascii, FALSE, sdesc.c_str());
           }
         }
       }
