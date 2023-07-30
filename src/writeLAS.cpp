@@ -181,12 +181,13 @@ void C_writer(CharacterVector file, List LASheader, List data)
           CharacterVector desc  = vlr["description"];
           std::string sdesc  = as<std::string>(desc);
           I32 sascii_size = sascii.size();
-          if ((sizeof(CHAR)*sascii_size) <= U16_MAX)
+          if ((sizeof(CHAR)*sascii_size) > U16_MAX)
           {
-            CHAR* vlr_ascii = new CHAR[sascii_size];
-            memcpy(vlr_ascii, sascii.c_str(), sizeof(CHAR)*sascii_size);
-            header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*sascii_size), (U8*)vlr_ascii, FALSE, sdesc.c_str());
+            sascii_size = U16_MAX;
           }
+          CHAR* vlr_ascii = new CHAR[sascii_size];
+          memcpy(vlr_ascii, sascii.c_str(), sizeof(CHAR)*sascii_size);
+          header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*sascii_size), (U8*)vlr_ascii, FALSE, sdesc.c_str());
         }
       }
       else
