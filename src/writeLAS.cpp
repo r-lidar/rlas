@@ -181,9 +181,10 @@ void C_writer(CharacterVector file, List LASheader, List data)
           CharacterVector desc  = vlr["description"];
           std::string sdesc  = as<std::string>(desc);
           I32 sascii_size = sascii.size();
-          if ((sizeof(CHAR)*sascii_size) > U16_MAX)
+          if ((sizeof(CHAR)*sascii_size) >= U16_MAX)
           {
             sascii_size = U16_MAX;
+            sascii[sascii_size-1]='\0';
           }
           CHAR* vlr_ascii = new CHAR[sascii_size];
           memcpy(vlr_ascii, sascii.c_str(), sizeof(CHAR)*sascii_size);
