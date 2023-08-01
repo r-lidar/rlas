@@ -270,7 +270,7 @@ List vlrsreader(LASheader* lasheader)
       if (vlr.record_id == 3) // TextArea
       {
         CHAR* text_area_description = (CHAR*) vlr.data;
-        lvlr.push_back(text_area_description, vlr.record_length_after_header);
+        lvlr.push_back(text_area_description);
         lvlrnames.push_back("Text Area Description");
         lvlrsnames.push_back("TextArea");
       }
@@ -500,7 +500,7 @@ List evlrsreader(LASheader* lasheader)
       if (vlr.record_id == 3) // TextArea
       {
         CHAR* text_area_description = (CHAR*) vlr.data;
-        lvlr.push_back(text_area_description, vlr.record_length_after_header);
+        lvlr.push_back(text_area_description);
         lvlrnames.push_back("Text Area Description");
         lvlrsnames.push_back("TextArea");
       }
