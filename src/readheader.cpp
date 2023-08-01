@@ -267,7 +267,14 @@ List vlrsreader(LASheader* lasheader)
     }
     else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
     {
-        if (vlr.record_id == 4) // ExtraBytes
+        if (vlr.record_id == 3) // TextArea
+        {
+          CHAR* text_area_description = (CHAR*) vlr.data;
+          lvlr.push_back(nullterminate(text_area_description, vlr.record_length_after_header));
+          lvlrnames.push_back("Text Area Description");
+          lvlrsnames.push_back("TextArea");
+        }
+        else if (vlr.record_id == 4) // ExtraBytes
         {
           lvlrsnames.push_back("Extra_Bytes");
           lvlrnames.push_back("Extra Bytes Description");
@@ -490,7 +497,14 @@ List evlrsreader(LASheader* lasheader)
     }
     else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
     {
-      if (vlr.record_id == 4) // ExtraBytes
+      if (vlr.record_id == 3) // TextArea
+      {
+        CHAR* text_area_description = (CHAR*) vlr.data;
+        lvlr.push_back(nullterminate(text_area_description, vlr.record_length_after_header));
+        lvlrnames.push_back("Text Area Description");
+        lvlrsnames.push_back("TextArea");
+      }
+      else if (vlr.record_id == 4) // ExtraBytes
       {
         lvlrsnames.push_back("Extra_Bytes");
         lvlrnames.push_back("Extra Bytes Description");
