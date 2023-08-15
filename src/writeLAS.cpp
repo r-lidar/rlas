@@ -172,6 +172,41 @@ void C_writer(CharacterVector file, List LASheader, List data)
             ExtraByte.start = header.get_attribute_start(ExtraByte.id);
         }
       }
+      else if (names[i] == "TextArea")
+      {
+        if (vlr.containsElementNamed("Text Area Description"))
+        {
+          CharacterVector TEXT = vlr["Text Area Description"];
+          std::string stext    = as<std::string>(TEXT);
+          CharacterVector desc  = vlr["description"];
+          std::string sdesc  = as<std::string>(desc);
+          I32 stext_size = stext.size();
+
+          // truncate strings larger than U16_MAX, and ensure it is null terminated
+          if ((sizeof(CHAR)*stext_size) >= U16_MAX)
+          {
+            stext_size = U16_MAX;
+            stext[stext_size-1]='\0';
+          }
+          
+          // ensure that any text area description is null terminated.
+          I32 null_terminator = 0;
+          CHAR* vlr_text_area_desc;
+          if (stext[stext_size-1] == '\0')
+          {
+             vlr_text_area_desc = new CHAR[stext_size];
+          }
+          else
+          {
+            null_terminator = 1;
+            vlr_text_area_desc = new CHAR[stext_size+1];
+            vlr_text_area_desc[stext_size] = '\0';
+          }
+          memcpy(vlr_text_area_desc, stext.c_str(), sizeof(CHAR)*stext_size);
+
+          header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*(stext_size+null_terminator)), (U8*)vlr_text_area_desc, FALSE, sdesc.c_str());
+        }
+      }
       else
       {
       }
