@@ -1,3 +1,7 @@
+### rlas v1.6.4
+
+- support of Text Area Description [#64](https://github.com/r-lidar/rlas/pull/64)
+
 ### rlas v1.6.3
 
 - Fix warnings with gcc-12
