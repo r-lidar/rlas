@@ -47,6 +47,7 @@ SOURCES = LASlib/lasreader_txt.cpp \
 					LASzip/lasreadpoint.cpp \
 					LASzip/integercompressor.cpp \
 					LASzip/lasinterval.cpp \
+					LASzip/lascopc.cpp \
 					./altrep_compact_replication.cpp \
 					./rlasstreamer.cpp \
 					./rlasextrabytesattributes.cpp \

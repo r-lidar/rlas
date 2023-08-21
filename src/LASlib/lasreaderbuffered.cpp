@@ -2,18 +2,18 @@
 ===============================================================================
 
   FILE:  lasreaderbuffered.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
-  
-    martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
-  
+
+    info@rapidlasso.de  -  https://rapidlasso.de
+
   COPYRIGHT:
-  
-    (c) 2007-2012, martin isenburg, rapidlasso - fast tools to catch reality
+
+    (c) 2007-2012, rapidlasso GmbH - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreaderbuffered.hpp"
@@ -301,7 +301,7 @@ BOOL LASreaderBuffered::open()
       reoffset = TRUE;
     }
   }
-    
+
   // check y
 
   if ((((header.max_y - header.y_offset) / header.y_scale_factor) > I32_MAX) || (((header.min_y - header.y_offset) / header.y_scale_factor) < I32_MIN))
@@ -327,7 +327,7 @@ BOOL LASreaderBuffered::open()
       reoffset = TRUE;
     }
   }
-    
+
   // check z
 
   if ((((header.max_z - header.z_offset) / header.z_scale_factor) > I32_MAX) || (((header.min_z - header.z_offset) / header.z_scale_factor) < I32_MIN))
@@ -443,6 +443,17 @@ BOOL LASreaderBuffered::inside_rectangle(const F64 min_x, const F64 min_y, const
   return TRUE;
 }
 
+BOOL LASreaderBuffered::inside_copc_depth(const U8 mode, const I32 depth, const F32 resolution)
+{
+  if (!header.vlr_copc_info)
+    return FALSE;
+
+  inside_depth = mode;
+  copc_depth = depth;
+  copc_resolution = resolution;
+  return TRUE;
+}
+
 I32 LASreaderBuffered::get_format() const
 {
   return lasreader->get_format();
@@ -472,7 +483,7 @@ BOOL LASreaderBuffered::read_point_default()
 
 void LASreaderBuffered::close(BOOL close_stream)
 {
-  if (lasreader) 
+  if (lasreader)
   {
     lasreader->close(close_stream);
   }
@@ -482,7 +493,7 @@ void LASreaderBuffered::close(BOOL close_stream)
 void LASreaderBuffered::clean()
 {
 /*
-  if (lasreader) 
+  if (lasreader)
   {
     delete lasreader;
     lasreader = 0;

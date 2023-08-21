@@ -1,6 +1,7 @@
-### rlas v1.6.4
+### rlas v1.7.0
 
 - support of Text Area Description [#64](https://github.com/r-lidar/rlas/pull/64)
+- support of COPC spatial indexed files
 
 ### rlas v1.6.3
 
