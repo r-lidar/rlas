@@ -1,6 +1,7 @@
 ### rlas v1.6.4
 
 - support of Text Area Description [#64](https://github.com/r-lidar/rlas/pull/64)
+- `header_create()` now take into account `ScannerChannel`
 
 ### rlas v1.6.3
 

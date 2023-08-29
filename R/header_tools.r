@@ -434,28 +434,28 @@ guess_las_format <- function(data)
 {
   fields <- names(data)
 
+  formats = 0:10
+  formats = formats[!formats %in% c(4L, 5L, 9L, 10L)] # not supported
+
   if ("NIR" %in% fields) # format 8 or 10
-    return(8L) # Format 10 is not supported
+    formats = formats[!formats %in% c(8L)]
 
   if ("gpstime" %in% fields) # format 1, 3:10
-  {
-    if (all(c("R", "G", "B") %in% fields))  # format 3, 5, 7, 8
-    {
-     if ("ScanAngle" %in% fields)
-        return(7L) # It is not 8 because NIR has already been tested
-      else
-        return(3L)
-    }
-    else # format 1
-      return(1L)
-  }
-  else # format 0 or 2
-  {
-    if (all(c("R", "G", "B") %in% fields))
-      return(2L)
-    else
-      return(0L)
-  }
+    formats = formats[formats %in% c(1L, 3:10)]
+
+  if (all(c("R", "G", "B") %in% fields))  # format 3, 5, 7, 8
+    formats = formats[formats %in% c(3L, 5L, 7L, 8L)]
+
+  if ("ScanAngle" %in% fields)
+    formats = formats[formats > 5]
+
+  if ("ScannerChannel" %in% fields)
+    formats = formats[formats > 5]
+
+  if (length(format) == 0)
+    stop("No point format id found.")
+
+  return(min(formats))
 }
 
 guess_scale_factor <- function(x)
