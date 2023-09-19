@@ -40,6 +40,8 @@
 #include <unordered_set>
 #include <boost/functional/hash.hpp>
 
+#include <R_ext/Random.h>     /* RNG interface */
+
 using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
@@ -1313,7 +1315,7 @@ public:
   {
     //srand(seed);
     //seed = rand();
-    seed = R::runif(0, RAND_MAX);
+    seed = unif_rand()*RAND_MAX;
     return ((F32)seed/(F32)RAND_MAX) > fraction;
   };
   void reset() { seed = requested_seed; };

@@ -37,6 +37,8 @@
 #include <string.h>
 #include <math.h>
 
+#include <R_ext/Random.h>     /* RNG interface */
+
 class LASoperationTranslateX : public LASoperation
 {
 public:
@@ -581,7 +583,8 @@ public:
     I32 r;
     //srand(seed);
     //seed = rand();
-    seed = R::runif(0, RAND_MAX);
+    //seed = R::runif(0, RAND_MAX);
+    seed = unif_rand()*RAND_MAX;
     r = ((seed >> 3) % ((2 * max_raw_offset[0]) + 1)) - max_raw_offset[0];
     point->set_X(point->get_X() + r);
     r = ((seed >> 6) % ((2 * max_raw_offset[1]) + 1)) - max_raw_offset[1];

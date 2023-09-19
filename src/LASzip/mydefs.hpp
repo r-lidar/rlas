@@ -34,7 +34,11 @@
 #define MYDEFS_HPP
 
 #define STRICT_R_HEADERS
-#include <Rcpp.h>
+//#include <Rcpp.h>
+#define __STDC_FORMAT_MACROS 1
+#include <inttypes.h>
+#include <R_ext/Print.h>      /* Rprintf etc */
+
 
 #ifndef _WIN32
 #define LASLIB_DLL
