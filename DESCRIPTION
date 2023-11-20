@@ -1,7 +1,7 @@
 Package: rlas
 Type: Package
 Title: Read and Write 'las' and 'laz' Binary File Formats Used for Remote Sensing Data
-Version: 1.6.4
+Version: 1.7.0
 Authors@R: c(
     person("Jean-Romain", "Roussel", email = "jean-romain.roussel.1@ulaval.ca", role = c("aut", "cre", "cph")),
     person("Florian", "De Boissieu", email = "", role = c("aut", "ctb"), comment = "Enable the support of .lax file and extra byte attributes"),

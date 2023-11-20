@@ -9,11 +9,11 @@
 
   PROGRAMMERS:
 
-    martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
+    info@rapidlasso.de  -  https://rapidlasso.de
 
   COPYRIGHT:
 
-    (c) 2007-2017, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2017, rapidlasso GmbH - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
     terms of the GNU Lesser General Licence as published by the Free Software
@@ -65,30 +65,26 @@ BOOL LASwriterLAS::open(const char* file_name, const LASheader* header, U32 comp
   }
 
 #ifdef _MSC_VER
-  file = fopen(file_name, "wb");
+  wchar_t* utf16_file_name = UTF8toUTF16(file_name);
+  file = _wfopen(utf16_file_name, L"wb");
   if (file == 0)
   {
-    wchar_t* utf16_file_name = UTF8toUTF16(file_name);
-    file = _wfopen(utf16_file_name, L"wb");
-    if (file == 0)
-    {
-      REprintf( "ERROR: cannot open file '%ws' for write\n", utf16_file_name);
-    }
-    delete [] utf16_file_name;
+    REprintf("ERROR: cannot open file '%ws' for write\n", utf16_file_name);
   }
+  delete[] utf16_file_name;
 #else
   file = fopen(file_name, "wb");
 #endif
 
   if (file == 0)
   {
-    REprintf( "ERROR: cannot open file '%s' for write\n", file_name);
+    REprintf("ERROR: cannot open file '%s' for write\n", file_name);
     return FALSE;
   }
 
   if (setvbuf(file, NULL, _IOFBF, io_buffer_size) != 0)
   {
-    REprintf( "WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
+    REprintf("WARNING: setvbuf() failed with buffer size %d\n", io_buffer_size);
   }
 
   ByteStreamOut* out;
@@ -113,7 +109,7 @@ BOOL LASwriterLAS::open(FILE* file, const LASheader* header, U32 compressor, I32
   {
     if(_setmode( _fileno( stdout ), _O_BINARY ) == -1 )
     {
-      REprintf( "ERROR: cannot set stdout to binary (untranslated) mode\n");
+      REprintf("ERROR: cannot set stdout to binary (untranslated) mode\n");
     }
   }
 #endif
@@ -1216,6 +1212,19 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
     }
     stream->seekEnd();
   }
+
+  // COPC EPT hierarchy EVLR is computed and added to the header after the last point is written.
+  // Therefore, it cannot be added when opening the writer. We use update_header to propagate the EVLR
+  // just before closing the writer. EVLRs are written when closing. This trick allows us to be COPC
+  // compatible with minimal changes to the code.
+  for (i = 0; i < header->number_of_extended_variable_length_records; i++)
+  {
+    if ((strcmp(header->evlrs[i].user_id, "copc") == 0) && header->evlrs[i].record_id == 1000)
+    {
+      evlrs = header->evlrs;
+    }
+  }
+
   return TRUE;
 }
 
@@ -1247,9 +1256,13 @@ I64 LASwriterLAS::close(BOOL update_npoints)
     I64 real_start_of_first_extended_variable_length_record = stream->tell();
 
     // write extended variable length records variable after variable (to avoid alignment issues)
-
+    U64 copc_root_hier_size = 0;
+    U64 copc_root_hier_offset = 0;
     for (U32 i = 0; i < number_of_extended_variable_length_records; i++)
     {
+      if ((strcmp(evlrs[i].user_id, "copc") == 0) && evlrs[i].record_id == 1000)
+        copc_root_hier_offset = stream->tell() + 60;
+
       // check variable length records contents
 
       if (evlrs[i].reserved != 0xAABB)
@@ -1302,6 +1315,15 @@ I64 LASwriterLAS::close(BOOL update_npoints)
           REprintf("ERROR: there should be %u bytes of data in evlrs[%d].data\n", (U32)evlrs[i].record_length_after_header, i);
           return FALSE;
         }
+      }
+
+      if ((strcmp(evlrs[i].user_id, "copc") == 0) && evlrs[i].record_id == 1000)
+      {
+          copc_root_hier_size = evlrs[i].record_length_after_header;
+          stream->seek(375 + 54 + 40);
+          stream->put64bitsLE((U8*)&copc_root_hier_offset);
+          stream->put64bitsLE((U8*)&copc_root_hier_size);
+          stream->seekEnd();
       }
     }
 
@@ -1375,6 +1397,11 @@ I64 LASwriterLAS::close(BOOL update_npoints)
   p_count = 0;
 
   return bytes;
+}
+
+I64 LASwriterLAS::tell()
+{
+  return stream->tell();
 }
 
 LASwriterLAS::LASwriterLAS()

@@ -1,8 +1,10 @@
-### rlas v1.6.4
+### rlas v1.7.0
 
 - support of Text Area Description [#64](https://github.com/r-lidar/rlas/pull/64)
 - `header_create()` now take into account `ScannerChannel`
 - Remove Rcpp.h and replace by R.h saves 2:30 min of compilation.
+- support of COPC spatial indexed files
+
 
 ### rlas v1.6.3
 
