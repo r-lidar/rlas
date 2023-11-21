@@ -40,7 +40,7 @@
 #endif
 
 #define STRICT_R_HEADERS
-#include <Rcpp.h>
+#include <R_ext/Print.h>
 
 enum PIPES { READ_HANDLE, WRITE_HANDLE }; /* Constants 0 and 1 for READ and WRITE */
 
