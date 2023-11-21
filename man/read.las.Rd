@@ -41,13 +41,13 @@ Note that x, y, z are implicit and always loaded. 'xyzia' is equivalent to 'ia'.
 \strong{Filter:} the 'filter' argument allows filtering of the point cloud while reading files.
 \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
 to read the binary files. Thus the package inherits the filter commands available in
-\href{https://rapidlasso.com/lastools/}{LAStools}. To use these filters the user can pass the
+\href{https://rapidlasso.de/product-overview/}{LAStools}. To use these filters the user can pass the
 common commands from \code{LAStools} into the parameter \code{'filter'}. Type \code{read.las(filter = "-help")}
 to display the \code{LASlib} documentation and the available filters.\cr\cr
 \strong{Transform:} the 'transform' argument allows transformation of the point cloud while reading files.
 \code{rlas} relies on the well-known \code{LASlib} library written by Martin Isenburg
-to read the binary files. Thus the package inherits the tranform commands available in
-\href{https://rapidlasso.com/lastools/}{LAStools}. To use these transformations the user can pass the
+to read the binary files. Thus the package inherits the transform commands available in
+\href{https://rapidlasso.de/product-overview/}{LAStools}. To use these transformations the user can pass the
 common commands from \code{LAStools} into the parameter \code{'transform'}. Type \code{read.las(transform = "-help")}
 to display the \code{LASlib} documentation and the available transformations.
 }
