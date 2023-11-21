@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasreadermerged.hpp
-  
+
   CONTENTS:
-  
+
     Reads LiDAR points from the LAS format from more than one file.
 
   PROGRAMMERS:
@@ -21,16 +21,16 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
      2 May 2023 -- adding support of COPC spatial index standard
      4 November 2019 -- add ID to files for subsets of merged '-faf' files
      5 September 2018 -- support for reading points from the PLY format
      1 December 2017 -- support extra bytes during '-merged' operations
-     3 May 2015 -- header sets file source ID to 0 when merging flightlines 
+     3 May 2015 -- header sets file source ID to 0 when merging flightlines
     20 January 2011 -- created missing Livermore and my Extra Virgin Olive Oil
-  
+
 ===============================================================================
 */
 #ifndef LAS_READER_MERGED_HPP
@@ -66,6 +66,7 @@ public:
   void set_skip_lines(I32 skip_lines);
   void set_populate_header(BOOL populate_header);
   void set_keep_lastiling(BOOL keep_lastiling);
+  void set_copc_stream_order(U8 order);
   BOOL open();
   BOOL reopen();
 
