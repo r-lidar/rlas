@@ -62,10 +62,13 @@ LASreader::LASreader()
 	read_complex = 0;
 	index = 0;
 	copc_index = 0;
+	copc_resolution = 0;
+	copc_depth = I32_MAX;
 	filter = 0;
 	transform = 0;
 	ignore = 0;
 	inside = 0;
+	inside_depth = 0;
 	t_ll_x = 0;
 	t_ll_y = 0;
 	t_size = 0;
@@ -105,11 +108,8 @@ void LASreader::set_index(LASindex* index)
 
 void LASreader::set_copcindex(COPCindex* copc_index)
 {
-  if (!this->copc_index)
-  {
-    if (this->copc_index) delete this->copc_index;
-    this->copc_index = copc_index;
-  }
+  if (this->copc_index) delete this->copc_index;
+  this->copc_index = copc_index;
 }
 
 void LASreader::set_filter(LASfilter* filter)
