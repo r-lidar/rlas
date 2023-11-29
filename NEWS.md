@@ -5,7 +5,6 @@
 - Remove Rcpp.h and replace by R.h saves 2:30 min of compilation.
 - support of COPC spatial indexed files
 
-
 ### rlas v1.6.3
 
 - Fix warnings with gcc-12
