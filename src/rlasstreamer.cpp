@@ -361,7 +361,7 @@ void RLASstreamer::allocation()
       else
       {
         std::string msg = std::string("data type ") + std::to_string(extrabyte.data_type) + std::string(" of extra bytes attribute ") + std::to_string(extrabyte.id) + std::string(" is deprecated and not supported by rlas.");
-        Rf_warningcall(R_NilValue, msg.c_str());
+        Rf_warningcall(R_NilValue, "%s", msg.c_str());
       }
     }
   }
@@ -846,13 +846,13 @@ List RLASstreamer::terminate()
     if (nwithheld > 0)
     {
       std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'withheld'.");
-      Rf_warningcall(R_NilValue, msg.c_str());
+      Rf_warningcall(R_NilValue, "%s", msg.c_str());
     }
 
     if (nsynthetic > 0)
     {
       std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'synthetic'.");
-      Rf_warningcall(R_NilValue, msg.c_str());
+      Rf_warningcall(R_NilValue, "%s", msg.c_str());
     }
 
     lasdata.names() = attr_name;
