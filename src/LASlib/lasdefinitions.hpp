@@ -762,7 +762,7 @@ public:
         if (number_of_extended_variable_length_records)
         {
           evlrs[i] = evlrs[number_of_extended_variable_length_records];
-          evlrs = (LASevlr*)realloc(evlrs, sizeof(LASvlr)*number_of_extended_variable_length_records);
+          //evlrs = (LASevlr*)realloc(evlrs, sizeof(LASvlr)*number_of_extended_variable_length_records);
         }
         else
         {
