@@ -1,3 +1,7 @@
+### rlas v1.8.0
+
+- Internal changes to appease CRAN: remove dependency to boost
+
 ### rlas v1.7.0
 
 - support of Text Area Description [#64](https://github.com/r-lidar/rlas/pull/64)

@@ -27,68 +27,84 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 ===============================================================================
 */
 
-#if defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__) && !defined(__llvm__) && !defined(__INTEL_COMPILER)
-#include "gcc_4_9_patch/std_is_trivially_substitutes.hpp"
-#include "gcc_4_9_patch/boost_compare_patched.hpp"
-#endif
-
 #include <Rcpp.h>
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
 #include "rlasstreamer.h"
 #include "laspoint.hpp"
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 
-typedef boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian> Point;
-typedef boost::geometry::model::polygon<Point> Polygon;
-typedef boost::geometry::model::multi_polygon<Polygon> MultiPolygon;
+bool pnpoly(NumericMatrix polygon, double x, double y)
+{
+  int nvert = polygon.nrow();
+  bool c = false;
+  int i, j;
+  for (i = 0, j = nvert - 1; i < nvert; j = i++)
+  {
+    if (((polygon(i, 1) > y) != (polygon(j, 1) > y)) &&
+        (x < (polygon(j, 0) - polygon(i, 0)) * (y - polygon(i, 1)) / (polygon(j, 1) - polygon(i, 1)) + polygon(i, 0))) {
+      c = !c;
+    }
+  }
+  return c;
+}
 
 // [[Rcpp::export]]
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons)
 {
   RLASstreamer streamer(ifiles, ofile, filter);
   streamer.select(select);
   streamer.allocation();
 
-  if (filter_wkt == "")
+  if (polygons.size() == 0)
   {
     while(streamer.read_point())
       streamer.write_point();
   }
-  else if (filter_wkt.find("MULTIPOLYGON") != std::string::npos)
-  {
-    Point p;
-    MultiPolygon polygons;
-    boost::geometry::read_wkt(filter_wkt, polygons);
-
-    while(streamer.read_point())
-    {
-      p.set<0>(streamer.point()->get_x());
-      p.set<1>(streamer.point()->get_y());
-
-      if (boost::geometry::covered_by(p, polygons))
-        streamer.write_point();
-    }
-  }
-  else if (filter_wkt.find("POLYGON") != std::string::npos)
-  {
-    Point p;
-    Polygon polygon;
-    boost::geometry::read_wkt(filter_wkt, polygon);
-
-    while(streamer.read_point())
-    {
-      p.set<0>(streamer.point()->get_x());
-      p.set<1>(streamer.point()->get_y());
-
-      if (boost::geometry::covered_by(p, polygon))
-        streamer.write_point();
-    }
-  }
   else
-    stop("WKT not supported. Should be a POLYGON or MULTIPOLYGON");
+  {
+    while(streamer.read_point())
+    {
+      double x = streamer.point()->get_x();
+      double y = streamer.point()->get_y();
+
+      bool inpoly = false;
+      for (unsigned int i = 0 ; i < polygons.size() ; i++)
+      {
+        // This list can be made of several rings (MULTIPOLYGON) and interior rings
+        Rcpp::List rings = polygons[i];
+
+        // Loop through sub polygons (ring)
+        for (int j = 0 ; j < rings.size() ; j++)
+        {
+          Rcpp::NumericMatrix ring = rings[j];
+
+          // We need to know if the ring is an exterior/interior ring (hole)
+          bool exterior_ring = ring(0,2) == 1;
+
+          bool b = pnpoly(ring, x, y);
+
+          if (b)
+          {
+            if (exterior_ring)
+            {
+              inpoly = true;
+            }
+            else
+            {
+              inpoly = false;
+              break;
+            }
+          }
+        }
+
+        if (inpoly)
+        {
+          streamer.write_point();
+        }
+      }
+    }
+  }
 
   return streamer.terminate();
 }

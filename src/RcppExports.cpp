@@ -103,8 +103,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, std::string filter_wkt);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP filter_wktSEXP) {
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP polygonsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -112,8 +112,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type ofile(ofileSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
-    Rcpp::traits::input_parameter< std::string >::type filter_wkt(filter_wktSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, filter_wkt));
+    Rcpp::traits::input_parameter< Rcpp::List >::type polygons(polygonsSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, polygons));
     return rcpp_result_gen;
 END_RCPP
 }

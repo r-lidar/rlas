@@ -126,7 +126,7 @@ read.lasheader = function(file)
   return(data)
 }
 
-stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt = "")
+stream.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list())
 {
   stream    <- ofile != ""
   ifiles    <- enc2native(normalizePath(ifiles))
@@ -139,7 +139,7 @@ stream.las = function(ifiles, ofile = "", select = "*", filter = "", filter_wkt 
 
   check_filter(filter)
 
-  raw_list <- C_reader(ifiles, ofile, select, filter, filter_wkt)
+  raw_list <- C_reader(ifiles, ofile, select, filter, polygons)
 
   data <- raw_list[1:3]
   data.table::setDT(data)
