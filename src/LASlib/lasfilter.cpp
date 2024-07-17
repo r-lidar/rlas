@@ -38,7 +38,6 @@
 #include <map>
 #include <set>
 #include <unordered_set>
-#include <boost/functional/hash.hpp>
 
 #include <R_ext/Random.h>     /* RNG interface */
 
@@ -46,6 +45,18 @@ using namespace std;
 
 typedef multimap<I64,F64> my_I64_F64_map;
 typedef set<I64> my_I64_set;
+
+struct ArrayHash
+{
+  std::size_t operator()(const std::array<int, 3>& arr) const {
+    std::size_t seed = 0;
+    for (int32_t val : arr) {
+      seed ^= std::hash<int32_t>{}(val) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+  }
+};
+
 
 class LAScriterionAnd : public LAScriterion
 {
@@ -1585,7 +1596,7 @@ private:
   double xoffset;
   double yoffset;
   double zoffset;
-  std::unordered_set<Array, boost::hash<Array> > dynamic_registry;
+  std::unordered_set<Array, ArrayHash> dynamic_registry;
 };
 
 class LAScriterionThinPulsesWithTime : public LAScriterion
