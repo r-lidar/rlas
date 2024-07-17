@@ -1,6 +1,10 @@
+### rlas v1.8.1
+
+- Removed a `boost` header still included in the code.
+
 ### rlas v1.8.0
 
-- Internal changes to appease CRAN: remove dependency to boost
+- Internal changes to appease CRAN: remove dependency to `boost`
 
 ### rlas v1.7.0
 
