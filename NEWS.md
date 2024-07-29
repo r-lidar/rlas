@@ -1,3 +1,7 @@
+### rlas v1.8.2
+
+- Fix: can read file with multiple extra bytes definitions
+
 ### rlas v1.8.1
 
 - Removed a `boost` header still included in the code.
