@@ -1,6 +1,7 @@
 ### rlas v1.8.2
 
 - Fix: can read file with multiple extra bytes definitions
+- change maintainer's email address
 
 ### rlas v1.8.1
 
