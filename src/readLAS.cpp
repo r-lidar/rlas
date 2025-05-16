@@ -28,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include <Rcpp.h>
+#include <chrono>
+#include <string>
 #include "rlasstreamer.h"
 #include "laspoint.hpp"
 #include "lasreader.hpp"
@@ -49,6 +51,28 @@ bool pnpoly(NumericMatrix polygon, double x, double y)
   return c;
 }
 
+// Progress printing function
+inline void print_progress(float progress, const std::chrono::steady_clock::time_point& start)
+{
+  int width = 50;
+  int pos = static_cast<int>(progress / 100.0 * width);
+
+  auto now = std::chrono::steady_clock::now();
+  double elapsed = std::chrono::duration<double>(now - start).count();
+  if (elapsed < 2.0) return;
+
+  double eta = (progress > 0.0) ? elapsed * (100.0 - progress) / progress : 0.0;
+
+  std::string bar = "[";
+  for (int i = 0; i < width; ++i)
+    bar += (i < pos) ? "=" : (i == pos ? ">" : " ");
+  bar += "]";
+
+  Rcpp::Rcout << "\r" << bar << " "
+              << static_cast<int>(progress) << "% "
+              << "ETA: " << static_cast<int>(eta) << "s     " << std::flush;
+}
+
 // [[Rcpp::export]]
 List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons)
 {
@@ -56,10 +80,21 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector sel
   streamer.select(select);
   streamer.allocation();
 
+  auto start = std::chrono::steady_clock::now();
+  int counter = 0;
+
   if (polygons.size() == 0)
   {
     while(streamer.read_point())
+    {
       streamer.write_point();
+
+      if (++counter % 10000 == 0)
+      {
+        Rcpp::checkUserInterrupt();
+        print_progress(streamer.progress, start);
+      }
+    }
   }
   else
   {
@@ -103,8 +138,16 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector sel
           streamer.write_point();
         }
       }
+
+      if (++counter % 10000 == 0)
+      {
+        Rcpp::checkUserInterrupt();
+        print_progress(streamer.progress, start);
+      }
     }
   }
+
+  Rcpp::Rcout << "\r" << std::string(80, ' ') << "\r" << std::flush;
 
   return streamer.terminate();
 }

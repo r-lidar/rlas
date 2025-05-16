@@ -266,6 +266,8 @@ void RLASstreamer::initialize()
   nwithheld   = 0;
   initialized = true;
 
+  progress = 0;
+
   return;
 }
 
@@ -370,6 +372,7 @@ void RLASstreamer::allocation()
 bool RLASstreamer::read_point()
 {
   point_count++;
+  progress = (double)lasreader->p_count/(double)lasreader->header.number_of_point_records*100;
   return lasreader->read_point();
 }
 

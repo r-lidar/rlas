@@ -1,3 +1,8 @@
+### rlas v1.8.2
+
+- New: `read.las` has a progress bar
+- New: `read.las` checks user interruption
+
 ### rlas v1.8.1
 
 - Fix: can read file with multiple extra bytes definitions

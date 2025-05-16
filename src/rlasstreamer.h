@@ -44,6 +44,8 @@ class RLASstreamer
     void read_W(bool);
     void read_eb(IntegerVector); // extra byte numbers
 
+    float progress;
+
   private:
     void initialize_bool();
     void initialize();
