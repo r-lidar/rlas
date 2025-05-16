@@ -171,23 +171,25 @@ struct compact_repetition
   //
   // This is guaranteed to never allocate (in the R sense)
   static const void* Dataptr_or_null(SEXP vec) {
-    //Rprintf("Calling Dataptr_or_null on a compact_repetition at %p\n", R_ExternalPtrAddr(vec));
     SEXP data2 = R_altrep_data2(vec);
     if (data2 == R_NilValue) return nullptr;
-    return DATAPTR(data2);
+
+    switch (TYPEOF(data2)) {
+    case INTSXP: return INTEGER(data2);
+    case REALSXP: return REAL(data2);
+    case LGLSXP: return LOGICAL(data2);
+    case RAWSXP: return RAW(data2);
+    default: return nullptr; // fallback if unknown type
+    }
   }
 
-  // same in this case, writeable is ignored
   static void* DataptrInt(SEXP vec, Rboolean writeable)
   {
     SEXP data2 = R_altrep_data2(vec);
-    if (data2 != R_NilValue)
-    {
-      //Rprintf("Returning pointer to materialized compact_repetition at %p\n", R_ExternalPtrAddr(vec));
-      return DATAPTR(data2);
+    if (data2 != R_NilValue) {
+      return INTEGER(data2);
     }
 
-    //Rprintf("Materializing a compact repetition at %p\n", R_ExternalPtrAddr(vec));
     int n = Length(vec);
     auto v = Get(vec).value;
     SEXP val = PROTECT(Rf_allocVector(INTSXP, n));
@@ -195,19 +197,16 @@ struct compact_repetition
     for (int i = 0; i < n; i++) p[i] = v;
     R_set_altrep_data2(vec, val);
     UNPROTECT(1);
-    return DATAPTR(val);
+    return INTEGER(val);
   }
 
   static void* DataptrReal(SEXP vec, Rboolean writeable)
   {
     SEXP data2 = R_altrep_data2(vec);
-    if (data2 != R_NilValue)
-    {
-      //Rprintf("Returning pointer to materialized compact_repetition at %p\n", R_ExternalPtrAddr(vec));
-      return DATAPTR(data2);
+    if (data2 != R_NilValue) {
+      return REAL(data2);
     }
 
-    //Rprintf("Materializing a compact repetition at %p\n", R_ExternalPtrAddr(vec));
     int n = Length(vec);
     double v = Get(vec).value;
     SEXP val = PROTECT(Rf_allocVector(REALSXP, n));
@@ -215,19 +214,16 @@ struct compact_repetition
     for (int i = 0; i < n; i++) p[i] = v;
     R_set_altrep_data2(vec, val);
     UNPROTECT(1);
-    return DATAPTR(val);
+    return REAL(val);
   }
 
   static void* DataptrLogical(SEXP vec, Rboolean writeable)
   {
     SEXP data2 = R_altrep_data2(vec);
-    if (data2 != R_NilValue)
-    {
-      //Rprintf("Returning pointer to materialized compact_repetition at %p\n", R_ExternalPtrAddr(vec));
-      return DATAPTR(data2);
+    if (data2 != R_NilValue) {
+      return LOGICAL(data2);
     }
 
-    //Rprintf("Materializing a compact repetition at %p\n", R_ExternalPtrAddr(vec));
     int n = Length(vec);
     bool v = Get(vec).value;
     SEXP val = PROTECT(Rf_allocVector(LGLSXP, n));
@@ -235,8 +231,9 @@ struct compact_repetition
     for (int i = 0; i < n; i++) p[i] = v ? TRUE : FALSE;
     R_set_altrep_data2(vec, val);
     UNPROTECT(1);
-    return DATAPTR(val);
+    return LOGICAL(val);
   }
+
 
   // ALTINT methods -----------------
   // the element at the index `i`

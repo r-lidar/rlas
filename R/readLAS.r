@@ -126,6 +126,10 @@ read.lasheader = function(file)
   return(data)
 }
 
+#' @rdname read.las
+#' @param ifiles,ofile characters. Streaming operations.
+#' @param polygons list. Internal use only.
+#' @export
 stream.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list())
 {
   stream    <- ofile != ""

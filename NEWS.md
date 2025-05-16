@@ -1,11 +1,9 @@
-### rlas v1.8.2
-
-- Fix: can read file with multiple extra bytes definitions
-- change maintainer's email address
-
 ### rlas v1.8.1
 
+- Fix: can read file with multiple extra bytes definitions
+- Fix CRAN: Found non-API call to R: ‘DATAPTR’ for altrep
 - Removed a `boost` header still included in the code.
+- Function `stream.las` exposed to users
 
 ### rlas v1.8.0
 
