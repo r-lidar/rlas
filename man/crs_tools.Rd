@@ -6,6 +6,7 @@
 \alias{header_set_epsg}
 \alias{header_get_wktcs}
 \alias{header_set_wktcs}
+\alias{find_epsg_position}
 \title{Coordinate Reference System Tools}
 \usage{
 header_get_epsg(header)
@@ -15,6 +16,8 @@ header_set_epsg(header, epsg)
 header_get_wktcs(header)
 
 header_set_wktcs(header, WKT)
+
+find_epsg_position(header)
 }
 \arguments{
 \item{header}{list}

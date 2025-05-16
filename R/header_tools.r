@@ -417,6 +417,23 @@ header_set_wktcs = function(header, WKT)
   return(header)
 }
 
+#' @export
+#' @rdname crs_tools
+find_epsg_position = function(header)
+{
+  tags = header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]
+
+  for (i in seq_along(tags))
+  {
+    if (tags[[i]]$key == 3072)
+      return(i)
+  }
+
+  return(0L)
+}
+
+
+# Internal for lidR compatibility
 where_is_epsg = function(header)
 {
   tags = header[["Variable Length Records"]][["GeoKeyDirectoryTag"]][["tags"]]
