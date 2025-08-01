@@ -115,7 +115,7 @@ read.las = function(files, select = "*", filter = "", transform = "")
 read.lasheader = function(file)
 {
   valid     <- file.exists(file)
-  supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY", "ptx", "PTX", "txt", "TXT")
   file      <- enc2native(normalizePath(file))
 
   if (!valid)      stop("File not found", call. = F)
@@ -136,7 +136,7 @@ read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", pol
   ifiles    <- enc2native(normalizePath(ifiles))
   ofile     <- enc2native(normalizePath(ofile, mustWork = FALSE))
   valid     <- file.exists(ifiles)
-  supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY", "ptx", "PTX", "txt", "TXT")
 
   if (!all(valid))      stop("File not found", call. = F)
   if (!all(supported))  stop("File not supported", call. = F)
