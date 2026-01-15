@@ -1,3 +1,8 @@
+### rlas v1.8.3
+
+- Update maintainer email
+- Fix R-devel requierements
+
 ### rlas v1.8.2
 
 - New: `read.las` has a progress bar
