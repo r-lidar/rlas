@@ -28,7 +28,7 @@ find_epsg_position(header)
 }
 \description{
 Functions that update a header to describe coordinates reference system according to the
-\href{https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf}{LAS specifications}
+\href{https://community.asprs.org/leadership-restricted/leadership-content/public-documents/standards}{LAS specifications}
 }
 \seealso{
 Other header_tools: 

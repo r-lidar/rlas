@@ -15,7 +15,7 @@ BugReports: https://github.com/r-lidar/rlas/issues
 License: GPL-3
 Depends: R (>= 3.6.0)
 Imports: Rcpp, data.table, utils
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 LinkingTo: Rcpp
 Suggests: tinytest
 Encoding: UTF-8
