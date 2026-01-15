@@ -512,8 +512,7 @@ SEXP R_altrep_full_class(SEXP x) {
     ptr->push_back(s);
     return NULL;
   };
-  R_mapAttrib(ALTREP_CLASS(x), visitor, static_cast<void*>(&v));
-  return Rcpp::wrap(v);
+  return R_mapAttrib(ALTREP_CLASS(x), visitor, static_cast<void*>(&v));
 #else
   return ATTRIB(ALTREP_CLASS(x));
 #endif
