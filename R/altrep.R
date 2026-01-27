@@ -56,7 +56,9 @@ true_size <- function(x)
 is_compact <- function(x)
 {
   altrep <- R_altrep_full_class(x)
-  cat(">>>>>>>", altrep[[1]], altrep[[2]], "\n")
+  cat(">>>>>>>\n")
+  print(altrep)
+  cat("<<<<<<<\n")
   if (is.null(altrep)) return(FALSE)
   if (altrep[[2]] == "rlas") {
     if (R_is_materialized(x)) return(FALSE)
