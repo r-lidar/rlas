@@ -74,3 +74,7 @@ expect_true(is_altrep(lgl))
 expect_false(is_altrep(int_))
 expect_false(is_altrep(dbl_))
 expect_false(is_altrep(lgl_))
+
+expect_true(is_materialized(int))
+expect_true(is_materialized(dbl))
+expect_true(is_materialized(lgl))
