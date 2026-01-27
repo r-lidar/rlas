@@ -1,7 +1,7 @@
 ### rlas v1.8.3
 
 - Update maintainer email
-- Fix R-devel requierements
+- Fix R-devel requirements
 
 ### rlas v1.8.2
 
