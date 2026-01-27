@@ -57,16 +57,9 @@ is_compact <- function(x)
 {
   altrep <- R_altrep_full_class(x)
   if (is.null(altrep)) return(FALSE)
-  cat(">>>>>>>\n")
-  print(altrep)
-  print(class(altrep))
-  print(str(altrep))
-  cat("<<<<<<<\n")
 
   if (getRversion() < "4.6.0")
-  {
     altrep = altrep[[2]]
-  }
 
   if (altrep == "rlas")
   {
