@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreader_dtm.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 #include "lasreader_dtm.hpp"
@@ -84,7 +84,7 @@ static const unsigned short PCS_NAD83_Iowa_South = 26976;
 static const unsigned short PCS_NAD83_Kansas_North = 26977;
 static const unsigned short PCS_NAD83_Kansas_South = 26978;
 static const unsigned short PCS_NAD83_Kentucky_North = 2205;
-static const unsigned short PCS_NAD83_Kentucky_South = 26980;
+//static const unsigned short PCS_NAD83_Kentucky_South = 26980;
 static const unsigned short PCS_NAD83_Louisiana_North = 26981;
 static const unsigned short PCS_NAD83_Louisiana_South = 26982;
 static const unsigned short PCS_NAD83_Maine_East = 26983;
@@ -367,7 +367,7 @@ BOOL LASreaderDTM::open(const CHAR* file_name)
   {
   }
 
-  // read min_z 
+  // read min_z
 
   F64 min_z;
   if (fread(&min_z, 8, 1, file) != 1)
@@ -410,7 +410,7 @@ BOOL LASreaderDTM::open(const CHAR* file_name)
   if (fread(&ncols, 4, 1, file) != 1)
   {
   }
-  
+
   if (fread(&nrows, 4, 1, file) != 1)
   {
   }
@@ -945,7 +945,7 @@ BOOL LASreaderDTM::open(const CHAR* file_name)
     geo_keys[num_geo_keys].value_offset = (vertical_units == 1 ? 9001 : 9002);
     num_geo_keys++;
   }
-  
+
   if (vertical_datum)
   {
     // vertical datum
@@ -966,7 +966,7 @@ BOOL LASreaderDTM::open(const CHAR* file_name)
     }
     num_geo_keys++;
   }
-      
+
   if (num_geo_keys)
   {
     header.set_geo_keys(num_geo_keys, geo_keys);
@@ -1161,7 +1161,7 @@ BOOL LASreaderDTM::open(const CHAR* file_name)
     header.max_z = 0;
   }
 
-  // add the VLR for Raster LAZ 
+  // add the VLR for Raster LAZ
 
   LASvlrRasterLAZ vlrRasterLAZ;
   vlrRasterLAZ.nbands = 1;

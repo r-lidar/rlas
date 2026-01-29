@@ -466,17 +466,14 @@ BOOL LASreader::read_point_inside_rectangle_indexed()
 
 BOOL LASreader::read_point_inside_rectangle_copc_indexed()
 {
-	bool inrect;
-	while (copc_index->seek_next((LASreader*)this))
-	{
-		inrect = point.get_x() >= r_min_x && point.get_x() <= r_max_x && point.get_y() >= r_min_y && point.get_y() <= r_max_y;
-
-		if (read_point_default() && point.inside_rectangle(r_min_x, r_min_y, r_max_x, r_max_y))
-	    	{
-	      		return TRUE;
-	    	}
-  	}
-  	return FALSE;
+  while (copc_index->seek_next((LASreader*)this))
+  {
+    if (read_point_default() && point.inside_rectangle(r_min_x, r_min_y, r_max_x, r_max_y))
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 BOOL LASreader::read_point_inside_depth_copc_indexed()

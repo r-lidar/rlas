@@ -951,11 +951,11 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
         I64 here = stream->tell();
         stream->seek(header.start_of_first_extended_variable_length_record);
 
-		header.evlrs = (LASevlr*)calloc(header.number_of_extended_variable_length_records, sizeof(LASevlr));
+		    header.evlrs = (LASevlr*)calloc(header.number_of_extended_variable_length_records, sizeof(LASevlr));
 
         // read the extended variable length records into the header
 
-        I64 evlrs_size = 0;
+        //I64 evlrs_size = 0;
 
         for (i = 0; i < header.number_of_extended_variable_length_records; i++)
         {
@@ -989,7 +989,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
           // keep track on the number of bytes we have read so far
 
-          evlrs_size += 60;
+          //evlrs_size += 60;
 
           // check variable length record contents
 
@@ -1174,7 +1174,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
 
           // keep track on the number of bytes we have read so far
 
-          evlrs_size += header.evlrs[i].record_length_after_header;
+          //evlrs_size += header.evlrs[i].record_length_after_header;
 
           // special handling for known variable header tags
 
@@ -1280,7 +1280,7 @@ BOOL LASreaderLAS::open(ByteStreamIn* stream, BOOL peek_only, U32 decompress_sel
           else if (strcmp(header.evlrs[i].user_id, "laszip encoded") == 0 || strcmp(header.evlrs[i].user_id, "LAStools") == 0)
           {
             // we take our own EVLRs away from everywhere
-            evlrs_size -= (60+header.evlrs[i].record_length_after_header);
+            //evlrs_size -= (60+header.evlrs[i].record_length_after_header);
             i--;
             header.number_of_extended_variable_length_records--;
           }
