@@ -37,6 +37,12 @@
 #include "lasindex.hpp"
 #include "lascopc.hpp"
 
+#ifdef USING_GDAL
+#include "bytestreamin_gdal.hpp"
+#include <cpl_vsi.h>
+#include <string>
+#endif
+
 #ifdef _WIN32
 #include <fcntl.h>
 #include <io.h>
@@ -52,6 +58,65 @@ BOOL LASreaderLAS::open(const char* file_name, I32 io_buffer_size, BOOL peek_onl
     REprintf("ERROR: file name pointer is zero\n");
     return FALSE;
   }
+
+  if (is_remote_path(file_name))
+  {
+#ifdef USING_GDAL
+    // Build the GDAL virtual filesystem path
+    std::string vsi_path;
+    if (strncmp(file_name, "http://", 7) == 0 || strncmp(file_name, "https://", 8) == 0)
+    {
+      vsi_path = std::string("/vsicurl/") + file_name;
+    }
+    else
+    {
+      vsi_path = file_name;
+    }
+
+    // Size warning for non-COPC files
+    if (strstr(file_name, ".copc.") == NULL)
+    {
+      VSIStatBufL stat_buf;
+      if (VSIStatL(vsi_path.c_str(), &stat_buf) == 0)
+      {
+        if (stat_buf.st_size > 500 * 1024 * 1024)
+        {
+          Rprintf("remote file '%s' is %.0f MB. Consider converting to COPC for efficient streaming.\n", file_name, (double)stat_buf.st_size / (1024.0 * 1024.0));
+        }
+      }
+    }
+
+    VSILFILE* vsi_file = VSIFOpenL(vsi_path.c_str(), "rb");
+    if (vsi_file == 0)
+    {
+      REprintf("ERROR: cannot open remote file '%s'\n", file_name);
+      return FALSE;
+    }
+
+    // Save file name for error messages
+    if (this->file_name)
+    {
+      free(this->file_name);
+      this->file_name = 0;
+    }
+    this->file_name = LASCopyString(file_name);
+
+    // Leave FILE* file as null -- close() already null-checks before fclose()
+    // ByteStreamInGDAL takes ownership and will call VSIFCloseL in destructor
+
+    ByteStreamIn* in;
+    if (IS_LITTLE_ENDIAN())
+      in = new ByteStreamInGDALLE(vsi_file);
+    else
+      in = new ByteStreamInGDALBE(vsi_file);
+
+    return open(in, peek_only, decompress_selective);
+#else
+    REprintf("ERROR: remote file access requires GDAL. File: '%s'\n", file_name);
+    return FALSE;
+#endif
+  }
+
 
 #ifdef _MSC_VER
   wchar_t* utf16_file_name = UTF8toUTF16(file_name);

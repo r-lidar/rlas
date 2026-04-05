@@ -1,3 +1,7 @@
+### rlas v1.9.0
+
+- New: support of remote file
+
 ### rlas v1.8.5
 
 - Fix CRAN stuff

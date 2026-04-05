@@ -1,5 +1,5 @@
-PKG_CPPFLAGS=  -I/usr/include/x86_64-linux-gnu -DHAVE_PROJ_H -I/usr/include/gdal -I/usr/include -DNDEBUG -DUSING_R -DUSING_GDAL -I./ -I./LASlib/ -I./LASzip/
-PKG_LIBS=-lproj   -L/usr/lib/x86_64-linux-gnu -lgdal -L/usr/lib/x86_64-linux-gnu -lgeos_c
+PKG_CPPFLAGS= @PKG_CPPFLAGS@ -DNDEBUG -DUSING_R -DUSING_GDAL -I./ -I./LASlib/ -I./LASzip/
+PKG_LIBS=@PKG_LIBS@
 SOURCES = LASlib/lasreader_txt.cpp \
 					LASlib/fopen_compressed.cpp \
 					LASlib/laswriter_las.cpp \

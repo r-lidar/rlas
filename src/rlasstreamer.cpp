@@ -209,10 +209,16 @@ void RLASstreamer::initialize()
 
   lasreader = lasreadopener.open();
   header = &lasreader->header;
-  laswaveform13reader = lasreadopener.open_waveform13(&lasreader->header);
 
   if (0 == lasreader || NULL == lasreader)
     stop("LASlib internal error. See message above."); // # nocov
+
+  if (header->point_data_format == 4 ||
+      header->point_data_format == 5 ||
+      header->point_data_format == 9 ||
+      header->point_data_format == 10) {
+    laswaveform13reader = lasreadopener.open_waveform13(&lasreader->header);
+  }
 
   // Initilize the writer if write in file
   if (!inR)

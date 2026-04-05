@@ -114,9 +114,21 @@ read.las = function(files, select = "*", filter = "", transform = "")
 #' lasheader <- read.lasheader(lazfile)
 read.lasheader = function(file)
 {
-  valid     <- file.exists(file)
-  supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
-  file      <- enc2native(normalizePath(file))
+  is_remote <- grepl("^https?://|^/vsi(curl|s3|gs|az|adls|oss|swift)/", file)
+
+  if (!is_remote)
+  {
+    valid     <- file.exists(file)
+    supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+    file      <- enc2native(normalizePath(file))
+  }
+  else
+  {
+    valid <- TRUE
+    supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+    file  <- enc2native(file)
+  }
+
 
   if (!valid)      stop("File not found", call. = F)
   if (!supported)  stop("File not supported", call. = F)
@@ -132,17 +144,25 @@ read.lasheader = function(file)
 #' @export
 read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list())
 {
-  stream    <- ofile != ""
-  ifiles    <- enc2native(normalizePath(ifiles))
-  ofile     <- enc2native(normalizePath(ofile, mustWork = FALSE))
-  valid     <- file.exists(ifiles)
-  supported <- tools::file_ext(ifiles) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+  stream <- ofile != ""
 
-  if (!all(valid))      stop("File not found", call. = F)
-  if (!all(supported))  stop("File not supported", call. = F)
+  is_remote <- grepl("^https?://|^/vsi(curl|s3|gs|az|adls|oss|swift)/", ifiles)
+
+  ifiles[!is_remote] <- enc2native(normalizePath(ifiles[!is_remote], mustWork = TRUE))
+  ofile <- enc2native(normalizePath(ofile, mustWork = FALSE))
+
+  valid <- rep(TRUE, length(ifiles))
+  valid[!is_remote] <- file.exists(ifiles[!is_remote])
+
+  clean_paths <- sub("\\?.*$", "", ifiles)
+  supported <- tools::file_ext(clean_paths) %in% c("las", "laz", "LAS", "LAZ", "ply", "PLY")
+
+  if (!all(valid))      stop("File not found", call. = FALSE)
+  if (!all(supported))  stop("File not supported", call. = FALSE)
 
   check_filter(filter)
 
+  # C_reader handles the URL now that R isn't mangling it
   raw_list <- C_reader(ifiles, ofile, select, filter, polygons)
 
   data <- raw_list[1:3]
@@ -159,6 +179,5 @@ read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", pol
 
   return(data)
 }
-
 stream.las = read_and_write.las
 

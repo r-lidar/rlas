@@ -1794,6 +1794,15 @@ void LASfilter::usage() const
   REprintf("  -thin_points_with_time 0.000001\n");
   REprintf("Boolean combination of filters.\n");
   REprintf("  -filter_and\n");
+  REprintf("Fast AOI Queries for LAS/LAZ with spatial indexing LAX files\n");
+  REprintf("  -inside min_x min_y max_x max_y\n");
+  REprintf("  -inside_tile ll_x ll_y size\n");
+  REprintf("  -inside_circle center_x center_y radius\n");
+  REprintf("Fast AOI Queries for LAZ 1.4 with spatial indexing COPC VLR\n");
+  REprintf("  -inside min_x min_y max_x max_y\n");
+  REprintf("  -inside_circle center_x center_y radius\n");
+  REprintf("  -max_depth 3\n");
+  REprintf("  -resolution 0.1\n");
 }
 
 BOOL LASfilter::parse(int argc, char* argv[])
