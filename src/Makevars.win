@@ -2,9 +2,9 @@ VERSION = 3.4.1
 RWINLIB = ../windows/gdal3-$(VERSION)
 TARGET = lib$(subst gcc,,$(COMPILED_BY))$(R_ARCH)
 
-PKG_CPPFLAGS =\
+PKG_CPPFLAGS = \
 	-I$(RWINLIB)/include \
-  -I./ -I./LASlib/ -I./LASzip/
+	-I./ -I./LASlib/ -I./LASzip/ \
 	-DHAVE_PROJ_H \
 	-DNDEBUG -DUSING_R -DUSING_GDAL
 

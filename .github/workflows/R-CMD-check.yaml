@@ -48,7 +48,11 @@ jobs:
         run: |
           sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
           sudo apt update
-          sudo apt install libcurl4-openssl-dev
+          sudo apt install libcurl4-openssl-dev libgdal-dev libproj-dev
+
+      - name: Install macOS system dependencies
+        if: runner.os == 'macOS'
+        run: brew install gdal proj
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
