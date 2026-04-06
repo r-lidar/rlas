@@ -12,6 +12,7 @@ inst/doc
 docs
 /doc/
 /Meta/
+windows/
 bin
 .vscode
 python/build
