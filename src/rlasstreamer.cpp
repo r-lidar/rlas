@@ -860,7 +860,7 @@ List RLASstreamer::terminate()
 
     if (nsynthetic > 0)
     {
-      std::string msg = std::string("There are ") + std::to_string(nwithheld)  + std::string(" points flagged 'synthetic'.");
+      std::string msg = std::string("There are ") + std::to_string(nsynthetic)  + std::string(" points flagged 'synthetic'.");
       Rf_warningcall(R_NilValue, "%s", msg.c_str());
     }
 
