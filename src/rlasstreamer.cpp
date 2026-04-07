@@ -31,6 +31,7 @@ void RLASstreamer::setinputfiles(CharacterVector ifiles)
 
   lasreadopener.set_merged(true);
   lasreadopener.set_populate_header(true);
+  lasreadopener.set_copc_stream_ordered_by_chunk();
 
   for (int j = 0; j < ifiles.length(); j++)
   {
