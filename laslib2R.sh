@@ -85,6 +85,8 @@ sed -i 's/%I64d/%lld/g' src/*/*.[ch]pp
 # lasreaditemcompress_v3.cpp l223 -> delete dec_point_source;
 # lasreaditemcompress_v3.cpp l233 -> delete instream_point_source;
 # lasreaditemcompress_v3.cpp protect LASpoint14 to pack bytes
+# lasreaditemcompress_v3.cpp l1063 asan ubsan interger overflow. cast to I64 -> I32
+# intergercompressor.cpp l322 asan ubsan interger overflow. cast to I64 -> I32
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif
