@@ -81,6 +81,18 @@ sed -i 's/%I64d/%lld/g' src/*/*.[ch]pp
 # lasreader.cpp            l1875,1880 add (min_y != 0 || max_y != 0) to allow -inside 0 0 0 0 in lidR
 # lasreader_txt.cpp        l1833 1851 I32 -> U32
 # lasreader_ply.cpp        l1485 1503 I32 -> U32
+# lasreaditemraw.hpp       l257 -> memcpy(&((LAStempReadPoint10*)item)->gps_time,  &buffer[22], sizeof(F64));
+# lasreaditemcompress_v3.cpp l223 -> delete dec_point_source;
+# lasreaditemcompress_v3.cpp l233 -> delete instream_point_source;
+# lasreaditemcompress_v3.cpp protect LASpoint14 to pack bytes
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+
+typedef struct
+#ifdef __GNUC__
+  __attribute__((packed, aligned(1)))
+#endif
 # Fix various -Wempty-body caused by if(fget(...)); with clang++
 # CRAN is happy now!
 

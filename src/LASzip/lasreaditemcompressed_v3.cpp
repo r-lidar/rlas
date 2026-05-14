@@ -2,11 +2,11 @@
 ===============================================================================
 
   FILE:  lasreaditemcompressed_v3.cpp
-  
+
   CONTENTS:
-  
+
     see corresponding header file
-  
+
   PROGRAMMERS:
 
     martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
@@ -21,11 +21,11 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
+
     see corresponding header file
-  
+
 ===============================================================================
 */
 
@@ -34,7 +34,15 @@
 #include <assert.h>
 #include <string.h>
 
-typedef struct LASpoint14
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+
+typedef struct
+#ifdef __GNUC__
+  __attribute__((packed, aligned(1)))
+#endif
+LASpoint14
 {
   I32 X;
   I32 Y;
@@ -73,11 +81,15 @@ typedef struct LASpoint14
 //  LASwavepacket wavepacket;
 } LASpoint14;
 
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+
 #define LASZIP_GPSTIME_MULTI 500
 #define LASZIP_GPSTIME_MULTI_MINUS -10
 #define LASZIP_GPSTIME_MULTI_CODE_FULL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 1)
 
-#define LASZIP_GPSTIME_MULTI_TOTAL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 5) 
+#define LASZIP_GPSTIME_MULTI_TOTAL (LASZIP_GPSTIME_MULTI - LASZIP_GPSTIME_MULTI_MINUS + 5)
 
 LASreadItemCompressed_POINT14_v3::LASreadItemCompressed_POINT14_v3(ArithmeticDecoder* dec, const U32 decompress_selective)
 {
@@ -208,6 +220,7 @@ LASreadItemCompressed_POINT14_v3::~LASreadItemCompressed_POINT14_v3()
     delete dec_scan_angle;
     delete dec_user_data;
     delete dec_gps_time;
+    delete dec_point_source;
 
     delete instream_channel_returns_XY;
     delete instream_Z;
@@ -217,6 +230,7 @@ LASreadItemCompressed_POINT14_v3::~LASreadItemCompressed_POINT14_v3()
     delete instream_scan_angle;
     delete instream_user_data;
     delete instream_gps_time;
+    delete instream_point_source;
   }
 
   if (bytes) delete [] bytes;
@@ -454,17 +468,17 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
   }
 
   /* how many bytes do we need to read */
-  
+
   U32 num_bytes = num_bytes_channel_returns_XY;
-  if (requested_Z) num_bytes += num_bytes_Z; 
-  if (requested_classification) num_bytes += num_bytes_classification; 
-  if (requested_flags) num_bytes += num_bytes_flags; 
+  if (requested_Z) num_bytes += num_bytes_Z;
+  if (requested_classification) num_bytes += num_bytes_classification;
+  if (requested_flags) num_bytes += num_bytes_flags;
   if (requested_intensity) num_bytes += num_bytes_intensity;
   if (requested_scan_angle) num_bytes += num_bytes_scan_angle;
   if (requested_user_data) num_bytes += num_bytes_user_data;
   if (requested_point_source) num_bytes += num_bytes_point_source;
   if (requested_gps_time) num_bytes += num_bytes_gps_time;
-  
+
   /* make sure the buffer is sufficiently large */
 
   if (num_bytes > num_bytes_allocated)
@@ -499,7 +513,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_Z = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_Z)
     {
@@ -524,7 +538,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_classification = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_classification)
     {
@@ -549,7 +563,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_flags = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_flags)
     {
@@ -574,7 +588,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_intensity = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_intensity)
     {
@@ -599,7 +613,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_scan_angle = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_scan_angle)
     {
@@ -624,7 +638,7 @@ BOOL LASreadItemCompressed_POINT14_v3::init(const U8* item, U32& context)
       changed_user_data = FALSE;
     }
   }
-  else 
+  else
   {
     if (num_bytes_user_data)
     {
@@ -710,7 +724,7 @@ inline void LASreadItemCompressed_POINT14_v3::read(U8* item, U32& context)
   U8* last_item = contexts[current_context].last_item;
 
   ////////////////////////////////////////
-  // decompress returns_XY layer 
+  // decompress returns_XY layer
   ////////////////////////////////////////
 
   // create single (3) / first (1) / last (2) / intermediate (0) context from last point return
@@ -1004,7 +1018,7 @@ void LASreadItemCompressed_POINT14_v3::read_gps_time()
     {
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = contexts[current_context].ic_gpstime->decompress(0, 0);
       contexts[current_context].last_gpstime[contexts[current_context].last].i64 += contexts[current_context].last_gpstime_diff[contexts[current_context].last];
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
     }
     else if (multi == 1) // the difference is huge
     {
@@ -1014,7 +1028,7 @@ void LASreadItemCompressed_POINT14_v3::read_gps_time()
       contexts[current_context].last_gpstime[contexts[current_context].next].u64 |= dec_gps_time->readInt();
       contexts[current_context].last = contexts[current_context].next;
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = 0;
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
     }
     else // we switch to another sequence
     {
@@ -1088,7 +1102,7 @@ void LASreadItemCompressed_POINT14_v3::read_gps_time()
       contexts[current_context].last_gpstime[contexts[current_context].next].u64 |= dec_gps_time->readInt();
       contexts[current_context].last = contexts[current_context].next;
       contexts[current_context].last_gpstime_diff[contexts[current_context].last] = 0;
-      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0; 
+      contexts[current_context].multi_extreme_counter[contexts[current_context].last] = 0;
     }
     else if (multi >=  LASZIP_GPSTIME_MULTI_CODE_FULL)
     {
@@ -1247,7 +1261,7 @@ BOOL LASreadItemCompressed_RGB14_v3::init(const U8* item, U32& context)
 
     dec_RGB = new ArithmeticDecoder();
   }
-  
+
   /* make sure the buffer is sufficiently large */
 
   if (num_bytes_RGB > num_bytes_allocated)
@@ -1333,7 +1347,7 @@ inline void LASreadItemCompressed_RGB14_v3::read(U8* item, U32& context)
       corr = dec_RGB->decodeSymbol(contexts[current_context].m_rgb_diff_0);
       ((U16*)item)[0] = (U16)U8_FOLD(corr + (last_item[0]&255));
     }
-    else 
+    else
     {
       ((U16*)item)[0] = last_item[0]&0xFF;
     }
@@ -1594,7 +1608,7 @@ BOOL LASreadItemCompressed_RGBNIR14_v3::init(const U8* item, U32& context)
     dec_RGB = new ArithmeticDecoder();
     dec_NIR = new ArithmeticDecoder();
   }
-  
+
   /* how many bytes do we need to read */
 
   U32 num_bytes = 0;
@@ -1704,7 +1718,7 @@ inline void LASreadItemCompressed_RGBNIR14_v3::read(U8* item, U32& context)
   // decompress
 
   ////////////////////////////////////////
-  // decompress RGB layer 
+  // decompress RGB layer
   ////////////////////////////////////////
 
   if (changed_RGB)
@@ -1717,7 +1731,7 @@ inline void LASreadItemCompressed_RGBNIR14_v3::read(U8* item, U32& context)
       corr = dec_RGB->decodeSymbol(contexts[current_context].m_rgb_diff_0);
       ((U16*)item)[0] = (U16)U8_FOLD(corr + (last_item[0]&255));
     }
-    else 
+    else
     {
       ((U16*)item)[0] = last_item[0]&0xFF;
     }
@@ -1786,7 +1800,7 @@ inline void LASreadItemCompressed_RGBNIR14_v3::read(U8* item, U32& context)
   }
 
   ////////////////////////////////////////
-  // decompress NIR layer 
+  // decompress NIR layer
   ////////////////////////////////////////
 
   if (changed_NIR)
@@ -1798,7 +1812,7 @@ inline void LASreadItemCompressed_RGBNIR14_v3::read(U8* item, U32& context)
       corr = dec_NIR->decodeSymbol(contexts[current_context].m_nir_diff_0);
       ((U16*)item)[3] = (U16)U8_FOLD(corr + (last_item[3]&255));
     }
-    else 
+    else
     {
       ((U16*)item)[3] = last_item[3]&0xFF;
     }
@@ -1979,7 +1993,7 @@ BOOL LASreadItemCompressed_WAVEPACKET14_v3::init(const U8* item, U32& context)
 
     dec_wavepacket = new ArithmeticDecoder();
   }
-  
+
   /* make sure the buffer is sufficiently large */
 
   if (num_bytes_wavepacket > num_bytes_allocated)

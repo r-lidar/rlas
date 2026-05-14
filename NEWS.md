@@ -1,3 +1,8 @@
+### rlas v1.9.1
+
+- Fix: USAN UBSAN errors
+
+
 ### rlas v1.9.0
 
 - New: support of remote file

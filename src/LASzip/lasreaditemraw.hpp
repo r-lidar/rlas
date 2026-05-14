@@ -2,9 +2,9 @@
 ===============================================================================
 
   FILE:  lasitemreadraw.hpp
-  
+
   CONTENTS:
-  
+
     Implementation of LASitemReadRaw for *all* items that compose a point.
 
   PROGRAMMERS:
@@ -21,13 +21,13 @@
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
+
   CHANGE HISTORY:
-  
-    28 August 2017 -- moving 'context' from global development hack to interface  
+
+    28 August 2017 -- moving 'context' from global development hack to interface
     10 January 2011 -- licensing change for LGPL release and liblas integration
     7 December 2010 -- refactored after getting invited to KAUST in Saudi Arabia
-  
+
 ===============================================================================
 */
 #ifndef LAS_READ_ITEM_RAW_HPP
@@ -254,7 +254,9 @@ public:
     ((LAStempReadPoint10*)item)->extended_return_number = ((LAStempReadPoint14*)buffer)->return_number;
     ((LAStempReadPoint10*)item)->extended_number_of_returns = ((LAStempReadPoint14*)buffer)->number_of_returns;
     ((LAStempReadPoint10*)item)->extended_scan_angle = ((LAStempReadPoint14*)buffer)->scan_angle;
-    ((LAStempReadPoint10*)item)->gps_time = *((F64*)&buffer[22]);
+    //((LAStempReadPoint10*)item)->gps_time = *((F64*)&buffer[22]);
+    // fix ASAN/UBSAN load of misaligned address for type 'F64', which requires 8 byte alignment
+    memcpy(&((LAStempReadPoint10*)item)->gps_time,  &buffer[22], sizeof(F64));
   }
 private:
   U8 buffer[30];
