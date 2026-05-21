@@ -125,7 +125,8 @@ read.lasheader = function(file)
   else
   {
     valid <- TRUE
-    supported <- tools::file_ext(file) %in% c("las", "laz", "LAS", "LAZ")
+    clean_path <- sub("\\?.*$", "", file)
+    supported <- tools::file_ext(clean_path) %in% c("las", "laz", "LAS", "LAZ")
     file  <- enc2native(file)
   }
 
