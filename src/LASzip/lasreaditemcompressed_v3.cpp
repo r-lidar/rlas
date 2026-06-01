@@ -1045,13 +1045,10 @@ void LASreadItemCompressed_POINT14_v3::read_gps_time()
       }
       else if (multi < LASZIP_GPSTIME_MULTI)
       {
-        // rlas fixes integer overflow in unit test only...
-        I64 pred = static_cast<I64>(multi) * static_cast<I64>(contexts[current_context].last_gpstime_diff[contexts[current_context].last]);
-
         if (multi < 10)
-          gpstime_diff = contexts[current_context].ic_gpstime->decompress(static_cast<I32>(pred), 2);
+          gpstime_diff = contexts[current_context].ic_gpstime->decompress(multi*contexts[current_context].last_gpstime_diff[contexts[current_context].last], 2);
         else
-          gpstime_diff = contexts[current_context].ic_gpstime->decompress(static_cast<I32>(pred), 3);
+          gpstime_diff = contexts[current_context].ic_gpstime->decompress(multi*contexts[current_context].last_gpstime_diff[contexts[current_context].last], 3);
       }
       else if (multi == LASZIP_GPSTIME_MULTI)
       {
