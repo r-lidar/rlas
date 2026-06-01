@@ -1,3 +1,5 @@
+### rlas v1.9.3
+
 ### rlas v1.9.2
 
 - Fix: LTO errors
@@ -5,7 +7,6 @@
 ### rlas v1.9.1
 
 - Fix: USAN UBSAN errors
-
 
 ### rlas v1.9.0
 
