@@ -1,3 +1,7 @@
+### rlas v1.9.5
+
+- reupload on CRAN
+
 ### rlas v1.9.4
 
 - reupload on CRAN

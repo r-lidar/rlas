@@ -486,8 +486,9 @@ void RLASstreamer::write_point()
     if (!is_##name##_populated && lasreader->point.lasname() != name[0])  \
     {                                                                     \
       is_##name##_populated = true;                                       \
+      auto fill_val = name[0];                                            \
       name.reserve(X.capacity());                                         \
-      name.insert(name.end(), X.size()-2, name[0]);                       \
+      name.insert(name.end(), X.size()-2, fill_val);                      \
     }                                                                     \
                                                                           \
     if (is_##name##_populated)                                            \
@@ -502,8 +503,9 @@ void RLASstreamer::write_point()
     if (!is_##name##_populated && lasreader->point.lasname() != name[0])  \
     {                                                                     \
       is_##name##_populated = true;                                       \
+      auto fill_val = name[0];                                            \
       name.reserve(X.capacity());                                         \
-      name.insert(name.end(), X.size()-2, (bool) name[0]);                \
+      name.insert(name.end(), X.size()-2, (bool) fill_val);               \
     }                                                                     \
                                                                           \
     if (is_##name##_populated)                                            \
