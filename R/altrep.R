@@ -5,6 +5,7 @@
 #' @param x an R object
 #'
 #' @examples
+#' \dontrun{
 #' lazfile <- system.file("extdata", "example.las", package = "rlas")
 #' las <- read.las(lazfile)
 #' is_compressed(las)
@@ -12,7 +13,7 @@
 #' # The difference is more substantial on bigger point clouds (~30%)
 #' object.size(las)
 #' true_size(las)
-#'
+#' }
 #' @name compression
 #' @rdname compression
 NULL

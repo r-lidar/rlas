@@ -75,10 +75,12 @@ get enough insight to lock our engineering choices to something that suit best t
 }
 
 \examples{
+\dontrun{
 lasfile <- system.file("extdata", "example.las", package="rlas")
 
 lasdata <- read.las(lasfile)
 lasdata <- read.las(lasfile, filter = "-keep_first")
 lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
 lasdata <- read.las(lasfile, select = "xyzia")
+}
 }

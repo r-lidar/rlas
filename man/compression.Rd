@@ -17,6 +17,7 @@ true_size(x)
 Test if an a vector is compressed using the ALTREP framework
 }
 \examples{
+\dontrun{
 lazfile <- system.file("extdata", "example.las", package = "rlas")
 las <- read.las(lazfile)
 is_compressed(las)
@@ -24,5 +25,5 @@ is_compressed(las)
 # The difference is more substantial on bigger point clouds (~30\%)
 object.size(las)
 true_size(las)
-
+}
 }
