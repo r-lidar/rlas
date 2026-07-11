@@ -14,6 +14,8 @@
 #' object.size(las)
 #' true_size(las)
 #' }
+#' @return `is_compressed` return a boolean. `true_size` return the real size of the object in bytes
+#' @md
 #' @name compression
 #' @rdname compression
 NULL

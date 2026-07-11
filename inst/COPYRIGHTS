@@ -1,0 +1,12 @@
+Files: src/LASlib/* src/LASzip/*
+(c) 2007-2014, Martin Isenburg
+(c) 2023-2016, rapidlasso GmbH - fast tools to catch reality
+Licence: LGPL
+
+File: src/LASzip/bytestreamin_gdal.hpp
+(c) 2026, Alexey Grigoryev
+Licence: LGPL
+
+All other files
+(c) 2014-2026, Jean-Romain Roussel
+Licence: GPL-3

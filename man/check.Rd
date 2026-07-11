@@ -14,6 +14,9 @@ check_las_compliance(header, data)
 
 \item{data}{a data.frame or a data.table containing a point cloud}
 }
+\value{
+NULL or throw an error if a test does not pass.
+}
 \description{
 las files are normalized files. These functions perform tests of compliance with LAS specification.
 \itemize{

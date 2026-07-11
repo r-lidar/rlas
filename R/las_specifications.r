@@ -13,6 +13,8 @@
 #' 'warning' throw a warning for each fails and return FALSE if any warning TRUE otherwise. 'vector' returns a
 #' character vector of each warning but does not thrown any warning.
 #'
+#' @return boolean or throw an error if a test does not pass depending on the argument `behavior`.
+#' @md
 #' @name las_specification_tools
 #' @rdname las_specification_tools
 NULL

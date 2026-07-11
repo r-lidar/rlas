@@ -179,6 +179,9 @@ character vector of each warning but does not thrown any warning.}
 
 \item{data}{a data.frame or a data.table containing a point cloud}
 }
+\value{
+boolean or throw an error if a test does not pass depending on the argument \code{behavior}.
+}
 \description{
 Tools reserved to developpers and not intended to be used by regular users. The functions return TRUE
 or FALSE by default without more information. If behavior is 'warning' functions throw a warning

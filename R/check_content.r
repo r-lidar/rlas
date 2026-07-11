@@ -17,7 +17,7 @@
 #'
 #' @param data a data.frame or a data.table containing a point cloud
 #' @param header a list containing the header of a las file
-#'
+#' @return NULL or throw an error if a test does not pass.
 #' @export
 #' @rdname check
 check_las_validity = function(header, data)

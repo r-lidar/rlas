@@ -13,6 +13,9 @@ true_size(x)
 \arguments{
 \item{x}{an R object}
 }
+\value{
+\code{is_compressed} return a boolean. \code{true_size} return the real size of the object in bytes
+}
 \description{
 Test if an a vector is compressed using the ALTREP framework
 }

@@ -41,7 +41,7 @@
 #' https://github.com/LAStools/LAStools
 #' @param file character. filename of .las or .laz file
 #' @param verbose boolean. Verbose switch.
-#' @return NULL
+#' @return NULL, called for its side effect of creating lax files.
 #' @export
 writelax = function(file, verbose = FALSE)
 {

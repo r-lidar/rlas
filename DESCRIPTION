@@ -4,8 +4,10 @@ Title: Read and Write 'las' and 'laz' Binary File Formats Used for Remote Sensin
 Version: 1.9.5
 Authors@R: c(
     person("Jean-Romain", "Roussel", email = "info@r-lidar.com", role = c("aut", "cre", "cph")),
-    person("Florian", "De Boissieu", email = "", role = c("aut", "ctb"), comment = "Enable the support of .lax file and extra byte attributes"),
+    person("Florian", "De Boissieu", email = "", role = "ctb", comment = "Enable the support of .lax file and extra byte attributes"),
     person("Martin", "Isenburg", email = "", role = "cph", comment = "Is the author of the LASlib and LASzip libraries"),
+    person("rapidlasso GmbH", "", email = "", role = "cph", comment = "For COPC code written after Martin Isenburg passed away."),
+    person("Alexey", "Grigoryev", email = "", role = c("ctb", "cph"), comment = "Implemented remote access to file through gdal virtual file system in LASlib"),
     person("David", "Auty", email = "", role = c("ctb"), comment = "Reviewed the documentation"),
     person("Pierrick", "Marie", email = "", role = ("ctb"), comment = "Helped to compile LASlib code in R"),
     person("Tiago", "de Conto", email = "", role = ("ctb"), comment = "Implemented the -thin_with_voxel filter method"))

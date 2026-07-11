@@ -1,1 +1,12 @@
-This release tries to fix g++-12 issues. I was not able to reproduce because gcc-12 is not widely available yet. I tried to compile it myself, it took me half a day and was not working. I tested on the on rhub platform that uses gcc-12 but was not able to reproduce either. I fixed it the same way I fixed similar warnings in the past so it should do the job.
+Added value tag as requested in:
+
+check.Rd:
+compression.Rd:
+crs_tools.Rd:
+extra_bytes_attribute_tools.Rd:
+las_specification_tools.Rd:
+LASlibdoc.Rd: 
+writelax.Rd:
+
+Updated DESCRIPTION with updated list of contributors
+Added inst/COPYRIGHTS

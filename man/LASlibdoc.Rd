@@ -9,6 +9,9 @@ help_filter()
 
 help_transform()
 }
+\value{
+NULL. The function is used for its side effect of printing.
+}
 \description{
 Print the existing LASlib filter and transform commands
 }

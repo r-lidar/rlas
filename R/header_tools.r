@@ -205,6 +205,7 @@ header_update = function(header, data)
 #' lasheader = header_add_extrabytes(lasheader, data$treeID, "treeID", "An id for each tree")
 #' lasheader[["Variable Length Records"]]
 #' @export
+#' @return A list containing the metadata required to write a las file.
 #' @name extra_bytes_attribute_tools
 #' @rdname extra_bytes_attribute_tools
 header_add_extrabytes = function(header, data, name, desc)
@@ -330,6 +331,10 @@ header_add_extrabytes_manual = function(header, name, desc, type, offset = NULL,
 #' @param WKT string. A string of an WKT OGC CS
 #' @family header_tools
 #' @export
+#' @return `header_get_epsg()` returns an integer with the EPSG code. 0 if not registered.
+#' `header_get_wktcs()` returns a string with the WKT CRS. Empty if not registered. \code{header_set_*}
+#' functions return an updated list containing the metadata required to write a las file.
+#' @md
 #' @name crs_tools
 #' @rdname crs_tools
 header_get_epsg = function(header)

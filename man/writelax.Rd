@@ -11,6 +11,9 @@ writelax(file, verbose = FALSE)
 
 \item{verbose}{boolean. Verbose switch.}
 }
+\value{
+NULL, called for its side effect of creating lax files.
+}
 \description{
 Write a lax file from a las or laz file. A lax file is a tiny file which can come with a
 las or laz and which spatially index the data to make faster spatial queries. It has
