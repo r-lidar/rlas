@@ -68,9 +68,9 @@ lasheader = header_add_extrabytes(lasheader, data$treeID, "treeID", "An id for e
 lasheader[["Variable Length Records"]]
 }
 \seealso{
-Other header_tools: 
+Other header_tools:
 \code{\link{crs_tools}},
-\code{\link{fwf_interpreter}()},
+\code{\link[=fwf_interpreter]{fwf_interpreter()}},
 \code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

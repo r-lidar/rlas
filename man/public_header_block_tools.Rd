@@ -47,9 +47,9 @@ lasdata = data.frame(X = c(339002.889, 339002.983, 339002.918),
 lasheader = header_create(lasdata)
 }
 \seealso{
-Other header_tools: 
+Other header_tools:
 \code{\link{crs_tools}},
 \code{\link{extra_bytes_attribute_tools}},
-\code{\link{fwf_interpreter}()}
+\code{\link[=fwf_interpreter]{fwf_interpreter()}}
 }
 \concept{header_tools}

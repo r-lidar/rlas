@@ -30,7 +30,7 @@ fwf <- fwf_interpreter(head, data)
 }
 }
 \seealso{
-Other header_tools: 
+Other header_tools:
 \code{\link{crs_tools}},
 \code{\link{extra_bytes_attribute_tools}},
 \code{\link{public_header_block_tools}}

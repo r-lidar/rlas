@@ -36,9 +36,9 @@ Functions that update a header to describe coordinates reference system accordin
 \href{https://community.asprs.org/leadership-restricted/leadership-content/public-documents/standards}{LAS specifications}
 }
 \seealso{
-Other header_tools: 
+Other header_tools:
 \code{\link{extra_bytes_attribute_tools}},
-\code{\link{fwf_interpreter}()},
+\code{\link[=fwf_interpreter]{fwf_interpreter()}},
 \code{\link{public_header_block_tools}}
 }
 \concept{header_tools}

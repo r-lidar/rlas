@@ -22,7 +22,7 @@ lazfile   <- system.file("extdata", "example.las", package="rlas")
 lasheader <- read.lasheader(lazfile)
 }
 \seealso{
-Other rlas: 
-\code{\link{write.las}()}
+Other rlas:
+\code{\link[=write.las]{write.las()}}
 }
 \concept{rlas}
