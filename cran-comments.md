@@ -1,12 +1,5 @@
-Added value tag as requested in:
-
-check.Rd:
-compression.Rd:
-crs_tools.Rd:
-extra_bytes_attribute_tools.Rd:
-las_specification_tools.Rd:
-LASlibdoc.Rd: 
-writelax.Rd:
-
-Updated DESCRIPTION with updated list of contributors
-Added inst/COPYRIGHTS
+The MacOS M1-MAC false positive ASAN issue is supposed to be fixed. 
+Reproduced by somebody from the community of users.
+See 
+- https://github.com/r-lidar/rlas/issues/79
+- https://github.com/r-lidar/rlas/pull/80
