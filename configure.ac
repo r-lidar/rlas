@@ -29,6 +29,10 @@ RVER_PATCH=`echo ${RVER} | cut  -f3 -d"."`
 #    fi
 #fi
 
+case "${CXX}" in
+  em++*) CXXFLAGS="${CXXFLAGS} -fwasm-exceptions" ;;
+esac
+
 # pick all flags for testing from R
 : ${CC=`"${RBIN}" CMD config CC`}
 : ${CFLAGS=`"${RBIN}" CMD config CFLAGS`}
@@ -150,7 +154,7 @@ GDALAllRegister();
 _EOCONF]
 
 AC_MSG_CHECKING(GDAL: linking with --libs only)
-${CXX} ${CPPFLAGS} -o gdal_test gdal_test.cpp ${LIBS} 2> errors.txt
+${CXX} ${CPPFLAGS}  ${CXXFLAGS} -o gdal_test gdal_test.cpp ${LIBS} 2> errors.txt
 if test `echo $?` -ne 0 ; then
 gdalok=no
 AC_MSG_RESULT(no)
@@ -162,7 +166,7 @@ if test "${gdalok}" = no; then
 AC_MSG_CHECKING(GDAL: linking with --libs and --dep-libs)
 LIBS="${LIBS} ${GDAL_DEP_LIBS}"
 gdalok=yes
-${CXX} ${CPPFLAGS} -o gdal_test gdal_test.cpp ${LIBS} 2>> errors.txt
+${CXX} ${CPPFLAGS}  ${CXXFLAGS} -o gdal_test gdal_test.cpp ${LIBS} 2>> errors.txt
 if test `echo $?` -ne 0 ; then
 gdalok=no
 fi
@@ -267,7 +271,7 @@ int main(int argc, char *argv[]) {
 _EOCONF]
 
 AC_MSG_CHECKING(GDAL: checking whether PROJ is available for linking:)
-${CXX} ${CPPFLAGS} -o gdal_proj gdal_proj.cpp ${LIBS} 2> errors.txt
+${CXX} ${CPPFLAGS} ${CXXFLAGS} -o gdal_proj gdal_proj.cpp ${LIBS} 2> errors.txt
 if test `echo $?` -ne 0 ; then
 gdal_has_proj=no
 AC_MSG_RESULT(no)
@@ -433,7 +437,7 @@ int main(void) {
 _EOCONF]
   #AC_CHECK_LIB(proj,proj_context_create,,proj6ok=no)
   AC_MSG_CHECKING(PROJ: checking whether PROJ and sqlite3 are available for linking:)
-  ${CXX} ${CPPFLAGS} -o proj_conf_test proj_conf_test.cpp ${LIBS} $SQLITE3_LIBS -lsqlite3 2> errors.txt
+  ${CXX} ${CPPFLAGS} ${CXXFLAGS} -o proj_conf_test proj_conf_test.cpp ${LIBS} $SQLITE3_LIBS -lsqlite3 2> errors.txt
   if test `echo $?` -ne 0 ; then
     proj6ok=no
     AC_MSG_RESULT(no)
@@ -734,9 +738,9 @@ int main(void) {
 #endif
 _EOCONF]
 
-#echo "${CXX} ${CPPFLAGS} -o geos_test geos_test.cpp ${LIBS}"
+#echo "${CXX} ${CPPFLAGS}  ${CXXFLAGS} -o geos_test geos_test.cpp ${LIBS}"
 AC_MSG_CHECKING(geos: linking with ${GEOS_CLIBS})
-${CXX} ${CPPFLAGS} -o geos_test geos_test.cpp ${GEOS_CLIBS} 2> errors.txt
+${CXX} ${CPPFLAGS} ${CXXFLAGS} -o geos_test geos_test.cpp ${GEOS_CLIBS} 2> errors.txt
 if test `echo $?` -ne 0 ; then
  geosok=no
  AC_MSG_RESULT(no)
@@ -747,7 +751,7 @@ fi
 
 if test "${geosok}" = no; then
   AC_MSG_CHECKING(geos: linking with ${GEOS_DEP_CLIBS})
-  ${CXX} ${CPPFLAGS} -o geos_test geos_test.cpp ${GEOS_DEP_CLIBS} 2> errors.txt
+  ${CXX} ${CPPFLAGS}  ${CXXFLAGS} -o geos_test geos_test.cpp ${GEOS_DEP_CLIBS} 2> errors.txt
   if test `echo $?` -ne 0 ; then
     geosok=no
     AC_MSG_RESULT(no)
