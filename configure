@@ -2260,15 +2260,15 @@ RVER_MAJOR=`echo ${RVER} | cut  -f1 -d"."`
 RVER_MINOR=`echo ${RVER} | cut  -f2 -d"."`
 RVER_PATCH=`echo ${RVER} | cut  -f3 -d"."`
 
-if test $RVER_MAJOR = "development"; then
+#if test [$RVER_MAJOR = "development"]; then
     CXX=`"${RBIN}" CMD config CXX`
-else
-    if test $RVER_MAJOR -lt 3 -o $RVER_MAJOR -eq 3 -a $RVER_MINOR -lt 3; then
-        as_fn_error $? "rlas is not compatible with R versions before 3.3.0" "$LINENO" 5
-    else
-        CXX=`"${RBIN}" CMD config CXX`
-    fi
-fi
+#else
+#    if test [$RVER_MAJOR -lt 3] -o [$RVER_MAJOR -eq 3 -a $RVER_MINOR -lt 3]; then
+#        AC_MSG_ERROR([sf is not compatible with R versions before 3.3.0])
+#    else
+#        CXX=`"${RBIN}" CMD config CXX`
+#    fi
+#fi
 
 # pick all flags for testing from R
 : ${CC=`"${RBIN}" CMD config CC`}
@@ -2284,6 +2284,11 @@ printf "%s\n" "$as_me: CC: ${CC}" >&6;}
 printf "%s\n" "$as_me: CXX: ${CXX}" >&6;}
 
 # AC_MSG_NOTICE([${PACKAGE_NAME}: ${PACKAGE_VERSION}])
+
+GENERIC_INSTALL_MESSAGE="
+*** Installing this package from source requires the prior
+*** installation of external software, see for details
+*** https://r-spatial.github.io/sf/#installing"
 
 #GDAL
 GDAL_CONFIG="gdal-config"
@@ -2355,7 +2360,7 @@ fi
   if test "$GDAL_CONFIG" = "no" ; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "gdal-config not found or not executable." "$LINENO" 5
+    as_fn_error $? "gdal-config not found or not executable. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking gdal-config exists" >&5
@@ -2366,7 +2371,7 @@ printf "%s\n" "yes" >&6; }
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "gdal-config not found - configure argument error." "$LINENO" 5
+    as_fn_error $? "gdal-config not found - configure argument error. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking gdal-config executable" >&5
 printf %s "checking gdal-config executable... " >&6; }
@@ -2376,7 +2381,7 @@ printf "%s\n" "yes" >&6; }
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "gdal-config not executable." "$LINENO" 5
+    as_fn_error $? "gdal-config not executable. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 fi
 
@@ -2392,20 +2397,7 @@ then
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 else
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-	echo "Error: gdal-config not found"
-	echo "The gdal-config script distributed with GDAL could not be found."
-	echo "If you have not installed the GDAL libraries, you can"
-	echo "download the source from  http://www.gdal.org/"
-	echo "If you have installed the GDAL libraries, then make sure that"
-	echo "gdal-config is in your path. Try typing gdal-config at a"
-	echo "shell prompt and see if it runs. If not, use:"
-	echo " --configure-args='--with-gdal-config=/usr/local/bin/gdal-config'"
-	echo "with appropriate values for your installation."
-	echo ""
-
-	exit 1
+	as_fn_error $? "gdal-config not found. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: GDAL: ${GDAL_VERSION}" >&5
@@ -2419,13 +2411,14 @@ GDAL_PATCH_VER=`echo $GDAL_VERSION | cut -d "." -f3`
 if test ${GDAL_MAJ_VER} -lt 2 ; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-  as_fn_error $? "rlas is not compatible with GDAL versions below 2.0.1" "$LINENO" 5
+  as_fn_error $? "sf is not compatible with GDAL versions below 2.0.1" "$LINENO" 5
 else
    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 fi
 
-if test ${GDAL_MAJ_VER} -eq 3 -a ${GDAL_MIN_VER} -eq 6 -a ${GDAL_PATCH_VER} -eq 0 ; then
+#if test [${GDAL_MAJ_VER} -eq 3] -a [${GDAL_MIN_VER} -eq 6] -a [${GDAL_PATCH_VER} -eq 0] ; then
+if test "${GDAL_VERSION}" = "3.6.0" ; then
   as_fn_error $? "GDAL version 3.6.0 has been withdrawn, please update GDAL" "$LINENO" 5
 fi
 
@@ -3483,7 +3476,7 @@ fi
 
 done
 if test "${gdalok}" = no; then
-   as_fn_error $? "gdal.h not found in given locations." "$LINENO" 5
+   as_fn_error $? "gdal.h not found in given locations. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
 fi
 
 NEED_DEPS=no
@@ -3536,7 +3529,7 @@ if test "${gdalok}" = no; then
    cat errors.txt
    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Install failure: compilation and/or linkage problems." >&5
 printf "%s\n" "$as_me: Install failure: compilation and/or linkage problems." >&6;}
-   as_fn_error $? "GDALAllRegister not found in libgdal." "$LINENO" 5
+   as_fn_error $? "GDALAllRegister not found in libgdal. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
 fi
 
 rm -f gdal_test errors.txt gdal_test.cpp
@@ -3882,7 +3875,7 @@ else $as_nop
 fi
 
   if test "${proj4ok}" = no; then
-     as_fn_error $? "libproj not found in standard or given locations." "$LINENO" 5
+     as_fn_error $? "libproj not found in standard or given locations. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 cat > proj_conf_test.c <<_EOCONF
 #include <stdio.h>
@@ -3919,7 +3912,7 @@ printf "%s\n" "no" >&6; }
 printf "%s\n" "yes" >&6; }
   fi
   if test "${proj6ok}" = no; then
-     as_fn_error $? "libproj or sqlite3 not found in standard or given locations." "$LINENO" 5
+     as_fn_error $? "libproj or sqlite3 not found in standard or given locations. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 
 cat > proj_conf_test.c <<_EOCONF
@@ -3936,7 +3929,7 @@ fi
 
 #AC_MSG_NOTICE([PKG_LIBS: ${PKG_LIBS}])
 
-${CC} ${CFLAGS} ${CPPFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
+${CC} ${CFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
 
 proj_version=`./proj_conf_test`
 
@@ -3980,7 +3973,7 @@ int main(void) {
 }
 _EOCONF
 
-${CC} ${CFLAGS} ${CPPFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
+${CC} ${CFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
 if test  -n "$proj_share_path"  ; then
   PROJ_LIB="${proj_share_path}" ./proj_conf_test
   proj_share=`echo $?`
@@ -4031,7 +4024,7 @@ int main(void) {
 }
 _EOCONF
 
-${CC} ${CFLAGS} ${CPPFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
+${CC} ${CFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
 if test  -n "$proj_share_path"  ; then
   PROJ_LIB="${proj_share_path}" ./proj_conf_test
   proj_share=`echo $?`
@@ -4087,7 +4080,7 @@ int main(void) {
 }
 _EOCONF
 
-${CC} ${CFLAGS} ${CPPFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
+${CC} ${CFLAGS} -o proj_conf_test proj_conf_test.c ${PROJ_LIBS}
 if test  -n "$proj_share_path"  ; then
   PROJ_LIB="${proj_share_path}" ./proj_conf_test
   proj_share=`echo $?`
@@ -4195,7 +4188,7 @@ fi
   if test "$GEOS_CONFIG" = "no" ; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "geos-config not found or not executable." "$LINENO" 5
+    as_fn_error $? "geos-config not found or not executable. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking geos-config exists" >&5
@@ -4206,7 +4199,7 @@ printf "%s\n" "yes" >&6; }
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "geos-config not found - configure argument error." "$LINENO" 5
+    as_fn_error $? "geos-config not found - configure argument error. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking geos-config executable" >&5
 printf %s "checking geos-config executable... " >&6; }
@@ -4216,7 +4209,7 @@ printf "%s\n" "yes" >&6; }
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    as_fn_error $? "geos-config not executable." "$LINENO" 5
+    as_fn_error $? "geos-config not executable. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   fi
 fi
 
@@ -4281,7 +4274,7 @@ fi
 
 done
 if test "${geosok}" = no; then
-   as_fn_error $? "geos_c.h not found in given locations." "$LINENO" 5
+   as_fn_error $? "geos_c.h not found in given locations. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
 fi
 
 cat > geos_test.cpp <<_EOCONF
@@ -4330,7 +4323,7 @@ printf "%s\n" "no" >&6; }
     cat errors.txt
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Install failure: compilation and/or linkage problems." >&5
 printf "%s\n" "$as_me: Install failure: compilation and/or linkage problems." >&6;}
-    as_fn_error $? "initGEOS_r not found in libgeos_c." "$LINENO" 5
+    as_fn_error $? "initGEOS_r not found in libgeos_c. ${GENERIC_INSTALL_MESSAGE}" "$LINENO" 5
   else
     PKG_LIBS="${PKG_LIBS} ${GEOS_DEP_CLIBS}"
 
@@ -4345,6 +4338,7 @@ rm -f geos_test errors.txt geos_test.cpp
 # add PROJ_LIBS
 #
 PKG_LIBS="${PROJ_LIBS} ${PKG_LIBS}"
+
 
 #
 # concluding substitution
@@ -5505,4 +5499,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
