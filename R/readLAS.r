@@ -73,6 +73,8 @@
 #' @param select character. select only columns of interest to save memory (see details)
 #' @param filter character. streaming filters - filter data while reading the file (see details)
 #' @param transform character. streaming transformation - transform data while reading the file (see details)
+#' @param parallel logical. Decode the points with several threads. \code{FALSE} by default to be
+#' backward compatible with lidR
 #' @return A \code{data.table}
 #' @export
 #' @examples
@@ -83,7 +85,7 @@
 #' lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
 #' lasdata <- read.las(lasfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
-read.las = function(files, select = "*", filter = "", transform = "")
+read.las = function(files, select = "*", filter = "", transform = "", parallel = FALSE)
 {
     if (filter == "-h" | filter == "-help")
       lasfilterusage()
@@ -95,7 +97,7 @@ read.las = function(files, select = "*", filter = "", transform = "")
       return(invisible())
 
   filter = paste(filter, transform)
-  stream.las(files, select = select, filter = filter)
+  stream.las(files, select = select, filter = filter, parallel = parallel)
 }
 
 #' Read header from a .las or .laz file
@@ -143,8 +145,11 @@ read.lasheader = function(file)
 #' @param ifiles,ofile characters. Streaming operations.
 #' @param polygons list. Internal use only.
 #' @export
-read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list())
+read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list(), parallel = FALSE)
 {
+  if (!is.logical(parallel) || length(parallel) != 1L || is.na(parallel))
+    stop("'parallel' must be TRUE or FALSE", call. = FALSE)
+
   stream <- ofile != ""
 
   is_remote <- grepl("^https?://|^/vsi(curl|s3|gs|az|adls|oss|swift)/", ifiles)
@@ -164,7 +169,7 @@ read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", pol
   check_filter(filter)
 
   # C_reader handles the URL now that R isn't mangling it
-  raw_list <- C_reader(ifiles, ofile, select, filter, polygons)
+  raw_list <- C_reader(ifiles, ofile, select, filter, polygons, parallel)
 
   data <- raw_list[1:3]
   data.table::setDT(data)

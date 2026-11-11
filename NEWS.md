@@ -1,9 +1,11 @@
 ### rlas v1.9.6 (in development)
 
-- Update: LASlib and LASzip updated to LAStools v2.0.5-67-g4298a9c (LAS_TOOLS_VERSION 261023, LASzip 3.5.1). `laslib2R.sh` and
-  `laslib2R.patch` now rebuild the bundled copy from a LAStools checkout.
+- Update: LASlib and LASzip updated to LAStools v2.0.5-67-g4298a9c (LAS_TOOLS_VERSION 261023, LASzip 3.5.1).
 - Change: errors raised by LASlib now stop with LASlib's own message instead of "LASlib internal error. See message above."
 - Change: written files have the reserved field of their VLR headers set to 0 instead of 0xAABB, as the LAS specification requires.
+- New: `read.las()` and `read_and_write.las()` gain an argument `parallel = FALSE`. With `parallel = TRUE` the points of local LAS,
+  LAZ and COPC files are decompressed by several threads.
+- Fix: progress bar and memory pre-allocation of LAS 1.4 files whose legacy number of points is 0.
 
 ### rlas v1.9.5
 

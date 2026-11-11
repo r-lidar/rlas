@@ -103,8 +103,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP polygonsSEXP) {
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons, bool parallel);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP polygonsSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -113,7 +113,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type polygons(polygonsSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, polygons));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, polygons, parallel));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -179,7 +180,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rlas_fast_countbelow", (DL_FUNC) &_rlas_fast_countbelow, 2},
     {"_rlas_fast_countover", (DL_FUNC) &_rlas_fast_countover, 2},
     {"_rlas_fast_decimal_count", (DL_FUNC) &_rlas_fast_decimal_count, 1},
-    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 5},
+    {"_rlas_C_reader", (DL_FUNC) &_rlas_C_reader, 6},
     {"_rlas_lasheaderreader", (DL_FUNC) &_rlas_lasheaderreader, 1},
     {"_rlas_lasfilterusage", (DL_FUNC) &_rlas_lasfilterusage, 0},
     {"_rlas_lastransformusage", (DL_FUNC) &_rlas_lastransformusage, 0},

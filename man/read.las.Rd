@@ -5,14 +5,15 @@
 \alias{read_and_write.las}
 \title{Read data from a .las or .laz file}
 \usage{
-read.las(files, select = "*", filter = "", transform = "")
+read.las(files, select = "*", filter = "", transform = "", parallel = FALSE)
 
 read_and_write.las(
   ifiles,
   ofile = "",
   select = "*",
   filter = "",
-  polygons = list()
+  polygons = list(),
+  parallel = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ read_and_write.las(
 \item{filter}{character. streaming filters - filter data while reading the file (see details)}
 
 \item{transform}{character. streaming transformation - transform data while reading the file (see details)}
+
+\item{parallel}{logical. Decode the points with several threads. \code{FALSE} by default to be
+backward compatible with lidR}
 
 \item{ifiles, ofile}{characters. Streaming operations.}
 

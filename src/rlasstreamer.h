@@ -3,6 +3,7 @@
 
 #include <Rcpp.h>
 
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "laswaveform13reader.hpp"
 #include "rlas_laslib.h"
 #include "rlasextrabytesattributes.h"
+#include "rlaslazblocks.h"
 
 // A column of point attributes that is very often constant (e.g. ScanDirectionFlag,
 // UserData, PointSourceID). It stores a single value until a point with a different
@@ -85,6 +87,7 @@ public:
 
   void select(Rcpp::CharacterVector select);
   void allocation();
+  void parallel(bool requested);
   bool read_point();
   void write_point();
   const LASpoint& point() const { return lasreader->point; }
@@ -99,6 +102,8 @@ private:
   void open();
   void init_lazy_columns(const LASpoint& point);
   void read_waveform();
+  bool read_point_parallel();
+  std::string parallel_impossible() const;
   Rcpp::List build_R_list();
 
 private:
@@ -111,6 +116,12 @@ private:
   rlas::LASwaveform13readerPtr laswaveform13reader;
   rlas::LASwriterPtr laswriter;
   LASheader* header = nullptr;
+
+  // Parallel decoding (read.las(parallel = TRUE)). Declared after the reader: the workers are
+  // stopped before the reader is destroyed.
+  std::unique_ptr<rlas::LazBlocks> blocks;
+  std::vector<std::string> input_files;
+  std::string filter_string;
 
   bool in_R       = true;  // false when the points are written into a file
   bool use_filter = false;

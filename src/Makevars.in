@@ -54,6 +54,7 @@ SOURCES = LASlib/fopen_compressed.cpp \
 					LASzip/mydefs.cpp \
 					./altrep_compact_replication.cpp \
 					./rlasstreamer.cpp \
+					./rlaslazblocks.cpp \
 					./rlasextrabytesattributes.cpp \
 					./readLAS.cpp \
 					./readheader.cpp \
