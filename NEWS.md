@@ -1,3 +1,10 @@
+### rlas v1.9.6 (in development)
+
+- Update: LASlib and LASzip updated to LAStools v2.0.5-67-g4298a9c (LAS_TOOLS_VERSION 261023, LASzip 3.5.1). `laslib2R.sh` and
+  `laslib2R.patch` now rebuild the bundled copy from a LAStools checkout.
+- Change: errors raised by LASlib now stop with LASlib's own message instead of "LASlib internal error. See message above."
+- Change: written files have the reserved field of their VLR headers set to 0 instead of 0xAABB, as the LAS specification requires.
+
 ### rlas v1.9.5
 
 - reupload on CRAN

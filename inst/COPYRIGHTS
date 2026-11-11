@@ -1,11 +1,20 @@
-Files: src/LASlib/* src/LASzip/*
-(c) 2007-2014, Martin Isenburg
-(c) 2023-2016, rapidlasso GmbH - fast tools to catch reality
-Licence: LGPL
+Files: src/LASlib/*
+(c) 2005-2021, Martin Isenburg
+(c) 2021-2026, rapidlasso GmbH - fast tools to catch reality
+Licence: LGPL-2.1 (src/LASlib/lasformula_api_stub.cpp: Apache-2.0)
+
+Files: src/LASzip/*
+(c) 2007-2021, Martin Isenburg
+(c) 2021-2026, rapidlasso GmbH - fast tools to catch reality
+Licence: Apache-2.0
+The arithmetic coder (src/LASzip/arithmetic*) is adapted from Amir Said's FastAC code.
 
 File: src/LASzip/bytestreamin_gdal.hpp
 (c) 2026, Alexey Grigoryev
 Licence: LGPL
+
+The bundled LASlib and LASzip come from LAStools (https://github.com/LAStools/LAStools)
+and are modified to comply with R's policies (see laslib2R.sh and laslib2R.patch).
 
 All other files
 (c) 2014-2026, Jean-Romain Roussel

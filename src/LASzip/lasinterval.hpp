@@ -10,15 +10,15 @@
 
   PROGRAMMERS:
 
-    martin.isenburg@rapidlasso.com  -  http://rapidlasso.com
+    info@rapidlasso.de  -  https://rapidlasso.de
 
   COPYRIGHT:
 
-    (c) 2007-2015, martin isenburg, rapidlasso - fast tools to catch reality
+    (c) 2007-2022, rapidlasso GmbH - fast tools to catch reality
 
     This is free software; you can redistribute and/or modify it under the
-    terms of the GNU Lesser General Licence as published by the Free Software
-    Foundation. See the LICENSE.txt file for more information.
+    terms of the Apache Public License 2.0 published by the Apache Software
+    Foundation. See the COPYING file for more information.
 
     This software is distributed WITHOUT ANY WARRANTY and without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -38,36 +38,36 @@
 class ByteStreamIn;
 class ByteStreamOut;
 
-class LASintervalCell
+class LASLIB_DLL LASintervalCell
 {
 public:
-  U32 start;
-  U32 end;
+  U64 start;
+  U64 end;
   LASintervalCell* next;
   LASintervalCell();
-  LASintervalCell(const U32 p_index);
+  LASintervalCell(const U64 p_index);
   LASintervalCell(const LASintervalCell* cell);
 };
 
-class LASintervalStartCell : public LASintervalCell
+class LASLIB_DLL LASintervalStartCell : public LASintervalCell
 {
 public:
-  U32 full;
-  U32 total;
+  U64 full;
+  U64 total;
   LASintervalCell* last;
   LASintervalStartCell();
-  LASintervalStartCell(const U32 p_index);
-  BOOL add(const U32 p_index, const U32 threshold=1000);
+  LASintervalStartCell(const U64 p_index);
+  BOOL add(const U64 p_index, const U32 threshold=1000);
 };
 
-class LASinterval
+class LASLIB_DLL LASinterval
 {
 public:
   LASinterval(const U32 threshold=1000);
   ~LASinterval();
 
   // add points and create cells with intervals
-  BOOL add(const U32 p_index, const I32 c_index);
+  BOOL add(const U64 p_index, const I32 c_index);
 
   // get total number of cells
   U32 get_number_cells() const;
@@ -75,11 +75,16 @@ public:
   // get total number of intervals
   U32 get_number_intervals() const;
 
+  U32 get_version() const { return version; }
+
   // merge cells (and their intervals) into one cell
   BOOL merge_cells(const U32 num_indices, const I32* indices, const I32 new_index);
 
   // merge adjacent intervals with small gaps in cells to reduce total interval number to maximum
-  void merge_intervals(U32 maximum, const BOOL verbose=TRUE);
+  void merge_intervals(U32 maximum);
+
+  //is cell start or end 64bits? 
+  BOOL requires_64bit_intervals() const;
 
   // read from file or write to file
   BOOL read(ByteStreamIn* stream);
@@ -103,17 +108,19 @@ public:
   BOOL has_intervals();
 
   I32 index;
-  U32 start;
-  U32 end;
-  U32 full;
-  U32 total;
+  U64 start;
+  U64 end;
+  U64 full;
+  U64 total;
 
 private:
   void* cells;
   void* cells_to_merge;
   U32 threshold;
   U32 number_intervals;
+  U32 version;
   I32 last_index;
+  BOOL last_index_valid;
   LASintervalStartCell* last_cell;
   LASintervalCell* current_cell;
   LASintervalStartCell* merged_cells;

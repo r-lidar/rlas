@@ -12,54 +12,57 @@ else
   PKG_LIBS = $(shell pkg-config --libs gdal geos proj)
 endif
 
-SOURCES = LASlib/lasreader_txt.cpp \
-					LASlib/fopen_compressed.cpp \
-					LASlib/laswriter_las.cpp \
-					LASlib/lasreaderbuffered.cpp \
-					LASlib/lasreadermerged.cpp \
-					LASlib/laswriter_wrl.cpp \
-					LASlib/lasreader_shp.cpp \
-					LASlib/lasreader_asc.cpp \
-					LASlib/lasreaderstored.cpp \
-					LASlib/lasreaderpipeon.cpp \
-					LASlib/lasreader_bil.cpp \
-					LASlib/lastransform.cpp \
-					LASlib/laswaveform13writer.cpp \
-					LASlib/laswaveform13reader.cpp \
-					LASlib/laswritercompatible.cpp \
-					LASlib/lasutility.cpp \
-					LASlib/lasreader_dtm.cpp \
+SOURCES = LASlib/fopen_compressed.cpp \
+					LASlib/lascopc.cpp \
 					LASlib/lasfilter.cpp \
+					LASlib/lasformula_api_stub.cpp \
 					LASlib/lasignore.cpp \
 					LASlib/laskdtree.cpp \
-					LASlib/laswriter_qfit.cpp \
-					LASlib/lasreader_qfit.cpp \
-					LASlib/laswriter.cpp  \
-					LASlib/lasreader.cpp \
-					LASlib/lasreader_las.cpp \
-					LASlib/lasreader_ply.cpp \
+					LASlib/lasreader_asc.cpp \
+					LASlib/lasreader_bil.cpp \
 					LASlib/lasreader_bin.cpp \
+					LASlib/lasreaderbuffered.cpp \
+					LASlib/lasreader.cpp \
+					LASlib/lasreader_dtm.cpp \
+					LASlib/lasreader_las.cpp \
+					LASlib/lasreadermerged.cpp \
+					LASlib/lasreaderpipeon.cpp \
+					LASlib/lasreader_ply.cpp \
+					LASlib/lasreader_qfit.cpp \
+					LASlib/lasreader_shp.cpp \
+					LASlib/lasreaderstored.cpp \
+					LASlib/lasreader_txt.cpp \
+					LASlib/lastransform.cpp \
+					LASlib/lasutility.cpp \
+					LASlib/laswaveform13reader.cpp \
+					LASlib/laswaveform13writer.cpp \
 					LASlib/laswriter_bin.cpp \
+					LASlib/laswritercompatible.cpp \
+					LASlib/laswriter.cpp \
+					LASlib/laswriter_las.cpp \
+					LASlib/laswriter_qfit.cpp \
 					LASlib/laswriter_txt.cpp \
-					LASzip/laszip.cpp \
-					LASzip/lasindex.cpp \
+					LASlib/laswriter_wrl.cpp \
+					LASzip/arithmeticdecoder.cpp \
+					LASzip/arithmeticencoder.cpp \
 					LASzip/arithmeticmodel.cpp \
-					LASzip/laswriteitemcompressed_v1.cpp \
-					LASzip/laswriteitemcompressed_v2.cpp \
-					LASzip/laswriteitemcompressed_v3.cpp \
-					LASzip/laswriteitemcompressed_v4.cpp \
+					LASzip/integercompressor.cpp \
+					LASzip/lasindex.cpp \
+					LASzip/lasinterval.cpp \
+					LASzip/lasmessage.cpp \
+					LASzip/lasquadtree.cpp \
 					LASzip/lasreaditemcompressed_v1.cpp \
 					LASzip/lasreaditemcompressed_v2.cpp \
 					LASzip/lasreaditemcompressed_v3.cpp \
 					LASzip/lasreaditemcompressed_v4.cpp \
-					LASzip/arithmeticdecoder.cpp \
-					LASzip/arithmeticencoder.cpp \
-					LASzip/lasquadtree.cpp \
-					LASzip/laswritepoint.cpp \
 					LASzip/lasreadpoint.cpp \
-					LASzip/integercompressor.cpp \
-					LASzip/lasinterval.cpp \
-					LASzip/lascopc.cpp \
+					LASzip/laswriteitemcompressed_v1.cpp \
+					LASzip/laswriteitemcompressed_v2.cpp \
+					LASzip/laswriteitemcompressed_v3.cpp \
+					LASzip/laswriteitemcompressed_v4.cpp \
+					LASzip/laswritepoint.cpp \
+					LASzip/laszip.cpp \
+					LASzip/mydefs.cpp \
 					./altrep_compact_replication.cpp \
 					./rlasstreamer.cpp \
 					./rlasextrabytesattributes.cpp \

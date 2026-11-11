@@ -4,6 +4,7 @@
 ^\.Rproj\.user$
 ^.*\.o$
 ^laslib2R\.sh$
+^laslib2R\.patch$
 ^LICENSE\.txt$
 ^Contributing\.md$
 ^\.travis\.yml$

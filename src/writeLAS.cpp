@@ -303,13 +303,13 @@ void C_writer(CharacterVector file, List LASheader, List data)
     RN.set_if_constant ([&](int v) { point.set_return_number((U8)v); });
     NR.set_if_constant ([&](int v) { point.set_number_of_returns((U8)v); });
     C.set_if_constant  ([&](int v) { point.set_classification((U8)v); });
-    SAR.set_if_constant([&](int v) { point.set_scan_angle_rank((U8)v); });
+    SAR.set_if_constant([&](int v) { point.scan_angle_rank = (U8)v; }); // set_scan_angle_rank() is deprecated
   }
   else
   {
     RN.set_if_constant ([&](int v) { point.set_extended_return_number((U8)v); });
     NR.set_if_constant ([&](int v) { point.set_extended_number_of_returns((U8)v); });
-    C.set_if_constant  ([&](int v) { point.set_extended_classification((U8)v); });
+    C.set_if_constant  ([&](int v) { point.set_classification((U8)v); });
     ESA.set_if_constant([&](double v) { point.set_extended_scan_angle((I16)((v/0.006f))); });
   }
   D.set_if_constant([&](int v) { point.set_scan_direction_flag((U8)v); });
@@ -346,8 +346,7 @@ void C_writer(CharacterVector file, List LASheader, List data)
 
     if (C.active)
     {
-      if (extended) point.set_extended_classification((U8)C.v[j]);
-      else          point.set_classification((U8)C.v[j]);
+      point.set_classification((U8)C.v[j]);
     }
 
     if (CHA.active) point.set_extended_scanner_channel((U8)CHA.v[j]);
@@ -355,7 +354,7 @@ void C_writer(CharacterVector file, List LASheader, List data)
     if (K.active)   point.set_keypoint_flag((U8)K.v[j]);
     if (W.active)   point.set_withheld_flag((U8)W.v[j]);
     if (O.active)   point.set_extended_overlap_flag((U8)O.v[j]);
-    if (SAR.active) point.set_scan_angle_rank((I8)SAR.v[j]);
+    if (SAR.active) point.scan_angle_rank = (I8)SAR.v[j];
     if (ESA.active) point.set_extended_scan_angle((I16)((ESA.v[j]/0.006f)));
     if (U.active)   point.set_user_data((U8)U.v[j]);
     if (P.active)   point.set_point_source_ID((U16)P.v[j]);

@@ -40,7 +40,7 @@
 
 #include "lasreader.hpp"
 
-class LASreaderBuffered : public LASreader
+class LASLIB_DLL LASreaderBuffered : public LASreader
 {
 public:
 
@@ -78,7 +78,7 @@ public:
   ByteStreamIn* get_stream() const { return 0; };
   void close(BOOL close_stream=TRUE);
 
-  LASreaderBuffered();
+  LASreaderBuffered(LASreadOpener* opener);
   ~LASreaderBuffered();
 
 protected:

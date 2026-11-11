@@ -1,0 +1,696 @@
+diff -ruN a/src/LASlib/lasdefinitions.hpp b/src/LASlib/lasdefinitions.hpp
+--- a/src/LASlib/lasdefinitions.hpp	2026-11-11 06:19:11.673635589 -0500
++++ b/src/LASlib/lasdefinitions.hpp	2026-11-11 06:19:11.740632607 -0500
+@@ -862,6 +862,7 @@
+           if (delete_data)
+           {
+             delete [] evlrs[i].data;
++            evlrs[i].data = 0; // rlas: no dangling pointer when i is the last EVLR
+           }
+         }
+         number_of_extended_variable_length_records--;
+diff -ruN a/src/LASlib/lasfilter.cpp b/src/LASlib/lasfilter.cpp
+--- a/src/LASlib/lasfilter.cpp	2026-11-11 06:19:11.695634610 -0500
++++ b/src/LASlib/lasfilter.cpp	2026-11-11 06:19:11.735632829 -0500
+@@ -38,12 +38,28 @@
+ #include <math.h>
+ #include <iostream>
+ 
++#include <array>
+ #include <map>
+ #include <set>
++#include <unordered_set>
++
++#include <R_ext/Random.h> // rlas: R's RNG instead of rand()
+ 
+ typedef std::multimap<I64, F64> my_I64_F64_map;
+ typedef std::set<I64> my_I64_set;
+ 
++// rlas: hash of a voxel key for LAScriterionThinWithVoxel
++struct ArrayHash
++{
++  std::size_t operator()(const std::array<int, 3>& arr) const {
++    std::size_t seed = 0;
++    for (int32_t val : arr) {
++      seed ^= std::hash<int32_t>{}(val) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
++    }
++    return seed;
++  }
++};
++
+ // convert the first number in a input string to the out float
+ // if the string ends with [d/D] or [p/P] the out value will be 
+ // converted from [d]ecimal or [p]ercent unit
+@@ -75,12 +91,12 @@
+   }
+   if (*is1 < min)
+   {
+-    std::cerr << "ERROR: \"" << argv << "\" argument falls below minimum(" << *is1 << " < " << min << ")";
++    LASMessageStream(LAS_ERROR) << "\"" << argv << "\" argument falls below minimum(" << *is1 << " < " << min << ")";
+     return FALSE;
+   }
+   if (*is2 > max)
+   {
+-    std::cerr << "ERROR: \"" << argv << "\" argument falls above maximum (" << *is2 << " > " << max << ")";
++    LASMessageStream(LAS_ERROR) << "\"" << argv << "\" argument falls above maximum (" << *is2 << " > " << max << ")";
+     return FALSE;
+   }
+   return TRUE;
+@@ -1981,6 +1997,57 @@
+   U16* plus_plus_sizes;
+ };
+ 
++// rlas: -thin_with_voxel, by Tiago de Conto (r-lidar/rlas#32)
++class LAScriterionThinWithVoxel : public LAScriterion
++{
++  typedef std::array<I32,3> Array;
++
++public:
++  inline const CHAR* name() const { return "thin_with_voxel"; };
++  inline I32 get_command(CHAR* string) const { return snprintf(string, 256, "-%s ", name()); };
++  inline U32 get_decompress_selective() const { return LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY | LASZIP_DECOMPRESS_SELECTIVE_Z; };
++  inline BOOL filter(const LASpoint* point)
++  {
++    if(voxel_spacing < 0)
++    {
++      xoffset = point->get_x();
++      yoffset = point->get_y();
++      zoffset = point->get_z();
++      voxel_spacing = -voxel_spacing;
++    }
++
++    I32 nx = I32_FLOOR((point->get_x() - xoffset) / voxel_spacing);
++    I32 ny = I32_FLOOR((point->get_y() - yoffset) / voxel_spacing);
++    I32 nz = I32_FLOOR((point->get_z() - zoffset) / voxel_spacing);
++    Array key = {nx, ny, nz};
++
++    return !dynamic_registry.insert(key).second;
++  };
++  void reset()
++  {
++    voxel_spacing = -voxel_spacing;
++    xoffset = 0;
++    yoffset = 0;
++    zoffset = 0;
++    dynamic_registry.clear();
++  };
++  LAScriterionThinWithVoxel(F32 voxel_spacing)
++  {
++    this->voxel_spacing = voxel_spacing < 0 ? voxel_spacing : -voxel_spacing;
++    xoffset = 0;
++    yoffset = 0;
++    zoffset = 0;
++  };
++  ~LAScriterionThinWithVoxel(){ reset(); };
++
++private:
++  double voxel_spacing;
++  double xoffset;
++  double yoffset;
++  double zoffset;
++  std::unordered_set<Array, ArrayHash> dynamic_registry;
++};
++
+ class LAScriterionThinPulsesWithTime : public LAScriterion
+ {
+ public:
+@@ -2180,6 +2247,7 @@
+     "  -keep_random_fraction 0.1\n" \
+     "  -keep_random_fraction 0.1 4711\n" \
+     "  -thin_with_grid 1.0\n" \
++    "  -thin_with_voxel 0.1\n" \
+     "  -thin_pulses_with_time 0.0001\n" \
+     "  -thin_points_with_time 0.000001\n" \
+     "Boolean combination of filters.\n" \
+@@ -5260,6 +5328,16 @@
+         add_criterion(new LAScriterionThinWithGrid(step));
+         *argv[i] = '\0'; *argv[i + 1] = '\0'; i += 1;
+       }
++      else if (strcmp(argv[i], "-thin_with_voxel") == 0) // rlas
++      {
++        if ((i + 1) >= argc)
++        {
++          laserror("'%s' needs 1 argument: voxel_side_length", argv[i]);
++          return FALSE;
++        }
++        add_criterion(new LAScriterionThinWithVoxel((F32)atof(argv[i + 1])));
++        *argv[i] = '\0'; *argv[i + 1] = '\0'; i += 1;
++      }
+       else if (strcmp(argv[i], "-thin_pulses_with_time") == 0 || strcmp(argv[i], "-thin_with_time") == 0)
+       {
+         if ((i + 1) >= argc)
+diff -ruN a/src/LASlib/lasprogress.hpp b/src/LASlib/lasprogress.hpp
+--- a/src/LASlib/lasprogress.hpp	2026-11-11 06:19:11.673635589 -0500
++++ b/src/LASlib/lasprogress.hpp	2026-11-11 06:19:11.740632607 -0500
+@@ -111,7 +111,7 @@
+         percentage = 1.0f;
+         previous_percentage = F32_MIN;
+         print();
+-        if (display) fprintf(stderr, "\n");
++        if (display) REprintf("\n");
+         reset();
+     };
+ 
+@@ -122,8 +122,7 @@
+             previous_percentage = percentage;
+             I32 completed = (I32)(width * percentage);
+             I32 remaining = (I32)(width - completed);
+-            fprintf(stderr, "[%.*s%*s] %.1lf%%\r", completed, LASPROGRESSSYMBOL, remaining, "", percentage * 100);
+-            fflush(stderr);
++            REprintf("[%.*s%*s] %.1lf%%\r", completed, LASPROGRESSSYMBOL, remaining, "", percentage * 100);
+         }
+     };
+ 
+diff -ruN a/src/LASlib/lasreader_bin.cpp b/src/LASlib/lasreader_bin.cpp
+--- a/src/LASlib/lasreader_bin.cpp	2026-11-11 06:19:11.699634432 -0500
++++ b/src/LASlib/lasreader_bin.cpp	2026-11-11 06:19:11.736632785 -0500
+@@ -69,7 +69,7 @@
+   I32 size;
+   I32 version;
+   I32 recog_val;
+-  I8 recog_str[4];
++  CHAR recog_str[4]; // rlas: I8 is signed char
+   I32 npoints;
+   I32 units;
+   F64 origin_x;
+diff -ruN a/src/LASlib/lasreader.cpp b/src/LASlib/lasreader.cpp
+--- a/src/LASlib/lasreader.cpp	2026-11-11 06:19:11.701634343 -0500
++++ b/src/LASlib/lasreader.cpp	2026-11-11 06:19:11.736632785 -0500
+@@ -595,7 +595,8 @@
+ 
+ LASreader* LASreadOpener::open(const CHAR* other_file_name, BOOL reset_after_other) {
+   file_formula_filtered = false;
+-  inside_depth_opener = 0;
++  // rlas: do not reset inside_depth_opener here. It is set by parse() ('-max_depth', '-resolution')
++  // before open() is called, so resetting it silently disabled COPC depth queries.
+   if (filter) filter->reset();
+   if (transform) transform->reset();
+ 
+@@ -1882,10 +1883,11 @@
+           if (sscanf(argv[i + 4], "%lf", &max_y) != 1) {
+             laserror("'%s' needs 4 arguments: min_x min_y max_x max_y, but '%s' is not a valid max_y.", argv[i], argv[i + 4]);
+           }
+-          if (min_x >= max_x) {
++          // rlas: allow '-inside 0 0 0 0' (lidR uses it to read no points)
++          if ((min_x != 0 || max_x != 0) && min_x >= max_x) {
+             laserror("'%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_x / max_x pair.", argv[i], min_x, max_x);
+           }
+-          if (min_y >= max_y) {
++          if ((min_y != 0 || max_y != 0) && min_y >= max_y) {
+             laserror("'%s' needs 4 arguments: min_x min_y max_x max_y, but %lf / %lf are not a valid min_y / max_y pair.", argv[i], min_y, max_y);
+           }
+           set_inside_rectangle(min_x, min_y, max_x, max_y);
+@@ -2718,6 +2720,9 @@
+ }
+ 
+ BOOL LASreadOpener::add_file_name(const CHAR* file_name, BOOL unique) {
++  // rlas: a remote path (GDAL virtual file system) is not on the disk
++  if (is_remote_path(file_name)) return add_file_name_single(file_name, unique);
++
+   BOOL r = FALSE;
+   HANDLE h;
+   WIN32_FIND_DATA info;
+@@ -2802,6 +2807,12 @@
+ 
+ 
+ BOOL LASreadOpener::add_file_name(const CHAR* file_name, BOOL unique) {
++#ifdef USING_R
++  // rlas: R gives exact paths. Add them verbatim, without glob(): '[', '*' and '?' are valid in file
++  // names, a remote path (GDAL virtual file system) is not on the disk, and a missing file must fail at open.
++  return add_file_name_single(file_name, unique);
++#endif
++
+   BOOL r = FALSE;
+ 
+   // extract extension from pattern
+diff -ruN a/src/LASlib/lasreader_las.cpp b/src/LASlib/lasreader_las.cpp
+--- a/src/LASlib/lasreader_las.cpp	2026-11-11 06:19:11.704634209 -0500
++++ b/src/LASlib/lasreader_las.cpp	2026-11-11 06:19:11.737632740 -0500
+@@ -38,6 +38,12 @@
+ #include "lasindex.hpp"
+ #include "lascopc.hpp"
+ 
++#ifdef USING_GDAL
++#include "bytestreamin_gdal.hpp" // rlas: remote files through GDAL's virtual file system
++#include <cpl_vsi.h>
++#include <string>
++#endif
++
+ #ifdef _WIN32
+ #include <fcntl.h>
+ #include <io.h>
+@@ -61,6 +67,61 @@
+     laserror("file name pointer is zero");
+     return FALSE;
+   }
++
++  // rlas: http(s) and /vsi* paths are read with GDAL's virtual file system (Alexey Grigoryev)
++  if (is_remote_path(file_name))
++  {
++#ifdef USING_GDAL
++    // Build the GDAL virtual filesystem path
++    std::string vsi_path;
++    if (strncmp(file_name, "http://", 7) == 0 || strncmp(file_name, "https://", 8) == 0)
++      vsi_path = std::string("/vsicurl/") + file_name;
++    else
++      vsi_path = file_name;
++
++    // Size warning for non-COPC files
++    if (strstr(file_name, ".copc.") == NULL)
++    {
++      VSIStatBufL stat_buf;
++      if (VSIStatL(vsi_path.c_str(), &stat_buf) == 0)
++      {
++        if (stat_buf.st_size > 500 * 1024 * 1024)
++        {
++          Rprintf("remote file '%s' is %.0f MB. Consider converting to COPC for efficient streaming.\n", file_name, (double)stat_buf.st_size / (1024.0 * 1024.0));
++        }
++      }
++    }
++
++    VSILFILE* vsi_file = VSIFOpenL(vsi_path.c_str(), "rb");
++    if (vsi_file == 0)
++    {
++      laserror("cannot open remote file '%s'", file_name);
++      return FALSE;
++    }
++
++    // Save file name for error messages
++    if (this->file_name)
++    {
++      free(this->file_name);
++      this->file_name = 0;
++    }
++    this->file_name = LASCopyString(file_name);
++
++    // Leave FILE* file as null -- close() already null-checks before fclose()
++    // ByteStreamInGDAL takes ownership and will call VSIFCloseL in destructor
++    ByteStreamIn* in;
++    if (Endian::IS_LITTLE_ENDIAN)
++      in = new ByteStreamInGDALLE(vsi_file);
++    else
++      in = new ByteStreamInGDALBE(vsi_file);
++
++    return open(in, peek_only, decompress_selective);
++#else
++    laserror("remote file access requires GDAL. File: '%s'", file_name);
++    return FALSE;
++#endif
++  }
++
+   file = LASfopen(file_name, "rb");
+ 
+   if (file == 0)
+@@ -858,7 +919,19 @@
+           }
+           else if (header.vlrs[i].record_id == 4) // ExtraBytes
+           {
+-            header.init_attributes(header.vlrs[i].record_length_after_header/sizeof(LASattribute), (LASattribute*)header.vlrs[i].data);
++            // rlas: a file may hold several ExtraBytes VLRs. Append their attributes instead of replacing them.
++            if (header.attribute_sizes == 0)
++            {
++              header.init_attributes(header.vlrs[i].record_length_after_header/sizeof(LASattribute), (LASattribute*)header.vlrs[i].data);
++            }
++            else
++            {
++              U32 number_attributes = header.vlrs[i].record_length_after_header/sizeof(LASattribute);
++              LASattribute* attributes = (LASattribute*)header.vlrs[i].data;
++              for (j = 0; j < (U32)number_attributes; j++)
++                header.add_attribute(attributes[j]);
++            }
++
+             for (j = 0; j < (U32)header.number_attributes; j++)
+             {
+               if (header.attributes[j].data_type > 10)
+diff -ruN a/src/LASlib/lasreaderpipeon.cpp b/src/LASlib/lasreaderpipeon.cpp
+--- a/src/LASlib/lasreaderpipeon.cpp	2026-11-11 06:19:11.705634165 -0500
++++ b/src/LASlib/lasreaderpipeon.cpp	2026-11-11 06:19:11.737632740 -0500
+@@ -90,10 +90,10 @@
+     return FALSE;
+   }
+ 
+-  if (!laswriterlas->open(stdout, &header))
++  // rlas: R packages must not write to stdout
+   {
+     delete laswriterlas;
+-    laserror("opening laswriterlas to stdout");
++    laserror("piping to stdout is not supported");
+     return FALSE;
+   }
+ 
+diff -ruN a/src/LASlib/lastransform.cpp b/src/LASlib/lastransform.cpp
+--- a/src/LASlib/lastransform.cpp	2026-11-11 06:19:11.716633675 -0500
++++ b/src/LASlib/lastransform.cpp	2026-11-11 06:19:11.739632651 -0500
+@@ -40,6 +40,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
++#include <R_ext/Random.h> // rlas: R's RNG instead of rand()
++
+ /// Adds the operated values with consideration of the scaling and the specified offset
+ void LASoperation::write_transformed_values_with_adjust_offset(F64 x, F64 y, F64 z, LASpoint* point)
+ {
+diff -ruN a/src/LASlib/laswaveform13writer.cpp b/src/LASlib/laswaveform13writer.cpp
+--- a/src/LASlib/laswaveform13writer.cpp	2026-11-11 06:19:11.717633631 -0500
++++ b/src/LASlib/laswaveform13writer.cpp	2026-11-11 06:19:11.739632651 -0500
+@@ -181,7 +181,7 @@
+     laserror("writing EVLR reserved");
+     return FALSE;
+   }
+-  I8 user_id[16];
++  CHAR user_id[16]; // rlas: I8 is signed char
+   memset(user_id, 0, 16);
+   strcpy(user_id, "LASF_Spec");
+   if (!stream->putBytes((U8*)user_id, 16))
+@@ -201,7 +201,7 @@
+     laserror("writing EVLR record_length_after_header");
+     return FALSE;
+   }
+-  I8 description[32];
++  CHAR description[32];
+   memset(description, 0, 32);
+   snprintf(description, sizeof(description), "%s by LAStools (%d)", (compressed ? "compressed" : "created"), LAS_TOOLS_VERSION);
+   if (!stream->putBytes((U8*)description, 32))
+diff -ruN a/src/LASlib/laswriter_bin.cpp b/src/LASlib/laswriter_bin.cpp
+--- a/src/LASlib/laswriter_bin.cpp	2026-11-11 06:19:11.718633586 -0500
++++ b/src/LASlib/laswriter_bin.cpp	2026-11-11 06:19:11.739632651 -0500
+@@ -70,7 +70,7 @@
+   I32 size;
+   I32 version;
+   I32 recog_val;
+-  I8 recog_str[TSHEADER_RECOG_STR_LEN];  // 4 + \0
++  CHAR recog_str[TSHEADER_RECOG_STR_LEN]; // rlas: I8 is signed char  // 4 + \0
+   I32 npoints;
+   I32 units;
+   F64 origin_x;
+diff -ruN a/src/LASlib/laswriter.cpp b/src/LASlib/laswriter.cpp
+--- a/src/LASlib/laswriter.cpp	2026-11-11 06:19:11.719633542 -0500
++++ b/src/LASlib/laswriter.cpp	2026-11-11 06:19:11.739632651 -0500
+@@ -133,69 +133,9 @@
+   }
+   else if (use_stdout)
+   {
+-    if (format <= LAS_TOOLS_FORMAT_LAZ)
+-    {
+-      LASwriterLAS* laswriterlas = new LASwriterLAS();
+-      if (!laswriterlas->open(stdout, header, (format == LAS_TOOLS_FORMAT_LAZ ? (native ? LASZIP_COMPRESSOR_LAYERED_CHUNKED : LASZIP_COMPRESSOR_CHUNKED) : LASZIP_COMPRESSOR_NONE), requested_version, chunk_size))
+-      {
+-        laserror("cannot open laswriterlas to stdout");
+-        delete laswriterlas;
+-        return 0;
+-      }
+-      return laswriterlas;
+-    }
+-    else if (format == LAS_TOOLS_FORMAT_TXT)
+-    {
+-      LASwriterTXT* laswritertxt = new LASwriterTXT();
+-      if (opts) laswritertxt->set_pts(TRUE);
+-      else if (optx) laswritertxt->set_ptx(TRUE);
+-      if (!laswritertxt->open(stdout, header, parse_string, separator))
+-      {
+-        laserror("cannot open laswritertxt to stdout");
+-        delete laswritertxt;
+-        return 0;
+-      }
+-      if (scale_rgb != 1.0f) laswritertxt->set_scale_rgb(scale_rgb);
+-      return laswritertxt;
+-    }
+-    else if (format == LAS_TOOLS_FORMAT_BIN)
+-    {
+-      LASwriterBIN* laswriterbin = new LASwriterBIN();
+-      if (!laswriterbin->open(stdout, header, "ts8"))
+-      {
+-        laserror("cannot open laswriterbin to stdout");
+-        delete laswriterbin;
+-        return 0;
+-      }
+-      return laswriterbin;
+-    }
+-    else if (format == LAS_TOOLS_FORMAT_QFIT)
+-    {
+-      LASwriterQFIT* laswriterqfit = new LASwriterQFIT();
+-      if (!laswriterqfit->open(stdout, header, 40))
+-      {
+-        laserror("cannot open laswriterbin to stdout");
+-        delete laswriterqfit;
+-        return 0;
+-      }
+-      return laswriterqfit;
+-    }
+-    else if (format == LAS_TOOLS_FORMAT_VRML)
+-    {
+-      LASwriterWRL* laswriterwrl = new LASwriterWRL();
+-      if (!laswriterwrl->open(stdout, header, parse_string))
+-      {
+-        laserror("cannot open laswriterwrl with file name '%s'", file_name);
+-        delete laswriterwrl;
+-        return 0;
+-      }
+-      return laswriterwrl;
+-    }
+-    else
+-    {
+-      laserror("unknown format %d", format);
+-      return 0;
+-    }
++    // rlas: R packages must not write to stdout
++    laserror("writing to stdout is not supported");
++    return 0;
+   }
+   else
+   {
+@@ -1294,10 +1234,7 @@
+   }
+ }
+ 
+-#ifdef __GNUC__ 
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wstringop-overflow"
+-#endif
++// rlas: no '#pragma GCC diagnostic ignored "-Wstringop-overflow"' (R CMD check: non-portable pragma)
+ void LASwriteOpener::cut_characters() {
+   if (file_name && cut)
+   {
+@@ -1323,9 +1260,6 @@
+     file_name = new_file_name;
+   }
+ }
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif
+ 
+ LASwriteOpener::LASwriteOpener()
+ {
+diff -ruN a/src/LASzip/bytestreamout_file.hpp b/src/LASzip/bytestreamout_file.hpp
+--- a/src/LASzip/bytestreamout_file.hpp	2026-11-11 06:19:11.619637993 -0500
++++ b/src/LASzip/bytestreamout_file.hpp	2026-11-11 06:19:11.744632429 -0500
+@@ -125,7 +125,7 @@
+ 
+ inline BOOL ByteStreamOutFile::isSeekable() const
+ {
+-  return (file != stdout);
++  return TRUE; // rlas: never writes to stdout
+ }
+ 
+ inline I64 ByteStreamOutFile::tell() const
+diff -ruN a/src/LASzip/lasinterval.cpp b/src/LASzip/lasinterval.cpp
+--- a/src/LASzip/lasinterval.cpp	2026-11-11 06:19:11.616638127 -0500
++++ b/src/LASzip/lasinterval.cpp	2026-11-11 06:19:11.743632473 -0500
+@@ -545,7 +545,7 @@
+       previous_cell = cell;
+       cell = cell->next;
+     }
+-    delete previous_cell;
++    delete ((LASintervalStartCell*)previous_cell); // rlas: ASAN new-delete-type-mismatch
+     hash_element++;
+   }
+   delete ((my_cell_hash*)cells);
+diff -ruN a/src/LASzip/lasmessage.cpp b/src/LASzip/lasmessage.cpp
+--- a/src/LASzip/lasmessage.cpp	2026-11-11 06:19:11.616638127 -0500
++++ b/src/LASzip/lasmessage.cpp	2026-11-11 06:19:11.743632473 -0500
+@@ -38,6 +38,8 @@
+ #include <regex>
+ #include <cstring>
+ 
++#include <R_ext/Print.h> // rlas: messages go to the R console
++
+ long lasmessage_cnt[LAS_QUIET];
+ 
+ void las_default_message_handler(LAS_MESSAGE_TYPE type, const char* msg, void* user_data);
+@@ -57,6 +59,10 @@
+ static U32 rep_log_msg = 0;
+ static U8 max_rep_log_msg = 15;  // Maximum number of repeated log messages
+ 
++// rlas: last error message, thrown by byebye() instead of exiting
++static std::string las_last_error_message;
++const char* las_last_error() { return las_last_error_message.c_str(); }
++
+ std::string las_message_type_string(LAS_MESSAGE_TYPE in) {
+   switch (in) {
+     case LAS_DEBUG:
+@@ -85,7 +91,7 @@
+ void buildMessage(char *buffer, LAS_MESSAGE_TYPE type, LAS_FORMAT_STRING(const char*) fmt, va_list args) {
+   int len = vsnprintf(buffer, LAS_MAX_MESSAGE_LENGTH, fmt, args);
+   if (len > LAS_MAX_MESSAGE_LENGTH) {  // avoid buffer overflow. messages longer than LAS_MAX_MESSAGE_LENGTH should not occur!
+-    fprintf(stderr, "INTERNAL: message cropped from %d to %d chars", len, LAS_MAX_MESSAGE_LENGTH);
++    REprintf("INTERNAL: message cropped from %d to %d chars", len, LAS_MAX_MESSAGE_LENGTH);
+     len = LAS_MAX_MESSAGE_LENGTH;
+   }
+   // remove trailing line feed
+@@ -107,6 +113,7 @@
+   char buffer[LAS_MAX_MESSAGE_LENGTH];
+   buildMessage(buffer, type, fmt, args);
+   va_end(args);
++  if (type >= LAS_ERROR) las_last_error_message = buffer;
+ 
+   if (current_msg != fmt) {
+     if (rep_log_msg > max_rep_log_msg) {
+@@ -150,6 +157,7 @@
+   char buffer[LAS_MAX_MESSAGE_LENGTH];
+   buildMessage(buffer, type, fmt, args);
+   va_end(args);
++  if (type >= LAS_ERROR) las_last_error_message = buffer;
+ 
+   // formatted message only fetch if fmt == buffer
+   LogData& data = ext_log_entrys[buffer];
+@@ -290,10 +298,10 @@
+ 
+   if (!prefix.empty()) {
+     format_message(message, (unsigned)prefix.size());
+-    fprintf(stderr, "%s", prefix.c_str());
+-    fprintf(stderr, "%s", message.c_str());
++    REprintf("%s", prefix.c_str());
++    REprintf("%s", message.c_str());
+   } else {
+-    fprintf(stderr, "%s\n", message.c_str());
++    REprintf("%s\n", message.c_str());
+   }
+ }
+ 
+diff -ruN a/src/LASzip/lasmessage.hpp b/src/LASzip/lasmessage.hpp
+--- a/src/LASzip/lasmessage.hpp	2026-11-11 06:19:11.620637949 -0500
++++ b/src/LASzip/lasmessage.hpp	2026-11-11 06:19:11.744632429 -0500
+@@ -40,9 +40,7 @@
+ extern long lasmessage_cnt[LAS_QUIET];
+ 
+ // central las message function
+-#if defined(__GNUC__)
+-#pragma GCC diagnostic ignored "-Wredundant-decls"
+-#endif
++// rlas: no '#pragma GCC diagnostic ignored "-Wredundant-decls"' (R CMD check: pragma suppressing diagnostics)
+ void LASLIB_DLL LASMessage(LAS_MESSAGE_TYPE type, LAS_FORMAT_STRING(const char*), ...);
+ LASLIB_DLL void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STRING(const char*) fmt, ...);
+ void flush_repeated_logs();
+diff -ruN a/src/LASzip/lasreadpoint.cpp b/src/LASzip/lasreadpoint.cpp
+--- a/src/LASzip/lasreadpoint.cpp	2026-11-11 06:19:11.617638082 -0500
++++ b/src/LASzip/lasreadpoint.cpp	2026-11-11 06:19:11.743632473 -0500
+@@ -570,7 +570,7 @@
+           {
+             ((LASreadItemCompressed*)(readers_compressed[i]))->init(point[i], context);
+           }
+-          if (DEBUG_OUTPUT_NUM_BYTES_DETAILS) fprintf(stderr, "\n");
++          if (DEBUG_OUTPUT_NUM_BYTES_DETAILS) REprintf("\n");
+         }
+         else
+         {
+diff -ruN a/src/LASzip/mydefs.cpp b/src/LASzip/mydefs.cpp
+--- a/src/LASzip/mydefs.cpp	2026-11-11 06:19:11.618638038 -0500
++++ b/src/LASzip/mydefs.cpp	2026-11-11 06:19:11.744632429 -0500
+@@ -68,6 +68,8 @@
+ }
+ #endif
+ 
++const char* las_last_error(); // rlas: defined in lasmessage.cpp
++
+ static bool wait_on_exit_ = false;
+ static bool print_log_stats_ = false;
+ static bool halt_on_error_ = true;
+@@ -99,24 +101,11 @@
+         LAS_INFO, "Log stats: FE=%lu,E=%lu,SW=%lu,W=%lu,I=%lu", lasmessage_cnt[LAS_FATAL_ERROR], lasmessage_cnt[LAS_ERROR],
+         lasmessage_cnt[LAS_SERIOUS_WARNING], lasmessage_cnt[LAS_WARNING], lasmessage_cnt[LAS_INFO]);
+   }
+-  if (wait_on_exit_) {
+-    std::fprintf(stderr, "<press ENTER>\n");
+-    (void)std::getc(stdin);
+-  }
+   //duplicate log messages with the number of repeated times.
+   flush_repeated_logs();
+-  //
+-  int code = 0;
+-  if (lasmessage_cnt[LAS_FATAL_ERROR] > 0) {
+-    code = 4;
+-  } else if (lasmessage_cnt[LAS_ERROR] > 0) {
+-    code = 3;
+-  } else if (lasmessage_cnt[LAS_SERIOUS_WARNING] > 0) {
+-    code = 2;
+-  } else if (lasmessage_cnt[LAS_WARNING] > 0) {
+-    code = 1;
+-  }
+-  exit(code);
++  // rlas: a library must not terminate R. Throw the last error instead; the R wrappers turn it into
++  // an R error. It also stops the caller right away, which LASlib relies on after laserror().
++  throw std::runtime_error(las_last_error());
+ }
+ 
+ // Returns a reference to the currently active file error context for this thread
+@@ -417,7 +406,7 @@
+ #ifdef _WIN32
+   GetCurrentDirectory(MAX_PATH_LAS, curr_directory);
+ #else
+-  getcwd(curr_directory, MAX_PATH_LAS);
++  if (getcwd(curr_directory, MAX_PATH_LAS) == NULL) curr_directory[0] = '\0'; // rlas: -Wunused-result
+ #endif
+   return std::string(curr_directory);
+ }
+diff -ruN a/src/LASzip/mydefs.hpp b/src/LASzip/mydefs.hpp
+--- a/src/LASzip/mydefs.hpp	2026-11-11 06:19:11.621637904 -0500
++++ b/src/LASzip/mydefs.hpp	2026-11-11 06:19:11.745632384 -0500
+@@ -61,12 +61,15 @@
+ #include <filesystem>
+ #include <type_traits>
+ #include <set>
++#include <cstring>
++
++#include <R_ext/Print.h> // rlas: REprintf() instead of fprintf(stderr)
+ 
+ typedef char CHAR;
+ 
+ typedef int I32;
+ typedef short I16;
+-typedef char I8;
++typedef signed char I8; // rlas: char is unsigned on arm64
+ 
+ typedef unsigned int U32;
+ typedef unsigned short U16;
+@@ -688,5 +691,31 @@
+ void to_little_endian(double* value);
+ }
+ 
++// rlas: http(s) and GDAL /vsi* paths are read through GDAL's virtual file system (bytestreamin_gdal.hpp)
++inline bool is_remote_path(const char* path)
++{
++  if (!path) return false;
++
++  if (path[0] == 'h')
++  {
++    return strncmp(path, "http://", 7) == 0 || strncmp(path, "https://", 8) == 0;
++  }
++
++  if (path[0] == '/' && strncmp(path, "/vsi", 4) == 0)
++  {
++    const char* sub = path + 4;
++    return
++      strncmp(sub, "curl/", 5) == 0  ||
++      strncmp(sub, "s3/", 3) == 0    ||
++      strncmp(sub, "gs/", 3) == 0    ||
++      strncmp(sub, "az/", 3) == 0    ||
++      strncmp(sub, "adls/", 5) == 0  ||
++      strncmp(sub, "oss/", 4) == 0   ||
++      strncmp(sub, "swift/", 6) == 0;
++  }
++
++  return false;
++}
++
+ #endif
+ 

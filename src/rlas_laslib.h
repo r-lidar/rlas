@@ -14,9 +14,11 @@ namespace rlas
 {
 
 // LASlib objects are allocated by their openers and must be closed before being deleted.
-struct LASreaderCloser          { void operator()(LASreader* p) const          { p->close(); delete p; } };
-struct LASwriterCloser          { void operator()(LASwriter* p) const          { p->close(); delete p; } };
-struct LASwaveform13readerCloser{ void operator()(LASwaveform13reader* p) const{ p->close(); delete p; } };
+// LASlib reports errors by throwing (see byebye() in mydefs.cpp). A deleter runs in a destructor,
+// possibly during stack unwinding, so it must never let an exception escape.
+struct LASreaderCloser          { void operator()(LASreader* p) const          { try { p->close(); } catch (...) {} delete p; } };
+struct LASwriterCloser          { void operator()(LASwriter* p) const          { try { p->close(); } catch (...) {} delete p; } };
+struct LASwaveform13readerCloser{ void operator()(LASwaveform13reader* p) const{ try { p->close(); } catch (...) {} delete p; } };
 
 using LASreaderPtr           = std::unique_ptr<LASreader, LASreaderCloser>;
 using LASwriterPtr           = std::unique_ptr<LASwriter, LASwriterCloser>;

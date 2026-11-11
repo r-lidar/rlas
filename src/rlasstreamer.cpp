@@ -7,6 +7,28 @@
 
 using namespace Rcpp;
 
+// Splits a LAStools command line on spaces and parses it with LASreadOpener, as the former
+// LASreadOpener::parse_str() did. LASlib reports an invalid option by throwing (see byebye()).
+static void parse_lastools_options(LASreadOpener& lasreadopener, std::string& str)
+{
+  std::vector<char*> argv(1, nullptr); // argv[0] is the program name, never read
+  size_t len = str.size();
+  size_t p = 0;
+  while (p < len)
+  {
+    while (p < len && str[p] == ' ') p++;
+    if (p < len)
+    {
+      argv.push_back(&str[p]);
+      while (p < len && str[p] != ' ') p++;
+      if (p < len) str[p] = '\0';
+      p++;
+    }
+  }
+
+  lasreadopener.parse((int)argv.size(), argv.data());
+}
+
 RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, CharacterVector filter)
 {
   set_input_files(ifiles);
@@ -20,7 +42,9 @@ RLASstreamer::RLASstreamer(CharacterVector ifiles, CharacterVector ofile, Charac
 RLASstreamer::~RLASstreamer()
 {
   if (!ended && laswriter)
-    laswriter->update_header(header, true); // # nocov
+  {
+    try { laswriter->update_header(header, true); } catch (...) {} // # nocov
+  }
 }
 
 void RLASstreamer::set_input_files(CharacterVector ifiles)
@@ -69,7 +93,11 @@ void RLASstreamer::set_filter(CharacterVector filter)
   if (str.empty())
     return;
 
-  if (!lasreadopener.parse_str(str.data()))
+  try
+  {
+    parse_lastools_options(lasreadopener, str);
+  }
+  catch (std::exception const& e)
   {
     lasreadopener.set_filter(0); // # nocov
     stop("Filter error see message above."); // # nocov
@@ -88,7 +116,12 @@ void RLASstreamer::open()
   header = &lasreader->header;
 
   if (rlas::point_format::has_waveform(header->point_data_format))
-    laswaveform13reader.reset(lasreadopener.open_waveform13(header));
+  {
+    // A missing waveform file is not fatal: LASlib prints an error and the points are read without
+    // waveforms. LASlib now throws on error (see byebye()), so the failure is caught here.
+    try { laswaveform13reader.reset(lasreadopener.open_waveform13(header)); }
+    catch (std::exception const& e) { laswaveform13reader.reset(); }
+  }
 
   if (!in_R)
   {
@@ -249,7 +282,7 @@ void RLASstreamer::allocation()
 
 bool RLASstreamer::read_point()
 {
-  progress = (double)lasreader->p_count/(double)header->number_of_point_records*100;
+  progress = (double)lasreader->p_cnt/(double)header->number_of_point_records*100;
   return lasreader->read_point();
 }
 
@@ -269,7 +302,7 @@ void RLASstreamer::init_lazy_columns(const LASpoint& point)
   {
     RN.init(point.get_extended_return_number());
     NoR.init(point.get_extended_number_of_returns());
-    C.init(point.get_extended_classification());
+    C.init(point.get_classification());
     SA.init(point.get_scan_angle());
   }
 
@@ -370,7 +403,7 @@ void RLASstreamer::write_point()
   if (sel.edge_of_flightline) EoF.push(point.get_edge_of_flight_line(), n, capacity);
 
   if (sel.classification)
-    C.push(extended ? point.get_extended_classification() : point.get_classification(), n, capacity);
+    C.push(point.get_classification(), n, capacity);
 
   if (sel.scanner_channel && extended)
     Channel.push_back(point.get_extended_scanner_channel());
@@ -385,7 +418,7 @@ void RLASstreamer::write_point()
     if (extended)
       SA.push(point.get_scan_angle(), n, capacity);
     else
-      SAR.push(point.get_scan_angle_rank(), n, capacity);
+      SAR.push(point.scan_angle_rank, n, capacity); // get_scan_angle_rank() is deprecated
   }
 
   if (sel.user_data)       UD.push(point.get_user_data(), n, capacity);

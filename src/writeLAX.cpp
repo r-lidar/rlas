@@ -75,11 +75,18 @@ void laxwriter(CharacterVector file, bool verbose)
     lasindex.prepare(lasquadtree, 1000);
 
     while (lasreader->read_point())
-      lasindex.add(lasreader->point.get_x(), lasreader->point.get_y(), (U32)(lasreader->p_count-1));
+      lasindex.add(lasreader->point.get_x(), lasreader->point.get_y(), (U32)(lasreader->p_cnt-1));
 
     lasreader.reset();
 
-    lasindex.complete(100000, -20, verbose);
+    // LASlib has no verbose argument any more: verbosity is the message log level, restored on exit.
+    struct LogLevelGuard
+    {
+      LAS_MESSAGE_TYPE level = get_message_log_level();
+      ~LogLevelGuard() { set_message_log_level(level); }
+    } log_level_guard;
+    if (verbose) set_message_log_level(LAS_VERBOSE);
+    lasindex.complete(100000, -20);
     lasindex.write(lasreadopener.get_file_name());
   }
   catch (std::exception const& e)
