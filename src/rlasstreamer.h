@@ -2,149 +2,145 @@
 #define LASSTREAMER_H
 
 #include <Rcpp.h>
+
+#include <string>
+#include <unordered_set>
+#include <vector>
+
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 #include "lasfilter.hpp"
 #include "laswaveform13reader.hpp"
+#include "rlas_laslib.h"
 #include "rlasextrabytesattributes.h"
 
-using namespace Rcpp;
+// A column of point attributes that is very often constant (e.g. ScanDirectionFlag,
+// UserData, PointSourceID). It stores a single value until a point with a different
+// value is seen. Only then the column is expanded to one value per point. A column that
+// is never expanded is returned to R as a length-1 vector that will be ALTREPed.
+template <typename T>
+class LazyColumn
+{
+public:
+  // Records the value of the first point. Must be called once, before the first push().
+  void init(T first) { values.assign(1, first); expanded = false; }
 
+  // 'npoints' is the number of points already read including the current one and
+  // 'capacity' is the expected final number of points.
+  template <typename U>
+  void push(U value, size_t npoints, size_t capacity)
+  {
+    if (!expanded && value != values[0])
+    {
+      expanded = true;
+      T first = values[0];
+      values.reserve(capacity);
+      values.insert(values.end(), npoints - 2, first);
+    }
+
+    if (expanded)
+      values.push_back(value);
+  }
+
+  std::vector<T> values;
+
+private:
+  bool expanded = false;
+};
+
+// Which point attributes are loaded in R. Parsed from the 'select' string of read.las()
+struct Selection
+{
+  bool gpstime            = true;
+  bool intensity          = true;
+  bool return_number      = true;
+  bool number_of_returns  = true;
+  bool scan_direction     = true;
+  bool edge_of_flightline = true;
+  bool classification     = true;
+  bool synthetic          = true;
+  bool keypoint           = true;
+  bool withheld           = true;
+  bool overlap            = true;
+  bool scan_angle         = true;
+  bool user_data          = true;
+  bool point_source_id    = true;
+  bool rgb                = true;
+  bool nir                = true;
+  bool scanner_channel    = true;
+  bool waveform           = true;
+  std::vector<int> extra_bytes; // 0-based indices of the requested extra bytes attributes
+};
+
+// Streams the points of one or several LAS/LAZ files (merged on the fly) either into
+// R vectors (read.las) or into another file (read_and_write.las with an output file).
 class RLASstreamer
 {
-  public:
-    RLASstreamer(CharacterVector, CharacterVector, CharacterVector);
-    ~RLASstreamer();
-    void setinputfiles(CharacterVector);
-    void setoutputfile(CharacterVector);
-    void setfilter(CharacterVector);
-    void select(CharacterVector);
-    void allocation();
-    bool read_point();
-    void write_point();
-    LASpoint* point();
-    List terminate();
-    void read_t(bool);
-    void read_i(bool);
-    void read_r(bool);
-    void read_n(bool);
-    void read_d(bool);
-    void read_e(bool);
-    void read_c(bool);
-    void read_s(bool);
-    void read_k(bool);
-    void read_w(bool);
-    void read_o(bool);
-    void read_a(bool);
-    void read_u(bool);
-    void read_p(bool);
-    void read_rgb(bool);
-    void read_nir(bool);
-    void read_cha(bool);
-    void read_W(bool);
-    void read_eb(IntegerVector); // extra byte numbers
+public:
+  RLASstreamer(Rcpp::CharacterVector ifiles, Rcpp::CharacterVector ofile, Rcpp::CharacterVector filter);
+  ~RLASstreamer();
 
-    float progress;
+  RLASstreamer(const RLASstreamer&) = delete;
+  RLASstreamer& operator=(const RLASstreamer&) = delete;
 
-  private:
-    void initialize_bool();
-    void initialize();
-    int get_format(U8);
-    void write_waveform();
+  void select(Rcpp::CharacterVector select);
+  void allocation();
+  bool read_point();
+  void write_point();
+  const LASpoint& point() const { return lasreader->point; }
+  Rcpp::List terminate();
 
-  private:
-    std::vector<double> X;
-    std::vector<double> Y;
-    std::vector<double> Z;
-    std::vector<double> T;
-    std::vector<unsigned short> I;
-    std::vector<unsigned short> RN;
-    std::vector<unsigned short> NoR;
-    std::vector<unsigned short> SDF;
-    std::vector<unsigned short> EoF;
-    std::vector<unsigned short> C;
-    std::vector<unsigned short> Channel;
-    std::vector<bool> Synthetic;
-    std::vector<bool> Keypoint;
-    std::vector<bool> Withheld;
-    std::vector<bool> Overlap;
-    std::vector<double> SA;
-    std::vector<short> SAR;
-    std::vector<unsigned short> UD;
-    std::vector<unsigned short> PSI;
-    std::vector<unsigned short> R;
-    std::vector<unsigned short> G;
-    std::vector<unsigned short> B;
-    std::vector<unsigned short> NIR;
+  float progress = 0;
 
-    std::vector<int> wavePacketIndex;
-    std::vector<U64> wavePacketOffset;
-    std::vector<U32> wavePacketSize;
-    std::vector<F32> wavePacketLocation;
-    std::vector<F32> Xt;
-    std::vector<F32> Yt;
-    std::vector<F32> Zt;
-    std::vector< std::vector<int> >fullwaveform;
-    std::unordered_set<U64> wavePacketRegistry;
+private:
+  void set_input_files(Rcpp::CharacterVector ifiles);
+  void set_output_file(Rcpp::CharacterVector ofile);
+  void set_filter(Rcpp::CharacterVector filter);
+  void open();
+  void init_lazy_columns(const LASpoint& point);
+  void read_waveform();
+  Rcpp::List build_R_list();
 
-    LASreadOpener lasreadopener;
-    LASwriteOpener laswriteopener;
-    LASwaveform13reader* laswaveform13reader;
-    LASreader* lasreader;
-    LASwriter* laswriter;
-    LASheader* header;
+private:
+  LASreadOpener lasreadopener;
+  LASwriteOpener laswriteopener;
 
-    int format;
-    int nalloc;
+  // Declaration order matters: members are destroyed in reverse order and the
+  // writer (that references the reader's header) must be destroyed first.
+  rlas::LASreaderPtr lasreader;
+  rlas::LASwaveform13readerPtr laswaveform13reader;
+  rlas::LASwriterPtr laswriter;
+  LASheader* header = nullptr;
 
-    int nsynthetic;
-    int nwithheld;
+  bool in_R       = true;  // false when the points are written into a file
+  bool use_filter = false;
+  bool ended      = false;
+  bool extended   = false; // LAS 1.4 with point format >= 6
+  int format      = 0;
+  int nalloc      = 0;
+  int nsynthetic  = 0;
+  int nwithheld   = 0;
 
-    unsigned int point_count;
+  Selection sel;
 
-    bool inR;
-    bool useFilter;
-    bool initialized;
-    bool ended;
-    bool extended;
+  // Point attributes
+  std::vector<double> X, Y, Z, T;
+  std::vector<unsigned short> I, R, G, B, NIR, Channel;
+  LazyColumn<unsigned short> RN, NoR, SDF, EoF, C, UD, PSI;
+  LazyColumn<bool> Synthetic, Keypoint, Withheld, Overlap;
+  LazyColumn<double> SA;  // extended scan angle (point formats >= 6)
+  LazyColumn<short> SAR;  // scan angle rank (point formats < 6)
 
-    bool t;
-    bool i;
-    bool r;
-    bool n;
-    bool d;
-    bool e;
-    bool c;
-    bool s;
-    bool k;
-    bool w;
-    bool o;
-    bool a;
-    bool u;
-    bool p;
-    bool rgb;
-    bool nir;
-    bool cha;
-    bool W;
-    std::vector<RLASExtrabyteAttributes> extra_bytes_attr;
-    std::vector<int> eb;
+  // Full waveform
+  std::vector<int> wavePacketIndex;
+  std::vector<U64> wavePacketOffset;
+  std::vector<U32> wavePacketSize;
+  std::vector<F32> wavePacketLocation;
+  std::vector<F32> Xt, Yt, Zt;
+  std::vector<std::vector<int>> fullwaveform;
+  std::unordered_set<U64> wavePacketRegistry;
 
-    // Optimization for attribute likely not populated. We do no need to grow vectors with
-    // typically only zeros. So we store only one value in a size 1 vector. If we detect another
-    // value we can grow the vector. The following variable allow to handle such optimization.
-    bool is_RN_populated;
-    bool is_NoR_populated;
-    bool is_SDF_populated;
-    bool is_EoF_populated;
-    bool is_C_populated;
-    bool is_Synthetic_populated;
-    bool is_Keypoint_populated;
-    bool is_Withheld_populated;
-    bool is_Overlap_populated;
-    bool is_SAR_populated;
-    bool is_SA_populated;
-    bool is_UD_populated;
-    bool is_PSI_populated;
+  std::vector<RLASExtrabyteAttributes> extra_bytes_attr;
 };
 
 #endif //LASSTREAMER_H

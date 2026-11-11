@@ -1,27 +1,76 @@
 #include "rlasextrabytesattributes.h"
 
-RLASExtrabyteAttributes::RLASExtrabyteAttributes()
+#include <cstring>
+#include <stdexcept>
+#include <type_traits>
+
+namespace
 {
-  id = 0;
-  start = 0;
-  data_type = 0;
-  options = 0;
-  has_scale = false;
-  has_min = false;
-  has_max = false;
-  has_offset = false;
-  has_no_data = false;
-  scale = 1;
-  offset = 0;
-  no_data = 0;
-  min = 0;
-  max = 0;
+  // Calls f(T{}) where T is the C++ type of the LAS extra bytes data type 'data_type'
+  // (1 = U8 ... 10 = F64). Returns false if the data type is not a known scalar type.
+  template <typename F>
+  bool dispatch(int data_type, F&& f)
+  {
+    switch (data_type)
+    {
+      case 1:  f(U8{});  return true;
+      case 2:  f(I8{});  return true;
+      case 3:  f(U16{}); return true;
+      case 4:  f(I16{}); return true;
+      case 5:  f(U32{}); return true;
+      case 6:  f(I32{}); return true;
+      case 7:  f(U64{}); return true;
+      case 8:  f(I64{}); return true;
+      case 9:  f(F32{}); return true;
+      case 10: f(F64{}); return true;
+      default: return false;
+    }
+  }
+
+  // Reads a value of type T stored at 'ptr' (not necessarily aligned)
+  template <typename T>
+  T load(const U8* ptr)
+  {
+    T value;
+    std::memcpy(&value, ptr, sizeof(T));
+    return value;
+  }
+
+  // Converts a double into the type T of an attribute, rounding and clamping like LASlib does
+  template <typename T>
+  T encode(double v)
+  {
+    if constexpr (std::is_same_v<T, U8>)  return U8_CLAMP(U8_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, I8>)  return I8_CLAMP(I8_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, U16>) return U16_CLAMP(U16_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, I16>) return I16_CLAMP(I16_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, U32>) return U32_CLAMP(U32_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, I32>) return I32_CLAMP(I32_QUANTIZE(v));
+    if constexpr (std::is_same_v<T, U64>) return U64_QUANTIZE(v);
+    if constexpr (std::is_same_v<T, I64>) return I64_QUANTIZE(v);
+    if constexpr (std::is_same_v<T, F32>) return (F32)v;
+    if constexpr (std::is_same_v<T, F64>) return v;
+  }
 }
 
-bool RLASExtrabyteAttributes::is_supported(){ return(data_type <= 10); }
-bool RLASExtrabyteAttributes::is_32bits() { return(data_type <= 6 && !(has_scale || has_offset)); }
+void RLASExtrabyteAttributes::parse_options()
+{
+  has_no_data = options & 0x01;
+  has_min     = options & 0x02;
+  has_max     = options & 0x04;
+  has_scale   = options & 0x08;
+  has_offset  = options & 0x10;
+}
 
-void RLASExtrabyteAttributes::push_back(LASpoint* point)
+void RLASExtrabyteAttributes::reserve(size_t n)
+{
+  if (is_32bits())
+    eb32.reserve(n);
+  else
+    eb64.reserve(n);
+}
+
+void RLASExtrabyteAttributes::push_back(const LASpoint* point)
 {
   if (is_32bits())
     eb32.push_back(get_attribute_int(point));
@@ -29,104 +78,53 @@ void RLASExtrabyteAttributes::push_back(LASpoint* point)
     eb64.push_back(get_attribute_double(point));
 }
 
-void RLASExtrabyteAttributes::parse_options()
+SEXP RLASExtrabyteAttributes::to_R() const
 {
-  has_no_data = options & 0x01;
-  has_min = options & 0x02;
-  has_max = options & 0x04;
-  has_scale = options & 0x08;
-  has_offset = options & 0x10;
+  if (is_32bits())
+    return Rcpp::wrap(eb32);
+  else
+    return Rcpp::wrap(eb64);
 }
 
-F64 RLASExtrabyteAttributes::get_attribute_double(LASpoint* point)
+F64 RLASExtrabyteAttributes::get_attribute_double(const LASpoint* point) const
 {
-  F64 casted_value;
-  U8* value = point->extra_bytes + start;
+  const U8* ptr = point->extra_bytes + start;
+  F64 value = 0;
 
-  switch (data_type)
+  bool known = dispatch(data_type, [&](auto tag)
   {
-  case 1:
-    casted_value = (F64)*((U8*)value);
-    break;
-  case 2:
-    casted_value = (F64)*((I8*)value);
-    break;
-  case 3:
-    casted_value = (F64)*((U16*)value);
-    break;
-  case 4:
-    casted_value = (F64)*((I16*)value);
-    break;
-  case 5:
-    casted_value = (F64)*((U32*)value);
-    break;
-  case 6:
-    casted_value = (F64)*((I32*)value);
-    break;
-  case 7:
-    casted_value = (F64)(I64)*((U64*)value);
-    break;
-  case 8:
-    casted_value = (F64)*((I64*)value);
-    break;
-  case 9:
-    casted_value = (F64)*((F32*)value);
-    break;
-  case 10:
-    casted_value = *((F64*)value);
-    break;
-  default:
+    using T = decltype(tag);
+    if constexpr (std::is_same_v<T, U64>)
+      value = (F64)(I64)load<U64>(ptr); // R has no 64 bits integers
+    else
+      value = (F64)load<T>(ptr);
+  });
+
+  if (!known)
     throw std::runtime_error("LAS Extra Byte data data_type not supported.");
-  }
 
-  if(has_scale || has_offset)
-    casted_value = scale*casted_value + offset;
+  if (has_scale || has_offset)
+    value = scale*value + offset;
 
-  if (has_no_data)
-  {
-    if (casted_value == no_data)
-      casted_value = NA_REAL;
-  }
+  if (has_no_data && value == no_data)
+    value = NA_REAL;
 
-  return casted_value;
+  return value;
 }
 
-I32 RLASExtrabyteAttributes::get_attribute_int(LASpoint* point)
+I32 RLASExtrabyteAttributes::get_attribute_int(const LASpoint* point) const
 {
-  I32 casted_value;
-  U8* value = point->extra_bytes + start;
-
-  switch (data_type)
-  {
-  case 1:
-    casted_value = (I32)*((U8*)value);
-    break;
-  case 2:
-    casted_value = (I32)*((I8*)value);
-    break;
-  case 3:
-    casted_value = (I32)*((U16*)value);
-    break;
-  case 4:
-    casted_value = (I32)*((I16*)value);
-    break;
-  case 5:
-    casted_value = (I32)*((U32*)value);
-    break;
-  case 6:
-    casted_value = (I32)*((I32*)value);
-    break;
-  default:
+  if (data_type < 1 || data_type > 6)
     throw std::runtime_error("LAS Extra Byte data data_type not supported in I32.");
-  }
 
-  if (has_no_data)
-  {
-    if (casted_value == no_data)
-      casted_value = NA_INTEGER;
-  }
+  const U8* ptr = point->extra_bytes + start;
+  I32 value = 0;
+  dispatch(data_type, [&](auto tag) { value = (I32)load<decltype(tag)>(ptr); });
 
-  return casted_value;
+  if (has_no_data && value == no_data)
+    value = NA_INTEGER;
+
+  return value;
 }
 
 void RLASExtrabyteAttributes::set_attribute(int i, LASpoint* p)
@@ -138,83 +136,31 @@ void RLASExtrabyteAttributes::set_attribute(int i, LASpoint* p)
   else
     value = (Reb[i] - offset)/scale;
 
-  switch(data_type)
+  dispatch(data_type, [&](auto tag)
   {
-    case 0: p->set_attribute(start, U8_CLAMP(U8_QUANTIZE(value))); break;
-    case 1: p->set_attribute(start, I8_CLAMP(I8_QUANTIZE(value))); break;
-    case 2: p->set_attribute(start, U16_CLAMP(U16_QUANTIZE(value))); break;
-    case 3: p->set_attribute(start, I16_CLAMP(I16_QUANTIZE(value))); break;
-    case 4: p->set_attribute(start, U32_CLAMP(U32_QUANTIZE(value))); break;
-    case 5: p->set_attribute(start, I32_CLAMP(I32_QUANTIZE(value))); break;
-    case 6: p->set_attribute(start, U64_QUANTIZE(value)); break;
-    case 7: p->set_attribute(start, I64_QUANTIZE(value)); break;
-    case 8: p->set_attribute(start, (float)(value)); break;
-    case 9: p->set_attribute(start, value); break;
-  }
+    using T = decltype(tag);
+    p->set_attribute(start, encode<T>(value));
+  });
 }
 
-
-LASattribute RLASExtrabyteAttributes::make_LASattribute()
+LASattribute RLASExtrabyteAttributes::make_LASattribute() const
 {
-  LASattribute attribute(data_type, name.c_str(), desc.c_str());
+  // LASattribute takes the data type 0-based
+  LASattribute attribute(data_type - 1, name.c_str(), desc.c_str());
 
-  if(has_scale)
+  if (has_scale)
     attribute.set_scale(scale);
 
-  if(has_offset)
+  if (has_offset)
     attribute.set_offset(offset);
 
-  if(has_no_data)
+  dispatch(data_type, [&](auto tag)
   {
-    switch(data_type)
-    {
-    case 0: attribute.set_no_data(U8_CLAMP(U8_QUANTIZE(no_data))); break;
-    case 1: attribute.set_no_data(I8_CLAMP(I8_QUANTIZE(no_data))); break;
-    case 2: attribute.set_no_data(U16_CLAMP(U16_QUANTIZE(no_data))); break;
-    case 3: attribute.set_no_data(I16_CLAMP(I16_QUANTIZE(no_data))); break;
-    case 4: attribute.set_no_data(U32_CLAMP(U32_QUANTIZE(no_data))); break;
-    case 5: attribute.set_no_data(I32_CLAMP(I32_QUANTIZE(no_data))); break;
-    case 6: attribute.set_no_data(U64_QUANTIZE(no_data)); break;
-    case 7: attribute.set_no_data(I64_QUANTIZE(no_data)); break;
-    case 8: attribute.set_no_data((float)(no_data)); break;
-    case 9: attribute.set_no_data(no_data); break;
-    }
-  }
-
-  if(has_min)
-  {
-    switch(data_type)
-    {
-    case 0: attribute.set_min(U8_CLAMP(U8_QUANTIZE(min))); break;
-    case 1: attribute.set_min(I8_CLAMP(I8_QUANTIZE(min))); break;
-    case 2: attribute.set_min(U16_CLAMP(U16_QUANTIZE(min))); break;
-    case 3: attribute.set_min(I16_CLAMP(I16_QUANTIZE(min))); break;
-    case 4: attribute.set_min(U32_CLAMP(U32_QUANTIZE(min))); break;
-    case 5: attribute.set_min(I32_CLAMP(I32_QUANTIZE(min))); break;
-    case 6: attribute.set_min(U64_QUANTIZE(min)); break;
-    case 7: attribute.set_min(I64_QUANTIZE(min)); break;
-    case 8: attribute.set_min((float)(min)); break;
-    case 9: attribute.set_min(min); break;
-    }
-  }
-
-  // set max value if option set
-  if(has_max)
-  {
-    switch(data_type)
-    {
-    case 0: attribute.set_max(U8_CLAMP(U8_QUANTIZE(max))); break;
-    case 1: attribute.set_max(I8_CLAMP(I8_QUANTIZE(max))); break;
-    case 2: attribute.set_max(U16_CLAMP(U16_QUANTIZE(max))); break;
-    case 3: attribute.set_max(I16_CLAMP(I16_QUANTIZE(max))); break;
-    case 4: attribute.set_max(U32_CLAMP(U32_QUANTIZE(max))); break;
-    case 5: attribute.set_max(I32_CLAMP(I32_QUANTIZE(max))); break;
-    case 6: attribute.set_max(U64_QUANTIZE(max)); break;
-    case 7: attribute.set_max(I64_QUANTIZE(max)); break;
-    case 8: attribute.set_max((float)(max)); break;
-    case 9: attribute.set_max(max); break;
-    }
-  }
+    using T = decltype(tag);
+    if (has_no_data) attribute.set_no_data(encode<T>(no_data));
+    if (has_min)     attribute.set_min(encode<T>(min));
+    if (has_max)     attribute.set_max(encode<T>(max));
+  });
 
   return attribute;
 }

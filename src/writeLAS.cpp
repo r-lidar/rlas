@@ -1,30 +1,228 @@
 #include <Rcpp.h>
-#include <string.h>
+
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <vector>
 
 #include "laswriter.hpp"
+#include "rlas_laslib.h"
 #include "rlasextrabytesattributes.h"
 
 using namespace Rcpp;
 
-int  get_point_data_record_length(int x);
-void set_guid(LASheader&, const char*);
-void set_global_enconding(LASheader&, List);
+namespace
+{
+
+// An optional point attribute of the data.frame to write. A column that is absent or not
+// allowed by the point format is empty and inactive. A column of length 1 (a compact
+// ALTREP repetition) is constant: it is written once into the LASpoint and then deactivated.
+template <typename V>
+struct Column
+{
+  V v;
+  bool active;
+
+  Column(const List& data, const char* name, bool allowed = true)
+  {
+    active = allowed && data.containsElementNamed(name);
+    v = active ? V(data[name]) : V(0);
+  }
+
+  bool is_constant() const { return v.size() == 1; }
+
+  // If the column is constant, set its value once with 'setter' and stop writing it point by point
+  template <typename F>
+  void set_if_constant(F setter)
+  {
+    if (!is_constant()) return;
+    active = false;
+    setter(v[0]);
+  }
+};
+
+void set_global_encoding(LASheader& header, List encoding)
+{
+  const char* bits[] = {"GPS Time Type", "Waveform Data Packets Internal", "Waveform Data Packets External",
+                        "Synthetic Return Numbers", "WKT", "Aggregate Model"};
+
+  for (int bit = 0 ; bit < 6 ; bit++)
+  {
+    if (encoding[bits[bit]])
+      header.set_global_encoding_bit(bit);
+  }
+}
+
+// Parses a GUID formatted like "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+void set_guid(LASheader& header, const std::string& guid)
+{
+  long long unsigned int data_1 = 0;
+  unsigned int data_2 = 0;
+  unsigned int data_3 = 0;
+  unsigned int data_4a = 0;
+  long long unsigned int data_4b = 0;
+
+  std::sscanf(guid.c_str(), "%llx-%x-%x-%x-%llx", &data_1, &data_2, &data_3, &data_4a, &data_4b);
+
+  U16 data_4a_16  = U16_CLAMP(data_4a);
+  U16 data_4b_hi  = U16_CLAMP(data_4b >> 32);
+  U32 data_4b_low = U32_CLAMP(data_4b & 0xFFFFFFFF);
+
+  header.project_ID_GUID_data_1 = U32_CLAMP(data_1);
+  header.project_ID_GUID_data_2 = U16_CLAMP(data_2);
+  header.project_ID_GUID_data_3 = U16_CLAMP(data_3);
+  std::memcpy(header.project_ID_GUID_data_4,     &data_4a_16,  2);
+  std::memcpy(header.project_ID_GUID_data_4 + 2, &data_4b_hi,  2);
+  std::memcpy(header.project_ID_GUID_data_4 + 4, &data_4b_low, 4);
+}
+
+void add_geokeys(LASheader& header, const List& vlr)
+{
+  List tags = vlr["tags"];
+  std::vector<LASvlr_key_entry> keys(tags.size());
+
+  for (int j = 0 ; j < tags.size() ; j++)
+  {
+    List tag = tags[j];
+    keys[j].key_id            = (U16)tag["key"];
+    keys[j].tiff_tag_location = (U16)tag["tiff tag location"];
+    keys[j].count             = (U16)tag["count"];
+    keys[j].value_offset      = (U16)tag["value offset"];
+  }
+
+  header.set_geo_keys(keys.size(), keys.data());
+}
+
+void add_text_area(LASheader& header, const List& vlr)
+{
+  std::string text = as<std::string>(vlr["Text Area Description"]);
+  std::string desc = as<std::string>(vlr["description"]);
+
+  // Truncate strings larger than U16_MAX and ensure that the text is null terminated
+  if (text.size() >= U16_MAX)
+  {
+    text.resize(U16_MAX);
+    text.back() = '\0';
+  }
+
+  if (text.empty() || text.back() != '\0')
+    text.push_back('\0');
+
+  // The header takes the ownership of the data
+  CHAR* data = new CHAR[text.size()];
+  std::memcpy(data, text.data(), text.size());
+
+  header.add_vlr("LASF_Spec", 3, (U16)text.size(), (U8*)data, FALSE, desc.c_str());
+}
+
+// Adds the extra bytes attributes described in the VLR and binds them to their data
+void add_extra_bytes(LASheader& header, const List& vlr, const List& data, std::vector<RLASExtrabyteAttributes>& attributes)
+{
+  List descriptions = vlr["Extra Bytes Description"];
+
+  for (List description : descriptions)
+  {
+    RLASExtrabyteAttributes eb;
+
+    eb.name = as<std::string>(description["name"]);
+
+    if (!data.containsElementNamed(eb.name.c_str()))
+      stop("Extra Bytes described but not present in data.");
+
+    eb.options = (int)description["options"];
+    eb.parse_options();
+
+    // Deprecated tuples and triples (data_type > 10) are written as scalars
+    eb.data_type = ((int)(description["data_type"]) - 1) % 10 + 1;
+    eb.desc = as<std::string>(description["description"]);
+
+    if (eb.has_scale)   eb.scale   = (double)(description["scale"]);
+    if (eb.has_offset)  eb.offset  = (double)(description["offset"]);
+
+    // no_data, min and max are stored unscaled
+    auto unscale = [&](const char* field) { return ((double)(description[field]) - eb.offset)/eb.scale; };
+    if (eb.has_no_data) eb.no_data = unscale("no_data");
+    if (eb.has_min)     eb.min     = unscale("min");
+    if (eb.has_max)     eb.max     = unscale("max");
+
+    eb.id  = header.add_attribute(eb.make_LASattribute());
+    eb.Reb = as<NumericVector>(data[eb.name.c_str()]);
+    attributes.push_back(eb);
+  }
+
+  header.update_extra_bytes_vlr();
+  header.point_data_record_length += header.get_attributes_size();
+
+  for (auto& eb : attributes)
+    eb.start = header.get_attribute_start(eb.id);
+}
+
+void add_vlrs(LASheader& header, const List& lasheader, const List& data, std::vector<RLASExtrabyteAttributes>& extrabytes)
+{
+  for (bool in_evlr : {false, true})
+  {
+    const char* record = in_evlr ? "Extended Variable Length Records" : "Variable Length Records";
+
+    if (!lasheader.containsElementNamed(record))
+      continue;
+
+    List vlrs = lasheader[record];
+
+    if (vlrs.size() == 0)
+      continue;
+
+    CharacterVector names = vlrs.names();
+
+    for (int i = 0 ; i < vlrs.size() ; ++i)
+    {
+      List vlr = vlrs[i];
+      std::string name = as<std::string>(names[i]);
+
+      if (name == "GeoKeyDirectoryTag")
+      {
+        add_geokeys(header, vlr);
+      }
+      else if (name == "GeoAsciiParamsTag" && vlr.containsElementNamed("tags"))
+      {
+        std::string ascii = as<std::string>(vlr["tags"]);
+        header.set_geo_ascii_params(ascii.size(), ascii.c_str());
+      }
+      else if (name == "GeoDoubleParamsTag" && vlr.containsElementNamed("tags"))
+      {
+        std::vector<double> params = as<std::vector<double>>(vlr["tags"]);
+        header.set_geo_double_params(params.size(), params.data());
+      }
+      else if (name == "WKT OGC CS" && vlr.containsElementNamed("WKT OGC COORDINATE SYSTEM"))
+      {
+        std::string wkt = as<std::string>(vlr["WKT OGC COORDINATE SYSTEM"]);
+        header.set_geo_ogc_wkt(wkt.size(), wkt.c_str(), in_evlr);
+      }
+      else if (name == "Extra_Bytes" && vlr.containsElementNamed("Extra Bytes Description"))
+      {
+        add_extra_bytes(header, vlr, data, extrabytes);
+      }
+      else if (name == "TextArea" && vlr.containsElementNamed("Text Area Description"))
+      {
+        add_text_area(header, vlr);
+      }
+    }
+  }
+}
+
+} // namespace
 
 // [[Rcpp::export]]
 void C_writer(CharacterVector file, List LASheader, List data)
 {
-
   int format = (int)LASheader["Point Data Format ID"];
-  if (format == 4 || format == 5 || format == 9 || format == 10)
+  if (rlas::point_format::has_waveform(format))
     Rcpp::stop("Point format with full waveform are not supported yet");
 
+  // ===========================
+  // 1. Public Header Block
+  // ===========================
+
   class LASheader header;
-
-  // ===========================
-  // Public Header Block
-  // ===========================
-
-  // 1.1. These ones are easy
 
   header.file_source_ID       = (int)LASheader["File Source ID"];
   header.version_major        = (int)LASheader["Version Major"];
@@ -41,180 +239,25 @@ void C_writer(CharacterVector file, List LASheader, List data)
   header.y_offset             = (double)LASheader["Y offset"];
   header.z_offset             = (double)LASheader["Z offset"];
 
-  bool extended = (header.version_minor >= 4) && (header.point_data_format >= 6);
+  const bool extended = (header.version_minor >= 4) && (header.point_data_format >= 6);
 
-  // 1.2. These one need special interpretation
+  header.point_data_record_length = rlas::point_format::record_length(header.point_data_format);
+  if (header.point_data_record_length < 0)
+    stop("point_data_format out of range.");
 
-  header.point_data_record_length = get_point_data_record_length(header.point_data_format);
-  strcpy(header.generating_software, "rlas R package");
-
-  CharacterVector guid = LASheader["Project ID - GUID"];
-  std::string stdguid  = as<std::string>(guid);
-  set_guid(header, stdguid.c_str());
-
-  set_global_enconding(header, LASheader["Global Encoding"]);
+  std::snprintf(header.generating_software, sizeof(header.generating_software), "%s", "rlas R package");
+  set_guid(header, as<std::string>(LASheader["Project ID - GUID"]));
+  set_global_encoding(header, LASheader["Global Encoding"]);
 
   // ===============================
-  // 2. VLRS and EVLRS
+  // 2. VLRs and EVLRs
   // ===============================
 
-  std::vector<RLASExtrabyteAttributes> ExtraBytesAttr;
-
-  for(auto extended : {false, true})
-  {
-    auto record = (!extended) ? "Variable Length Records" : "Extended Variable Length Records";
-    bool is_set_record = LASheader.containsElementNamed(record);
-
-    List vlrs = (is_set_record) ? LASheader[record] : List(0);
-
-    int n = vlrs.size();
-    if (n == 0) continue;
-
-    CharacterVector names = vlrs.names();
-
-    for (int i = 0; i < n; ++i)
-    {
-      List vlr = vlrs[i];
-
-      if (names[i] == "GeoKeyDirectoryTag")
-      {
-        List tags = vlr["tags"];
-        int ntags = tags.size();
-        LASvlr_key_entry* vlr_epsg = new LASvlr_key_entry[ntags];
-        for (int j = 0 ; j < ntags ; j ++)
-        {
-          List tag = tags[j];
-          vlr_epsg[j].key_id = (U16)tag["key"];
-          vlr_epsg[j].tiff_tag_location = (U16)tag["tiff tag location"];
-          vlr_epsg[j].count = (U16)tag["count"];
-          vlr_epsg[j].value_offset = (U16)tag["value offset"];
-        }
-
-        header.set_geo_keys(ntags, vlr_epsg);
-        delete[] vlr_epsg;
-      }
-      else if (names[i] == "GeoAsciiParamsTag")
-      {
-        if (vlr.containsElementNamed("tags"))
-        {
-          CharacterVector ASCII = vlr["tags"];
-          std::string sascii    = as<std::string>(ASCII);
-          header.set_geo_ascii_params(sascii.size(), sascii.c_str());
-        }
-      }
-      else if (names[i] == "GeoDoubleParamsTag")
-      {
-        if (vlr.containsElementNamed("tags"))
-        {
-          NumericVector DOUBLE = vlr["tags"];
-          std::vector<double> sdouble = as<std::vector<double> >(DOUBLE);
-          header.set_geo_double_params(sdouble.size(), &sdouble[0]);
-        }
-      }
-      else if (names[i] == "WKT OGC CS")
-      {
-        if (vlr.containsElementNamed("WKT OGC COORDINATE SYSTEM"))
-        {
-          CharacterVector WKT = vlr["WKT OGC COORDINATE SYSTEM"];
-          std::string sWKT    = as<std::string>(WKT);
-          header.set_geo_ogc_wkt(sWKT.size(), sWKT.c_str(), extended);
-        }
-      }
-      else if (names[i] == "Extra_Bytes")
-      {
-        if (vlr.containsElementNamed("Extra Bytes Description"))
-        {
-          List description_eb = vlr["Extra Bytes Description"];
-
-          for(int i = 0 ; i < description_eb.size() ; i++)
-          {
-            List description = description_eb[i];
-            RLASExtrabyteAttributes ExtraByte;
-
-            ExtraByte.name = as< std::string >(description["name"]);
-
-            if (!data.containsElementNamed(ExtraByte.name.c_str()))
-              stop("Extra Bytes described but not present in data.");
-
-            ExtraByte.options = (int)description["options"];
-            ExtraByte.parse_options();
-
-            ExtraByte.data_type = ((int)(description["data_type"])-1) % 10;
-            ExtraByte.desc = as< std::string >(description["description"]);
-
-            if(ExtraByte.has_scale)
-              ExtraByte.scale = (double)(description["scale"]);
-
-            if(ExtraByte.has_offset)
-              ExtraByte.offset = (double)(description["offset"]);
-
-            if(ExtraByte.has_no_data)
-              ExtraByte.no_data = ((double)(description["no_data"]) - ExtraByte.offset)/ExtraByte.scale;
-
-            if(ExtraByte.has_min)
-              ExtraByte.min = ((double)(description["min"]) - ExtraByte.offset)/ExtraByte.scale;
-
-            if(ExtraByte.has_max)
-              ExtraByte.max =  ((double)(description["max"]) - ExtraByte.offset)/ExtraByte.scale;
-
-            LASattribute attribute = ExtraByte.make_LASattribute();
-
-            ExtraByte.id  = header.add_attribute(attribute);
-            ExtraByte.Reb = as<NumericVector>(data[ExtraByte.name.c_str()]);
-            ExtraBytesAttr.push_back(ExtraByte);
-          }
-
-          header.update_extra_bytes_vlr();
-          header.point_data_record_length += header.get_attributes_size();
-
-          // Starting byte
-          for(auto& ExtraByte : ExtraBytesAttr)
-            ExtraByte.start = header.get_attribute_start(ExtraByte.id);
-        }
-      }
-      else if (names[i] == "TextArea")
-      {
-        if (vlr.containsElementNamed("Text Area Description"))
-        {
-          CharacterVector TEXT = vlr["Text Area Description"];
-          std::string stext    = as<std::string>(TEXT);
-          CharacterVector desc  = vlr["description"];
-          std::string sdesc  = as<std::string>(desc);
-          I32 stext_size = stext.size();
-
-          // truncate strings larger than U16_MAX, and ensure it is null terminated
-          if ((sizeof(CHAR)*stext_size) >= U16_MAX)
-          {
-            stext_size = U16_MAX;
-            stext[stext_size-1]='\0';
-          }
-          
-          // ensure that any text area description is null terminated.
-          I32 null_terminator = 0;
-          CHAR* vlr_text_area_desc;
-          if (stext[stext_size-1] == '\0')
-          {
-             vlr_text_area_desc = new CHAR[stext_size];
-          }
-          else
-          {
-            null_terminator = 1;
-            vlr_text_area_desc = new CHAR[stext_size+1];
-            vlr_text_area_desc[stext_size] = '\0';
-          }
-          memcpy(vlr_text_area_desc, stext.c_str(), sizeof(CHAR)*stext_size);
-
-          header.add_vlr("LASF_Spec", 3, (U16)(sizeof(CHAR)*(stext_size+null_terminator)), (U8*)vlr_text_area_desc, FALSE, sdesc.c_str());
-        }
-      }
-      else
-      {
-      }
-    }
-  }
+  std::vector<RLASExtrabyteAttributes> extrabytes;
+  add_vlrs(header, LASheader, data, extrabytes);
 
   // ===============================
-  // 3. Write the data into the file
+  // 3. Write the points
   // ===============================
 
   LASwriteOpener laswriteopener;
@@ -223,210 +266,111 @@ void C_writer(CharacterVector file, List LASheader, List data)
   LASpoint point;
   point.init(&header, header.point_data_format, header.point_data_record_length, 0);
 
-  LASwriter* laswriter = laswriteopener.open(&header);
+  rlas::LASwriterPtr laswriter(laswriteopener.open(&header));
 
-  if(0 == laswriter || NULL == laswriter)
+  if (!laswriter)
     stop("LASlib internal error. See message above.");
 
-  #define ISSET(NAME) data.containsElementNamed(NAME)
-
-  bool i = ISSET("Intensity");
-  bool r = ISSET("ReturnNumber");
-  bool n = ISSET("NumberOfReturns");
-  bool d = ISSET("ScanDirectionFlag");
-  bool e = ISSET("EdgeOfFlightline");
-  bool c = ISSET("Classification");
-  bool s = ISSET("Synthetic_flag");
-  bool k = ISSET("Keypoint_flag");
-  bool w = ISSET("Withheld_flag");
-  bool o = ISSET("Overlap_flag") && extended;
-  bool u = ISSET("UserData");
-  bool p = ISSET("PointSourceID");
-  bool t = ISSET("gpstime");
-  bool R = ISSET("R");
-  bool G = ISSET("G");
-  bool B = ISSET("B");
-  bool N = ISSET("NIR");
-  bool sar = ISSET("ScanAngleRank");
-  bool esa = ISSET("ScanAngle");
-  bool cha = ISSET("ScannerChannel") && extended;
-
-  NumericVector X   = data["X"];
-  NumericVector Y   = data["Y"];
-  NumericVector Z   = data["Z"];
-  IntegerVector I   = (i) ? data["Intensity"] : IntegerVector(0);
-  IntegerVector RN  = (r) ? data["ReturnNumber"] : IntegerVector(0);
-  IntegerVector NR  = (n) ? data["NumberOfReturns"] : IntegerVector(0);
-  IntegerVector D   = (d) ? data["ScanDirectionFlag"] : IntegerVector(0);
-  IntegerVector E   = (e) ? data["EdgeOfFlightline"] : IntegerVector(0);
-  IntegerVector C   = (c) ? data["Classification"] : IntegerVector(0);
-  LogicalVector S   = (s) ? data["Synthetic_flag"] : LogicalVector(0);
-  LogicalVector K   = (k) ? data["Keypoint_flag"] : LogicalVector(0);
-  LogicalVector W   = (w) ? data["Withheld_flag"] : LogicalVector(0);
-  LogicalVector O   = (o) ? data["Overlap_flag"] : LogicalVector(0);
-  IntegerVector U   = (u) ? data["UserData"] : IntegerVector(0);
-  IntegerVector P   = (p) ? data["PointSourceID"] : IntegerVector(0);
-  NumericVector T   = (t) ? data["gpstime"] : NumericVector(0);
-  IntegerVector Red = (R) ? data["R"] : IntegerVector(0);
-  IntegerVector Gre = (G) ? data["G"] : IntegerVector(0);
-  IntegerVector Blu = (B) ? data["B"] : IntegerVector(0);
-  IntegerVector NIR = (N) ? data["NIR"] : IntegerVector(0);
-  IntegerVector SAR = (sar) ? data["ScanAngleRank"] : IntegerVector(0);
-  NumericVector ESA = (esa) ? data["ScanAngle"] : NumericVector(0);
-  IntegerVector CHA = (cha) ? data["ScannerChannel"] : IntegerVector(0);
+  NumericVector X = data["X"];
+  NumericVector Y = data["Y"];
+  NumericVector Z = data["Z"];
+  Column<IntegerVector> I  (data, "Intensity");
+  Column<IntegerVector> RN (data, "ReturnNumber");
+  Column<IntegerVector> NR (data, "NumberOfReturns");
+  Column<IntegerVector> D  (data, "ScanDirectionFlag");
+  Column<IntegerVector> E  (data, "EdgeOfFlightline");
+  Column<IntegerVector> C  (data, "Classification");
+  Column<LogicalVector> S  (data, "Synthetic_flag");
+  Column<LogicalVector> K  (data, "Keypoint_flag");
+  Column<LogicalVector> W  (data, "Withheld_flag");
+  Column<LogicalVector> O  (data, "Overlap_flag", extended);
+  Column<IntegerVector> U  (data, "UserData");
+  Column<IntegerVector> P  (data, "PointSourceID");
+  Column<NumericVector> T  (data, "gpstime");
+  Column<IntegerVector> Red(data, "R");
+  Column<IntegerVector> Gre(data, "G");
+  Column<IntegerVector> Blu(data, "B");
+  Column<IntegerVector> NIR(data, "NIR");
+  Column<IntegerVector> SAR(data, "ScanAngleRank");
+  Column<NumericVector> ESA(data, "ScanAngle");
+  Column<IntegerVector> CHA(data, "ScannerChannel", extended);
 
   // The following attributes can be ALTREPed at R level to be represented as compact
-  // repetition. If they were ALTREPed then we received a single value instead of a vector
-  // of n times the same value. In this case we initialize the LASpoint with the value and we
-  // declare the attribute as missing to avoid looping through undefined indices.
+  // repetitions. In this case we received a single value instead of a vector of n times
+  // the same value. The LASpoint is initialized once with this value.
   if (!extended)
   {
-    if (RN.size() == 1) { r = false; point.set_return_number((U8)RN[0]); }
-    if (NR.size() == 1) { n = false; point.set_number_of_returns((U8)NR[0]); }
-    if (C.size() == 1)  { c = false; point.set_classification((U8)C[0]); }
-    if (SAR.size() == 1){ sar = false; point.set_scan_angle_rank((U8)SAR[0]); }
+    RN.set_if_constant ([&](int v) { point.set_return_number((U8)v); });
+    NR.set_if_constant ([&](int v) { point.set_number_of_returns((U8)v); });
+    C.set_if_constant  ([&](int v) { point.set_classification((U8)v); });
+    SAR.set_if_constant([&](int v) { point.set_scan_angle_rank((U8)v); });
   }
   else
   {
-    if (RN.size() == 1) { r = false; point.set_extended_return_number((U8)RN[0]); }
-    if (NR.size() == 1) { n = false; point.set_extended_number_of_returns((U8)NR[0]); }
-    if (C.size() == 1)  { c = false; point.set_extended_classification((U8)C[0]); }
-    if (ESA.size() == 1){ esa = false; point.set_extended_scan_angle((I16)((ESA[0]/0.006f))); }
+    RN.set_if_constant ([&](int v) { point.set_extended_return_number((U8)v); });
+    NR.set_if_constant ([&](int v) { point.set_extended_number_of_returns((U8)v); });
+    C.set_if_constant  ([&](int v) { point.set_extended_classification((U8)v); });
+    ESA.set_if_constant([&](double v) { point.set_extended_scan_angle((I16)((v/0.006f))); });
   }
-  if (D.size() == 1) { d = false; point.set_scan_direction_flag((U8)D[0]); }
-  if (E.size() == 1) { e = false; point.set_edge_of_flight_line((U8)E[0]); }
-  if (S.size() == 1) { s = false; point.set_synthetic_flag((U8)S[0]); }
-  if (K.size() == 1) { k = false; point.set_keypoint_flag((U8)K[0]); }
-  if (W.size() == 1) { w = false; point.set_withheld_flag((U8)W[0]); }
-  if (O.size() == 1) { o = false; point.set_extended_overlap_flag((U8)O[0]); }
-  if (U.size() == 1) { u = false; point.set_user_data((U8)U[0]); }
-  if (P.size() == 1) { p = false; point.set_point_source_ID((U16)P[0]); }
+  D.set_if_constant([&](int v) { point.set_scan_direction_flag((U8)v); });
+  E.set_if_constant([&](int v) { point.set_edge_of_flight_line((U8)v); });
+  S.set_if_constant([&](int v) { point.set_synthetic_flag((U8)v); });
+  K.set_if_constant([&](int v) { point.set_keypoint_flag((U8)v); });
+  W.set_if_constant([&](int v) { point.set_withheld_flag((U8)v); });
+  O.set_if_constant([&](int v) { point.set_extended_overlap_flag((U8)v); });
+  U.set_if_constant([&](int v) { point.set_user_data((U8)v); });
+  P.set_if_constant([&](int v) { point.set_point_source_ID((U16)v); });
 
-  for(int j = 0 ; j < X.length() ; j++)
+  for (R_xlen_t j = 0 ; j < X.length() ; j++)
   {
-    // Add regular data
     point.set_x(X[j]);
     point.set_y(Y[j]);
     point.set_z(Z[j]);
 
-    if(i) { point.set_intensity((U16)I[j]); }
+    if (I.active) point.set_intensity((U16)I.v[j]);
 
-    if(r && !extended) { point.set_return_number((U8)RN[j]); }
-    if(r &&  extended) { point.set_extended_return_number((U8)RN[j]); }
+    if (RN.active)
+    {
+      if (extended) point.set_extended_return_number((U8)RN.v[j]);
+      else          point.set_return_number((U8)RN.v[j]);
+    }
 
-    if(n && !extended) { point.set_number_of_returns((U8)NR[j]); }
-    if(n &&  extended) { point.set_extended_number_of_returns((U8)NR[j]); }
+    if (NR.active)
+    {
+      if (extended) point.set_extended_number_of_returns((U8)NR.v[j]);
+      else          point.set_number_of_returns((U8)NR.v[j]);
+    }
 
-    if(d) { point.set_scan_direction_flag((U8)D[j]); }
-    if(e) { point.set_edge_of_flight_line((U8)E[j]); }
+    if (D.active) point.set_scan_direction_flag((U8)D.v[j]);
+    if (E.active) point.set_edge_of_flight_line((U8)E.v[j]);
 
-    if(c && !extended) { point.set_classification((U8)C[j]); }
-    if(c &&  extended) { point.set_extended_classification((U8)C[j]); }
+    if (C.active)
+    {
+      if (extended) point.set_extended_classification((U8)C.v[j]);
+      else          point.set_classification((U8)C.v[j]);
+    }
 
-    if(cha) { point.set_extended_scanner_channel((U8)CHA[j]); }
+    if (CHA.active) point.set_extended_scanner_channel((U8)CHA.v[j]);
+    if (S.active)   point.set_synthetic_flag((U8)S.v[j]);
+    if (K.active)   point.set_keypoint_flag((U8)K.v[j]);
+    if (W.active)   point.set_withheld_flag((U8)W.v[j]);
+    if (O.active)   point.set_extended_overlap_flag((U8)O.v[j]);
+    if (SAR.active) point.set_scan_angle_rank((I8)SAR.v[j]);
+    if (ESA.active) point.set_extended_scan_angle((I16)((ESA.v[j]/0.006f)));
+    if (U.active)   point.set_user_data((U8)U.v[j]);
+    if (P.active)   point.set_point_source_ID((U16)P.v[j]);
+    if (T.active)   point.set_gps_time((F64)T.v[j]);
+    if (Red.active) point.set_R((U16)Red.v[j]);
+    if (Gre.active) point.set_G((U16)Gre.v[j]);
+    if (Blu.active) point.set_B((U16)Blu.v[j]);
+    if (NIR.active) point.set_NIR((U16)NIR.v[j]);
 
-    if(s) { point.set_synthetic_flag((U8)S[j]); }
-    if(k) { point.set_keypoint_flag((U8)K[j]); }
-    if(w) { point.set_withheld_flag((U8)W[j]); }
-    if(o) { point.set_extended_overlap_flag((U8)O[j]); }
-
-    if(sar) { point.set_scan_angle_rank((I8)SAR[j]); }
-    if(esa) { point.set_extended_scan_angle((I16)((ESA[j]/0.006f))); }
-
-    if(u) { point.set_user_data((U8)U[j]); }
-    if(p) { point.set_point_source_ID((U16)P[j]); }
-    if(t) { point.set_gps_time((F64)T[j]); }
-    if(R) { point.set_R((U16)Red[j]); }
-    if(G) { point.set_G((U16)Gre[j]); }
-    if(B) { point.set_B((U16)Blu[j]); }
-    if(N) { point.set_NIR((U16)NIR[j]); }
-
-    // Add extra bytes
-    for(auto& ExtraByte : ExtraBytesAttr)
-      ExtraByte.set_attribute(j, &point);
+    for (auto& eb : extrabytes)
+      eb.set_attribute(j, &point);
 
     laswriter->write_point(&point);
     laswriter->update_inventory(&point);
   }
 
   laswriter->update_header(&header, true);
-  laswriter->close();
-  delete laswriter;
 }
-
-void set_global_enconding(LASheader &header, List encoding)
-{
-  if (encoding["GPS Time Type"]) header.set_global_encoding_bit(0);
-  if (encoding["Waveform Data Packets Internal"]) header.set_global_encoding_bit(1);
-  if (encoding["Waveform Data Packets External"]) header.set_global_encoding_bit(2);
-  if (encoding["Synthetic Return Numbers"]) header.set_global_encoding_bit(3);
-  if (encoding["WKT"]) header.set_global_encoding_bit(4);
-  if (encoding["Aggregate Model"]) header.set_global_encoding_bit(5);
-}
-
-void set_guid(LASheader &header, const char* guid)
-{
-  // uuid
-  long long unsigned int set_GUID_data_1 = 0;
-  unsigned int set_GUID_data_2 = 0;
-  unsigned int set_GUID_data_3 = 0;
-  unsigned int set_GUID_data_4a = 0;
-  long long unsigned int set_GUID_data_4b = 0;
-
-  sscanf(guid, "%llx-%x-%x-%x-%llx", &set_GUID_data_1, &set_GUID_data_2, &set_GUID_data_3, &set_GUID_data_4a, &set_GUID_data_4b);
-
-  U32 GUID_data_1 = U32_CLAMP(set_GUID_data_1);
-  U16 GUID_data_2 = U16_CLAMP(set_GUID_data_2);
-  U16 GUID_data_3 = U16_CLAMP(set_GUID_data_3);
-  U16 GUID_data_4a = U16_CLAMP(set_GUID_data_4a);
-  U16 GUID_data_4b_a = U16_CLAMP(set_GUID_data_4b >> 32);
-  U32 GUID_data_4b_b = U32_CLAMP(set_GUID_data_4b & 0xFFFFFFFF);
-
-  U8 byte1 = * ((U8 *)&GUID_data_4a);
-  U8 byte2 = * ((U8 *)&GUID_data_4a+1);
-  U8 byte3 = * ((U8 *)&GUID_data_4b_a);
-  U8 byte4 = * ((U8 *)&GUID_data_4b_a+1);
-  U8 byte5 = * ((U8 *)&GUID_data_4b_b);
-  U8 byte6 = * ((U8 *)&GUID_data_4b_b+1);
-  U8 byte7 = * ((U8 *)&GUID_data_4b_b+2);
-  U8 byte8 = * ((U8 *)&GUID_data_4b_b+3);
-  U8 GUID_data_4[8] = {byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8};
-
-  header.project_ID_GUID_data_1 = GUID_data_1;
-  header.project_ID_GUID_data_2 = GUID_data_2;
-  header.project_ID_GUID_data_3 = GUID_data_3;
-  memcpy(header.project_ID_GUID_data_4, GUID_data_4, sizeof(U8)*8);
-}
-
-
-int get_point_data_record_length(int point_data_format)
-{
-  switch (point_data_format)
-  {
-  case 0: return 20; break;
-  case 1: return 28; break;
-  case 2: return 26; break;
-  case 3: return 34; break;
-  case 4: return 57; break;
-  case 5: return 63; break;
-  case 6: return 30; break;
-  case 7: return 36; break;
-  case 8: return 38; break;
-  case 9: return 59; break;
-  case 10: return 67; break;
-  default: stop("point_data_format out of range."); break;
-  }
-}
-
-/* attributes data_type:
- * data_type = 0 : unsigned char
- * data_type = 1 : char
- * data_type = 2 : unsigned short
- * data_type = 3 : short
- * data_type = 4 : unsigned int
- * data_type = 5 : int
- * data_type = 6 : unsigned int64
- * data_type = 7 : int64
- * data_type = 8 : float  (try not to use)
- * data_type = 9 : double (try not to use)
- */

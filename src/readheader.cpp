@@ -29,21 +29,241 @@
 
 #include <Rcpp.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 
 #include "lasreader.hpp"
 #include "lasfilter.hpp"
 #include "lastransform.hpp"
-
+#include "rlas_laslib.h"
 
 using namespace Rcpp;
 
-List vlrsreader(LASheader*);
-List evlrsreader(LASheader*);
-List globalencodingreader(LASheader*);
-inline std::string nullterminate(CHAR*, int);
+namespace
+{
+
+template <typename T>
+T load(const void* ptr)
+{
+  T value;
+  std::memcpy(&value, ptr, sizeof(T));
+  return value;
+}
+
+std::string nullterminate(const CHAR* str, int len)
+{
+  if (str[len-1] != '\0')
+    return std::string(str, str+len);
+  else
+    return std::string(str);
+}
+
+List globalencodingreader(LASheader* lasheader)
+{
+  return List::create(Named("GPS Time Type")                  = (bool)lasheader->get_global_encoding_bit(0),
+                      Named("Waveform Data Packets Internal") = (bool)lasheader->get_global_encoding_bit(1),
+                      Named("Waveform Data Packets External") = (bool)lasheader->get_global_encoding_bit(2),
+                      Named("Synthetic Return Numbers")       = (bool)lasheader->get_global_encoding_bit(3),
+                      Named("WKT")                            = (bool)lasheader->get_global_encoding_bit(4),
+                      Named("Aggregate Model")                = (bool)lasheader->get_global_encoding_bit(5));
+}
+
+List geokeysreader(LASheader* lasheader)
+{
+  List GeoKeys(0);
+
+  for (int j = 0 ; j < lasheader->vlr_geo_keys->number_of_keys ; j++)
+  {
+    const LASvlr_key_entry& entry = lasheader->vlr_geo_key_entries[j];
+    GeoKeys.push_back(List::create(Named("key")               = entry.key_id,
+                                   Named("tiff tag location") = entry.tiff_tag_location,
+                                   Named("count")             = entry.count,
+                                   Named("value offset")      = entry.value_offset));
+  }
+
+  return GeoKeys;
+}
+
+// Description of one extra bytes attribute. 'fix_description' reads the description as a
+// string of at most 32 characters, possibly not null terminated (#53).
+List extrabytereader(const LASattribute& attribute, bool fix_description)
+{
+  int data_type = ((I32)(attribute.data_type)-1)%10;
+
+  List ExtraByte(0);
+  CharacterVector names(0);
+  auto add = [&](const char* name, const auto& value) { ExtraByte.push_back(value); names.push_back(name); };
+
+  add("reserved", load<I16>(attribute.reserved));
+  add("data_type", (I32)(attribute.data_type));
+  add("options", (I32)(attribute.options));
+  add("name", attribute.name);
+
+  // 2 and 3 dimensional arrays are deprecated in LASlib
+  // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
+  double scale = 1.0;
+  if (attribute.has_scale())
+  {
+    scale = attribute.scale[0];
+    add("scale", scale);
+  }
+
+  double offset = 0.0;
+  if (attribute.has_offset())
+  {
+    offset = attribute.offset[0];
+    add("offset", offset);
+  }
+
+  if (data_type < 8)
+  {
+    // As R does not support 64 bits integers they are converted to double
+    if (attribute.has_no_data()) add("no_data", attribute.no_data[0].i64);
+    if (attribute.has_min())     add("min", attribute.min[0].i64*scale+offset);
+    if (attribute.has_max())     add("max", attribute.max[0].i64*scale+offset);
+  }
+  else
+  {
+    if (attribute.has_no_data()) add("no_data", attribute.no_data[0].f64*scale+offset);
+    if (attribute.has_min())     add("min", attribute.min[0].f64*scale+offset);
+    if (attribute.has_max())     add("max", attribute.max[0].f64*scale+offset);
+  }
+
+  if (fix_description)
+  {
+    int len = 0;
+    while (len < 32 && attribute.description[len] != '\0') len++;
+    add("description", std::string(attribute.description, len));
+  }
+  else
+  {
+    add("description", attribute.description);
+  }
+
+  ExtraByte.names() = names;
+  return ExtraByte;
+}
+
+List extrabytesreader(LASheader* lasheader, bool fix_description)
+{
+  List ExtraBytes(0);
+  CharacterVector names(0);
+
+  for (int j = 0 ; j < lasheader->number_attributes ; j++)
+  {
+    const LASattribute& attribute = lasheader->attributes[j];
+
+    if (!attribute.data_type)
+    {
+      Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
+      continue;
+    }
+
+    ExtraBytes.push_back(extrabytereader(attribute, fix_description));
+    names.push_back(attribute.name);
+  }
+
+  ExtraBytes.names() = names;
+  return ExtraBytes;
+}
+
+// Reads the VLRs (V = LASvlr) or the EVLRs (V = LASevlr) of a header
+template <typename V>
+List recordsreader(LASheader* lasheader, const V* records, int nrecords)
+{
+  constexpr bool is_vlr = std::is_same_v<V, LASvlr>;
+
+  List lvlrs;
+  List lvlrsnames;
+
+  for (int i = 0 ; i < nrecords ; i++)
+  {
+    const V& vlr   = records[i];
+    List lvlr      = List::create(vlr.reserved, vlr.user_id, vlr.record_id, vlr.record_length_after_header, vlr.description);
+    List lvlrnames = List::create("reserved", "user ID", "record ID", "length after header", "description");
+
+    auto add = [&](const char* name, const char* record_name, const auto& value)
+    {
+      lvlr.push_back(value);
+      lvlrnames.push_back(name);
+      lvlrsnames.push_back(record_name);
+    };
+
+    const bool has_data = vlr.data != 0;
+
+    if (has_data && std::strcmp(vlr.user_id, "LASF_Projection") == 0)
+    {
+      switch (vlr.record_id)
+      {
+        case 34735:
+          add("tags", "GeoKeyDirectoryTag", geokeysreader(lasheader));
+          break;
+        case 34736:
+        {
+          int n = vlr.record_length_after_header/8;
+          NumericVector GeoDouble(lasheader->vlr_geo_double_params, lasheader->vlr_geo_double_params + n);
+          add("tags", "GeoDoubleParamsTag", GeoDouble);
+          break;
+        }
+        case 34737:
+          add("tags", "GeoAsciiParamsTag", nullterminate(lasheader->vlr_geo_ascii_params, vlr.record_length_after_header));
+          break;
+        case 2111:
+          add("WKT OGC MATH TRANSFORM", "WKT OGC MT", nullterminate(lasheader->vlr_geo_ogc_wkt_math, vlr.record_length_after_header));
+          break;
+        case 2112:
+          add("WKT OGC COORDINATE SYSTEM", "WKT OGC CS", nullterminate(lasheader->vlr_geo_ogc_wkt, vlr.record_length_after_header));
+          break;
+        default:
+          break; // not supported yet
+      }
+    }
+    else if (has_data && std::strcmp(vlr.user_id, "LASF_Spec") == 0)
+    {
+      if (vlr.record_id == 3) // TextArea
+      {
+        add("Text Area Description", "TextArea", std::string((const CHAR*)vlr.data, vlr.record_length_after_header));
+      }
+      else if (vlr.record_id == 4) // ExtraBytes
+      {
+        add("Extra Bytes Description", "Extra_Bytes", extrabytesreader(lasheader, is_vlr));
+      }
+      else if (is_vlr && vlr.record_id >= 100 && vlr.record_id < 355) // FWF
+      {
+        const LASvlr_wave_packet_descr* descr = (const LASvlr_wave_packet_descr*) vlr.data;
+
+        List FWF = List::create(
+          Named("Bits per sample")           = (U32)(descr->getBitsPerSample()),
+          Named("Waveform compression type") = (U32)(descr->getCompressionType()),
+          Named("Number of sample")          = descr->getNumberOfSamples(),
+          Named("Temporal Spacing")          = descr->getTemporalSpacing(),
+          Named("Digitizer Gain")            = descr->getDigitizerGain(),
+          Named("Digitizer Offset")          = descr->getDigitizerOffset());
+
+        add("Full WaveForm", "Full WaveForm Description", FWF);
+      }
+      else
+      {
+        lvlrsnames.push_back(vlr.user_id); // not supported yet
+      }
+    }
+    else
+    {
+      lvlrsnames.push_back(vlr.user_id); // not supported yet
+    }
+
+    lvlr.names() = lvlrnames;
+    lvlrs.push_back(lvlr);
+  }
+
+  lvlrs.names() = lvlrsnames;
+  return lvlrs;
+}
+
+} // namespace
 
 // Read header in a las or laz file
 //
@@ -58,585 +278,83 @@ List lasheaderreader(CharacterVector file)
 {
   try
   {
-    std::string filestd = as<std::string>(file);
-
     LASreadOpener lasreadopener;
-    lasreadopener.set_file_name(filestd.c_str());
+    lasreadopener.set_file_name(as<std::string>(file).c_str());
 
-    LASreader* lasreader = lasreadopener.open();
-    LASheader* lasheader = &lasreader->header;
+    rlas::LASreaderPtr lasreader(lasreadopener.open());
 
-    if((0 == lasreader) || (NULL == lasreader))
+    if (!lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
 
-    char cguid[38];
-    snprintf(cguid, 38, "%08x-%04x-%04x-%04x-%04x%08x",
-            lasheader->project_ID_GUID_data_1,
-            lasheader->project_ID_GUID_data_2,
-            lasheader->project_ID_GUID_data_3,
-            *((U16*)(lasheader->project_ID_GUID_data_4)),
-            *((U16*)(lasheader->project_ID_GUID_data_4+2)),
-            *((U32*)(lasheader->project_ID_GUID_data_4+4)));
+    LASheader* lasheader = &lasreader->header;
 
-    CharacterVector guid(cguid);
+    char cguid[38];
+    std::snprintf(cguid, 38, "%08x-%04x-%04x-%04x-%04x%08x",
+                  lasheader->project_ID_GUID_data_1,
+                  lasheader->project_ID_GUID_data_2,
+                  lasheader->project_ID_GUID_data_3,
+                  load<U16>(lasheader->project_ID_GUID_data_4),
+                  load<U16>(lasheader->project_ID_GUID_data_4+2),
+                  load<U32>(lasheader->project_ID_GUID_data_4+4));
 
     List head(0);
-    head.push_back(lasheader->file_signature);
-    head.push_back(lasheader->file_source_ID);
-    head.push_back(globalencodingreader(lasheader));
-    head.push_back(guid);
-    head.push_back((int)lasheader->version_major);
-    head.push_back((int)lasheader->version_minor);
-    head.push_back(lasheader->system_identifier);
-    head.push_back(lasheader->generating_software);
-    head.push_back(lasheader->file_creation_day);
-    head.push_back(lasheader->file_creation_year);
-    head.push_back(lasheader->header_size);
-    head.push_back(lasheader->offset_to_point_data);
-    head.push_back(lasheader->number_of_variable_length_records);
-    head.push_back((int)lasheader->point_data_format);
-    head.push_back(lasheader->point_data_record_length);
+    CharacterVector names(0);
+    auto add = [&](const char* name, const auto& value) { head.push_back(value); names.push_back(name); };
+
+    add("File Signature", lasheader->file_signature);
+    add("File Source ID", lasheader->file_source_ID);
+    add("Global Encoding", globalencodingreader(lasheader));
+    add("Project ID - GUID", CharacterVector(cguid));
+    add("Version Major", (int)lasheader->version_major);
+    add("Version Minor", (int)lasheader->version_minor);
+    add("System Identifier", lasheader->system_identifier);
+    add("Generating Software", lasheader->generating_software);
+    add("File Creation Day of Year", lasheader->file_creation_day);
+    add("File Creation Year", lasheader->file_creation_year);
+    add("Header Size", lasheader->header_size);
+    add("Offset to point data", lasheader->offset_to_point_data);
+    add("Number of variable length records", lasheader->number_of_variable_length_records);
+    add("Point Data Format ID", (int)lasheader->point_data_format);
+    add("Point Data Record Length", lasheader->point_data_record_length);
 
     // Added support of LAS 1.4
-    if (lasheader->version_minor == 4)
-    {
-      if (lasheader->extended_number_of_point_records > 2147483647)
-        throw std::runtime_error("R cannot handle more than 2147483647 points.");
+    const bool las14 = lasheader->version_minor == 4;
+    const U64 npoints = las14 ? lasheader->extended_number_of_point_records : lasheader->number_of_point_records;
+    const int nreturns = las14 ? 15 : 5;
 
-      head.push_back((int)lasheader->extended_number_of_point_records);
-      IntegerVector extended_number_of_points_by_return(15);
-      for(int i = 0 ; i < 15 ; i++) extended_number_of_points_by_return[i] = (int)lasheader->extended_number_of_points_by_return[i];
-      head.push_back(extended_number_of_points_by_return);
-    }
-    else
-    {
-      if (lasheader->number_of_point_records > 2147483647)
-        throw std::runtime_error("R cannot handle more than 2147483647 points.");
+    if (npoints > 2147483647)
+      throw std::runtime_error("R cannot handle more than 2147483647 points.");
 
-      head.push_back((int)lasheader->number_of_point_records);
+    IntegerVector number_of_points_by_return(nreturns);
+    for (int i = 0 ; i < nreturns ; i++)
+      number_of_points_by_return[i] = las14 ? (int)lasheader->extended_number_of_points_by_return[i] : (int)lasheader->number_of_points_by_return[i];
 
-      IntegerVector number_of_points_by_return(5);
-      for(int i = 0 ; i < 5 ; i++) number_of_points_by_return[i] = (int)lasheader->number_of_points_by_return[i];
-      head.push_back(number_of_points_by_return);
-    }
-
-    head.push_back(lasheader->x_scale_factor);
-    head.push_back(lasheader->y_scale_factor);
-    head.push_back(lasheader->z_scale_factor);
-    head.push_back(lasheader->x_offset);
-    head.push_back(lasheader->y_offset);
-    head.push_back(lasheader->z_offset);
-    head.push_back(lasheader->max_x);
-    head.push_back(lasheader->min_x);
-    head.push_back(lasheader->max_y);
-    head.push_back(lasheader->min_y);
-    head.push_back(lasheader->max_z);
-    head.push_back(lasheader->min_z);
-    head.push_back(vlrsreader(lasheader));
-    head.push_back(evlrsreader(lasheader));
-
-    CharacterVector names(0);
-    names.push_back("File Signature");
-    names.push_back("File Source ID");
-    names.push_back("Global Encoding");
-    names.push_back("Project ID - GUID");
-    names.push_back("Version Major");
-    names.push_back("Version Minor");
-    names.push_back("System Identifier");
-    names.push_back("Generating Software");
-    names.push_back("File Creation Day of Year");
-    names.push_back("File Creation Year");
-    names.push_back("Header Size");
-    names.push_back("Offset to point data");
-    names.push_back("Number of variable length records");
-    names.push_back("Point Data Format ID");
-    names.push_back("Point Data Record Length");
-    names.push_back("Number of point records");
-    names.push_back("Number of points by return");
-    names.push_back("X scale factor");
-    names.push_back("Y scale factor");
-    names.push_back("Z scale factor");
-    names.push_back("X offset");
-    names.push_back("Y offset");
-    names.push_back("Z offset");
-    names.push_back("Max X");
-    names.push_back("Min X");
-    names.push_back("Max Y");
-    names.push_back("Min Y");
-    names.push_back("Max Z");
-    names.push_back("Min Z");
-    names.push_back("Variable Length Records");
-    names.push_back("Extended Variable Length Records");
+    add("Number of point records", (int)npoints);
+    add("Number of points by return", number_of_points_by_return);
+    add("X scale factor", lasheader->x_scale_factor);
+    add("Y scale factor", lasheader->y_scale_factor);
+    add("Z scale factor", lasheader->z_scale_factor);
+    add("X offset", lasheader->x_offset);
+    add("Y offset", lasheader->y_offset);
+    add("Z offset", lasheader->z_offset);
+    add("Max X", lasheader->max_x);
+    add("Min X", lasheader->min_x);
+    add("Max Y", lasheader->max_y);
+    add("Min Y", lasheader->min_y);
+    add("Max Z", lasheader->max_z);
+    add("Min Z", lasheader->min_z);
+    add("Variable Length Records", recordsreader(lasheader, lasheader->vlrs, (int)lasheader->number_of_variable_length_records));
+    add("Extended Variable Length Records", recordsreader(lasheader, lasheader->evlrs, (int)lasheader->number_of_extended_variable_length_records));
 
     head.names() = names;
-
-    lasreader->close();
-    delete lasreader;
-
-    return(head);
+    return head;
   }
   catch (std::exception const& e)
   {
     Rcerr << "Error: " << e.what() << std::endl;
-    return(List(0));
+    return List(0);
   }
 }
-
-List globalencodingreader(LASheader* lasheader)
-{
-  bool GPSTimeType = lasheader->get_global_encoding_bit(0);
-  bool WaveformDataPacketsInternal = lasheader->get_global_encoding_bit(1);
-  bool WaveformDataPacketsExternal = lasheader->get_global_encoding_bit(2);
-  bool SyntheticReturnNumbers = lasheader->get_global_encoding_bit(3);
-  bool WKT = lasheader->get_global_encoding_bit(4);
-  bool AggregateModel = lasheader->get_global_encoding_bit(5);
-
-  return List::create(Named("GPS Time Type") = GPSTimeType,
-                      Named("Waveform Data Packets Internal") = WaveformDataPacketsInternal,
-                      Named("Waveform Data Packets External") = WaveformDataPacketsExternal,
-                      Named("Synthetic Return Numbers") = SyntheticReturnNumbers,
-                      Named("WKT") = WKT,
-                      Named("Aggregate Model") = AggregateModel);
-}
-
-List vlrsreader(LASheader* lasheader)
-{
-  int nvlrs = (int)lasheader->number_of_variable_length_records;
-
-  List lvlrs;
-  List lvlrsnames;
-
-  for (int i = 0; i < nvlrs; i++)
-  {
-    LASvlr vlr     = lasheader->vlrs[i];
-    List lvlr      = List::create(vlr.reserved, vlr.user_id, vlr.record_id, vlr.record_length_after_header, vlr.description);
-    List lvlrnames = List::create("reserved", "user ID", "record ID", "length after header", "description");
-
-    if (strcmp(vlr.user_id, "LASF_Projection") == 0 && vlr.data != 0)
-    {
-      if (vlr.record_id == 34735) // GeoKeyDirectoryTag
-      {
-        List GeoKeys(0);
-
-        for (int j = 0; j < lasheader->vlr_geo_keys->number_of_keys; j++)
-        {
-          List GeoKey = List::create(Named("key") = lasheader->vlr_geo_key_entries[j].key_id,
-                                     Named("tiff tag location") =  lasheader->vlr_geo_key_entries[j].tiff_tag_location,
-                                     Named("count") = lasheader->vlr_geo_key_entries[j].count,
-                                     Named("value offset") = lasheader->vlr_geo_key_entries[j].value_offset);
-
-          GeoKeys.push_back(GeoKey);
-        }
-
-        lvlr.push_back(GeoKeys);
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoKeyDirectoryTag");
-      }
-      else if (vlr.record_id == 34736) // GeoDoubleParamsTag
-      {
-        int n = vlr.record_length_after_header/8;
-        NumericVector GeoDouble(n);
-
-        for (int j = 0; j < n; j++)
-        {
-          GeoDouble(j) = lasheader->vlr_geo_double_params[j];
-        }
-
-        lvlr.push_back(GeoDouble);
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoDoubleParamsTag");
-      }
-      else if (vlr.record_id == 34737) // GeoAsciiParamsTag
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ascii_params, vlr.record_length_after_header));
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoAsciiParamsTag");
-      }
-      else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt_math, vlr.record_length_after_header));
-        lvlrnames.push_back("WKT OGC MATH TRANSFORM");
-        lvlrsnames.push_back("WKT OGC MT");
-      }
-      else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt, vlr.record_length_after_header));
-        lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
-        lvlrsnames.push_back("WKT OGC CS");
-      }
-    }
-    else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
-    {
-      if (vlr.record_id == 3) // TextArea
-      {
-        CHAR* text_area_description = (CHAR*) vlr.data;
-        lvlr.push_back(std::string(text_area_description, vlr.record_length_after_header));
-        lvlrnames.push_back("Text Area Description");
-        lvlrsnames.push_back("TextArea");
-      }
-      else if (vlr.record_id == 4) // ExtraBytes
-      {
-        lvlrsnames.push_back("Extra_Bytes");
-        lvlrnames.push_back("Extra Bytes Description");
-
-        List ExtraBytes(0);
-        List ExtraBytesnames(0);
-
-        for (int j = 0; j < lasheader->number_attributes; j++)
-        {
-          LASattribute attemp(lasheader->attributes[j]);
-
-          if (attemp.data_type)
-          {
-            int data_type = ((I32)(attemp.data_type)-1)%10;
-            //int dim = ((I32)(attemp.data_type)-1)/10+1;
-
-            List ExtraByte(0);
-            List ExtraBytenames(0);
-            ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
-            ExtraBytenames.push_back("reserved");
-            ExtraByte.push_back((I32)(attemp.data_type));
-            ExtraBytenames.push_back("data_type");
-            ExtraByte.push_back((I32)(attemp.options));
-            ExtraBytenames.push_back("options");
-            ExtraByte.push_back(attemp.name);
-            ExtraBytenames.push_back("name");
-
-            // 2 and 3 dimensional arrays are deprecated in LASlib
-            // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-            double scale = 1.0;
-            if(attemp.has_scale())
-            {
-              scale = attemp.scale[0];
-              ExtraByte.push_back(scale);
-              ExtraBytenames.push_back("scale");
-            }
-
-            double offset = 0.0;
-            if(attemp.has_offset())
-            {
-              offset = attemp.offset[0];
-              ExtraByte.push_back(offset);
-              ExtraBytenames.push_back("offset");
-            }
-
-            if (data_type < 8)
-            {
-              I64* temp; // as R does not support long long int it is converted to double
-
-              if (attemp.has_no_data())
-              {
-                temp = ((I64*)(attemp.no_data));
-                ExtraByte.push_back(*temp);
-                ExtraBytenames.push_back("no_data");
-              }
-
-              if (attemp.has_min())
-              {
-                temp = ((I64*)(attemp.min));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("min");
-              }
-
-              if (attemp.has_max())
-              {
-                temp = ((I64*)(attemp.max));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("max");
-              }
-            }
-            else
-            {
-              F64* temp;
-
-              if (attemp.has_no_data())
-              {
-                temp = ((F64*)(attemp.no_data));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("no_data");
-              }
-
-              if (attemp.has_min())
-              {
-                temp = ((F64*)(attemp.min));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("min");
-              }
-
-              if (attemp.has_max())
-              {
-                temp = ((F64*)(attemp.max));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("max");
-              }
-            }
-
-            // Fix #53
-            int len = 0 ; while(len < 32 && attemp.description[len] != '\0') len++;
-            std::string desc;
-            desc.resize(len);
-            memcpy(&desc[0], &attemp.description, len);
-
-            ExtraByte.push_back(desc);
-            ExtraBytenames.push_back("description");
-
-            ExtraByte.names() = ExtraBytenames;
-            ExtraBytes.push_back(ExtraByte);
-            ExtraBytesnames.push_back(attemp.name);
-          }
-          else
-          {
-            Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
-          }
-        }
-
-        ExtraBytes.names() = ExtraBytesnames;
-        lvlr.push_back(ExtraBytes);
-      }
-      else if (vlr.record_id >= 100 &&  vlr.record_id < 355) // FWF
-      {
-        LASvlr_wave_packet_descr* vlr_wave_packet_descr = (LASvlr_wave_packet_descr*) vlr.data;
-
-        List FWF = List::create(
-          Named("Bits per sample") = (U32)(vlr_wave_packet_descr->getBitsPerSample()),
-          Named("Waveform compression type") = (U32)(vlr_wave_packet_descr->getCompressionType()),
-          Named("Number of sample") = vlr_wave_packet_descr->getNumberOfSamples(),
-          Named("Temporal Spacing") = vlr_wave_packet_descr->getTemporalSpacing(),
-          Named("Digitizer Gain") = vlr_wave_packet_descr->getDigitizerGain(),
-          Named("Digitizer Offset") = vlr_wave_packet_descr->getDigitizerOffset());
-
-        lvlrsnames.push_back("Full WaveForm Description");
-        lvlrnames.push_back("Full WaveForm");
-        lvlr.push_back(FWF);
-      }
-      else
-      {
-        // not supported yet
-        lvlrsnames.push_back(vlr.user_id);
-      }
-    }
-    else
-    {
-      // not supported yet
-      lvlrsnames.push_back(vlr.user_id);
-    }
-
-    lvlr.names() = lvlrnames;
-    lvlrs.push_back(lvlr);
-  }
-
-  lvlrs.names() = lvlrsnames;
-  return lvlrs;
-}
-
-List evlrsreader(LASheader* lasheader)
-{
-  int nvlrs = (int)lasheader->number_of_extended_variable_length_records;
-
-  List lvlrs;
-  List lvlrsnames;
-
-  for (int i = 0; i < nvlrs; i++)
-  {
-    LASevlr vlr    = lasheader->evlrs[i];
-    List lvlr      = List::create(vlr.reserved, vlr.user_id, vlr.record_id, vlr.record_length_after_header, vlr.description);
-    List lvlrnames = List::create("reserved", "user ID", "record ID", "length after header", "description");
-
-    if (strcmp(vlr.user_id, "LASF_Projection") == 0 && vlr.data != 0)
-    {
-      if (vlr.record_id == 34735) // GeoKeyDirectoryTag
-      {
-        List GeoKeys(0);
-
-        for (int j = 0; j < lasheader->vlr_geo_keys->number_of_keys; j++)
-        {
-          List GeoKey = List::create(Named("key") = lasheader->vlr_geo_key_entries[j].key_id,
-                                     Named("tiff tag location") =  lasheader->vlr_geo_key_entries[j].tiff_tag_location,
-                                     Named("count") = lasheader->vlr_geo_key_entries[j].count,
-                                     Named("value offset") = lasheader->vlr_geo_key_entries[j].value_offset);
-
-          GeoKeys.push_back(GeoKey);
-        }
-
-        lvlr.push_back(GeoKeys);
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoKeyDirectoryTag");
-      }
-      else if (vlr.record_id == 34736) // GeoDoubleParamsTag
-      {
-        int n = vlr.record_length_after_header/8;
-        NumericVector GeoDouble(n);
-
-        for (int j = 0; j < n; j++)
-        {
-          GeoDouble(j) = lasheader->vlr_geo_double_params[j];
-        }
-
-        lvlr.push_back(GeoDouble);
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoDoubleParamsTag");
-      }
-      else if (vlr.record_id == 34737) // GeoAsciiParamsTag
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ascii_params, vlr.record_length_after_header));
-        lvlrnames.push_back("tags");
-        lvlrsnames.push_back("GeoAsciiParamsTag");
-      }
-      else if (vlr.record_id == 2111) // WKT OGC MATH TRANSFORM
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt_math, vlr.record_length_after_header));
-        lvlrnames.push_back("WKT OGC MATH TRANSFORM");
-        lvlrsnames.push_back("WKT OGC MT");
-      }
-      else if (vlr.record_id == 2112) // WKT OGC COORDINATE SYSTEM
-      {
-        lvlr.push_back(nullterminate(lasheader->vlr_geo_ogc_wkt, vlr.record_length_after_header));
-        lvlrnames.push_back("WKT OGC COORDINATE SYSTEM");
-        lvlrsnames.push_back("WKT OGC CS");
-      }
-    }
-    else if ((strcmp(vlr.user_id, "LASF_Spec") == 0) && (vlr.data != 0))
-    {
-      if (vlr.record_id == 3) // TextArea
-      {
-        CHAR* text_area_description = (CHAR*) vlr.data;
-        lvlr.push_back(std::string(text_area_description, vlr.record_length_after_header));
-        lvlrnames.push_back("Text Area Description");
-        lvlrsnames.push_back("TextArea");
-      }
-      else if (vlr.record_id == 4) // ExtraBytes
-      {
-        lvlrsnames.push_back("Extra_Bytes");
-        lvlrnames.push_back("Extra Bytes Description");
-
-        List ExtraBytes(0);
-        List ExtraBytesnames(0);
-
-        for (int j = 0; j < lasheader->number_attributes; j++)
-        {
-          LASattribute attemp(lasheader->attributes[j]);
-
-          if (attemp.data_type)
-          {
-            int data_type = ((I32)(attemp.data_type)-1)%10;
-            //int dim = ((I32)(attemp.data_type)-1)/10+1;
-
-            List ExtraByte(0);
-            List ExtraBytenames(0);
-            ExtraByte.push_back(((I16*)(attemp.reserved))[0]);
-            ExtraBytenames.push_back("reserved");
-            ExtraByte.push_back((I32)(attemp.data_type));
-            ExtraBytenames.push_back("data_type");
-            ExtraByte.push_back((I32)(attemp.options));
-            ExtraBytenames.push_back("options");
-            ExtraByte.push_back(attemp.name);
-            ExtraBytenames.push_back("name");
-
-            // 2 and 3 dimensional arrays are deprecated in LASlib
-            // (see https://github.com/LAStools/LAStools/blob/master/LASlib/example/lasexample_write_only_with_extra_bytes.cpp)
-            double scale = 1.0;
-            if(attemp.has_scale())
-            {
-              scale = attemp.scale[0];
-              ExtraByte.push_back(scale);
-              ExtraBytenames.push_back("scale");
-            }
-
-            double offset = 0.0;
-            if(attemp.has_offset())
-            {
-              offset = attemp.offset[0];
-              ExtraByte.push_back(offset);
-              ExtraBytenames.push_back("offset");
-            }
-
-            if (data_type < 8)
-            {
-              I64* temp; // as R does not support long long int it is converted to double
-
-              if (attemp.has_no_data())
-              {
-                temp = ((I64*)(attemp.no_data));
-                ExtraByte.push_back(*temp);
-                ExtraBytenames.push_back("no_data");
-              }
-
-              if (attemp.has_min())
-              {
-                temp = ((I64*)(attemp.min));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("min");
-              }
-
-              if (attemp.has_max())
-              {
-                temp = ((I64*)(attemp.max));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("max");
-              }
-            }
-            else
-            {
-              F64* temp;
-
-              if (attemp.has_no_data())
-              {
-                temp = ((F64*)(attemp.no_data));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("no_data");
-              }
-
-              if (attemp.has_min())
-              {
-                temp = ((F64*)(attemp.min));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("min");
-              }
-
-              if (attemp.has_max())
-              {
-                temp = ((F64*)(attemp.max));
-                ExtraByte.push_back(*temp*scale+offset);
-                ExtraBytenames.push_back("max");
-              }
-            }
-
-            ExtraByte.push_back(attemp.description);
-            ExtraBytenames.push_back("description");
-
-            ExtraByte.names() =  ExtraBytenames;
-            ExtraBytes.push_back(ExtraByte);
-            ExtraBytesnames.push_back(attemp.name);
-          }
-          else
-          {
-            Rcout << "extra byte " << j << " undocumented: dropped" << std::endl;
-          }
-        }
-
-        ExtraBytes.names() = ExtraBytesnames;
-        lvlr.push_back(ExtraBytes);
-      }
-      else
-      {
-        // not supported yet
-        lvlrsnames.push_back(vlr.user_id);
-      }
-    }
-    else
-    {
-      // not supported yet
-      lvlrsnames.push_back(vlr.user_id);
-    }
-
-    lvlr.names() = lvlrnames;
-    lvlrs.push_back(lvlr);
-  }
-
-  lvlrs.names() = lvlrsnames;
-  return lvlrs;
-}
-
 
 // [[Rcpp::export]]
 void lasfilterusage()
@@ -664,12 +382,4 @@ void lastransformusage()
   {
     Rcerr << "Error: " << e.what() << std::endl;
   }
-}
-
-inline std::string nullterminate(CHAR* str, int len)
-{
-  if (str[len-1] != '\0')
-    return(std::string(str, str+len));
-  else
-    return(std::string(str));
 }

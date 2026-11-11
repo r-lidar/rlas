@@ -32,15 +32,14 @@
 
 #include <Rcpp.h>
 
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdexcept>
+#include <string>
 
 #include "lasreader.hpp"
 #include "laszip_decompress_selective_v3.hpp"
 #include "lasindex.hpp"
 #include "lasquadtree.hpp"
+#include "rlas_laslib.h"
 
 using namespace Rcpp;
 
@@ -49,40 +48,28 @@ void laxwriter(CharacterVector file, bool verbose)
 {
   try
   {
-    // Cast CharacterVector into proper types
-    std::string filestd   = as<std::string>(file);
-    const char* filechar = filestd.c_str();;
-
-    // Initialize las objects
     LASreadOpener lasreadopener;
-    lasreadopener.set_file_name(filechar);
-    LASreader* lasreader = lasreadopener.open();
+    lasreadopener.set_file_name(as<std::string>(file).c_str());
 
-    if(0 == lasreader || NULL == lasreader)
+    rlas::LASreaderPtr lasreader(lasreadopener.open());
+
+    if (!lasreader)
       throw std::runtime_error("LASlib internal error. See message above.");
 
     lasreadopener.set_decompress_selective(LASZIP_DECOMPRESS_SELECTIVE_CHANNEL_RETURNS_XY);
 
-    // setup the quadtree
+    // Setup the quadtree: the cell size grows with the extent of the file
+    // (10 for extents < 1000, 100 for extents < 10000, ..., up to 100000)
+    const LASheader& header = lasreader->header;
+    float w = header.max_x - header.min_x;
+    float h = header.max_y - header.min_y;
 
-    LASquadtree* lasquadtree = new LASquadtree;
+    F32 t = 10.0;
+    while (t < 100000.0 && !(w < 100*t && h < 100*t))
+      t *= 10;
 
-    float w = lasreader->header.max_x - lasreader->header.min_x;
-    float h = lasreader->header.max_y - lasreader->header.min_y;
-    F32 t;
-
-    if ((w < 1000) && (h < 1000))
-      t = 10.0;
-    else if ((w < 10000) && (h < 10000))
-      t = 100.0;
-    else if ((w < 100000) && (h < 100000))
-      t = 1000.0;
-    else if ((w < 1000000) && (h < 1000000))
-      t = 10000.0;
-    else
-      t = 100000.0;
-
-    lasquadtree->setup(lasreader->header.min_x, lasreader->header.max_x, lasreader->header.min_y, lasreader->header.max_y, t);
+    LASquadtree* lasquadtree = new LASquadtree; // owned by lasindex
+    lasquadtree->setup(header.min_x, header.max_x, header.min_y, header.max_y, t);
 
     LASindex lasindex;
     lasindex.prepare(lasquadtree, 1000);
@@ -90,17 +77,13 @@ void laxwriter(CharacterVector file, bool verbose)
     while (lasreader->read_point())
       lasindex.add(lasreader->point.get_x(), lasreader->point.get_y(), (U32)(lasreader->p_count-1));
 
-    lasreader->close();
-    delete lasreader;
+    lasreader.reset();
 
     lasindex.complete(100000, -20, verbose);
     lasindex.write(lasreadopener.get_file_name());
-
-    return;
   }
   catch (std::exception const& e)
   {
     Rcerr << "Error: " << e.what() << std::endl;
-    return;
   }
 }

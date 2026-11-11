@@ -28,50 +28,112 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include <Rcpp.h>
+
 #include <chrono>
 #include <string>
-#include "rlasstreamer.h"
-#include "laspoint.hpp"
-#include "lasreader.hpp"
-#include "laswriter.hpp"
-#include "lasfilter.hpp"
+#include <vector>
 
-bool pnpoly(NumericMatrix polygon, double x, double y)
+#include "rlasstreamer.h"
+
+using namespace Rcpp;
+
+namespace
+{
+
+// A ring of a polygon. The matrix has 3 columns: x, y and 1 for an exterior ring or 0 for a hole
+struct Ring
+{
+  NumericMatrix coords;
+  bool exterior;
+};
+
+using Polygon = std::vector<Ring>;
+
+// Point in polygon test (W. Randolph Franklin's algorithm)
+bool pnpoly(const NumericMatrix& polygon, double x, double y)
 {
   int nvert = polygon.nrow();
   bool c = false;
-  int i, j;
-  for (i = 0, j = nvert - 1; i < nvert; j = i++)
+  for (int i = 0, j = nvert - 1 ; i < nvert ; j = i++)
   {
     if (((polygon(i, 1) > y) != (polygon(j, 1) > y)) &&
-        (x < (polygon(j, 0) - polygon(i, 0)) * (y - polygon(i, 1)) / (polygon(j, 1) - polygon(i, 1)) + polygon(i, 0))) {
+        (x < (polygon(j, 0) - polygon(i, 0)) * (y - polygon(i, 1)) / (polygon(j, 1) - polygon(i, 1)) + polygon(i, 0)))
+    {
       c = !c;
     }
   }
   return c;
 }
 
-// Progress printing function
-inline void print_progress(float progress, const std::chrono::steady_clock::time_point& start)
+std::vector<Polygon> parse_polygons(const List& polygons)
 {
-  int width = 50;
+  std::vector<Polygon> out;
+  out.reserve(polygons.size());
+
+  // Each polygon is a list of rings (MULTIPOLYGON and interior rings)
+  for (List rings : polygons)
+  {
+    Polygon polygon;
+    for (NumericMatrix ring : rings)
+      polygon.push_back({ring, ring(0, 2) == 1});
+    out.push_back(std::move(polygon));
+  }
+
+  return out;
+}
+
+// true if (x, y) is inside the polygon: in one of its exterior rings and not in one of its holes
+bool in_polygon(const Polygon& polygon, double x, double y)
+{
+  bool inside = false;
+
+  for (const Ring& ring : polygon)
+  {
+    if (!pnpoly(ring.coords, x, y))
+      continue;
+
+    if (!ring.exterior)
+      return false; // in a hole
+
+    inside = true;
+  }
+
+  return inside;
+}
+
+// true if (x, y) is inside at least one of the polygons
+bool in_polygons(const std::vector<Polygon>& polygons, double x, double y)
+{
+  for (const Polygon& polygon : polygons)
+  {
+    if (in_polygon(polygon, x, y))
+      return true;
+  }
+
+  return false;
+}
+
+void print_progress(float progress, const std::chrono::steady_clock::time_point& start)
+{
+  constexpr int width = 50;
   int pos = static_cast<int>(progress / 100.0 * width);
 
-  auto now = std::chrono::steady_clock::now();
-  double elapsed = std::chrono::duration<double>(now - start).count();
+  double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
   if (elapsed < 2.0) return;
 
   double eta = (progress > 0.0) ? elapsed * (100.0 - progress) / progress : 0.0;
 
   std::string bar = "[";
-  for (int i = 0; i < width; ++i)
+  for (int i = 0 ; i < width ; ++i)
     bar += (i < pos) ? "=" : (i == pos ? ">" : " ");
   bar += "]";
 
-  Rcpp::Rcout << "\r" << bar << " "
-              << static_cast<int>(progress) << "% "
-              << "ETA: " << static_cast<int>(eta) << "s     " << std::flush;
+  Rcout << "\r" << bar << " "
+        << static_cast<int>(progress) << "% "
+        << "ETA: " << static_cast<int>(eta) << "s     " << std::flush;
 }
+
+} // namespace
 
 // [[Rcpp::export]]
 List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons)
@@ -80,74 +142,27 @@ List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector sel
   streamer.select(select);
   streamer.allocation();
 
+  const bool clip = polygons.size() > 0;
+  const std::vector<Polygon> polys = parse_polygons(polygons);
+
   auto start = std::chrono::steady_clock::now();
   int counter = 0;
 
-  if (polygons.size() == 0)
+  while (streamer.read_point())
   {
-    while(streamer.read_point())
-    {
+    const LASpoint& point = streamer.point();
+
+    if (!clip || in_polygons(polys, point.get_x(), point.get_y()))
       streamer.write_point();
 
-      if (++counter % 10000 == 0)
-      {
-        Rcpp::checkUserInterrupt();
-        print_progress(streamer.progress, start);
-      }
-    }
-  }
-  else
-  {
-    while(streamer.read_point())
+    if (++counter % 10000 == 0)
     {
-      double x = streamer.point()->get_x();
-      double y = streamer.point()->get_y();
-
-      bool inpoly = false;
-      for (unsigned int i = 0 ; i < polygons.size() ; i++)
-      {
-        // This list can be made of several rings (MULTIPOLYGON) and interior rings
-        Rcpp::List rings = polygons[i];
-
-        // Loop through sub polygons (ring)
-        for (int j = 0 ; j < rings.size() ; j++)
-        {
-          Rcpp::NumericMatrix ring = rings[j];
-
-          // We need to know if the ring is an exterior/interior ring (hole)
-          bool exterior_ring = ring(0,2) == 1;
-
-          bool b = pnpoly(ring, x, y);
-
-          if (b)
-          {
-            if (exterior_ring)
-            {
-              inpoly = true;
-            }
-            else
-            {
-              inpoly = false;
-              break;
-            }
-          }
-        }
-
-        if (inpoly)
-        {
-          streamer.write_point();
-        }
-      }
-
-      if (++counter % 10000 == 0)
-      {
-        Rcpp::checkUserInterrupt();
-        print_progress(streamer.progress, start);
-      }
+      Rcpp::checkUserInterrupt();
+      print_progress(streamer.progress, start);
     }
   }
 
-  Rcpp::Rcout << "\r" << std::string(80, ' ') << "\r" << std::flush;
+  Rcout << "\r" << std::string(80, ' ') << "\r" << std::flush;
 
   return streamer.terminate();
 }

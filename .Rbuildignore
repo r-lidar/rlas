@@ -37,3 +37,4 @@
 ^.vscode$
 ^python$
 ^windows$
+^CLAUDE\.md$
