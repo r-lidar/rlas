@@ -3,11 +3,11 @@
 
  PROGRAMMERS:
 
- jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
+ info@r-lidar.com  -  https://github.com/r-lidar/rlas
 
  COPYRIGHT:
 
- Copyright 2017 Jean-Romain Roussel
+ Copyright 2017-2026 Jean-Romain Roussel
  Copyright 2011-17, martin isenburg, rapidlasso - fast tools to catch reality
 
  This file is part of rlas R package. It is mainly a subset of the code

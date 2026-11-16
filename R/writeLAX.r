@@ -2,11 +2,11 @@
 #
 # PROGRAMMERS:
 #
-# jean-romain.roussel.1@ulaval.ca  -  https://github.com/Jean-Romain/rlas
+# info@r-lidar.com  -  https://github.com/r-lidar/rlas
 #
 # COPYRIGHT:
 #
-# Copyright 2016 Jean-Romain Roussel
+# Copyright 2016-2026 Jean-Romain Roussel
 #
 # This file is part of rlas R package.
 #
