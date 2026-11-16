@@ -544,7 +544,8 @@ List RLASstreamer::build_R_list()
   {
     lasdata.push_back(wrap(vec));
     names.push_back(name);
-    std::remove_reference_t<decltype(vec)>().swap(vec);
+    vec.clear();
+    vec.shrink_to_fit();
   };
 
   add("X", X);
