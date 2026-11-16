@@ -131,8 +131,6 @@ private:
   void open();
   void init_lazy_columns(const LASpoint& point);
   void read_waveform();
-  bool read_point_parallel();
-  std::string parallel_impossible() const;
   Rcpp::List build_R_list();
 
 private:
@@ -149,7 +147,6 @@ private:
   // Parallel decoding (read.las(ncores != 1)). Declared after the reader: the workers are
   // stopped before the reader is destroyed.
   std::unique_ptr<rlas::LazBlocks> blocks;
-  std::vector<std::string> input_files;
   std::string filter_string;
 
   bool in_R       = true;  // false when the points are written into a file

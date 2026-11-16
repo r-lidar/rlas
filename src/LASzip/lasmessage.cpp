@@ -38,6 +38,8 @@
 #include <regex>
 #include <cstring>
 
+#include <mutex>
+
 #include <R_ext/Print.h> // rlas: messages go to the R console
 
 long lasmessage_cnt[LAS_QUIET];
@@ -59,9 +61,16 @@ static std::string current_msg;
 static U32 rep_log_msg = 0;
 static U8 max_rep_log_msg = 15;  // Maximum number of repeated log messages
 
+// r-lidar: LASlib may be used from several threads at the same time. Protect the shared state above.
+static std::recursive_mutex las_message_mutex;
+
 // rlas: last error message, thrown by byebye() instead of exiting
-static std::string las_last_error_message;
+static thread_local std::string las_last_error_message; // r-lidar: one per thread
 const char* las_last_error() { return las_last_error_message.c_str(); }
+
+// r-lidar: the messages of a muted thread are dropped. Its errors are still thrown by byebye().
+static thread_local bool las_thread_muted = false;
+void las_mute_thread(bool mute) { las_thread_muted = mute; }
 
 std::string las_message_type_string(LAS_MESSAGE_TYPE in) {
   switch (in) {
@@ -114,7 +123,9 @@ void LASMessage(LAS_MESSAGE_TYPE type, LAS_FORMAT_STRING(const char*) fmt, ...) 
   buildMessage(buffer, type, fmt, args);
   va_end(args);
   if (type >= LAS_ERROR) las_last_error_message = buffer;
+  if (las_thread_muted) return;
 
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
   if (current_msg != fmt) {
     if (rep_log_msg > max_rep_log_msg) {
         std::string rep_msg = "(log message repeated " + std::to_string(rep_log_msg) + " times)";
@@ -143,8 +154,10 @@ void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STR
 
   if (type < las_message_level) return;
 
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
+
   // Check whether summarisation is still required for normal logging.
-  if (current_msg != fmt) {
+  if (!las_thread_muted && current_msg != fmt) { // r-lidar: a muted thread does not print
     if (rep_log_msg > max_rep_log_msg) {
       std::string rep_msg = "(log message repeated " + std::to_string(rep_log_msg) + " times)";
       (*message_handler)(LAS_INFO, rep_msg.c_str(), message_user_data);
@@ -158,6 +171,7 @@ void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STR
   buildMessage(buffer, type, fmt, args);
   va_end(args);
   if (type >= LAS_ERROR) las_last_error_message = buffer;
+  if (las_thread_muted) return;
 
   // formatted message only fetch if fmt == buffer
   LogData& data = ext_log_entrys[buffer];
@@ -195,6 +209,8 @@ void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STR
 /// Writes the summarised repeated messages at the end of the log. 
 /// Replaces the placeholders in unformatted messages '%...' with # using a regex.
 void flush_repeated_logs() {
+  if (las_thread_muted) return; // r-lidar
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
   bool printedHeader = false;
 
   for (const auto& [msg, data] : ext_log_entrys) {

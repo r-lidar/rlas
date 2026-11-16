@@ -30,15 +30,10 @@
 #include "rlasstreamer.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>
-#include <sstream>
 #include <stdexcept>
 #include <thread>
 #include <type_traits>
-
-#include "lasreader_las.hpp"
-#include "lasreadermerged.hpp"
 
 using namespace Rcpp;
 
@@ -98,10 +93,7 @@ void RLASstreamer::set_input_files(CharacterVector ifiles)
   lasreadopener.set_copc_stream_ordered_by_chunk();
 
   for (const auto& file : ifiles)
-  {
-    input_files.push_back(as<std::string>(file));
-    lasreadopener.add_file_name(input_files.back().c_str());
-  }
+    lasreadopener.add_file_name(as<std::string>(file).c_str());
 }
 
 void RLASstreamer::set_output_file(CharacterVector ofile)
@@ -335,96 +327,20 @@ void RLASstreamer::parallel(int ncores)
   if (ncores == 1)
     return;
 
-  std::string reason = parallel_impossible();
+  // The stream order of a COPC file changes the order of the points
+  if (filter_string.find("-stream_order_") != std::string::npos)
+    return;
 
-  if (reason.empty())
-  {
-    const unsigned int threads = (ncores <= 0) ? std::thread::hardware_concurrency() : static_cast<unsigned int>(ncores);
-    blocks = rlas::LazBlocks::create(input_files, *lasreader, threads, reason);
-  }
-}
+  const int threads = (ncores <= 0) ? (int)std::thread::hardware_concurrency() : ncores;
 
-// Why the files cannot be decoded in parallel, or an empty string. The workers read the files with
-// plain LASreaderLAS, the main thread applies the filters and the transformations to the points in
-// the order of the files. This excludes what changes how or which points the reader reads.
-std::string RLASstreamer::parallel_impossible() const
-{
-  for (const std::string& file : input_files)
-  {
-    const bool remote = file.rfind("http://", 0) == 0 || file.rfind("https://", 0) == 0 || file.rfind("/vsi", 0) == 0;
-    if (remote)
-      return "remote files are read sequentially";
-
-    std::string ext = file.substr(file.find_last_of('.') == std::string::npos ? file.size() : file.find_last_of('.'));
-    std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
-    if (ext != ".las" && ext != ".laz")
-      return "only LAS and LAZ files can be decoded in parallel";
-  }
-
-  if (!dynamic_cast<LASreaderLAS*>(lasreader.get()) && !dynamic_cast<LASreaderMerged*>(lasreader.get()))
-    return "the options '-buffered', '-stored' and '-pipe_on' are not supported";
-
-  if (lasreader->get_inside() != 0)
-    return "spatial queries ('-inside...') are not supported";
-
-  const I32 depth = lasreader->get_copc_depth();
-  if (lasreader->get_copc_resolution() > 0 || (depth != -1 && depth != I32_MAX))
-    return "COPC queries ('-max_depth', '-resolution') are not supported";
-
-  std::istringstream tokens(filter_string);
-  std::string token;
-  while (tokens >> token)
-  {
-    if (token == "-stream_order_spatial" || token == "-stream_order_level")
-      return "COPC stream orders are not supported";
-  }
-
-  LASreadOpener& opener = const_cast<LASreadOpener&>(lasreadopener);
-
-  if (opener.is_offset_adjust())
-    return "the option '-offset_adjust' is not supported";
-
-  if (opener.is_file_formula_filtered())
-    return "file formulas are not supported";
-
-  if (opener.z_from_attribute)
-    return "the option '-z_from_attribute' is not supported";
-
-  if (input_files.size() > 1 && (opener.are_files_flightlines() || opener.applying_file_source_ID()))
-    return "the options '-files_are_flightlines' and '-apply_file_source_ID' are not supported with several files";
-
-  return "";
-}
-
-bool RLASstreamer::read_point_parallel()
-{
-  LASpoint& point = lasreader->point;
-  LASfilter* filter = lasreader->get_filter();
-  LAStransform* transform = lasreader->get_transform();
-
-  progress = percent(blocks->consumed(), lasreader->npoints);
-
-  while (blocks->next(point))
-  {
-    if (filter && filter->filter(&point))
-      continue;
-
-    if (transform)
-      transform->transform(&point);
-
-    return true;
-  }
-
-  return false;
+  try { blocks.reset(new rlas::LazBlocks(lasreadopener, *lasreader, threads)); }
+  catch (std::exception const& e) { blocks.reset(); }
 }
 
 bool RLASstreamer::read_point()
 {
-  if (blocks)
-    return read_point_parallel();
-
   progress = percent(lasreader->p_cnt, lasreader->npoints);
-  return lasreader->read_point();
+  return blocks ? blocks->next() : lasreader->read_point();
 }
 
 void RLASstreamer::init_lazy_columns(const LASpoint& point)
