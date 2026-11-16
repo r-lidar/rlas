@@ -87,7 +87,7 @@ public:
 
   void select(Rcpp::CharacterVector select);
   void allocation();
-  void parallel(bool requested);
+  void parallel(int ncores);
   bool read_point();
   void write_point();
   const LASpoint& point() const { return lasreader->point; }
@@ -117,7 +117,7 @@ private:
   rlas::LASwriterPtr laswriter;
   LASheader* header = nullptr;
 
-  // Parallel decoding (read.las(parallel = TRUE)). Declared after the reader: the workers are
+  // Parallel decoding (read.las(ncores != 1)). Declared after the reader: the workers are
   // stopped before the reader is destroyed.
   std::unique_ptr<rlas::LazBlocks> blocks;
   std::vector<std::string> input_files;

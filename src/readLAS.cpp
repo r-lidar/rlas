@@ -136,12 +136,12 @@ void print_progress(float progress, const std::chrono::steady_clock::time_point&
 } // namespace
 
 // [[Rcpp::export]]
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons, bool parallel = false)
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons, int ncores = 1)
 {
   RLASstreamer streamer(ifiles, ofile, filter);
   streamer.select(select);
   streamer.allocation();
-  streamer.parallel(parallel);
+  streamer.parallel(ncores);
 
   const bool clip = polygons.size() > 0;
   const std::vector<Polygon> polys = parse_polygons(polygons);

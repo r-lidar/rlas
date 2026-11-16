@@ -14,6 +14,7 @@
 //
 // 'data_type' follows the LAS specification (1 = unsigned char, 2 = char, ..., 9 = float, 10 = double).
 // Integer types up to 32 bits without scale nor offset fit in an R integer, others are stored as R double.
+// A scale of 1 and an offset of 0 are the identity and are treated as no scale and no offset.
 class RLASExtrabyteAttributes
 {
 public:
@@ -39,7 +40,9 @@ public:
 
 public:
   bool is_supported() const { return data_type <= 10; }
-  bool is_32bits() const    { return data_type <= 6 && !(has_scale || has_offset); }
+  bool applies_scale() const  { return has_scale && scale != 1; }
+  bool applies_offset() const { return has_offset && offset != 0; }
+  bool is_32bits() const    { return data_type <= 6 && !(applies_scale() || applies_offset()); }
   void parse_options();               // Interprets 'options' as a set of bits according to the specification
 
   // Reading

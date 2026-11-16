@@ -103,7 +103,7 @@ F64 RLASExtrabyteAttributes::get_attribute_double(const LASpoint* point) const
   if (!known)
     throw std::runtime_error("LAS Extra Byte data data_type not supported.");
 
-  if (has_scale || has_offset)
+  if (applies_scale() || applies_offset())
     value = scale*value + offset;
 
   if (has_no_data && value == no_data)

@@ -73,8 +73,8 @@
 #' @param select character. select only columns of interest to save memory (see details)
 #' @param filter character. streaming filters - filter data while reading the file (see details)
 #' @param transform character. streaming transformation - transform data while reading the file (see details)
-#' @param parallel logical. Decode the points with several threads. \code{FALSE} by default to be
-#' backward compatible with lidR
+#' @param ncores integer. Number of threads used to decode the points. 1 (default) decodes them
+#' sequentially, as in previous versions, to be backward compatible with lidR. 0 uses all the cores.
 #' @return A \code{data.table}
 #' @export
 #' @examples
@@ -85,7 +85,7 @@
 #' lasdata <- read.las(lasfile, filter = "-drop_intensity_below 80")
 #' lasdata <- read.las(lasfile, select = "xyzia")
 #' @useDynLib rlas, .registration = TRUE
-read.las = function(files, select = "*", filter = "", transform = "", parallel = FALSE)
+read.las = function(files, select = "*", filter = "", transform = "", ncores = 1L)
 {
     if (filter == "-h" | filter == "-help")
       lasfilterusage()
@@ -97,7 +97,7 @@ read.las = function(files, select = "*", filter = "", transform = "", parallel =
       return(invisible())
 
   filter = paste(filter, transform)
-  stream.las(files, select = select, filter = filter, parallel = parallel)
+  stream.las(files, select = select, filter = filter, ncores = ncores)
 }
 
 #' Read header from a .las or .laz file
@@ -145,10 +145,10 @@ read.lasheader = function(file)
 #' @param ifiles,ofile characters. Streaming operations.
 #' @param polygons list. Internal use only.
 #' @export
-read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list(), parallel = FALSE)
+read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", polygons = list(), ncores = 1L)
 {
-  if (!is.logical(parallel) || length(parallel) != 1L || is.na(parallel))
-    stop("'parallel' must be TRUE or FALSE", call. = FALSE)
+  if (!is.numeric(ncores) || length(ncores) != 1L || is.na(ncores) || ncores < 0 || ncores != round(ncores) || ncores > .Machine$integer.max)
+    stop("'ncores' must be a single non-negative integer", call. = FALSE)
 
   stream <- ofile != ""
 
@@ -169,7 +169,7 @@ read_and_write.las = function(ifiles, ofile = "", select = "*", filter = "", pol
   check_filter(filter)
 
   # C_reader handles the URL now that R isn't mangling it
-  raw_list <- C_reader(ifiles, ofile, select, filter, polygons, parallel)
+  raw_list <- C_reader(ifiles, ofile, select, filter, polygons, as.integer(ncores))
 
   data <- raw_list[1:3]
   data.table::setDT(data)

@@ -103,8 +103,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_reader
-List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons, bool parallel);
-RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP polygonsSEXP, SEXP parallelSEXP) {
+List C_reader(CharacterVector ifiles, CharacterVector ofile, CharacterVector select, CharacterVector filter, Rcpp::List polygons, int ncores);
+RcppExport SEXP _rlas_C_reader(SEXP ifilesSEXP, SEXP ofileSEXP, SEXP selectSEXP, SEXP filterSEXP, SEXP polygonsSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -113,8 +113,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type select(selectSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type filter(filterSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type polygons(polygonsSEXP);
-    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, polygons, parallel));
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_reader(ifiles, ofile, select, filter, polygons, ncores));
     return rcpp_result_gen;
 END_RCPP
 }

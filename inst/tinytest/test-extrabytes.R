@@ -224,3 +224,61 @@ new_header <- suppressMessages(header_add_extrabytes_manual(header, "Exdata", "A
 
 expect_error(write.las(write_path, new_header, las), "not in the data")
 
+
+# Integer extra bytes declared with scale = 1 and offset = 0 are read as integers (identity transform)
+
+las10 <- las
+las10$treeID  <- sample(-5:100, nrow(las), TRUE)
+las10$foliage <- sample(-3:3, nrow(las), TRUE)
+new_header <- header_add_extrabytes_manual(header, "treeID", "tree id", 6L, offset = 0, scale = 1)
+new_header <- header_add_extrabytes_manual(new_header, "foliage", "foliage", 2L, offset = 0, scale = 1)
+
+expect_equal(new_header[["Variable Length Records"]][["Extra_Bytes"]][["Extra Bytes Description"]][["treeID"]][["options"]], 24L)
+expect_equal(new_header[["Variable Length Records"]][["Extra_Bytes"]][["Extra Bytes Description"]][["foliage"]][["options"]], 24L)
+
+for (ext in c(".las", ".laz"))
+{
+  path <- tempfile(fileext = ext)
+  write.las(path, new_header, las10)
+
+  for (ncores in c(1L, 2L))
+  {
+    wlas <- read.las(path, ncores = ncores)
+    expect_equal(typeof(wlas$treeID), "integer")
+    expect_equal(typeof(wlas$foliage), "integer")
+    expect_identical(wlas$treeID, las10$treeID)
+    expect_identical(wlas$foliage, las10$foliage)
+  }
+
+  # The scale and offset flags are preserved, so the file round-trips
+  wheader <- read.lasheader(path)
+  expect_equal(wheader[["Variable Length Records"]][["Extra_Bytes"]][["Extra Bytes Description"]][["treeID"]][["options"]], 24L)
+  path2 <- tempfile(fileext = ext)
+  write.las(path2, wheader, wlas)
+  expect_identical(read.las(path2)$treeID, las10$treeID)
+  expect_identical(read.las(path2)$foliage, las10$foliage)
+}
+
+# A non trivial scale still gives doubles
+
+las11 <- las
+las11$height <- round(runif(nrow(las), 0, 30), 2)
+new_header <- header_add_extrabytes_manual(header, "height", "height", 6L, offset = 0, scale = 0.01)
+path <- tempfile(fileext = ".laz")
+write.las(path, new_header, las11)
+
+for (ncores in c(1L, 2L))
+{
+  wlas <- read.las(path, ncores = ncores)
+  expect_equal(typeof(wlas$height), "double")
+  expect_equal(wlas$height, las11$height, tolerance = 1e-8)
+}
+
+# A non trivial offset with scale 1 still gives doubles
+
+new_header <- header_add_extrabytes_manual(header, "treeID", "tree id", 6L, offset = 10, scale = 1)
+path <- tempfile(fileext = ".las")
+write.las(path, new_header, las10)
+wlas <- read.las(path)
+expect_equal(typeof(wlas$treeID), "double")
+expect_equal(wlas$treeID, as.numeric(las10$treeID))

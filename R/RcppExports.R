@@ -33,8 +33,8 @@ fast_decimal_count <- function(x) {
     .Call(`_rlas_fast_decimal_count`, x)
 }
 
-C_reader <- function(ifiles, ofile, select, filter, polygons, parallel = FALSE) {
-    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, polygons, parallel)
+C_reader <- function(ifiles, ofile, select, filter, polygons, ncores = 1L) {
+    .Call(`_rlas_C_reader`, ifiles, ofile, select, filter, polygons, ncores)
 }
 
 lasheaderreader <- function(file) {
