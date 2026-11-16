@@ -300,8 +300,7 @@ void RLASstreamer::allocation()
 }
 
 // Starts the parallel decoding of the files with 'ncores' threads (0 = all the cores) when it was
-// requested (ncores != 1) and is possible. Otherwise the files are read sequentially, with a warning
-// when the decoding cannot be parallel.
+// requested (ncores != 1) and is possible. Otherwise the files are read sequentially, silently.
 void RLASstreamer::parallel(int ncores)
 {
   if (ncores == 1)
@@ -313,12 +312,6 @@ void RLASstreamer::parallel(int ncores)
   {
     const unsigned int threads = (ncores <= 0) ? std::thread::hardware_concurrency() : static_cast<unsigned int>(ncores);
     blocks = rlas::LazBlocks::create(input_files, *lasreader, threads, reason);
-  }
-
-  if (!blocks && !reason.empty())
-  {
-    std::string msg = "Parallel decoding is not possible: " + reason + ". The points are read sequentially.";
-    Rf_warningcall(R_NilValue, "%s", msg.c_str());
   }
 }
 

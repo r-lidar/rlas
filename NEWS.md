@@ -4,7 +4,7 @@
 - Change: errors raised by LASlib now stop with LASlib's own message instead of "LASlib internal error. See message above."
 - Change: written files have the reserved field of their VLR headers set to 0 instead of 0xAABB, as the LAS specification requires.
 - New: `read.las()` and `read_and_write.las()` gain an argument `ncores = 1`. With `ncores > 1` the points of local LAS,
-  LAZ and COPC files are decompressed by `ncores` threads. `ncores = 0` uses all the cores.
+  LAZ and COPC files are decompressed by `ncores` threads. `ncores = 0` uses all the cores. When the files cannot be decoded in parallel (remote files, spatial queries, ...) they are read sequentially.
 - Fix: integer extra bytes attributes whose scale and offset flags are set with a scale of 1 and an offset of 0 (as written by
   some software such as LAStools) are now read as integers instead of doubles.
 - Fix: progress bar and memory pre-allocation of LAS 1.4 files whose legacy number of points is 0.
