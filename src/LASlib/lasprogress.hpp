@@ -111,7 +111,7 @@ public:
         percentage = 1.0f;
         previous_percentage = F32_MIN;
         print();
-        if (display) REprintf("\n");
+        if (display) LASMessage(LAS_INFO, "\n"); 
         reset();
     };
 
@@ -122,7 +122,7 @@ public:
             previous_percentage = percentage;
             I32 completed = (I32)(width * percentage);
             I32 remaining = (I32)(width - completed);
-            REprintf("[%.*s%*s] %.1lf%%\r", completed, LASPROGRESSSYMBOL, remaining, "", percentage * 100);
+            LASMessage(LAS_INFO, "[%.*s%*s] %.1lf%%\r", completed, LASPROGRESSSYMBOL, remaining, "", percentage * 100);
         }
     };
 

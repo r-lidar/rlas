@@ -37,6 +37,7 @@ SOURCES = LASlib/fopen_compressed.cpp \
 					LASlib/laswaveform13reader.cpp \
 					LASlib/laswaveform13writer.cpp \
 					LASlib/laswriter_bin.cpp \
+					LASlib/laswriter_copc.cpp \
 					LASlib/laswritercompatible.cpp \
 					LASlib/laswriter.cpp \
 					LASlib/laswriter_las.cpp \
@@ -66,6 +67,7 @@ SOURCES = LASlib/fopen_compressed.cpp \
 					./altrep_compact_replication.cpp \
 					./rlasstreamer.cpp \
 					./rlaslazblocks.cpp \
+					./rlaslasmessage.cpp \
 					./rlasextrabytesattributes.cpp \
 					./readLAS.cpp \
 					./readheader.cpp \

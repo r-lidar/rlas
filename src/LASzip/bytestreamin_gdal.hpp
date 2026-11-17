@@ -116,7 +116,7 @@ inline ByteStreamInGDAL::~ByteStreamInGDAL()
   {
     if (VSIFCloseL(file) != 0)
     {
-      REprintf("WARNING: VSIFCloseL failed\n");
+      LASMessage(LAS_WARNING, "VSIFCloseL failed"); // lasR: LASMessage() instead of REprintf()
     }
     file = NULL;
   }

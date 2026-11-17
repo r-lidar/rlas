@@ -1263,6 +1263,64 @@ BOOL LASwriterLAS::update_header(const LASheader* header, BOOL use_inventory, BO
     stream->seekEnd();
   }
 
+  // lasR: COPC info VLR is resolved once the last point is written (see laswriter_copc.cpp).
+  // Therefore, it cannot be added when opening the writer. We use update_header to propagate the VLR.
+  // For this trick to work a zeroed placeholder copc info vlr must have been written when opening the file
+  for (i = 0; i < (I32)header->number_of_variable_length_records; i++)
+  {
+    if ((strcmp(header->vlrs[i].user_id, "copc") == 0) && header->vlrs[i].record_id == 1)
+    {
+      const LASvlr_copc_info* info = (const LASvlr_copc_info*)header->vlrs[i].data;
+      stream->seek(header_start_position + 375 + 54);
+      if (!stream->put64bitsLE((const U8*)&info->center_x))
+      {
+        laserror("updating CopcInfo->center_x");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->center_y))
+      {
+        laserror("updating CopcInfo->center_y");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->center_z))
+      {
+        laserror("updating CopcInfo->center_z");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->halfsize))
+      {
+        laserror("updating CopcInfo->halfsize");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->spacing))
+      {
+        laserror("updating CopcInfo->spacing");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->root_hier_offset))
+      {
+        laserror("updating CopcInfo->root_hier_offset");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->root_hier_size))
+      {
+        laserror("updating CopcInfo->root_hier_size");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->gpstime_minimum))
+      {
+        laserror("updating CopcInfo->gpstime_minimum");
+        return FALSE;
+      }
+      if (!stream->put64bitsLE((const U8*)&info->gpstime_maximum))
+      {
+        laserror("updating CopcInfo->gpstime_maximum");
+        return FALSE;
+      }
+      stream->seekEnd();
+    }
+  }
+
   // COPC EPT hierarchy EVLR is computed and added to the header after the last point is written.
   // Therefore, it cannot be added when opening the writer. We use update_header to propagate the EVLR
   // just before closing the writer. EVLRs are written when closing. This trick allows us to be COPC

@@ -40,7 +40,6 @@
 
 #include <mutex>
 
-#include <R_ext/Print.h> // rlas: messages go to the R console
 
 long lasmessage_cnt[LAS_QUIET];
 
@@ -61,11 +60,11 @@ static std::string current_msg;
 static U32 rep_log_msg = 0;
 static U8 max_rep_log_msg = 15;  // Maximum number of repeated log messages
 
-// r-lidar: LASlib may be used from several threads at the same time. Protect the shared state above.
+// lasR: LASlib may be used from several threads at the same time. Protect the shared state above.
 static std::recursive_mutex las_message_mutex;
 
 // rlas: last error message, thrown by byebye() instead of exiting
-static thread_local std::string las_last_error_message; // r-lidar: one per thread
+static thread_local std::string las_last_error_message; // lasR: one per thread
 const char* las_last_error() { return las_last_error_message.c_str(); }
 
 // r-lidar: the messages of a muted thread are dropped. Its errors are still thrown by byebye().
@@ -100,7 +99,9 @@ std::string las_message_type_string(LAS_MESSAGE_TYPE in) {
 void buildMessage(char *buffer, LAS_MESSAGE_TYPE type, LAS_FORMAT_STRING(const char*) fmt, va_list args) {
   int len = vsnprintf(buffer, LAS_MAX_MESSAGE_LENGTH, fmt, args);
   if (len > LAS_MAX_MESSAGE_LENGTH) {  // avoid buffer overflow. messages longer than LAS_MAX_MESSAGE_LENGTH should not occur!
-    REprintf("INTERNAL: message cropped from %d to %d chars", len, LAS_MAX_MESSAGE_LENGTH);
+    char info[128];
+    snprintf(info, sizeof(info), "INTERNAL: message cropped from %d to %d chars", len, LAS_MAX_MESSAGE_LENGTH);
+    (*message_handler)(LAS_WARNING, info, message_user_data);
     len = LAS_MAX_MESSAGE_LENGTH;
   }
   // remove trailing line feed
@@ -125,7 +126,7 @@ void LASMessage(LAS_MESSAGE_TYPE type, LAS_FORMAT_STRING(const char*) fmt, ...) 
   if (type >= LAS_ERROR) las_last_error_message = buffer;
   if (las_thread_muted) return;
 
-  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // lasR
   if (current_msg != fmt) {
     if (rep_log_msg > max_rep_log_msg) {
         std::string rep_msg = "(log message repeated " + std::to_string(rep_log_msg) + " times)";
@@ -154,7 +155,7 @@ void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STR
 
   if (type < las_message_level) return;
 
-  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // lasR
 
   // Check whether summarisation is still required for normal logging.
   if (!las_thread_muted && current_msg != fmt) { // r-lidar: a muted thread does not print
@@ -210,7 +211,7 @@ void LASMessageExt(LAS_MESSAGE_TYPE type, unsigned int rep_times, LAS_FORMAT_STR
 /// Replaces the placeholders in unformatted messages '%...' with # using a regex.
 void flush_repeated_logs() {
   if (las_thread_muted) return; // r-lidar
-  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // r-lidar
+  std::lock_guard<std::recursive_mutex> lock(las_message_mutex); // lasR
   bool printedHeader = false;
 
   for (const auto& [msg, data] : ext_log_entrys) {
@@ -312,13 +313,14 @@ void las_default_message_handler(LAS_MESSAGE_TYPE type, const char* msg, void* u
       break;
   }
 
-  if (!prefix.empty()) {
+  // r-lidar: hide fprintf for CRAN policies. A handler is registered
+  /*if (!prefix.empty()) {
     format_message(message, (unsigned)prefix.size());
-    REprintf("%s", prefix.c_str());
-    REprintf("%s", message.c_str());
+    fprintf(stderr, "%s", prefix.c_str());
+    fprintf(stderr, "%s", message.c_str());
   } else {
-    REprintf("%s\n", message.c_str());
-  }
+    fprintf(stderr, "%s\n", message.c_str());
+  }*/
 }
 
 LASMessageStream& LASMessageStream::operator<<(std::ostream& (*func)(std::ostream&)) {

@@ -43,7 +43,9 @@
 #include <set>
 #include <unordered_set>
 
+#ifdef USING_R
 #include <R_ext/Random.h> // rlas: R's RNG instead of rand()
+#endif
 
 typedef std::multimap<I64, F64> my_I64_F64_map;
 typedef std::set<I64> my_I64_set;
@@ -1762,7 +1764,12 @@ public:
   inline I32 get_command(CHAR* string) const { return snprintf(string, 256, "-%s %g ", name(), fraction); };
   inline BOOL filter(const LASpoint* point)
   {
+#ifdef USING_R
     seed = unif_rand()*RAND_MAX; // rlas: R's RNG instead of rand()
+#else
+    srand(seed);
+    seed = rand();
+#endif
     return ((F32)seed / (F32)RAND_MAX) > fraction;
   };
   void reset() { seed = requested_seed; };

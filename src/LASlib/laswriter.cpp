@@ -36,6 +36,7 @@
 #include "laswriter_qfit.hpp"
 #include "laswriter_wrl.hpp"
 #include "laswriter_txt.hpp"
+#include "laswriter_copc.hpp" // lasR
 
 #include <stdlib.h>
 #include <string.h>
@@ -77,6 +78,17 @@ LASwriter* LASwriteOpener::open(const LASheader* header)
         return 0;
       }
       return laswriterlas;
+    }
+    else if (format == LAS_TOOLS_FORMAT_COPC) // lasR: COPC writer
+    {
+      LASwriterCOPC* laswritercopc = new LASwriterCOPC();
+      if (!laswritercopc->open(file_name, header, 2, io_obuffer_size))
+      {
+        laserror("cannot open laswritercopc with file name '%s'", file_name);
+        delete laswritercopc;
+        return 0;
+      }
+      return laswritercopc;
     }
     else if (format == LAS_TOOLS_FORMAT_TXT)
     {
@@ -255,6 +267,11 @@ BOOL LASwriteOpener::parse(int argc, char* argv[])
     else if (strcmp(argv[i],"-olas") == 0)
     {
       set_format(LAS_TOOLS_FORMAT_LAS);
+      *argv[i]='\0';
+    }
+    else if (strcmp(argv[i],"-ocopc") == 0) // lasR: COPC writer
+    {
+      set_format(LAS_TOOLS_FORMAT_COPC);
       *argv[i]='\0';
     }
     else if (strcmp(argv[i],"-olaz") == 0)
@@ -468,6 +485,10 @@ void LASwriteOpener::set_file_name(const CHAR* file_name)
         if (strstr(extension, "laz") || strstr(extension, "LAZ"))
         {
           format = LAS_TOOLS_FORMAT_LAZ;
+
+          // lasR: COPC writer
+          if (strstr(this->file_name, "copc.laz") || strstr(this->file_name, "COPC.LAZ"))
+            format = LAS_TOOLS_FORMAT_COPC;
         }
         else if (strstr(extension, "las") || strstr(extension, "LAS"))
         {
@@ -638,7 +659,7 @@ void LASwriteOpener::set_native(BOOL native)
 BOOL LASwriteOpener::set_format(I32 format)
 {
   if ((format < LAS_TOOLS_FORMAT_DEFAULT) ||
-      ((format > LAS_TOOLS_FORMAT_TXT) && format != LAS_TOOLS_FORMAT_JSON && format != LAS_TOOLS_FORMAT_XML && format != LAS_TOOLS_FORMAT_CSV))
+      ((format > LAS_TOOLS_FORMAT_TXT) && format != LAS_TOOLS_FORMAT_JSON && format != LAS_TOOLS_FORMAT_XML && format != LAS_TOOLS_FORMAT_CSV && format != LAS_TOOLS_FORMAT_COPC)) // lasR: COPC
   {
     return FALSE;
   }
@@ -1122,7 +1143,9 @@ I32 LASwriteOpener::get_format() const
   }
   else
   {
-    if (HasFileExt(std::string(file_name), ".laz")) {
+    if (strstr(file_name, ".copc.laz") || strstr(file_name, ".COPC.LAZ")) { // lasR: COPC writer
+      return LAS_TOOLS_FORMAT_COPC;
+    } else if (HasFileExt(std::string(file_name), ".laz")) {
       return LAS_TOOLS_FORMAT_LAZ;
     } else if (HasFileExt(std::string(file_name), ".las"))
     {

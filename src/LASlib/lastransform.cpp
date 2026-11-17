@@ -40,7 +40,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef USING_R
 #include <R_ext/Random.h> // rlas: R's RNG instead of rand()
+#endif
 
 /// Adds the operated values with consideration of the scaling and the specified offset
 void LASoperation::write_transformed_values_with_adjust_offset(F64 x, F64 y, F64 z, LASpoint* point)
@@ -1785,7 +1787,12 @@ class LASoperationTranslateRawXYatRandom : public LASoperation
     };
     inline void transform(LASpoint* point)
     {
+#ifdef USING_R
         seed = unif_rand()*RAND_MAX; // rlas: R's RNG instead of rand()
+#else
+        srand(seed);
+        seed = rand();
+#endif
         I32 rx = ((seed >> 3) % ((2 * max_raw_offset[0]) + 1)) - max_raw_offset[0];
         I32 ry = ((seed >> 6) % ((2 * max_raw_offset[1]) + 1)) - max_raw_offset[1];
 
