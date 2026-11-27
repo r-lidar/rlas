@@ -65,4 +65,16 @@ SOURCES = LASlib/fopen_compressed.cpp \
 					./fast.cpp \
 					./RcppExports.cpp
 TEMP1   = $(SOURCES:.cpp=.o)
-OBJECTS = $(TEMP1:.c=.o)
+RLAS_OBJECTS = $(TEMP1:.c=.o)
+
+# configure sets OBJECTS to $(RLAS_OBJECTS), or to rlas_partial.o on macOS (see configure.ac).
+OBJECTS = @RLAS_LINK_OBJECTS@
+
+all: $(SHLIB)
+
+# Partial link: rlas's hidden symbols become local, so they are never merged with the
+# copies of the same template functions in a static GDAL.
+rlas_partial.o: $(RLAS_OBJECTS)
+	$(CXX) -nostdlib -r -o rlas_partial.o $(RLAS_OBJECTS)
+
+.PHONY: all
