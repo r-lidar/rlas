@@ -70,7 +70,7 @@ BOOL strToFloatDegPcFail(const CHAR* cin, F32* out)
 {
   if (sscanf(cin, "%f", out) == 1)
   {
-    if ((tolower(cin[strlen(cin) - 1]) == 'd') || ((unsigned char)cin[strlen(cin) - 1] == 0xb0)) // degree, '°'
+    if ((tolower(cin[strlen(cin) - 1]) == 'd') || ((unsigned char)cin[strlen(cin) - 1] == 0xb0)) // degree
     {
       *out /= 360;
     }
