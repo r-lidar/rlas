@@ -1,4 +1,4 @@
-### rlas v1.9.6 (in development)
+### rlas v1.10.1
 
 - Update: LASlib and LASzip updated to LAStools v2.0.5-67-g4298a9c (LAS_TOOLS_VERSION 261023, LASzip 3.5.1).
 - Change: errors raised by LASlib now stop with LASlib's own message instead of "LASlib internal error. See message above."
